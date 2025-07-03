@@ -58,3 +58,8 @@ dev-debug.log
 
 # Taskmaster AI scratch docs
 .taskmaster/docs/
+# ignore build info and local tooling
+*.tsbuildinfo
+.cursor/
+.pnpm-store/
+.taskmaster/state.json
