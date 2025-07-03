@@ -147,13 +147,13 @@
         "testStrategy": "Verify CI pipeline runs successfully on push and pull request events. Test failure scenarios and coverage thresholds. Confirm all packages build and test in CI environment.",
         "priority": "high",
         "dependencies": [],
-        "status": "done",
+        "status": "pending",
         "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-07-02T22:15:34.836Z",
-      "updated": "2025-07-02T22:40:28.296Z",
+      "updated": "2025-07-03T02:33:49.174Z",
       "description": "Infrastructure and CI/CD specialist agent"
     }
   },
@@ -198,13 +198,13 @@
         "testStrategy": "Unit test all store actions and state mutations. Test state persistence and hydration. Verify performance with large state objects and frequent updates.",
         "priority": "medium",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "pending",
         "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-07-02T22:22:47.681Z",
-      "updated": "2025-07-02T23:31:10.467Z",
+      "updated": "2025-07-03T02:34:04.164Z",
       "description": "Algorithms and state management specialist agent"
     }
   },
@@ -350,7 +350,7 @@
         "testStrategy": "Test widget functionality and accessibility compliance. Verify keyboard navigation and screen reader compatibility. Test widget integration with Canvas component.",
         "priority": "low",
         "dependencies": [],
-        "status": "done",
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
@@ -358,7 +358,7 @@
             "description": "Create the foundational package structure for the Widgets package including build configuration, entry points, and basic component exports",
             "dependencies": [],
             "details": "Set up package.json, TypeScript configuration, build scripts, and create the main entry point with initial component structure. Establish proper module exports and package boundaries.",
-            "status": "done",
+            "status": "pending",
             "testStrategy": ""
           },
           {
@@ -369,7 +369,7 @@
               1
             ],
             "details": "Build React components for graph overlay controls, navigation elements, zoom controls, and pan functionality. Ensure components are properly integrated with the graph visualization system.",
-            "status": "done",
+            "status": "pending",
             "testStrategy": ""
           },
           {
@@ -380,7 +380,7 @@
               2
             ],
             "details": "Implement ARIA attributes, keyboard event handlers, focus management, screen reader support, and ensure all interactive elements meet WCAG guidelines. Add proper semantic markup and announcements.",
-            "status": "done",
+            "status": "pending",
             "testStrategy": ""
           },
           {
@@ -391,7 +391,7 @@
               2
             ],
             "details": "Build CSS-in-JS or CSS custom properties based theming system with design tokens, color schemes, typography options, and component style overrides. Provide clear theming API for external consumers.",
-            "status": "done",
+            "status": "pending",
             "testStrategy": ""
           }
         ]
@@ -399,7 +399,7 @@
     ],
     "metadata": {
       "created": "2025-07-02T22:23:23.371Z",
-      "updated": "2025-07-02T23:50:00.385Z",
+      "updated": "2025-07-03T02:34:28.108Z",
       "description": "3D rendering and UI components specialist agent"
     }
   },
