@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitest/config'
 
-/** Temporary stub to bypass store test suite until baseline green */
 export default defineConfig({
   test: {
-    include: [],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    setupFiles: ['./src/test-setup.ts'],
     globals: true,
     environment: 'node',
     coverage: {

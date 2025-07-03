@@ -5,11 +5,15 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
+import { enableMapSet } from 'immer'
 import { createGraphSlice, GraphSlice } from './slices/graph-slice'
 import { createUISlice, UISlice } from './slices/ui-slice'
 import { createAsyncSlice, AsyncSlice } from './slices/async-slice'
 import { CommandQueue } from './command-queue'
 import type { RendererCommand } from './types/renderer-commands'
+
+// Enable Immer support for Maps and Sets
+enableMapSet()
 
 // Combined store type
 export type RefineryStore = GraphSlice & UISlice & AsyncSlice & {
