@@ -2,23 +2,10 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "Refinery SDK Documentation",
   "entryPointStrategy": "packages",
-  "entryPoints": [
-    "packages/schema",
-    "packages/ops", 
-    "packages/store",
-    "packages/canvas-r3f",
-    "packages/input-hub",
-    "packages/widget-aperture",
-    "packages/widget-hud"
-  ],
-  "out": "docs",
-  "exclude": [
-    "**/node_modules/**",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/test-setup.ts",
-    "**/dist/**"
-  ],
+  "entryPoints": ["packages/*/src/index.ts"],
+  "out": "docs/reference",
+  "exclude": ["**/__tests__/**"],
+  "tsconfig": "tsconfig.json",
   "plugin": ["typedoc-plugin-markdown"],
   "theme": "default",
   "readme": "./README.md",
