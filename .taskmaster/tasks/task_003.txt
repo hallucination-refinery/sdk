@@ -1,0 +1,11 @@
+# Task ID: 3
+# Title: Develop Ops Package with Graph Algorithms
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Implement graph algorithm utilities including BFS, Interwingle, and other functional operations on Schema objects
+# Details:
+Create packages/ops depending on @refinery/schema. Implement BFS (Breadth-First Search) algorithm for graph traversal. Add Interwingle algorithm for graph operations. Create functional utilities for graph queries, node filtering, edge traversal, and graph transformations. All functions should operate on Schema objects and return immutable results. Export clean functional API surface with zero any-casts.
+
+# Test Strategy:
+Achieve ≥80% unit test coverage with comprehensive algorithm testing. Test performance with 1k-node graphs. Verify all operations maintain immutability and type safety.

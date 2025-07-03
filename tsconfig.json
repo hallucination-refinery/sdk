@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@refinery/schema": ["packages/schema/src"],
+      "@refinery/ops": ["packages/ops/src"],
+      "@refinery/store": ["packages/store/src"],
+      "@refinery/canvas-r3f": ["packages/canvas-r3f/src"],
+      "@refinery/input-hub": ["packages/input-hub/src"],
+      "@refinery/widget-aperture": ["packages/widget-aperture/src"],
+      "@refinery/widget-hud": ["packages/widget-hud/src"]
+    }
+  },
+  "include": [],
+  "references": [
+    { "path": "./packages/schema" },
+    { "path": "./packages/ops" },
+    { "path": "./packages/store" },
+    { "path": "./packages/canvas-r3f" },
+    { "path": "./packages/input-hub" },
+    { "path": "./packages/widget-aperture" },
+    { "path": "./packages/widget-hud" }
+  ]
+}

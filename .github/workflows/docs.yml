@@ -1,0 +1,121 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Install TypeDoc
+        run: pnpm add -D typedoc typedoc-plugin-markdown
+
+      - name: Generate documentation
+        run: pnpm docs
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+      - name: Generate coverage report
+        run: |
+          mkdir -p docs/coverage
+          cp -r packages/schema/coverage/* docs/coverage/schema/ || true
+          cp -r packages/ops/coverage/* docs/coverage/ops/ || true
+          cp -r packages/store/coverage/* docs/coverage/store/ || true
+          cp -r packages/canvas-r3f/coverage/* docs/coverage/canvas/ || true
+          cp -r packages/input-hub/coverage/* docs/coverage/input/ || true
+          cp -r packages/widget-aperture/coverage/* docs/coverage/widget-aperture/ || true
+          cp -r packages/widget-hud/coverage/* docs/coverage/widget-hud/ || true
+
+      - name: Create coverage index
+        run: |
+          cat > docs/coverage/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Refinery SDK Coverage Reports</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; }
+              h1 { color: #333; }
+              .package-list { list-style: none; padding: 0; }
+              .package-list li { margin: 10px 0; }
+              .package-list a { 
+                display: inline-block; 
+                padding: 10px 20px; 
+                background: #007bff; 
+                color: white; 
+                text-decoration: none; 
+                border-radius: 5px; 
+              }
+              .package-list a:hover { background: #0056b3; }
+            </style>
+          </head>
+          <body>
+            <h1>Refinery SDK Coverage Reports</h1>
+            <ul class="package-list">
+              <li><a href="./schema/index.html">@refinery/schema</a></li>
+              <li><a href="./ops/index.html">@refinery/ops</a></li>
+              <li><a href="./store/index.html">@refinery/store</a></li>
+              <li><a href="./canvas/index.html">@refinery/canvas-r3f</a></li>
+              <li><a href="./input/index.html">@refinery/input-hub</a></li>
+              <li><a href="./widget-aperture/index.html">@refinery/widget-aperture</a></li>
+              <li><a href="./widget-hud/index.html">@refinery/widget-hud</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-docs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

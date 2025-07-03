@@ -1,0 +1,11 @@
+# Task ID: 2
+# Title: Implement Schema Package with Zod Definitions
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Create the foundational Schema package with TypeScript types generated from Zod schema definitions for IdeaNode and edges
+# Details:
+Create packages/schema with package.json, tsconfig.json, and src/index.ts. Define IdeaNode interface with open metadata: Record<string, unknown> field using Zod schemas. Create edge type definitions and graph structure types. Export all TypeScript types generated from Zod definitions. Set up build scripts to compile TypeScript and generate type declarations. Configure ESLint rules to enforce package boundaries.
+
+# Test Strategy:
+Achieve ≥80% unit test coverage using Vitest. Test schema validation, type inference, and edge case handling. Verify TypeScript compilation produces correct .d.ts files.

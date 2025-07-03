@@ -1,0 +1,11 @@
+# Task ID: 4
+# Title: Build Store Package with Zustand State Management
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Migrate from monolithic reducer to Zustand slice-based global state management system
+# Details:
+Create packages/store depending on @refinery/schema and @refinery/ops. Replace monolithic reducer with Zustand slices for graph state management. Implement typed actions that emit RendererCommand objects consumed by UI layers. Remove forceGraphRef coupling and global eventMux dependencies. Create state selectors and actions for graph manipulation. Ensure all state changes are immutable and properly typed.
+
+# Test Strategy:
+Unit test all store actions and state mutations. Test state persistence and hydration. Verify performance with large state objects and frequent updates.

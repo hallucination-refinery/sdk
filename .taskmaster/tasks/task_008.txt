@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Create Demo App Hello-SDK
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Build demonstration application showcasing 1k-node graph rendering at ≥60 FPS
+# Details:
+Create apps/hello-sdk React application demonstrating SDK integration. Import @refinery/schema, @refinery/canvas-r3f, and other packages. Load test-assets/data/23-nodes.json and generate 1k-node dataset for performance testing. Implement graph rendering with Canvas component achieving ≥60 FPS target. Add performance monitoring and FPS display. Include feature flag for degrading to 30 FPS on low-end hardware. Create live documentation through interactive examples.
+
+# Test Strategy:
+Performance test with 1k-node graph on various hardware configurations. Verify 60 FPS target achievement. Test fallback to 30 FPS degradation mode.

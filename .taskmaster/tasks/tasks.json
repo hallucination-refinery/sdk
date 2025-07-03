@@ -1,1 +1,516 @@
-[] 
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Bootstrap pnpm Workspace and Development Environment",
+        "description": "Set up the foundational workspace structure with pnpm workspaces, dev-container configuration, and initial tooling",
+        "details": "Create root package.json with pnpm workspace configuration. Set up dev-container with Node 20, pnpm 9, Oh-My-Zsh, and Claude CLI. Configure TypeScript 5, Vitest, and Turbo in workspace root. Add pnpm overrides for three@0.176.0, react@19.1.0, @react-three/fiber@^9.1.2. Create initial directory structure: packages/schema, packages/ops, packages/store, packages/canvas, packages/input, packages/widgets, apps/hello-sdk. Set up .env.example with OPENAI_API_KEY and ELEVEN_LABS_API_KEY stubs.",
+        "testStrategy": "Verify workspace setup by running 'pnpm -r run build' and 'pnpm -r exec vitest run' commands successfully. Confirm dev-container builds and all specified tools are available.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement Schema Package with Zod Definitions",
+        "description": "Create the foundational Schema package with TypeScript types generated from Zod schema definitions for IdeaNode and edges",
+        "details": "Create packages/schema with package.json, tsconfig.json, and src/index.ts. Define IdeaNode interface with open metadata: Record<string, unknown> field using Zod schemas. Create edge type definitions and graph structure types. Export all TypeScript types generated from Zod definitions. Set up build scripts to compile TypeScript and generate type declarations. Configure ESLint rules to enforce package boundaries.",
+        "testStrategy": "Achieve ≥80% unit test coverage using Vitest. Test schema validation, type inference, and edge case handling. Verify TypeScript compilation produces correct .d.ts files.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Develop Ops Package with Graph Algorithms",
+        "description": "Implement graph algorithm utilities including BFS, Interwingle, and other functional operations on Schema objects",
+        "details": "Create packages/ops depending on @refinery/schema. Implement BFS (Breadth-First Search) algorithm for graph traversal. Add Interwingle algorithm for graph operations. Create functional utilities for graph queries, node filtering, edge traversal, and graph transformations. All functions should operate on Schema objects and return immutable results. Export clean functional API surface with zero any-casts.",
+        "testStrategy": "Achieve ≥80% unit test coverage with comprehensive algorithm testing. Test performance with 1k-node graphs. Verify all operations maintain immutability and type safety.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Build Store Package with Zustand State Management",
+        "description": "Migrate from monolithic reducer to Zustand slice-based global state management system",
+        "details": "Create packages/store depending on @refinery/schema and @refinery/ops. Replace monolithic reducer with Zustand slices for graph state management. Implement typed actions that emit RendererCommand objects consumed by UI layers. Remove forceGraphRef coupling and global eventMux dependencies. Create state selectors and actions for graph manipulation. Ensure all state changes are immutable and properly typed.",
+        "testStrategy": "Unit test all store actions and state mutations. Test state persistence and hydration. Verify performance with large state objects and frequent updates.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Create Canvas Package React-Three Renderer Facade",
+        "description": "Abstract away r3f-forcegraph with a clean Canvas facade that publishes enqueue(cmd) API",
+        "details": "Create packages/canvas depending on @refinery/store. Abstract react-three-fiber and r3f-forcegraph behind clean facade. Implement enqueue(cmd) API that consumes RendererCommand objects from Store. Create Canvas React component that renders 3D graph visualization. Handle GPU rendering optimizations for 60 FPS performance with 1k-node graphs. Add accessibility features including keyboard navigation and screen-reader labels for WCAG 2.2 AA compliance. Switch from Jest to Vitest for Canvas tests to avoid ESM crashes.",
+        "testStrategy": "Test Canvas component rendering with mock data. Verify 60 FPS performance with 1k-node test dataset. Test accessibility features with screen readers and keyboard navigation.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement Input Hub for Multimodal Control",
+        "description": "Create unified gesture and voice intent bus using Mediapipe Hands and Eleven Labs integration",
+        "details": "Create packages/input with Mediapipe Vision integration for hand gesture recognition. Integrate Eleven Labs for voice command processing. Create unified intent bus that maps gestures and voice commands to intent enum. Implement event handling system that translates multimodal inputs to graph operations. Add support for public/mediapipe/hand_landmarker.task and .wasm assets. Create intent classification system for graph manipulation commands.",
+        "testStrategy": "Test gesture recognition accuracy with various hand positions. Verify voice command processing and intent mapping. Test multimodal input coordination and conflict resolution.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Set up GitHub Actions CI Pipeline",
+        "description": "Implement automated CI workflow for builds, tests, and quality gates",
+        "details": "Create .github/workflows/ci.yml with GitHub Actions workflow. Configure ubuntu-latest runners with Node 20. Implement job steps: pnpm install --frozen-lockfile, pnpm -r run build, pnpm -r exec vitest run. Add coverage reporting and quality gates requiring ≥80% coverage on Schema and Ops packages. Set up build artifact caching and parallel job execution. Configure status checks and branch protection rules.",
+        "testStrategy": "Verify CI pipeline runs successfully on push and pull request events. Test failure scenarios and coverage thresholds. Confirm all packages build and test in CI environment.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Create Demo App Hello-SDK",
+        "description": "Build demonstration application showcasing 1k-node graph rendering at ≥60 FPS",
+        "details": "Create apps/hello-sdk React application demonstrating SDK integration. Import @refinery/schema, @refinery/canvas-r3f, and other packages. Load test-assets/data/23-nodes.json and generate 1k-node dataset for performance testing. Implement graph rendering with Canvas component achieving ≥60 FPS target. Add performance monitoring and FPS display. Include feature flag for degrading to 30 FPS on low-end hardware. Create live documentation through interactive examples.",
+        "testStrategy": "Performance test with 1k-node graph on various hardware configurations. Verify 60 FPS target achievement. Test fallback to 30 FPS degradation mode.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement Widgets Package UI Components",
+        "description": "Create reusable UI widget components for graph interaction and control interfaces",
+        "details": "Create packages/widgets with reusable React components for graph interaction. Implement overlay controls for Canvas with keyboard navigation support. Create node inspection panels, graph navigation controls, and visualization settings. Ensure all widgets follow accessibility guidelines with proper ARIA labels and keyboard support. Design components to be theme-able and customizable for external integrators.",
+        "testStrategy": "Test widget functionality and accessibility compliance. Verify keyboard navigation and screen reader compatibility. Test widget integration with Canvas component.",
+        "priority": "low",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": null,
+        "title": "Generate Documentation and Achieve Coverage Targets",
+        "description": "Set up TypeDoc generation, achieve ≥80% test coverage, and create comprehensive documentation",
+        "details": "Configure TypeDoc for automatic API documentation generation across all packages. Ensure Schema and Ops packages achieve ≥80% unit test coverage requirement. Create comprehensive README files for each package with usage examples. Set up documentation website or GitHub Pages for API reference. Add code examples and integration guides for external developers. Configure coverage reporting in CI pipeline with enforcement of coverage thresholds.",
+        "testStrategy": "Verify TypeDoc generates complete API documentation. Confirm coverage reports show ≥80% for Schema and Ops packages. Test documentation examples work correctly when followed by external developers.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-02T21:33:31.640Z",
+      "updated": "2025-07-02T21:33:31.640Z",
+      "description": "Tasks for master context"
+    }
+  },
+  "agent-docs": {
+    "tasks": [],
+    "metadata": {
+      "created": "2025-07-02T22:13:55.575Z",
+      "updated": "2025-07-02T22:13:55.575Z",
+      "description": "Documentation and quality assurance specialist agent"
+    }
+  },
+  "agent-infra": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Bootstrap pnpm Workspace and Development Environment",
+        "description": "Set up the foundational workspace structure with pnpm workspaces, dev-container configuration, and initial tooling",
+        "details": "Create root package.json with pnpm workspace configuration. Set up dev-container with Node 20, pnpm 9, Oh-My-Zsh, and Claude CLI. Configure TypeScript 5, Vitest, and Turbo in workspace root. Add pnpm overrides for three@0.176.0, react@19.1.0, @react-three/fiber@^9.1.2. Create initial directory structure: packages/schema, packages/ops, packages/store, packages/canvas, packages/input, packages/widgets, apps/hello-sdk. Set up .env.example with OPENAI_API_KEY and ELEVEN_LABS_API_KEY stubs.",
+        "testStrategy": "Verify workspace setup by running 'pnpm -r run build' and 'pnpm -r exec vitest run' commands successfully. Confirm dev-container builds and all specified tools are available.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Set up GitHub Actions CI Pipeline",
+        "description": "Implement automated CI workflow for builds, tests, and quality gates",
+        "details": "Create .github/workflows/ci.yml with GitHub Actions workflow. Configure ubuntu-latest runners with Node 20. Implement job steps: pnpm install --frozen-lockfile, pnpm -r run build, pnpm -r exec vitest run. Add coverage reporting and quality gates requiring ≥80% coverage on Schema and Ops packages. Set up build artifact caching and parallel job execution. Configure status checks and branch protection rules.",
+        "testStrategy": "Verify CI pipeline runs successfully on push and pull request events. Test failure scenarios and coverage thresholds. Confirm all packages build and test in CI environment.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-02T22:15:34.836Z",
+      "updated": "2025-07-02T22:40:28.296Z",
+      "description": "Infrastructure and CI/CD specialist agent"
+    }
+  },
+  "agent-schema": {
+    "tasks": [
+      {
+        "id": 2,
+        "title": "Implement Schema Package with Zod Definitions",
+        "description": "Create the foundational Schema package with TypeScript types generated from Zod schema definitions for IdeaNode and edges",
+        "details": "Create packages/schema with package.json, tsconfig.json, and src/index.ts. Define IdeaNode interface with open metadata: Record<string, unknown> field using Zod schemas. Create edge type definitions and graph structure types. Export all TypeScript types generated from Zod definitions. Set up build scripts to compile TypeScript and generate type declarations. Configure ESLint rules to enforce package boundaries.",
+        "testStrategy": "Achieve ≥80% unit test coverage using Vitest. Test schema validation, type inference, and edge case handling. Verify TypeScript compilation produces correct .d.ts files.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-02T22:21:47.953Z",
+      "updated": "2025-07-02T22:54:46.416Z",
+      "description": "Schema and domain model specialist agent"
+    }
+  },
+  "agent-store": {
+    "tasks": [
+      {
+        "id": 3,
+        "title": "Develop Ops Package with Graph Algorithms",
+        "description": "Implement graph algorithm utilities including BFS, Interwingle, and other functional operations on Schema objects",
+        "details": "Create packages/ops depending on @refinery/schema. Implement BFS (Breadth-First Search) algorithm for graph traversal. Add Interwingle algorithm for graph operations. Create functional utilities for graph queries, node filtering, edge traversal, and graph transformations. All functions should operate on Schema objects and return immutable results. Export clean functional API surface with zero any-casts.",
+        "testStrategy": "Achieve ≥80% unit test coverage with comprehensive algorithm testing. Test performance with 1k-node graphs. Verify all operations maintain immutability and type safety.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Build Store Package with Zustand State Management",
+        "description": "Migrate from monolithic reducer to Zustand slice-based global state management system",
+        "details": "Create packages/store depending on @refinery/schema and @refinery/ops. Replace monolithic reducer with Zustand slices for graph state management. Implement typed actions that emit RendererCommand objects consumed by UI layers. Remove forceGraphRef coupling and global eventMux dependencies. Create state selectors and actions for graph manipulation. Ensure all state changes are immutable and properly typed.",
+        "testStrategy": "Unit test all store actions and state mutations. Test state persistence and hydration. Verify performance with large state objects and frequent updates.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-02T22:22:47.681Z",
+      "updated": "2025-07-02T23:31:10.467Z",
+      "description": "Algorithms and state management specialist agent"
+    }
+  },
+  "agent-canvas": {
+    "tasks": [
+      {
+        "id": 5,
+        "title": "Create Canvas Package React-Three Renderer Facade",
+        "description": "Abstract away r3f-forcegraph with a clean Canvas facade that publishes enqueue(cmd) API",
+        "details": "Create packages/canvas depending on @refinery/store. Abstract react-three-fiber and r3f-forcegraph behind clean facade. Implement enqueue(cmd) API that consumes RendererCommand objects from Store. Create Canvas React component that renders 3D graph visualization. Handle GPU rendering optimizations for 60 FPS performance with 1k-node graphs. Add accessibility features including keyboard navigation and screen-reader labels for WCAG 2.2 AA compliance. Switch from Jest to Vitest for Canvas tests to avoid ESM crashes.",
+        "testStrategy": "Test Canvas component rendering with mock data. Verify 60 FPS performance with 1k-node test dataset. Test accessibility features with screen readers and keyboard navigation.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Canvas package structure",
+            "description": "Create the foundational package structure for the Canvas rendering system with proper directory organization, build configuration, and module exports",
+            "dependencies": [],
+            "details": "Establish packages/canvas directory structure, configure TypeScript build, setup package.json with dependencies for react-three-fiber, three.js, and related packages. Create index.ts with proper exports and establish core directory structure (components/, hooks/, utils/, types/).",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Abstract react-three-fiber/r3f-forcegraph behind facade",
+            "description": "Create abstraction layer to encapsulate react-three-fiber and r3f-forcegraph libraries behind a clean interface",
+            "dependencies": [
+              1
+            ],
+            "details": "Design and implement facade pattern to abstract 3D rendering libraries. Create RendererFacade class that wraps react-three-fiber and r3f-forcegraph functionality, providing simplified API for graph rendering operations while hiding implementation details.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement RendererCommand consumption system",
+            "description": "Build command pattern system to handle rendering operations through structured commands",
+            "dependencies": [
+              2
+            ],
+            "details": "Create RendererCommand interface and command processor to handle rendering operations. Implement command queue system with proper batching, error handling, and state management. Include commands for node/edge creation, updates, and deletions.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create React Canvas component",
+            "description": "Develop the main React component that integrates the rendering system with React application",
+            "dependencies": [
+              3
+            ],
+            "details": "Build Canvas React component that uses the RendererCommand system and facade. Implement proper React lifecycle management, ref handling, and integration with the command processing system. Include props interface for configuration and event handling.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Optimize for 60 FPS performance with 1k nodes",
+            "description": "Implement performance optimizations to achieve 60 FPS rendering with 1000+ nodes",
+            "dependencies": [
+              4
+            ],
+            "details": "Implement level-of-detail (LOD) rendering, frustum culling, instanced rendering for similar nodes, and efficient update batching. Add performance monitoring, memory management optimizations, and implement viewport-based rendering to maintain 60 FPS with 1k+ nodes.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Implement accessibility features for WCAG compliance",
+            "description": "Add comprehensive accessibility features to meet WCAG compliance standards",
+            "dependencies": [
+              5
+            ],
+            "details": "Implement ARIA labels, keyboard navigation support, screen reader compatibility, high contrast mode, focus management, and semantic HTML structure. Add accessibility testing and ensure compliance with WCAG 2.1 AA standards for 3D graph visualization.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Create Demo App Hello-SDK",
+        "description": "Build demonstration application showcasing 1k-node graph rendering at ≥60 FPS",
+        "details": "Create apps/hello-sdk React application demonstrating SDK integration. Import @refinery/schema, @refinery/canvas-r3f, and other packages. Load test-assets/data/23-nodes.json and generate 1k-node dataset for performance testing. Implement graph rendering with Canvas component achieving ≥60 FPS target. Add performance monitoring and FPS display. Include feature flag for degrading to 30 FPS on low-end hardware. Create live documentation through interactive examples.",
+        "testStrategy": "Performance test with 1k-node graph on various hardware configurations. Verify 60 FPS target achievement. Test fallback to 30 FPS degradation mode.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup React app structure and dependencies",
+            "description": "Initialize React application with proper project structure, install required dependencies for canvas rendering, performance monitoring, and feature flags",
+            "dependencies": [],
+            "details": "Create React app structure with components folder, install dependencies like React, canvas libraries, performance monitoring tools, and feature flag management libraries",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement test data loading and 1k-node dataset generation",
+            "description": "Create data generation utilities to produce 1000-node datasets with appropriate properties for canvas rendering and performance testing",
+            "dependencies": [
+              1
+            ],
+            "details": "Build data generators that create realistic node datasets with positions, connections, and properties suitable for performance benchmarking",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Integrate Canvas component with performance monitoring",
+            "description": "Connect the canvas rendering component with performance monitoring to track FPS and rendering metrics during node visualization",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implement FPS tracking, render time measurement, and performance metrics collection while rendering the 1k-node dataset on canvas",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement feature flags for FPS degradation on low-end hardware",
+            "description": "Add feature flag system to simulate or handle FPS degradation scenarios on low-end hardware, ensuring 60 FPS target with 1k nodes",
+            "dependencies": [
+              1,
+              3
+            ],
+            "details": "Create feature flags to toggle performance optimizations, implement degradation simulation, and ensure the demo maintains 60 FPS with 1000 nodes as success criteria",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Implement Widgets Package UI Components",
+        "description": "Create reusable UI widget components for graph interaction and control interfaces",
+        "details": "Create packages/widgets with reusable React components for graph interaction. Implement overlay controls for Canvas with keyboard navigation support. Create node inspection panels, graph navigation controls, and visualization settings. Ensure all widgets follow accessibility guidelines with proper ARIA labels and keyboard support. Design components to be theme-able and customizable for external integrators.",
+        "testStrategy": "Test widget functionality and accessibility compliance. Verify keyboard navigation and screen reader compatibility. Test widget integration with Canvas component.",
+        "priority": "low",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Widgets Package Structure",
+            "description": "Create the foundational package structure for the Widgets package including build configuration, entry points, and basic component exports",
+            "dependencies": [],
+            "details": "Set up package.json, TypeScript configuration, build scripts, and create the main entry point with initial component structure. Establish proper module exports and package boundaries.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create Core Graph Interaction Components",
+            "description": "Implement overlay controls and navigation components for graph interaction functionality",
+            "dependencies": [
+              1
+            ],
+            "details": "Build React components for graph overlay controls, navigation elements, zoom controls, and pan functionality. Ensure components are properly integrated with the graph visualization system.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement Accessibility Features",
+            "description": "Add comprehensive accessibility support with ARIA labels and full keyboard navigation",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement ARIA attributes, keyboard event handlers, focus management, screen reader support, and ensure all interactive elements meet WCAG guidelines. Add proper semantic markup and announcements.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Design Theming System",
+            "description": "Create a flexible theming architecture that allows external integrators to customize widget appearance",
+            "dependencies": [
+              2
+            ],
+            "details": "Build CSS-in-JS or CSS custom properties based theming system with design tokens, color schemes, typography options, and component style overrides. Provide clear theming API for external consumers.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-02T22:23:23.371Z",
+      "updated": "2025-07-02T23:50:00.385Z",
+      "description": "3D rendering and UI components specialist agent"
+    }
+  },
+  "agent-input": {
+    "tasks": [
+      {
+        "id": 6,
+        "title": "Implement Input Hub for Multimodal Control",
+        "description": "Create unified gesture and voice intent bus using Mediapipe Hands and Eleven Labs integration",
+        "details": "Create packages/input with Mediapipe Vision integration for hand gesture recognition. Integrate Eleven Labs for voice command processing. Create unified intent bus that maps gestures and voice commands to intent enum. Implement event handling system that translates multimodal inputs to graph operations. Add support for public/mediapipe/hand_landmarker.task and .wasm assets. Create intent classification system for graph manipulation commands.",
+        "testStrategy": "Test gesture recognition accuracy with various hand positions. Verify voice command processing and intent mapping. Test multimodal input coordination and conflict resolution.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Input Package Structure",
+            "description": "Create the foundational package structure for the multimodal input system with proper TypeScript configuration and module organization",
+            "dependencies": [],
+            "details": "Create packages/input directory with src/, tests/, and proper package.json. Setup TypeScript configuration extending root tsconfig. Define core interfaces for input handlers, intent types, and event structures. Create index files for clean exports.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Integrate MediaPipe Vision SDK",
+            "description": "Install and configure MediaPipe Vision for hand gesture recognition with WebAssembly assets",
+            "dependencies": [
+              1
+            ],
+            "details": "Install @mediapipe/tasks-vision package. Configure WebAssembly file serving and loading. Create MediaPipe initialization service with proper error handling. Setup camera access permissions and video stream handling. Implement gesture model loading with fallback mechanisms.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement Hand Gesture Recognition",
+            "description": "Create hand tracking and gesture detection system using MediaPipe's hand landmarker",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement HandGestureDetector class with real-time hand landmark detection. Create gesture classification logic for common gestures (point, grab, swipe, pinch). Add confidence thresholds and gesture smoothing. Implement gesture event emitter with debouncing.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Integrate Eleven Labs Voice API",
+            "description": "Setup Eleven Labs SDK for voice processing and text-to-speech capabilities",
+            "dependencies": [
+              1
+            ],
+            "details": "Install elevenlabs SDK and configure API authentication. Create VoiceProcessor service with API key management. Implement voice synthesis methods with voice selection. Add audio playback handling with Web Audio API. Create error handling for API limits and failures.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Create Unified Intent Bus System",
+            "description": "Build central event bus for coordinating intents from multiple input sources",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement IntentBus class using EventEmitter pattern. Define Intent interface with source, type, confidence, and payload. Create intent priority and conflict resolution system. Add intent history tracking and replay capabilities. Implement intent filtering and subscription management.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Implement Gesture-to-Intent Mapping",
+            "description": "Create mapping system to convert detected gestures into application intents",
+            "dependencies": [
+              3,
+              5
+            ],
+            "details": "Build GestureIntentMapper with configurable gesture-to-intent rules. Create default mapping profiles for common interactions. Implement context-aware gesture interpretation. Add gesture combination support for complex intents. Create gesture calibration and customization system.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Implement Voice-to-Intent Mapping",
+            "description": "Build voice command processing and intent extraction system",
+            "dependencies": [
+              4,
+              5
+            ],
+            "details": "Create VoiceIntentParser using natural language processing. Implement command grammar definition system. Add voice command confidence scoring. Create voice feedback system using Eleven Labs TTS. Implement voice command history and learning.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Create Multimodal Coordination System",
+            "description": "Implement system to coordinate and fuse inputs from multiple modalities",
+            "dependencies": [
+              6,
+              7
+            ],
+            "details": "Build MultimodalCoordinator to handle simultaneous gesture and voice inputs. Implement modality fusion logic with temporal alignment. Create conflict resolution for competing intents. Add multimodal gesture support (voice + gesture combinations). Implement performance monitoring and optimization.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-02T22:23:58.679Z",
+      "updated": "2025-07-02T22:23:58.679Z",
+      "description": "Multimodal interaction specialist agent"
+    }
+  }
+}

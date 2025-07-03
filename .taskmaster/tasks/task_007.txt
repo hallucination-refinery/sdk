@@ -1,0 +1,11 @@
+# Task ID: 7
+# Title: Set up GitHub Actions CI Pipeline
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Implement automated CI workflow for builds, tests, and quality gates
+# Details:
+Create .github/workflows/ci.yml with GitHub Actions workflow. Configure ubuntu-latest runners with Node 20. Implement job steps: pnpm install --frozen-lockfile, pnpm -r run build, pnpm -r exec vitest run. Add coverage reporting and quality gates requiring ≥80% coverage on Schema and Ops packages. Set up build artifact caching and parallel job execution. Configure status checks and branch protection rules.
+
+# Test Strategy:
+Verify CI pipeline runs successfully on push and pull request events. Test failure scenarios and coverage thresholds. Confirm all packages build and test in CI environment.

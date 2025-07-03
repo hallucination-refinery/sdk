@@ -1,0 +1,52 @@
+{
+  "name": "@refinery/ops",
+  "version": "0.0.0",
+  "description": "Graph algorithms and functional operations for Refinery SDK",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -b",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@refinery/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@vitest/coverage-v8": "^1.1.0",
+    "eslint": "^8.56.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  },
+  "keywords": [
+    "refinery",
+    "graph",
+    "algorithms",
+    "functional",
+    "immutable",
+    "bfs",
+    "dfs",
+    "interwingle"
+  ],
+  "author": "",
+  "license": "MIT"
+}

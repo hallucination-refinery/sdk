@@ -1,0 +1,90 @@
+import type { HUDTheme } from '../types'
+
+export const defaultHUDTheme: HUDTheme = {
+  colors: {
+    background: 'rgba(255, 255, 255, 0.95)',
+    backgroundHover: 'rgba(255, 255, 255, 1)',
+    surface: 'rgba(249, 250, 251, 0.95)',
+    surfaceHover: 'rgba(243, 244, 246, 1)',
+    text: '#111827',
+    textSecondary: '#6b7280',
+    textDisabled: '#9ca3af',
+    border: 'rgba(229, 231, 235, 0.8)',
+    borderFocus: '#3b82f6',
+    primary: '#3b82f6',
+    primaryHover: '#2563eb',
+    secondary: '#8b5cf6',
+    secondaryHover: '#7c3aed',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#3b82f6',
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+  },
+  typography: {
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      bold: 700,
+    },
+  },
+  shadows: {
+    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+  },
+  borderRadius: {
+    sm: '0.25rem',
+    md: '0.375rem',
+    lg: '0.5rem',
+  },
+  opacity: {
+    disabled: 0.5,
+    hover: 0.8,
+    backdrop: 0.75,
+  },
+}
+
+export const darkHUDTheme: HUDTheme = {
+  colors: {
+    background: 'rgba(30, 41, 59, 0.95)',
+    backgroundHover: 'rgba(30, 41, 59, 1)',
+    surface: 'rgba(51, 65, 85, 0.95)',
+    surfaceHover: 'rgba(71, 85, 105, 1)',
+    text: '#f1f5f9',
+    textSecondary: '#94a3b8',
+    textDisabled: '#64748b',
+    border: 'rgba(71, 85, 105, 0.8)',
+    borderFocus: '#60a5fa',
+    primary: '#60a5fa',
+    primaryHover: '#93bbfc',
+    secondary: '#a78bfa',
+    secondaryHover: '#c4b5fd',
+    success: '#34d399',
+    warning: '#fbbf24',
+    error: '#f87171',
+    info: '#60a5fa',
+  },
+  spacing: defaultHUDTheme.spacing,
+  typography: defaultHUDTheme.typography,
+  shadows: {
+    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
+    md: '0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4)',
+  },
+  borderRadius: defaultHUDTheme.borderRadius,
+  opacity: defaultHUDTheme.opacity,
+}
