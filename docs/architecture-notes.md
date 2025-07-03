@@ -105,3 +105,11 @@ flowchart TD
 | Date | Author | Description |
 |------|--------|-------------|
 | 2025-07-02 | WB | Initial draft capturing six-layer architecture with artefact citations. |
+
+## 8. Implementation Status (2025-07-03)
+
+- **Schema & Ops** – Imported from `refinery-mono`; green build and full test pass (126 tests).
+- **Store** – Zustand slice scaffold committed; compiles clean, tests to be written.
+- **Canvas / Renderer Facade** – Skeleton only; no rendering logic yet.
+- **Input Hub** – Project structure scaffolding only.
+- **Widgets** – Package skeletons present; build currently disabled pending TypeScript fixes.
