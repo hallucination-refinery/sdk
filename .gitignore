@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 .turbo/
+.pnpm-store/
 
 # Environment files
 .env
@@ -34,7 +35,8 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
-.cache/ 
+.cache/
+*.tsbuildinfo
 
 logs
 dev-debug.log

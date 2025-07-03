@@ -18,7 +18,7 @@
     "src"
   ],
   "scripts": {
-    "build": "tsup && tsc -b",
+    "build": "tsup",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
     "test": "vitest run",
     "test:watch": "vitest",

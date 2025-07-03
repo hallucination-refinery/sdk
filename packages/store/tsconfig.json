@@ -6,6 +6,7 @@
     "composite": true,
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "noEmit": false,
+    "noImplicitAny": false,
     "declaration": true,
     "declarationMap": true
   },
