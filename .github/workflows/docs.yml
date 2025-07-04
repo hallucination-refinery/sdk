@@ -40,9 +40,6 @@ jobs:
       - name: Build packages (Turbo ordered)
         run: pnpm exec tsc -b tsconfig.build.json
 
-      - name: Install TypeDoc
-        run: pnpm add -D typedoc typedoc-plugin-markdown
-
       - name: Generate documentation
         run: pnpm docs
 

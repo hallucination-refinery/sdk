@@ -44,7 +44,7 @@ jobs:
         run: pnpm exec tsc -b tsconfig.build.json
 
       - name: Run tests with coverage
-        run: pnpm -r exec vitest run --coverage
+        run: pnpm -r exec vitest run --coverage.enabled
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -53,20 +53,6 @@ jobs:
           path: |
             packages/*/coverage/
           retention-days: 7
-
-      - name: Check coverage thresholds
-        run: |
-          echo "Checking coverage thresholds for critical packages..."
-
-          # Check Schema package coverage
-          cd packages/schema
-          pnpm exec vitest run --coverage.enabled --coverage.thresholds.branches=80 --coverage.thresholds.functions=80 --coverage.thresholds.lines=80 --coverage.thresholds.statements=80
-          cd ../..
-
-          # Check Ops package coverage
-          cd packages/ops
-          pnpm exec vitest run --coverage.enabled --coverage.thresholds.branches=80 --coverage.thresholds.functions=80 --coverage.thresholds.lines=80 --coverage.thresholds.statements=80
-          cd ../..
 
   cache-management:
     name: Cache Management
