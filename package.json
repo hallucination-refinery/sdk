@@ -16,7 +16,7 @@
     "type-check": "tsc -b --clean tsconfig.build.json && tsc -b tsconfig.build.json",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
-    "docs": "typedoc --plugin typedoc-plugin-markdown --out docs --skipErrorChecking --githubPages false --tsconfig tsconfig.build.json",
+    "docs": "typedoc --plugin typedoc-plugin-markdown --entryPointStrategy Packages --entryPoints packages/* --skipErrorChecking --githubPages false --tsconfig tsconfig.build.json",
     "docs:watch": "typedoc --watch"
   },
   "devDependencies": {
