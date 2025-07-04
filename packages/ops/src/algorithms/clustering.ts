@@ -241,7 +241,13 @@ export function clusterKMeans(
   const centers = selectInitialCenters(graph, k)
   const assignments = new Map<string, string>() // node -> center
   
+  // Cache BFS results to avoid redundant calculations
+  const distanceCache = new Map<string, Map<string, number>>()
+  
   for (let iteration = 0; iteration < maxIterations; iteration++) {
+    // Early exit for small graphs
+    if (graph.nodes.length === 0) break
+    
     const oldAssignments = new Map(assignments)
     
     // Assign each node to nearest center
@@ -250,8 +256,22 @@ export function clusterKMeans(
       let minDistance = Infinity
       
       for (const center of centers) {
-        const result = bfs(graph, center, { directed })
-        const distance = result.distances.get(node.id) ?? Infinity
+        // Check cache first
+        let distance: number | undefined
+        if (distanceCache.has(center)) {
+          distance = distanceCache.get(center)!.get(node.id)
+        }
+        
+        if (distance === undefined) {
+          const result = bfs(graph, center, { directed })
+          distance = result.distances.get(node.id) ?? Infinity
+          
+          // Cache the result
+          if (!distanceCache.has(center)) {
+            distanceCache.set(center, new Map())
+          }
+          distanceCache.get(center)!.set(node.id, distance)
+        }
         
         if (distance < minDistance) {
           minDistance = distance
@@ -275,34 +295,51 @@ export function clusterKMeans(
       break // Converged
     }
     
-    // Update centers
-    for (let i = 0; i < k; i++) {
-      const clusterNodes = graph.nodes.filter(n => 
-        assignments.get(n.id) === centers[i]
-      )
+    // Update centers only every few iterations to reduce computation
+    if (iteration % 3 === 0) {
+      // Clear cache as centers will change
+      distanceCache.clear()
       
-      if (clusterNodes.length > 0) {
-        // Find most central node in cluster
-        let bestNode = clusterNodes[0]
-        let minTotalDistance = Infinity
+      for (let i = 0; i < k; i++) {
+        const clusterNodes = graph.nodes.filter(n => 
+          assignments.get(n.id) === centers[i]
+        )
         
-        for (const candidate of clusterNodes) {
-          let totalDistance = 0
+        if (clusterNodes.length > 1) {
+          // Use a simpler heuristic: pick the node with minimum total distance to others
+          // But limit the search to avoid performance issues
+          const sampleSize = Math.min(clusterNodes.length, 10)
+          const sampledNodes = clusterNodes.slice(0, sampleSize)
           
-          for (const other of clusterNodes) {
-            if (candidate.id !== other.id) {
-              const result = bfs(graph, candidate.id, { directed })
-              totalDistance += result.distances.get(other.id) ?? Infinity
+          let bestNode = sampledNodes[0]
+          let minTotalDistance = Infinity
+          
+          // Pre-compute BFS for sampled nodes
+          const bfsResults = new Map<string, Map<string, number>>()
+          for (const candidate of sampledNodes) {
+            const result = bfs(graph, candidate.id, { directed })
+            bfsResults.set(candidate.id, result.distances)
+          }
+          
+          for (const candidate of sampledNodes) {
+            let totalDistance = 0
+            const distances = bfsResults.get(candidate.id)!
+            
+            for (const other of clusterNodes) {
+              if (candidate.id !== other.id) {
+                const dist = distances.get(other.id) ?? 10 // Use a penalty instead of Infinity
+                totalDistance += dist
+              }
+            }
+            
+            if (totalDistance < minTotalDistance) {
+              minTotalDistance = totalDistance
+              bestNode = candidate
             }
           }
           
-          if (totalDistance < minTotalDistance) {
-            minTotalDistance = totalDistance
-            bestNode = candidate
-          }
+          centers[i] = bestNode.id
         }
-        
-        centers[i] = bestNode.id
       }
     }
   }
@@ -350,7 +387,7 @@ function selectInitialCenters(graph: Graph, k: number): string[] {
   used.add(first.id)
   
   // Remaining centers are chosen based on distance from existing centers
-  while (centers.length < k) {
+  while (centers.length < k && centers.length < graph.nodes.length) {
     const distances = new Map<string, number>()
     
     for (const node of graph.nodes) {
@@ -369,29 +406,46 @@ function selectInitialCenters(graph: Graph, k: number): string[] {
     
     // Choose node with probability proportional to distance²
     const candidates = Array.from(distances.entries())
-    const weights = candidates.map(([_, d]) => d * d)
+    
+    if (candidates.length === 0) {
+      // No more candidates available
+      break
+    }
+    
+    // Handle Infinity distances by using a large finite value
+    const weights = candidates.map(([_, d]) => {
+      if (d === Infinity) return 1000000 // Use large value instead of Infinity
+      return d * d
+    })
     const totalWeight = weights.reduce((a, b) => a + b, 0)
     
-    if (totalWeight === 0) {
-      // All remaining nodes are disconnected, pick random
-      const remaining = graph.nodes.filter(n => !used.has(n.id))
+    if (totalWeight === 0 || !isFinite(totalWeight)) {
+      // All remaining nodes are disconnected or weight overflow, pick random
+      const remaining = candidates.filter(([id, _]) => !used.has(id))
       if (remaining.length > 0) {
-        const node = remaining[Math.floor(Math.random() * remaining.length)]
-        centers.push(node.id)
-        used.add(node.id)
+        const [nodeId] = remaining[Math.floor(Math.random() * remaining.length)]
+        centers.push(nodeId)
+        used.add(nodeId)
       } else {
         break
       }
     } else {
       // Weighted random selection
       let random = Math.random() * totalWeight
+      let selected = false
       for (let i = 0; i < candidates.length; i++) {
         random -= weights[i]
         if (random <= 0) {
           centers.push(candidates[i][0])
           used.add(candidates[i][0])
+          selected = true
           break
         }
+      }
+      // Fallback if no selection was made
+      if (!selected && candidates.length > 0) {
+        centers.push(candidates[0][0])
+        used.add(candidates[0][0])
       }
     }
   }
