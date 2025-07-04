@@ -14,6 +14,6 @@ export default defineConfig({
         statements: 80,
       },
     },
-    include: [],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
   },
 })
