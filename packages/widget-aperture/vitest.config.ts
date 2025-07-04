@@ -1,8 +1,20 @@
 import { defineConfig } from 'vitest/config'
 
-/** Temporary stub to bypass widget test suite until type errors are fixed */
 export default defineConfig({
   test: {
-    include: [],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    setupFiles: ['./src/test-setup.ts'],
+    globals: true,
+    environment: 'jsdom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      thresholds: {
+        branches: 80,
+        functions: 80,
+        lines: 80,
+        statements: 80,
+      },
+    },
   },
 })

@@ -1,10 +1,10 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react'
-import type { Graph, IdeaNode, Edge } from '@refinery/schema'
+import { useState, useRef, useEffect } from 'react'
+import type { Graph, IdeaNode } from '@refinery/schema'
 import { useApertureTheme } from '../theme/ApertureThemeProvider'
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 import { useFocusManagement } from '../hooks/useFocusManagement'
 import { announceToScreenReader, formatNodeLabel, getKeyboardInstructions } from '../utils/accessibility'
-import type { ApertureNode, ApertureEdge, ApertureViewport, ApertureInteractionState } from '../types'
+import type { ApertureNode, ApertureViewport, ApertureInteractionState } from '../types'
 
 export interface IdeaApertureProps {
   /** The graph data to visualize */
@@ -29,7 +29,7 @@ export function IdeaAperture({
   graph,
   selectedNodeIds = [],
   onSelectionChange,
-  onNodeActivate,
+  onNodeActivate: _onNodeActivate,
   enableKeyboardNavigation = true,
   className,
   ariaLabel = 'Idea aperture visualization',
@@ -50,7 +50,7 @@ export function IdeaAperture({
   })
   
   // Viewport state
-  const [viewport, setViewport] = useState<ApertureViewport>({
+  const [viewport, _setViewport] = useState<ApertureViewport>({
     center: { x: 0, y: 0 },
     zoom: 1,
     rotation: 0,
@@ -65,8 +65,8 @@ export function IdeaAperture({
   }))
   
   // Focus management
-  const { focusedId, focusById, moveFocus } = useFocusManagement({
-    initialFocusId: interactionState.focusedNode,
+  const { focusedId: _focusedId, focusById, moveFocus: _moveFocus } = useFocusManagement({
+    initialFocusId: interactionState.focusedNode || undefined,
     onFocusChange: (id) => {
       setInteractionState(prev => ({ ...prev, focusedNode: id }))
       if (id) {
