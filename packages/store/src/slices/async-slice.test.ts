@@ -21,22 +21,20 @@ describe('AsyncSlice', () => {
     // Mock setState to update the state
     setState = (fn: any) => {
       const updater = typeof fn === 'function' ? fn : () => fn
-      const draft = { ...state }
-      updater(draft)
-      state = draft
+      // Apply the updater to the state
+      state = updater(state)
+      // Update slice object with new state
+      Object.assign(slice, state)
     }
     
-    // Mock getState to return current state
-    getState = () => state
-    
     // Create slice with mocked functions
-    const sliceActions = createAsyncSlice(setState, getState)
+    const sliceActions = createAsyncSlice(setState, () => state)
     
     // Merge state and actions
     slice = { ...state, ...sliceActions }
     
-    // Update getState to include slice methods
-    getState = () => ({ ...state, ...sliceActions })
+    // Update getState to return current state after slice is created
+    getState = () => state
   })
 
   afterEach(() => {
