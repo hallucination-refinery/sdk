@@ -37,8 +37,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build packages
-        run: pnpm build
+      - name: Build packages (Turbo ordered)
+        run: pnpm exec tsc -b
 
       - name: Install TypeDoc
         run: pnpm add -D typedoc typedoc-plugin-markdown
