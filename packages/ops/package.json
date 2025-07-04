@@ -9,8 +9,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
   "files": [
@@ -18,12 +17,9 @@
     "src"
   ],
   "scripts": {
-    "build": "tsup && tsc -b",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit",
     "lint": "eslint src"
   },
   "dependencies": {
@@ -32,7 +28,6 @@
   "devDependencies": {
     "@types/node": "^20.17.15",
     "@vitest/coverage-v8": "^2.1.8",
-    "tsup": "^8.0.1",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },

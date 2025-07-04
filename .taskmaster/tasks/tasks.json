@@ -141,11 +141,22 @@
         ],
         "priority": "high",
         "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Test taskmaster functionality",
+        "description": "Verify that taskmaster commands work correctly for task management including listing, updating status, and displaying task details.",
+        "details": "Test all taskmaster CLI commands to ensure proper functionality. Verify 'task-master list' displays tasks correctly with proper formatting, status indicators, and priority levels. Test 'task-master next' returns the highest priority pending task. Verify 'task-master show <id>' displays complete task details including description, implementation details, test strategy, and dependencies. Test 'task-master set-status --id=<id> --status=<status>' updates task status correctly for all valid statuses (pending, in-progress, done). Test 'task-master update' command for modifying task properties. Verify error handling for invalid task IDs, invalid status values, and malformed commands. Test that task dependencies are properly displayed and respected. Ensure JSON file integrity is maintained after all operations.",
+        "testStrategy": "Run each taskmaster command with valid and invalid inputs to verify proper behavior and error handling. Test edge cases like non-existent task IDs, invalid status values, and concurrent access scenarios. Verify that the tasks.json file remains valid JSON after all operations. Test the command output formatting for readability and consistency. Verify that task dependencies are correctly resolved and displayed.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-07-02T21:33:31.640Z",
-      "updated": "2025-07-04T00:29:05.489Z",
+      "updated": "2025-07-04T15:17:44.506Z",
       "description": "Tasks for master context"
     }
   },

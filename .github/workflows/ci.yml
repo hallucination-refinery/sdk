@@ -40,7 +40,7 @@ jobs:
       - name: Run linter
         run: pnpm run lint
 
-      - name: Build workspace (Turbo handles dependency order)
+      - name: Build workspace
         run: pnpm exec tsc -b tsconfig.build.json
 
       - name: Run tests with coverage

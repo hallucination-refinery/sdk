@@ -16,13 +16,10 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -b",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "dev": "tsc -b --watch",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit",
     "lint": "eslint src"
   },
   "dependencies": {

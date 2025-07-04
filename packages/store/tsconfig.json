@@ -13,6 +13,7 @@
   "include": ["src/**/*"],
   "exclude": ["**/*.test.ts", "**/*.spec.ts"],
   "references": [
-    { "path": "../schema" }
+    { "path": "../schema" },
+    { "path": "../ops" }
   ]
 }
