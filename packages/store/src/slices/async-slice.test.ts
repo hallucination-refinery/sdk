@@ -5,7 +5,7 @@ import type { AsyncJob } from '../types/state'
 describe('AsyncSlice', () => {
   let slice: ReturnType<typeof createAsyncSlice>
   let setState: any
-  let getState: any
+  let _getState: any
   let state: any
 
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('AsyncSlice', () => {
     slice = { ...state, ...sliceActions }
     
     // Update getState to return current state after slice is created
-    getState = () => state
+    _getState = () => state
   })
 
   afterEach(() => {

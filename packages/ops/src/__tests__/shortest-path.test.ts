@@ -215,7 +215,7 @@ describe('Shortest Path Algorithms', () => {
       
       // maxDepth limits BFS traversal depth
       // A->E shortest path is 2, but with maxDepth=1 we can't reach E
-      const dist1 = distance(graph, 'A', 'E', { maxDepth: 1 })
+      const _dist1 = distance(graph, 'A', 'E', { maxDepth: 1 })
       const dist2 = distance(graph, 'A', 'E', { maxDepth: 2 })
       
       // With current BFS implementation, nodes are discovered even if not processed

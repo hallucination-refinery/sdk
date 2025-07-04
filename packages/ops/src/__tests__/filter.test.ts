@@ -196,7 +196,7 @@ describe('Filter Utilities', () => {
       const graph = createTestGraph()
       
       // Check all degrees in directed mode
-      const allNodes = findNodesByDegree(graph, 0, Infinity, true)
+      const _allNodes = findNodesByDegree(graph, 0, Infinity, true)
       
       // Let's see what degrees each node has
       const degreesMap = new Map<string, number>()

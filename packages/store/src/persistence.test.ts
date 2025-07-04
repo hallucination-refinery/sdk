@@ -14,7 +14,6 @@ import {
   validateSerializedState
 } from './persistence'
 import type { RefineryStore } from './store'
-import type { IdeaNode, Edge } from '@refinery/schema'
 import type { SerializedState } from './persistence'
 
 // Mock store

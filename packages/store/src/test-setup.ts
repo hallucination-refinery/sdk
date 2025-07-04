@@ -47,7 +47,7 @@ global.FileReader = class FileReader {
   readAsText(file: File) {
     // Simulate async read
     setTimeout(() => {
-      // @ts-ignore - accessing file content for test
+      // @ts-expect-error - accessing file content for test
       const content = file._content || file
       if (typeof content === 'string') {
         this.result = content

@@ -165,7 +165,7 @@ export function mergeGraphs(
           case 'keep-last':
             nodeMap.set(node.id, node)
             break
-          case 'rename':
+          case 'rename': {
             let newId = node.id
             let counter = 1
             while (nodeMap.has(newId)) {
@@ -173,6 +173,7 @@ export function mergeGraphs(
             }
             nodeMap.set(newId, { ...node, id: newId })
             break
+          }
         }
       } else {
         nodeMap.set(node.id, node)
@@ -201,7 +202,7 @@ export function mergeGraphs(
           case 'keep-last':
             edgeMap.set(edge.id, edge)
             break
-          case 'rename':
+          case 'rename': {
             let newId = edge.id
             let counter = 1
             while (edgeMap.has(newId)) {
@@ -209,6 +210,7 @@ export function mergeGraphs(
             }
             edgeMap.set(newId, { ...edge, id: newId })
             break
+          }
         }
       } else {
         edgeMap.set(edge.id, edge)
