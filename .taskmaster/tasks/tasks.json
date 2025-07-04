@@ -38,11 +38,11 @@
         "id": 4,
         "title": "Build Store Package with Zustand State Management",
         "description": "Migrate from monolithic reducer to Zustand slice-based global state management system",
-        "details": "Create packages/store depending on @refinery/schema and @refinery/ops. Replace monolithic reducer with Zustand slices for graph state management. Implement typed actions that emit RendererCommand objects consumed by UI layers. Remove forceGraphRef coupling and global eventMux dependencies. Create state selectors and actions for graph manipulation. Ensure all state changes are immutable and properly typed.",
-        "testStrategy": "Unit test all store actions and state mutations. Test state persistence and hydration. Verify performance with large state objects and frequent updates.",
-        "priority": "medium",
+        "status": "done",
         "dependencies": [],
-        "status": "pending",
+        "priority": "medium",
+        "details": "Store package implementation is complete with Zustand slice-based state management, typed actions using RendererCommand pattern, memoized selectors, immutable state updates, persistence helpers, and comprehensive test coverage. Package builds successfully with TypeScript and is ready for integration by other packages.",
+        "testStrategy": "All tests passing (117/117). Unit tests cover store actions, state mutations, persistence, hydration, and performance with large state objects.",
         "subtasks": []
       },
       {
@@ -106,7 +106,7 @@
         "description": "The TypeScript build for the `ops` package was disabled to achieve a baseline green build. This task is to re-enable and fix any resulting TypeScript errors.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -115,7 +115,7 @@
         "description": "Test suites in the store, input, and widgets packages were disabled to achieve a baseline green build. This task is to re-enable them and fix any failing tests.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -128,11 +128,24 @@
         "dependencies": [],
         "status": "pending",
         "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Fix stalling clustering test in ops package",
+        "description": "Investigate and resolve the clustering test that is causing timeouts or infinite loops in the ops package test suite.",
+        "details": "Analyze the failing clustering test in packages/ops to identify the root cause of stalling behavior. Common issues include infinite loops in graph traversal algorithms, memory leaks in recursive functions, or incorrect termination conditions in clustering algorithms. Review the clustering implementation for proper handling of edge cases like disconnected graphs, self-loops, or circular references. Ensure proper timeout handling and resource cleanup in test scenarios. Update test data if needed to avoid pathological cases that cause performance degradation. Add debugging output to identify where the test hangs and implement proper error handling for edge cases.",
+        "testStrategy": "Run the specific clustering test in isolation to reproduce the stalling behavior. Add timeout limits to prevent infinite execution. Create unit tests for edge cases including empty graphs, single-node graphs, and disconnected components. Verify clustering algorithm correctness with known test datasets. Test performance with various graph sizes to ensure O(n) or O(n log n) complexity. Run full ops package test suite to ensure fix doesn't break other functionality.",
+        "status": "done",
+        "dependencies": [
+          3
+        ],
+        "priority": "high",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-07-02T21:33:31.640Z",
-      "updated": "2025-07-03T17:39:20.042Z",
+      "updated": "2025-07-04T00:29:05.489Z",
       "description": "Tasks for master context"
     }
   },
@@ -263,7 +276,9 @@
             "id": 2,
             "title": "Abstract react-three-fiber/r3f-forcegraph behind facade",
             "description": "Create abstraction layer to encapsulate react-three-fiber and r3f-forcegraph libraries behind a clean interface",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "Design and implement facade pattern to abstract 3D rendering libraries. Create RendererFacade class that wraps react-three-fiber and r3f-forcegraph functionality, providing simplified API for graph rendering operations while hiding implementation details.",
             "status": "pending",
             "testStrategy": ""
@@ -272,7 +287,9 @@
             "id": 3,
             "title": "Implement RendererCommand consumption system",
             "description": "Build command pattern system to handle rendering operations through structured commands",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "Create RendererCommand interface and command processor to handle rendering operations. Implement command queue system with proper batching, error handling, and state management. Include commands for node/edge creation, updates, and deletions.",
             "status": "pending",
             "testStrategy": ""
@@ -281,7 +298,9 @@
             "id": 4,
             "title": "Create React Canvas component",
             "description": "Develop the main React component that integrates the rendering system with React application",
-            "dependencies": [3],
+            "dependencies": [
+              3
+            ],
             "details": "Build Canvas React component that uses the RendererCommand system and facade. Implement proper React lifecycle management, ref handling, and integration with the command processing system. Include props interface for configuration and event handling.",
             "status": "pending",
             "testStrategy": ""
@@ -290,7 +309,9 @@
             "id": 5,
             "title": "Optimize for 60 FPS performance with 1k nodes",
             "description": "Implement performance optimizations to achieve 60 FPS rendering with 1000+ nodes",
-            "dependencies": [4],
+            "dependencies": [
+              4
+            ],
             "details": "Implement level-of-detail (LOD) rendering, frustum culling, instanced rendering for similar nodes, and efficient update batching. Add performance monitoring, memory management optimizations, and implement viewport-based rendering to maintain 60 FPS with 1k+ nodes.",
             "status": "pending",
             "testStrategy": ""
@@ -299,7 +320,9 @@
             "id": 6,
             "title": "Implement accessibility features for WCAG compliance",
             "description": "Add comprehensive accessibility features to meet WCAG compliance standards",
-            "dependencies": [5],
+            "dependencies": [
+              5
+            ],
             "details": "Implement ARIA labels, keyboard navigation support, screen reader compatibility, high contrast mode, focus management, and semantic HTML structure. Add accessibility testing and ensure compliance with WCAG 2.1 AA standards for 3D graph visualization.",
             "status": "pending",
             "testStrategy": ""
@@ -329,7 +352,9 @@
             "id": 2,
             "title": "Implement test data loading and 1k-node dataset generation",
             "description": "Create data generation utilities to produce 1000-node datasets with appropriate properties for canvas rendering and performance testing",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "Build data generators that create realistic node datasets with positions, connections, and properties suitable for performance benchmarking",
             "status": "pending",
             "testStrategy": ""
@@ -338,7 +363,10 @@
             "id": 3,
             "title": "Integrate Canvas component with performance monitoring",
             "description": "Connect the canvas rendering component with performance monitoring to track FPS and rendering metrics during node visualization",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "details": "Implement FPS tracking, render time measurement, and performance metrics collection while rendering the 1k-node dataset on canvas",
             "status": "pending",
             "testStrategy": ""
@@ -347,7 +375,10 @@
             "id": 4,
             "title": "Implement feature flags for FPS degradation on low-end hardware",
             "description": "Add feature flag system to simulate or handle FPS degradation scenarios on low-end hardware, ensuring 60 FPS target with 1k nodes",
-            "dependencies": [1, 3],
+            "dependencies": [
+              1,
+              3
+            ],
             "details": "Create feature flags to toggle performance optimizations, implement degradation simulation, and ensure the demo maintains 60 FPS with 1000 nodes as success criteria",
             "status": "pending",
             "testStrategy": ""
@@ -377,7 +408,9 @@
             "id": 2,
             "title": "Create Core Graph Interaction Components",
             "description": "Implement overlay controls and navigation components for graph interaction functionality",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "Build React components for graph overlay controls, navigation elements, zoom controls, and pan functionality. Ensure components are properly integrated with the graph visualization system.",
             "status": "pending",
             "testStrategy": ""
@@ -386,7 +419,9 @@
             "id": 3,
             "title": "Implement Accessibility Features",
             "description": "Add comprehensive accessibility support with ARIA labels and full keyboard navigation",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "Implement ARIA attributes, keyboard event handlers, focus management, screen reader support, and ensure all interactive elements meet WCAG guidelines. Add proper semantic markup and announcements.",
             "status": "pending",
             "testStrategy": ""
@@ -395,7 +430,9 @@
             "id": 4,
             "title": "Design Theming System",
             "description": "Create a flexible theming architecture that allows external integrators to customize widget appearance",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "Build CSS-in-JS or CSS custom properties based theming system with design tokens, color schemes, typography options, and component style overrides. Provide clear theming API for external consumers.",
             "status": "pending",
             "testStrategy": ""
@@ -434,7 +471,9 @@
             "id": 2,
             "title": "Integrate MediaPipe Vision SDK",
             "description": "Install and configure MediaPipe Vision for hand gesture recognition with WebAssembly assets",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "Install @mediapipe/tasks-vision package. Configure WebAssembly file serving and loading. Create MediaPipe initialization service with proper error handling. Setup camera access permissions and video stream handling. Implement gesture model loading with fallback mechanisms.",
             "status": "pending",
             "testStrategy": ""
@@ -443,7 +482,9 @@
             "id": 3,
             "title": "Implement Hand Gesture Recognition",
             "description": "Create hand tracking and gesture detection system using MediaPipe's hand landmarker",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "Implement HandGestureDetector class with real-time hand landmark detection. Create gesture classification logic for common gestures (point, grab, swipe, pinch). Add confidence thresholds and gesture smoothing. Implement gesture event emitter with debouncing.",
             "status": "pending",
             "testStrategy": ""
@@ -452,7 +493,9 @@
             "id": 4,
             "title": "Integrate Eleven Labs Voice API",
             "description": "Setup Eleven Labs SDK for voice processing and text-to-speech capabilities",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "Install elevenlabs SDK and configure API authentication. Create VoiceProcessor service with API key management. Implement voice synthesis methods with voice selection. Add audio playback handling with Web Audio API. Create error handling for API limits and failures.",
             "status": "pending",
             "testStrategy": ""
@@ -461,7 +504,9 @@
             "id": 5,
             "title": "Create Unified Intent Bus System",
             "description": "Build central event bus for coordinating intents from multiple input sources",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "Implement IntentBus class using EventEmitter pattern. Define Intent interface with source, type, confidence, and payload. Create intent priority and conflict resolution system. Add intent history tracking and replay capabilities. Implement intent filtering and subscription management.",
             "status": "pending",
             "testStrategy": ""
@@ -470,7 +515,10 @@
             "id": 6,
             "title": "Implement Gesture-to-Intent Mapping",
             "description": "Create mapping system to convert detected gestures into application intents",
-            "dependencies": [3, 5],
+            "dependencies": [
+              3,
+              5
+            ],
             "details": "Build GestureIntentMapper with configurable gesture-to-intent rules. Create default mapping profiles for common interactions. Implement context-aware gesture interpretation. Add gesture combination support for complex intents. Create gesture calibration and customization system.",
             "status": "pending",
             "testStrategy": ""
@@ -479,7 +527,10 @@
             "id": 7,
             "title": "Implement Voice-to-Intent Mapping",
             "description": "Build voice command processing and intent extraction system",
-            "dependencies": [4, 5],
+            "dependencies": [
+              4,
+              5
+            ],
             "details": "Create VoiceIntentParser using natural language processing. Implement command grammar definition system. Add voice command confidence scoring. Create voice feedback system using Eleven Labs TTS. Implement voice command history and learning.",
             "status": "pending",
             "testStrategy": ""
@@ -488,7 +539,10 @@
             "id": 8,
             "title": "Create Multimodal Coordination System",
             "description": "Implement system to coordinate and fuse inputs from multiple modalities",
-            "dependencies": [6, 7],
+            "dependencies": [
+              6,
+              7
+            ],
             "details": "Build MultimodalCoordinator to handle simultaneous gesture and voice inputs. Implement modality fusion logic with temporal alignment. Create conflict resolution for competing intents. Add multimodal gesture support (voice + gesture combinations). Implement performance monitoring and optimization.",
             "status": "pending",
             "testStrategy": ""
