@@ -1,5 +1,3 @@
-import React from 'react'
-import { useHUDTheme } from '../theme/HUDThemeProvider'
 import type { HUDOverlayProps } from '../types'
 
 export function HUDOverlay({
@@ -8,8 +6,6 @@ export function HUDOverlay({
   className,
   'aria-label': ariaLabel = 'HUD overlay',
 }: HUDOverlayProps) {
-  const theme = useHUDTheme()
-  
   if (!visible) return null
   
   return (

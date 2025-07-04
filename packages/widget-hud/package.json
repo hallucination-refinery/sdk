@@ -16,7 +16,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "echo 'widget build skipped'",
+    "build": "tsc -b",
     "clean": "rm -rf dist *.tsbuildinfo",
     "dev": "tsc -b --watch",
     "test": "vitest run",

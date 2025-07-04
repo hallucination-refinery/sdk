@@ -1,12 +1,11 @@
-import React from 'react'
 import { useHUDTheme } from '../theme/HUDThemeProvider'
 import type { GraphNavigatorProps } from '../types'
 
 export function GraphNavigator({
   graph,
-  viewportCenter = { x: 0, y: 0, z: 0 },
-  onNavigate,
-  miniMapEnabled = true,
+  viewportCenter: _viewportCenter = { x: 0, y: 0, z: 0 },
+  onNavigate: _onNavigate,
+  miniMapEnabled: _miniMapEnabled = true,
   className,
 }: GraphNavigatorProps) {
   const theme = useHUDTheme()

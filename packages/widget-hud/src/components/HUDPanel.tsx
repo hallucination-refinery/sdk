@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { useHUDTheme } from '../theme/HUDThemeProvider'
 import type { HUDPanelProps } from '../types'
 
@@ -27,10 +27,10 @@ export function HUDPanel({
 }: HUDPanelProps) {
   const theme = useHUDTheme()
   const panelRef = useRef<HTMLDivElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isResizing, setIsResizing] = useState(false)
-  const [panelPosition, setPanelPosition] = useState({ x: 0, y: 0 })
-  const [panelSize, setPanelSize] = useState({ width: minWidth, height: minHeight })
+  const [_isDragging, _setIsDragging] = useState(false)
+  const [_isResizing, setIsResizing] = useState(false)
+  const [panelPosition, _setPanelPosition] = useState({ x: 0, y: 0 })
+  const [panelSize, _setPanelSize] = useState({ width: minWidth, height: minHeight })
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape' && closable) {

@@ -95,7 +95,7 @@ export function ZoomControls({
           style={{
             width: orientation === 'vertical' ? '40px' : '100px',
             height: orientation === 'vertical' ? '100px' : '40px',
-            writingMode: orientation === 'vertical' ? 'bt-lr' : 'initial',
+            writingMode: orientation === 'vertical' ? 'vertical-lr' as any : 'initial',
             WebkitAppearance: 'slider-vertical',
           }}
         />

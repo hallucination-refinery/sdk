@@ -1,4 +1,4 @@
-import type { IdeaNode, Edge, Graph, Vector3 } from '@refinery/schema'
+import type { IdeaNode, Graph, Vector3 } from '@refinery/schema'
 
 // HUD positioning types
 export type HUDPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'

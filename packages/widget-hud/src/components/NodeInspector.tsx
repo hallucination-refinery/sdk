@@ -17,7 +17,6 @@ export function NodeInspector({
     if (node) {
       setEditedNode({
         label: node.label,
-        type: node.type,
         metadata: node.metadata,
       })
     }
@@ -40,10 +39,6 @@ export function NodeInspector({
   
   const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedNode(prev => ({ ...prev, label: e.target.value }))
-  }
-  
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setEditedNode(prev => ({ ...prev, type: e.target.value as IdeaNode['type'] }))
   }
   
   const handleSave = () => {
@@ -108,24 +103,6 @@ export function NodeInspector({
       </div>
       
       <div style={fieldStyle}>
-        <label htmlFor="node-type" style={labelStyle}>
-          Type
-        </label>
-        <select
-          id="node-type"
-          value={editedNode.type || node.type}
-          onChange={handleTypeChange}
-          disabled={readonly}
-          style={inputStyle}
-        >
-          <option value="concept">Concept</option>
-          <option value="idea">Idea</option>
-          <option value="question">Question</option>
-          <option value="reference">Reference</option>
-        </select>
-      </div>
-      
-      <div style={fieldStyle}>
         <label style={labelStyle}>Position</label>
         <div style={{ display: 'flex', gap: theme.spacing.sm }}>
           <input
@@ -153,7 +130,7 @@ export function NodeInspector({
         <label style={labelStyle}>Created</label>
         <input
           type="text"
-          value={new Date(node.timestamp).toLocaleString()}
+          value={node.createdAt ? new Date(node.createdAt).toLocaleString() : 'Unknown'}
           readOnly
           style={{
             ...inputStyle,
