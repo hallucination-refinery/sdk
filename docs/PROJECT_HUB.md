@@ -9,8 +9,8 @@ Refinery SDK is a modular, six-layer toolkit that brings a spatial, multimodal *
 ## 2 · Getting Started (2 min)
 
 1. `git clone https://github.com/hallucination-refinery/sdk && cd sdk`
-2. `pnpm install`
-3. `pnpm -r run build && pnpm -r exec vitest run` – should pass.
+2. `pnpm i --frozen-lockfile`
+3. `pnpm run build && pnpm test` – should pass.
 
 ## 3 · Live Roadmap
 

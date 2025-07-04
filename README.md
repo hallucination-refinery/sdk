@@ -54,11 +54,11 @@ console.log('Connection strength:', connections);
 // Render in 3D
 function App() {
   const store = createGraphStore(graph);
-  
+
   return (
-    <Canvas 
+    <Canvas
       store={store}
-      width="100%" 
+      width="100%"
       height="600px"
       options={{ targetFPS: 60 }}
     />
@@ -91,11 +91,11 @@ function App() {
 git clone https://github.com/your-org/refinery-sdk.git
 cd refinery-sdk
 
-# Install dependencies
-pnpm install
+# Install dependencies (exact versions)
+pnpm i --frozen-lockfile
 
-# Build all packages
-pnpm build
+# Build & type-check the entire workspace
+pnpm run build
 
 # Run tests with coverage
 pnpm test:coverage
