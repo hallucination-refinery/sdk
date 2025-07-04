@@ -13,7 +13,7 @@ The remainder of this document is Task Master + Claude Code reference, adapted f
 ```bash
 # Project Setup
 task-master init                                    # Initialize Task Master in current project
-task-master parse-prd docs/prd-sprint-1.md      # Generate tasks from PRD document
+task-master parse-prd .taskmaster/docs/prd-sprint-1.md      # Generate tasks from PRD document
 task-master models --setup                        # Configure AI models interactively
 
 # Daily Development Workflow
@@ -43,13 +43,20 @@ task-master generate                                         # Update task markd
 
 ## Key Files & Project Structure
 
-### Core Files
+### Core Taskmaster Files
 
 - `.taskmaster/tasks/tasks.json` - Main task data file (auto-managed)
 - `.taskmaster/config.json` - AI model configuration (use `task-master models` to modify)
 - `.taskmaster/docs/prd-sprint-1.md` - Product Requirements Document for parsing
 - `.taskmaster/tasks/*.txt` - Individual task files (auto-generated from tasks.json)
 - `.env` - API keys for CLI usage
+
+### Refinery SDK Canonical Docs
+
+- `docs/PROJECT_HUB.md` - **START HERE**. Single source-of-truth for project status, links, and norms.
+- `docs/guides/store-spec.md` - The "golden spec" for the current sprint's primary task.
+- `.taskmaster/scratchpads/` - Daily reasoning, logs, and notes. **Append-only**.
+- `.cursor/decision_log.yaml` - Log of all irreversible architectural or strategic decisions.
 
 ### Claude Code Integration Files
 
@@ -136,52 +143,19 @@ complexity_report // = task-master complexity-report
 
 ## Claude Code Workflow Integration
 
-### Standard Development Workflow
+### Refinery SDK Development Loop (OODA)
 
-#### 1. Project Initialization
+The standard loop for this project follows our "fast OODA loop" principle:
 
-```bash
-# Initialize Task Master
-task-master init
-
-# Create or obtain PRD, then parse it
-task-master parse-prd docs/prd-sprint-1.md
-
-# Analyze complexity and expand tasks
-task-master analyze-complexity --research
-task-master expand --all --research
-```
-
-If tasks already exist, another PRD can be parsed (with new information only!) using parse-prd with --append flag. This will add the generated tasks to the existing list of tasks..
-
-#### 2. Daily Development Loop
-
-```bash
-# Start each session
-task-master next                           # Find next available task
-task-master show <id>                     # Review task details
-
-# During implementation, check in code context into the tasks and subtasks
-task-master update-subtask --id=<id> --prompt="implementation notes..."
-
-# Complete tasks
-task-master set-status --id=<id> --status=done
-```
-
-#### 3. Multi-Claude Workflows
-
-For complex projects, use multiple Claude Code sessions:
-
-```bash
-# Terminal 1: Main implementation
-cd project && claude
-
-# Terminal 2: Testing and validation
-cd project-test-worktree && claude
-
-# Terminal 3: Documentation updates
-cd project-docs-worktree && claude
-```
+1.  **Orient**: Start every session by loading context from `@docs/PROJECT_HUB.md` and the current day's scratchpad.
+2.  **Decide**: Run `task-master next` to identify the highest-leverage task. If the task is complex, review its spec (e.g., `@docs/guides/store-spec.md`).
+3.  **Act**: Implement the task.
+    - Log all reasoning, trade-offs, and implementation details to the daily scratchpad (`@.taskmaster/scratchpads/YYYY-MM-DD.md`).
+    - Commit work in small, atomic, well-documented increments. Reference the Task ID in the commit message.
+4.  **Update**:
+    - Mark the task's progress using `task-master set-status --id=<id> --status=in-progress`.
+    - When complete, mark it `done` and log any key outcomes in the decision log if necessary.
+5.  Repeat.
 
 ### Custom Slash Commands
 
@@ -421,3 +395,11 @@ These commands make AI calls and may take up to a minute:
 ---
 
 _This guide ensures Claude Code has immediate access to Task Master's essential functionality for agentic development workflows._
+
+## Claude Code Best Practices for Refinery SDK
+
+### Context Management
+
+- **Always start with the Project Hub**: `@docs/PROJECT_HUB.md` is your entry point.
+- **Use the Scratchpad Religiously**: Your primary output, aside from code, should be the daily scratchpad. It is the narrative of your work. Document _why_ you are doing something before you do it.
+- **Update Taskmaster Continuously**: The `tasks.json` file must always reflect the true state of the project. Use `set-status` and `update-subtask` frequently.
