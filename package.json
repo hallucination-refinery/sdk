@@ -9,11 +9,11 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
+    "build": "tsc -b --clean tsconfig.build.json && tsc -b tsconfig.build.json",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "lint": "turbo run lint",
-    "type-check": "tsc -b tsconfig.build.json",
+    "type-check": "tsc -b --clean tsconfig.build.json && tsc -b tsconfig.build.json",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
     "docs": "typedoc",
