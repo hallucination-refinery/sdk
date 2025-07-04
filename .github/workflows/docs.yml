@@ -41,7 +41,7 @@ jobs:
         run: pnpm exec tsc -b tsconfig.build.json
 
       - name: Generate documentation
-        run: pnpm docs
+        run: pnpm run docs
 
       - name: Run tests with coverage
         run: pnpm test:coverage

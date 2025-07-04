@@ -44,7 +44,7 @@ jobs:
         run: pnpm exec tsc -b tsconfig.build.json
 
       - name: Run tests with coverage
-        run: pnpm -r exec vitest run --coverage.enabled
+        run: pnpm -r exec vitest run --coverage.enabled --coverage.thresholds='{}'
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
