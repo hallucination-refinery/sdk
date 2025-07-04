@@ -41,7 +41,7 @@ jobs:
         run: pnpm run lint
 
       - name: Build workspace (Turbo handles dependency order)
-        run: pnpm exec tsc -b
+        run: pnpm exec tsc -b tsconfig.build.json
 
       - name: Run tests with coverage
         run: pnpm -r exec vitest run --coverage
