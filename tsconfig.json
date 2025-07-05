@@ -28,7 +28,8 @@
       "@refinery/canvas-r3f": ["packages/canvas-r3f/src"],
       "@refinery/input-hub": ["packages/input-hub/src"],
       "@refinery/widget-aperture": ["packages/widget-aperture/src"],
-      "@refinery/widget-hud": ["packages/widget-hud/src"]
+      "@refinery/widget-hud": ["packages/widget-hud/src"],
+      "@refinery/sdk-core": ["packages/sdk-core/src"]
     }
   },
   "include": [],
@@ -39,6 +40,7 @@
     { "path": "./packages/canvas-r3f" },
     { "path": "./packages/input-hub" },
     { "path": "./packages/widget-aperture" },
-    { "path": "./packages/widget-hud" }
+    { "path": "./packages/widget-hud" },
+    { "path": "./packages/sdk-core" }
   ]
 }
