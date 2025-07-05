@@ -23,16 +23,21 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@react-three/drei": "^10.4.2",
+    "@react-three/fiber": "^9.1.2",
     "@refinery/schema": "workspace:*",
     "@refinery/store": "workspace:*",
-    "@react-three/fiber": "^9.1.2",
-    "@react-three/drei": "^10.4.2",
     "three": "0.176.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/node": "^20.17.15",
     "@types/react": "^19.0.3",
     "@types/three": "0.176.0",
+    "jsdom": "^26.0.0",
+    "react": "19.1.0",
+    "react-dom": "^19.1.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },
