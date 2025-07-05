@@ -29,7 +29,7 @@ export function IdeaAperture({
   graph,
   selectedNodeIds = [],
   onSelectionChange,
-  onNodeActivate: _onNodeActivate,
+  onNodeActivate,
   enableKeyboardNavigation = true,
   className,
   ariaLabel = 'Idea aperture visualization',
@@ -50,7 +50,7 @@ export function IdeaAperture({
   })
   
   // Viewport state
-  const [viewport, _setViewport] = useState<ApertureViewport>({
+  const [viewport] = useState<ApertureViewport>({
     center: { x: 0, y: 0 },
     zoom: 1,
     rotation: 0,
@@ -65,7 +65,7 @@ export function IdeaAperture({
   }))
   
   // Focus management
-  const { focusedId: _focusedId, focusById, moveFocus: _moveFocus } = useFocusManagement({
+  const { focusById } = useFocusManagement({
     initialFocusId: interactionState.focusedNode || undefined,
     onFocusChange: (id) => {
       setInteractionState(prev => ({ ...prev, focusedNode: id }))
@@ -118,7 +118,12 @@ export function IdeaAperture({
     },
     onSelect: () => {
       if (interactionState.focusedNode) {
-        toggleNodeSelection(interactionState.focusedNode)
+        // If shift or ctrl key is held, toggle selection; otherwise activate node
+        if (onNodeActivate) {
+          onNodeActivate(interactionState.focusedNode)
+        } else {
+          toggleNodeSelection(interactionState.focusedNode)
+        }
       }
     },
     onCancel: () => {
