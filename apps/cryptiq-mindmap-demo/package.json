@@ -11,7 +11,10 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.5"
+    "next": "15.3.5",
+    "@refinery/sdk-core": "workspace:*",
+    "@refinery/graph-forge": "workspace:*",
+    "@refinery/widget-aperture": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5",
