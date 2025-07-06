@@ -47,68 +47,131 @@ describe('forgeGraph', () => {
   })
 
   describe('forgeGraph function', () => {
-    it('should return a valid placeholder graph', async () => {
-      const result = await forgeGraph({ source: 'test.json' })
+    it('should load a valid graph from JSON file', async () => {
+      // Create a test JSON file
+      const testData = {
+        id: 'test-graph',
+        name: 'Test Graph',
+        nodes: [
+          { id: 'n1', label: 'Node 1', position: { x: 0, y: 0, z: 0 } },
+          { id: 'n2', label: 'Node 2', position: { x: 100, y: 0, z: 0 } }
+        ],
+        edges: [
+          { id: 'e1', source: 'n1', target: 'n2', type: 'relates-to' }
+        ]
+      }
       
-      // Validate result structure
-      expect(ForgeResultSchema.parse(result)).toBeDefined()
+      // Mock file system
+      const { writeFileSync, unlinkSync } = await import('fs')
+      const { tmpdir } = await import('os')
+      const { join } = await import('path')
       
-      // Check graph structure
-      expect(result.graph.nodes).toHaveLength(2)
-      expect(result.graph.edges).toHaveLength(1)
-      expect(result.graph.id).toMatch(/^forge-placeholder-\d+$/)
+      const testPath = join(tmpdir(), 'test-graph.json')
+      writeFileSync(testPath, JSON.stringify(testData))
       
-      // Check metadata
-      expect(result.metadata.nodeCount).toBe(2)
-      expect(result.metadata.edgeCount).toBe(1)
-      expect(result.metadata.format).toBe('json')
-      expect(result.metadata.source).toBe('test.json')
-      expect(result.metadata.loadTime).toBeGreaterThanOrEqual(0)
-      
-      // Check warnings
-      expect(result.warnings).toContain('Using placeholder implementation - actual loading not yet implemented')
+      try {
+        const result = await forgeGraph({ source: testPath })
+        
+        // Validate result structure
+        expect(ForgeResultSchema.parse(result)).toBeDefined()
+        
+        // Check graph structure
+        expect(result.graph.nodes).toHaveLength(2)
+        expect(result.graph.edges).toHaveLength(1)
+        expect(result.graph.id).toBe('test-graph')
+        expect(result.graph.name).toBe('Test Graph')
+        
+        // Check metadata
+        expect(result.metadata.nodeCount).toBe(2)
+        expect(result.metadata.edgeCount).toBe(1)
+        expect(result.metadata.format).toBe('json')
+        expect(result.metadata.source).toBe(testPath)
+        expect(result.metadata.loadTime).toBeGreaterThanOrEqual(0)
+        expect(result.metadata.loadTime).toBeLessThan(100) // Should be fast for 2 nodes
+        
+        // Check no warnings for valid graph
+        expect(result.warnings).toHaveLength(0)
+      } finally {
+        unlinkSync(testPath)
+      }
     })
 
     it('should validate the graph against schema when validate is true', async () => {
-      const result = await forgeGraph({ 
-        source: 'test.json',
-        validate: true 
-      })
+      const { writeFileSync, unlinkSync } = await import('fs')
+      const { tmpdir } = await import('os')
+      const { join } = await import('path')
       
-      // The graph should be valid according to GraphSchema
-      expect(() => GraphSchema.parse(result.graph)).not.toThrow()
+      const testPath = join(tmpdir(), 'validate-test.json')
+      writeFileSync(testPath, JSON.stringify({
+        nodes: [{ id: 'n1' }],
+        edges: []
+      }))
+      
+      try {
+        const result = await forgeGraph({ 
+          source: testPath,
+          validate: true 
+        })
+        
+        // The graph should be valid according to GraphSchema
+        expect(() => GraphSchema.parse(result.graph)).not.toThrow()
+      } finally {
+        unlinkSync(testPath)
+      }
     })
 
     it('should skip validation when validate is false', async () => {
-      // This should not throw even if we had an invalid graph
-      const result = await forgeGraph({ 
-        source: 'test.json',
-        validate: false 
-      })
+      const { writeFileSync, unlinkSync } = await import('fs')
+      const { tmpdir } = await import('os')
+      const { join } = await import('path')
       
-      expect(result).toBeDefined()
+      const testPath = join(tmpdir(), 'no-validate-test.json')
+      writeFileSync(testPath, JSON.stringify({
+        nodes: [{ id: 'n1' }],
+        edges: []
+      }))
+      
+      try {
+        // This should not throw even if we had an invalid graph
+        const result = await forgeGraph({ 
+          source: testPath,
+          validate: false 
+        })
+        
+        expect(result).toBeDefined()
+      } finally {
+        unlinkSync(testPath)
+      }
     })
   })
 
   describe('format-specific loaders', () => {
     it('forgeFromJSON should use json format', async () => {
-      const result = await forgeFromJSON('data.json')
-      expect(result.metadata.format).toBe('json')
+      const { writeFileSync, unlinkSync } = await import('fs')
+      const { tmpdir } = await import('os')
+      const { join } = await import('path')
+      
+      const testPath = join(tmpdir(), 'format-test.json')
+      writeFileSync(testPath, JSON.stringify({ nodes: [], edges: [] }))
+      
+      try {
+        const result = await forgeFromJSON(testPath)
+        expect(result.metadata.format).toBe('json')
+      } finally {
+        unlinkSync(testPath)
+      }
     })
 
-    it('forgeFromYAML should use yaml format', async () => {
-      const result = await forgeFromYAML('data.yaml')
-      expect(result.metadata.format).toBe('yaml')
+    it('forgeFromYAML should throw not implemented', async () => {
+      await expect(forgeFromYAML('data.yaml')).rejects.toThrow('yaml')
     })
 
-    it('forgeFromCSV should use csv format', async () => {
-      const result = await forgeFromCSV('data.csv')
-      expect(result.metadata.format).toBe('csv')
+    it('forgeFromCSV should throw not implemented', async () => {
+      await expect(forgeFromCSV('data.csv')).rejects.toThrow('csv')
     })
 
-    it('forgeFromGraphML should use graphml format', async () => {
-      const result = await forgeFromGraphML('data.graphml')
-      expect(result.metadata.format).toBe('graphml')
+    it('forgeFromGraphML should throw not implemented', async () => {
+      await expect(forgeFromGraphML('data.graphml')).rejects.toThrow('graphml')
     })
   })
 
@@ -128,44 +191,61 @@ describe('forgeGraph', () => {
     })
   })
 
-  describe('placeholder graph structure', () => {
-    it('should create valid nodes with required fields', async () => {
-      const result = await forgeGraph({ source: 'test.json' })
+  describe('edge validation', () => {
+    it('should warn about edges with invalid node references', async () => {
+      const { writeFileSync, unlinkSync } = await import('fs')
+      const { tmpdir } = await import('os')
+      const { join } = await import('path')
       
-      result.graph.nodes.forEach(node => {
-        expect(node.id).toBeTruthy()
-        expect(node.label).toBeTruthy()
-        expect(node.content).toBeTruthy()
-        expect(node.position).toBeDefined()
-        expect(node.metadata).toBeDefined()
-        expect(node.createdAt).toBeTruthy()
-        expect(node.updatedAt).toBeTruthy()
-      })
+      const testPath = join(tmpdir(), 'invalid-edges.json')
+      writeFileSync(testPath, JSON.stringify({
+        nodes: [{ id: 'n1' }, { id: 'n2' }],
+        edges: [
+          { id: 'e1', source: 'n1', target: 'n2' }, // valid
+          { id: 'e2', source: 'n1', target: 'n3' }, // invalid target
+          { id: 'e3', source: 'n4', target: 'n2' }  // invalid source
+        ]
+      }))
+      
+      try {
+        const result = await forgeGraph({ source: testPath })
+        
+        // Should only have 1 valid edge
+        expect(result.graph.edges).toHaveLength(1)
+        expect(result.graph.edges[0].id).toBe('e1')
+        
+        // Should have warnings about invalid edges
+        expect(result.warnings).toHaveLength(2)
+        expect(result.warnings[0]).toContain('e2')
+        expect(result.warnings[0]).toContain('non-existent')
+        expect(result.warnings[1]).toContain('e3')
+      } finally {
+        unlinkSync(testPath)
+      }
     })
 
-    it('should create valid edges with correct references', async () => {
-      const result = await forgeGraph({ source: 'test.json' })
+    it('should generate IDs when generateIds is true', async () => {
+      const { writeFileSync, unlinkSync } = await import('fs')
+      const { tmpdir } = await import('os')
+      const { join } = await import('path')
       
-      const nodeIds = result.graph.nodes.map(n => n.id)
+      const testPath = join(tmpdir(), 'no-ids.json')
+      writeFileSync(testPath, JSON.stringify({
+        nodes: [{ position: { x: 0, y: 0, z: 0 } }], // no id
+        edges: []
+      }))
       
-      result.graph.edges.forEach(edge => {
-        expect(edge.id).toBeTruthy()
-        expect(nodeIds).toContain(edge.source)
-        expect(nodeIds).toContain(edge.target)
-        expect(edge.type).toBe('relates-to')
-        expect(typeof edge.directed).toBe('boolean')
-        expect(edge.metadata).toBeDefined()
-        expect(edge.createdAt).toBeTruthy()
-        expect(edge.updatedAt).toBeTruthy()
-      })
-    })
-
-    it('should include forge metadata', async () => {
-      const result = await forgeGraph({ source: 'test.json' })
-      
-      expect(result.graph.metadata).toBeDefined()
-      expect(result.graph.metadata?.forgedAt).toBeTruthy()
-      expect(result.graph.metadata?.forgeVersion).toBe('0.0.0')
+      try {
+        const result = await forgeGraph({ 
+          source: testPath,
+          generateIds: true 
+        })
+        
+        // Should have generated an ID
+        expect(result.graph.nodes[0].id).toMatch(/^node-\d+-0$/)
+      } finally {
+        unlinkSync(testPath)
+      }
     })
   })
 })

@@ -83,7 +83,7 @@ describe('IdeaAperture', () => {
       </ApertureThemeProvider>
     )
 
-    const helpDialog = screen.getByTestId('aperture-help-dialog')
+    const helpDialog = screen.getByRole('dialog')
     expect(helpDialog).toBeInTheDocument()
     expect(helpDialog).toHaveTextContent(/Use arrow keys to navigate/)
   })
