@@ -10,14 +10,21 @@ import '@testing-library/jest-dom'
 // applied in the Vitest environment.
 // ---------------------------------------------------------------------------
 try {
-  // Dynamically import to avoid issues if react-dom/client not present
-
+  // Dynamically import react-dom/client then react-dom
   const ReactDOMClient = require('react-dom/client')
   if (ReactDOMClient?.createRoot) {
     const realCreateRoot = ReactDOMClient.createRoot
     ReactDOMClient.createRoot = (container: Element | null) => {
-      const safeContainer = container ?? (globalThis.document?.createElement?.('div') || undefined)
-      return realCreateRoot.call(ReactDOMClient, safeContainer)
+      const safe = container ?? (globalThis.document?.createElement?.('div') || undefined)
+      return realCreateRoot.call(ReactDOMClient, safe)
+    }
+  }
+  const ReactDOMCompat = require('react-dom')
+  if (ReactDOMCompat?.createRoot) {
+    const realCompatRoot = ReactDOMCompat.createRoot
+    ReactDOMCompat.createRoot = (container: Element | null) => {
+      const safe = container ?? (globalThis.document?.createElement?.('div') || undefined)
+      return realCompatRoot.call(ReactDOMCompat, safe)
     }
   }
 } catch {
