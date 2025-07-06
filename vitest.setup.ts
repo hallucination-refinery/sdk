@@ -15,7 +15,13 @@ try {
   if (ReactDOMClient?.createRoot) {
     const realCreateRoot = ReactDOMClient.createRoot
     ReactDOMClient.createRoot = (container: Element | null) => {
-      const safe = container ?? (globalThis.document?.createElement?.('div') || undefined)
+      let safe = container
+      if (!safe) {
+        safe = globalThis.document?.createElement?.('div') as Element
+        if (safe && globalThis.document?.body) {
+          globalThis.document.body.appendChild(safe)
+        }
+      }
       return realCreateRoot.call(ReactDOMClient, safe)
     }
   }
@@ -23,7 +29,13 @@ try {
   if (ReactDOMCompat?.createRoot) {
     const realCompatRoot = ReactDOMCompat.createRoot
     ReactDOMCompat.createRoot = (container: Element | null) => {
-      const safe = container ?? (globalThis.document?.createElement?.('div') || undefined)
+      let safe = container
+      if (!safe) {
+        safe = globalThis.document?.createElement?.('div') as Element
+        if (safe && globalThis.document?.body) {
+          globalThis.document.body.appendChild(safe)
+        }
+      }
       return realCompatRoot.call(ReactDOMCompat, safe)
     }
   }

@@ -1,0 +1,15 @@
+apps/animus-demo
+apps/cryptic-vault-demo
+apps/jam-session-demo
+packages/ai-ranker
+packages/convo-loop
+packages/embeddings
+packages/gesture-hands
+packages/graph-store
+packages/ideanode
+packages/input
+packages/interaction
+packages/shared
+packages/thinkable
+packages/view-three
+packages/voice

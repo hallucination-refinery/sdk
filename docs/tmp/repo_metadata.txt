@@ -1,0 +1,67 @@
+1. Repository metadata
+----------------------
+a) Repo URL and default branch name:
+origin	https://github.com/iamwallam/refinery-mono.git (fetch)
+origin	https://github.com/iamwallam/refinery-mono.git (push)
+
+Remote branches:
+  origin/HEAD -> origin/main
+  origin/chore/cursor-reorg
+  origin/chore/hud-skeleton
+  origin/codex/add-bidirectional-sync-for-dial-state
+  origin/codex/add-breadth-first-search-utility
+  origin/codex/add-jsontonodeslinks.ts-mapping-function
+  origin/codex/build-enrichconcept-helpers
+  origin/codex/create-cascadingcontext.ts-for-edge-and-node-styling
+  origin/codex/create-dual-axis-xy-pad-ui-component
+  origin/codex/create-enrich-module-and-integrate-with-animusscene
+  origin/codex/create-modalities-interaction-map.md-table
+  origin/codex/create-openai-realtime-voice-system
+  origin/codex/create-streamtranscriber-class
+  origin/codex/extend-interactionstate-with-dial-state
+  origin/codex/fix-or-remove-missing-helpers-in-/canvas-page
+  origin/codex/hook-animusscene-to-thinkable-graph-pipeline
+  origin/codex/implement-deriveinterwingle-v1
+  origin/codex/implement-elevenlabs-streamer-for-tts
+  origin/codex/implement-realtime-voice-client
+  origin/codex/incremental-cleanup-for-view-three
+  origin/codex/profile-and-optimize-performance-for-fps
+  origin/codex/re-enable-skipped-tests-and-fix-failures
+  origin/codex/rename-mylink-to-ideaedge-with-new-fields
+  origin/codex/review-agents.md-and-related-files
+  origin/codex/review-agents.md-and-relevant-files
+  origin/codex/run-clt-performance-test-for-150-node-graph
+  origin/codex/synchronize-dial-state-with-querystring
+  origin/codex/task-1-thinkable-skeleton
+  origin/codex/update-documentation-and-ci-setup
+  origin/decouple-depth
+  origin/demo/cryptic-vault
+  origin/demo/jam-session
+  origin/dial-demo
+  origin/esm-migration-continuation
+  origin/feat/hud-min-pass
+  origin/feat/image-enrichment-pipeline-testing
+  origin/feat/interaction-polish-phase2
+  origin/feat/phase-1-voice-loop
+  origin/feat/sprite-node-visuals
+  origin/feature/demo-node-visuals
+  origin/feature/dial-demo/TASK-13c-legacy-packages-lint-cleanup
+  origin/feature/gpt-concept-tree-integration
+  origin/fix/dial-graph-pipeline
+  origin/gw6lg4-codex/introduce-per-package-lint-barrier
+  origin/infra/codex-hardening
+  origin/main
+  origin/main-backup-2024-07-29
+  origin/refactor/hud-interface
+  origin/revert-13-codex/implement-elevenlabs-streamer-for-tts
+  origin/whd3sc-codex/run-clt-performance-test-for-150-node-graph
+  origin/z1upd8-codex/incremental-cleanup-for-view-three
+
+b) Current commit SHA of HEAD:
+6372b63fce84c6c86c5f6dc477e8d83144d235a6
+
+c) Node, pnpm, TypeScript, and Three.js versions:
+Node version: v22.13.1
+pnpm version: 9.6.0
+TypeScript version: 5.5.4
+Three.js version: 0.168.0

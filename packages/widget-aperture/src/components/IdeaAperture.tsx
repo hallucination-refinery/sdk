@@ -3,8 +3,13 @@ import type { Graph, IdeaNode } from '@refinery/schema'
 import { useApertureTheme } from '../theme/ApertureThemeProvider'
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 import { useFocusManagement } from '../hooks/useFocusManagement'
-import { announceToScreenReader, formatNodeLabel, getKeyboardInstructions } from '../utils/accessibility'
+import {
+  announceToScreenReader,
+  formatNodeLabel,
+  getKeyboardInstructions,
+} from '../utils/accessibility'
 import type { ApertureNode, ApertureViewport, ApertureInteractionState } from '../types'
+import { cn } from '../utils/cn'
 
 export interface IdeaApertureProps {
   /** The graph data to visualize */
@@ -39,7 +44,7 @@ export function IdeaAperture({
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [showHelpDialog, setShowHelpDialog] = useState(showHelp)
-  
+
   // Interaction state
   const [interactionState, setInteractionState] = useState<ApertureInteractionState>({
     selectedNodes: new Set(selectedNodeIds),
@@ -48,70 +53,73 @@ export function IdeaAperture({
     isDragging: false,
     isPanning: false,
   })
-  
+
   // Viewport state
   const [viewport] = useState<ApertureViewport>({
     center: { x: 0, y: 0 },
     zoom: 1,
     rotation: 0,
   })
-  
+
   // Convert graph nodes to aperture nodes with UI state
-  const apertureNodes: ApertureNode[] = graph.nodes.map(node => ({
+  const apertureNodes: ApertureNode[] = graph.nodes.map((node) => ({
     ...node,
-    isHighlighted: interactionState.selectedNodes.has(node.id) || interactionState.hoveredNode === node.id,
+    isHighlighted:
+      interactionState.selectedNodes.has(node.id) || interactionState.hoveredNode === node.id,
     isFocused: interactionState.focusedNode === node.id,
     animationState: 'idle' as const,
   }))
-  
+
   // Focus management
   const { focusById } = useFocusManagement({
     initialFocusId: interactionState.focusedNode || undefined,
     onFocusChange: (id) => {
-      setInteractionState(prev => ({ ...prev, focusedNode: id }))
+      setInteractionState((prev) => ({ ...prev, focusedNode: id }))
       if (id) {
-        const node = graph.nodes.find(n => n.id === id)
+        const node = graph.nodes.find((n) => n.id === id)
         if (node) {
-          announceToScreenReader(formatNodeLabel(node.label, undefined, getNodeConnectionCount(node.id)))
+          announceToScreenReader(
+            formatNodeLabel(node.label, undefined, getNodeConnectionCount(node.id))
+          )
         }
       }
     },
   })
-  
+
   // Keyboard navigation
   useKeyboardNavigation({
     enabled: enableKeyboardNavigation,
     onNavigate: (direction) => {
       // Navigate between nodes based on spatial position
-      const currentNode = graph.nodes.find(n => n.id === interactionState.focusedNode)
+      const currentNode = graph.nodes.find((n) => n.id === interactionState.focusedNode)
       if (!currentNode || !currentNode.position) return
-      
-      const candidates = graph.nodes.filter(n => n.id !== currentNode.id && n.position)
+
+      const candidates = graph.nodes.filter((n) => n.id !== currentNode.id && n.position)
       let nextNode: IdeaNode | undefined
-      
+
       switch (direction) {
         case 'up':
           nextNode = candidates
-            .filter(n => n.position!.y < currentNode.position!.y)
+            .filter((n) => n.position!.y < currentNode.position!.y)
             .sort((a, b) => b.position!.y - a.position!.y)[0]
           break
         case 'down':
           nextNode = candidates
-            .filter(n => n.position!.y > currentNode.position!.y)
+            .filter((n) => n.position!.y > currentNode.position!.y)
             .sort((a, b) => a.position!.y - b.position!.y)[0]
           break
         case 'left':
           nextNode = candidates
-            .filter(n => n.position!.x < currentNode.position!.x)
+            .filter((n) => n.position!.x < currentNode.position!.x)
             .sort((a, b) => b.position!.x - a.position!.x)[0]
           break
         case 'right':
           nextNode = candidates
-            .filter(n => n.position!.x > currentNode.position!.x)
+            .filter((n) => n.position!.x > currentNode.position!.x)
             .sort((a, b) => a.position!.x - b.position!.x)[0]
           break
       }
-      
+
       if (nextNode) {
         focusById(nextNode.id)
       }
@@ -134,14 +142,14 @@ export function IdeaAperture({
       announceToScreenReader(getKeyboardInstructions())
     },
   })
-  
+
   // Helper functions
   function getNodeConnectionCount(nodeId: string): number {
-    return graph.edges.filter(e => e.source === nodeId || e.target === nodeId).length
+    return graph.edges.filter((e) => e.source === nodeId || e.target === nodeId).length
   }
-  
+
   function toggleNodeSelection(nodeId: string) {
-    setInteractionState(prev => {
+    setInteractionState((prev) => {
       const newSelectedNodes = new Set(prev.selectedNodes)
       if (newSelectedNodes.has(nodeId)) {
         newSelectedNodes.delete(nodeId)
@@ -152,41 +160,41 @@ export function IdeaAperture({
       }
       return { ...prev, selectedNodes: newSelectedNodes }
     })
-    
+
     const newSelection = Array.from(interactionState.selectedNodes)
     onSelectionChange?.(newSelection)
   }
-  
+
   function clearSelection() {
-    setInteractionState(prev => ({
+    setInteractionState((prev) => ({
       ...prev,
       selectedNodes: new Set(),
       focusedNode: null,
     }))
     onSelectionChange?.([])
   }
-  
+
   // Render the aperture (simplified for this example)
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
-    
+
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    
+
     // Apply viewport transformation
     ctx.save()
     ctx.translate(canvas.width / 2 + viewport.center.x, canvas.height / 2 + viewport.center.y)
     ctx.scale(viewport.zoom, viewport.zoom)
     ctx.rotate(viewport.rotation)
-    
+
     // Draw edges
-    graph.edges.forEach(edge => {
-      const sourceNode = graph.nodes.find(n => n.id === edge.source)
-      const targetNode = graph.nodes.find(n => n.id === edge.target)
+    graph.edges.forEach((edge) => {
+      const sourceNode = graph.nodes.find((n) => n.id === edge.source)
+      const targetNode = graph.nodes.find((n) => n.id === edge.target)
       if (!sourceNode?.position || !targetNode?.position) return
-      
+
       ctx.beginPath()
       ctx.moveTo(sourceNode.position.x, sourceNode.position.y)
       ctx.lineTo(targetNode.position.x, targetNode.position.y)
@@ -194,21 +202,21 @@ export function IdeaAperture({
       ctx.lineWidth = 1
       ctx.stroke()
     })
-    
+
     // Draw nodes
-    apertureNodes.forEach(node => {
+    apertureNodes.forEach((node) => {
       if (!node.position) return
-      
+
       ctx.beginPath()
       ctx.arc(node.position.x, node.position.y, 20, 0, Math.PI * 2)
-      
+
       if (node.isHighlighted) {
         ctx.fillStyle = theme.colors.primary
       } else {
         ctx.fillStyle = theme.colors.surface
       }
       ctx.fill()
-      
+
       if (node.isFocused) {
         ctx.strokeStyle = theme.colors.borderFocus
         ctx.lineWidth = 3
@@ -218,7 +226,7 @@ export function IdeaAperture({
         ctx.lineWidth = 1
         ctx.stroke()
       }
-      
+
       // Draw label
       ctx.fillStyle = node.isHighlighted ? theme.colors.background : theme.colors.text
       ctx.font = `${theme.typography.fontWeight.medium} ${theme.typography.fontSize.sm} ${theme.typography.fontFamily}`
@@ -226,17 +234,18 @@ export function IdeaAperture({
       ctx.textBaseline = 'middle'
       ctx.fillText(node.label, node.position.x, node.position.y)
     })
-    
+
     ctx.restore()
   }, [graph, apertureNodes, viewport, theme])
-  
+
   return (
     <div
       ref={containerRef}
-      className={className}
-      role="application"
+      className={cn('refinery-aperture-root', className)}
       aria-label={ariaLabel}
+      role="application"
       tabIndex={0}
+      data-testid="idea-aperture"
       style={{
         position: 'relative',
         width: '100%',
@@ -256,14 +265,14 @@ export function IdeaAperture({
         }}
         aria-hidden="true"
       />
-      
+
       {/* Screen reader description */}
       <div className="sr-only" role="status" aria-live="polite">
         {`Graph with ${graph.nodes.length} nodes and ${graph.edges.length} connections. ${
           interactionState.selectedNodes.size
         } nodes selected.`}
       </div>
-      
+
       {/* Help dialog */}
       {showHelpDialog && (
         <div

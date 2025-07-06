@@ -1,0 +1,1 @@
+{"version":3,"file":"usePointerInput.d.ts","sourceRoot":"","sources":["../../../../packages/interaction/src/usePointerInput.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,aAAa,IAAI,iBAAiB,EAAE,MAAM,8CAA8C,CAAC;AAIvG,UAAU,sBAAsB;IAC9B,WAAW,EAAE,KAAK,CAAC,SAAS,CAAC,iBAAiB,GAAG,SAAS,CAAC,CAAC;CAC7D;AAED,wBAAgB,eAAe,CAAC,EAAE,WAAW,EAAE,EAAE,sBAAsB,QA8GtE"}

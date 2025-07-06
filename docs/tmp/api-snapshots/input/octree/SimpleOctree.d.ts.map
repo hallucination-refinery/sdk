@@ -1,0 +1,1 @@
+{"version":3,"file":"SimpleOctree.d.ts","sourceRoot":"","sources":["../../../../packages/input/src/octree/SimpleOctree.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,KAAK,MAAM,OAAO,CAAC;AAsE/B,qBAAa,YAAY;IACvB,OAAO,CAAC,IAAI,CAAa;gBAEb,OAAO,EAAE,KAAK,CAAC,QAAQ,EAAE;IAYrC,QAAQ,CAAC,GAAG,EAAE,KAAK,CAAC,GAAG,GAAG,KAAK,CAAC,QAAQ,EAAE;CAK3C"}

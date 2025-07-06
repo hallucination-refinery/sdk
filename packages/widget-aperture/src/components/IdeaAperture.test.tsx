@@ -3,7 +3,7 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { IdeaAperture } from './IdeaAperture'
 import { ApertureThemeProvider } from '../theme/ApertureThemeProvider'
-import type { Graph } from '@refinery/schema'
+import type { Graph, IdeaNode, Edge } from '@refinery/schema'
 
 // Mock canvas context
 const mockGetContext = vi.fn(() => ({
@@ -24,36 +24,31 @@ const mockGetContext = vi.fn(() => ({
 
 HTMLCanvasElement.prototype.getContext = mockGetContext as any
 
+const mockNodes: IdeaNode[] = [
+  {
+    id: 'node1',
+    label: 'Node 1',
+    position: { x: 0, y: 0, z: 0 },
+  },
+  {
+    id: 'node2',
+    label: 'Node 2',
+    position: { x: 100, y: 100, z: 0 },
+  },
+]
+
+const mockEdges: Edge[] = [
+  {
+    id: 'edge1',
+    source: 'node1',
+    target: 'node2',
+    type: 'relates-to',
+  },
+]
+
 const mockGraph: Graph = {
-  nodes: [
-    {
-      id: 'node1',
-      label: 'Node 1',
-      type: 'concept',
-      position: { x: 0, y: 0, z: 0 },
-      metadata: {},
-      timestamp: new Date().toISOString(),
-    },
-    {
-      id: 'node2',
-      label: 'Node 2',
-      type: 'idea',
-      position: { x: 100, y: 100, z: 0 },
-      metadata: {},
-      timestamp: new Date().toISOString(),
-    },
-  ],
-  edges: [
-    {
-      id: 'edge1',
-      source: 'node1',
-      target: 'node2',
-      relationship: 'relates-to',
-      metadata: {},
-      timestamp: new Date().toISOString(),
-    },
-  ],
-  metadata: {},
+  nodes: mockNodes,
+  edges: mockEdges,
 }
 
 describe('IdeaAperture', () => {
@@ -64,8 +59,9 @@ describe('IdeaAperture', () => {
       </ApertureThemeProvider>
     )
 
-    const aperture = screen.getByRole('application', { name: 'Idea aperture visualization' })
+    const aperture = screen.getByTestId('idea-aperture')
     expect(aperture).toBeInTheDocument()
+    expect(aperture).toHaveAttribute('aria-label', 'Idea aperture visualization')
     expect(aperture).toHaveAttribute('tabIndex', '0')
   })
 
@@ -87,7 +83,7 @@ describe('IdeaAperture', () => {
       </ApertureThemeProvider>
     )
 
-    const helpDialog = screen.getByRole('dialog', { name: /keyboard navigation/i })
+    const helpDialog = screen.getByTestId('aperture-help-dialog')
     expect(helpDialog).toBeInTheDocument()
     expect(helpDialog).toHaveTextContent(/Use arrow keys to navigate/)
   })
@@ -116,8 +112,8 @@ describe('IdeaAperture', () => {
       </ApertureThemeProvider>
     )
 
-    const aperture = screen.getByRole('application', { name: 'Custom aperture label' })
-    expect(aperture).toBeInTheDocument()
+    const aperture = screen.getByTestId('idea-aperture')
+    expect(aperture).toHaveAttribute('aria-label', 'Custom aperture label')
   })
 
   it('renders canvas element', () => {

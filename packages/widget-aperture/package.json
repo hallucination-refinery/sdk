@@ -23,9 +23,11 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@refinery/canvas-r3f": "workspace:*",
     "@refinery/schema": "workspace:*",
     "@refinery/store": "workspace:*",
-    "@refinery/canvas-r3f": "workspace:*"
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -34,9 +36,9 @@
     "@types/node": "^20.17.15",
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.3",
+    "jsdom": "^26.0.0",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "jsdom": "^26.0.0"
+    "vitest": "^2.1.8"
   },
   "peerDependencies": {
     "react": ">=19.0.0",
