@@ -1,6 +1,6 @@
 import { enableMapSet } from 'immer'
 import { vi } from 'vitest'
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 
 // Enable Immer MapSet plugin for Map and Set support
 enableMapSet()
