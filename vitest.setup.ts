@@ -1,5 +1,6 @@
 import { enableMapSet } from 'immer'
 import { vi } from 'vitest'
+import '@testing-library/jest-dom/extend-expect'
 
 // Enable Immer MapSet plugin for Map and Set support
 enableMapSet()
@@ -64,23 +65,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn(function (contextType: string) {
   return null
 }) as any
 
-// Mock document methods for DOM operations
-if (typeof document !== 'undefined') {
-  // Extend existing document mock if needed
-  const originalCreateElement = document.createElement.bind(document)
-  document.createElement = vi.fn((tagName: string) => {
-    const element = originalCreateElement(tagName)
-    if (tagName.toLowerCase() === 'a') {
-      // Mock anchor element for file downloads
-      Object.defineProperties(element, {
-        click: { value: vi.fn(), writable: true },
-        href: { value: '', writable: true },
-        download: { value: '', writable: true },
-      })
-    }
-    return element
-  }) as any
-}
+// No need to override document.createElement globally; individual tests can mock as needed.
 
 // Mock URL for blob operations
 global.URL = {
