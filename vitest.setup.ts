@@ -117,3 +117,13 @@ global.File = class File extends Blob {
     }
   }
 } as any
+
+// Provide no-op implementations for document.body appendChild/removeChild for tests using mocked elements
+if (typeof document !== 'undefined') {
+  if (!document.body.appendChild) {
+    ;(document.body as any).appendChild = () => {}
+  }
+  if (!document.body.removeChild) {
+    ;(document.body as any).removeChild = () => {}
+  }
+}
