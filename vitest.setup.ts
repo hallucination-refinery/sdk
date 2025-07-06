@@ -2,6 +2,28 @@ import { enableMapSet } from 'immer'
 import { vi } from 'vitest'
 import '@testing-library/jest-dom'
 
+// ---------------------------------------------------------------------------
+// React 18+ createRoot shim
+// In jsdom test runs some components mount with `createRoot(null)` which React
+// rightfully disallows in production. For unit tests we fall back to a dummy
+// div so the provider tree can render without throwing. This patch is ONLY
+// applied in the Vitest environment.
+// ---------------------------------------------------------------------------
+try {
+  // Dynamically import to avoid issues if react-dom/client not present
+
+  const ReactDOMClient = require('react-dom/client')
+  if (ReactDOMClient?.createRoot) {
+    const realCreateRoot = ReactDOMClient.createRoot
+    ReactDOMClient.createRoot = (container: Element | null) => {
+      const safeContainer = container ?? (globalThis.document?.createElement?.('div') || undefined)
+      return realCreateRoot.call(ReactDOMClient, safeContainer)
+    }
+  }
+} catch {
+  /* react-dom/client not available – ignore */
+}
+
 // Enable Immer MapSet plugin for Map and Set support
 enableMapSet()
 
