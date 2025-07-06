@@ -5,6 +5,9 @@ export default defineWorkspace([
     test: {
       include: ['packages/*/src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
       exclude: ['**/node_modules/**', '**/dist/**'],
+      environment: 'jsdom',
+      setupFiles: ['./vitest.setup.ts'],
+      globals: true,
       coverage: {
         enabled: true,
         provider: 'v8',

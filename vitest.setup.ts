@@ -18,6 +18,11 @@ global.localStorage = {
   },
 } as any
 
+// Ensure window.localStorage is the same as global.localStorage in jsdom
+if (typeof window !== 'undefined' && !window.localStorage) {
+  ;(window as any).localStorage = global.localStorage
+}
+
 // Mock HTMLCanvasElement.getContext for canvas operations
 HTMLCanvasElement.prototype.getContext = vi.fn(function (contextType: string) {
   if (contextType === '2d') {
