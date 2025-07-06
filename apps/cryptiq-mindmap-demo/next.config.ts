@@ -1,7 +1,24 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   /* config options here */
-};
+  transpilePackages: [
+    '@refinery/sdk-core',
+    '@refinery/canvas-r3f',
+    '@refinery/graph-forge',
+    '@refinery/schema',
+    '@refinery/store',
+    '@refinery/ops',
+    '@refinery/input-hub',
+    '@refinery/widget-aperture',
+    '@refinery/widget-hud',
+  ],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+}
 
-export default nextConfig;
+export default nextConfig

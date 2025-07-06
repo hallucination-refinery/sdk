@@ -19,7 +19,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@refinery/sdk-core": ["../../packages/sdk-core/src"],
+      "@refinery/canvas-r3f": ["../../packages/canvas-r3f/src"],
+      "@refinery/graph-forge": ["../../packages/graph-forge/src"],
+      "@refinery/schema": ["../../packages/schema/src"],
+      "@refinery/store": ["../../packages/store/src"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

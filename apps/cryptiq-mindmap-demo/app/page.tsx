@@ -1,15 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
-import { IdeaCanvas } from '@refinery/sdk-core'
-import { CanvasProvider, useCanvas } from '@refinery/canvas-r3f'
-import { forgeGraph } from '@refinery/graph-forge'
-import type { IdeaNode, Edge } from '@refinery/schema'
+import { IdeaAperture } from '@refinery/widget-aperture'
+import { ApertureThemeProvider } from '@refinery/widget-aperture'
+import type { Graph } from '@refinery/schema'
 
 // Generate sample data
-const generateSampleData = () => {
-  const nodes: IdeaNode[] = []
-  const edges: Edge[] = []
+const generateSampleGraph = (): Graph => {
+  const nodes = []
+  const edges = []
 
   // Create central node
   nodes.push({
@@ -84,55 +82,14 @@ const generateSampleData = () => {
   return { nodes, edges }
 }
 
-function MindMapCanvas() {
-  const { state, enqueueCommands } = useCanvas()
-
-  useEffect(() => {
-    const data = generateSampleData()
-    const forged = forgeGraph(data)
-
-    // Load the graph into canvas state
-    const commands = [
-      ...forged.nodes.map((node) => ({
-        type: 'ADD_NODE' as const,
-        payload: { node },
-      })),
-      ...forged.edges.map((edge) => ({
-        type: 'ADD_EDGE' as const,
-        payload: { edge },
-      })),
-    ]
-
-    enqueueCommands(commands)
-  }, [enqueueCommands])
-
-  return (
-    <IdeaCanvas
-      nodes={Array.from(state.nodes.values())}
-      edges={Array.from(state.edges.values())}
-      selectedNodeIds={state.selectedNodeIds}
-      selectedEdgeIds={state.selectedEdgeIds}
-      hoveredNodeId={state.hoveredNodeId}
-      hoveredEdgeId={state.hoveredEdgeId}
-      camera={state.camera}
-      zoom={state.zoom}
-      theme={state.theme}
-      highlightedNodes={state.highlightedNodes}
-      highlightedEdges={state.highlightedEdges}
-      onCommand={(cmd) => enqueueCommands([cmd])}
-      className="w-full h-full"
-    />
-  )
-}
-
 export default function Home() {
+  const graph = generateSampleGraph()
+
   return (
-    <main className="w-screen h-screen bg-gray-50">
-      <div className="h-full">
-        <CanvasProvider>
-          <MindMapCanvas />
-        </CanvasProvider>
-      </div>
+    <main className="w-screen h-screen">
+      <ApertureThemeProvider>
+        <IdeaAperture graph={graph} showHelp={false} ariaLabel="Cryptiq Mind Map Demo" />
+      </ApertureThemeProvider>
     </main>
   )
 }

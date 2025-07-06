@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm install && pnpm -w exec turbo run build --filter apps/cryptiq-mindmap-demo",
+  "outputDirectory": "apps/cryptiq-mindmap-demo/.next",
+  "installCommand": "pnpm install",
+  "framework": "nextjs"
+}
