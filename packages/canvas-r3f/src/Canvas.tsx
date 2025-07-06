@@ -3,6 +3,7 @@ import { Canvas as ThreeCanvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera, Stats } from '@react-three/drei'
 import * as THREE from 'three'
 import { useCanvas } from './CanvasProvider'
+import { NodeSprite } from './components'
 import type { IdeaNode, Edge } from '@refinery/schema'
 
 interface CanvasProps {
@@ -53,9 +54,16 @@ function Node({ node, selected, highlighted }: { node: IdeaNode; selected: boole
       </mesh>
       {/* Label */}
       {node.content && typeof node.content === 'object' && 'title' in node.content && (
-        <sprite position={[0, 1, 0]} scale={[2, 0.5, 1]}>
-          <spriteMaterial color="white" />
-        </sprite>
+        <NodeSprite
+          text={String(node.content.title)}
+          position={[0, 1, 0]}
+          scale={2}
+          color="#ffffff"
+          backgroundColor="#000000"
+          backgroundOpacity={0.7}
+          fontSize={32}
+          padding={8}
+        />
       )}
     </group>
   )
