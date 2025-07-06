@@ -1,0 +1,129 @@
+import { enableMapSet } from 'immer'
+import { vi } from 'vitest'
+
+// Enable Immer MapSet plugin for Map and Set support
+enableMapSet()
+
+// Mock localStorage for jsdom environment
+const localStorageData = new Map<string, string>()
+
+global.localStorage = {
+  getItem: vi.fn((key) => localStorageData.get(key) || null),
+  setItem: vi.fn((key, value) => localStorageData.set(key, value)),
+  removeItem: vi.fn((key) => localStorageData.delete(key)),
+  clear: vi.fn(() => localStorageData.clear()),
+  key: vi.fn((index) => Array.from(localStorageData.keys())[index] || null),
+  get length() {
+    return localStorageData.size
+  },
+} as any
+
+// Mock HTMLCanvasElement.getContext for canvas operations
+HTMLCanvasElement.prototype.getContext = vi.fn(function (contextType: string) {
+  if (contextType === '2d') {
+    return {
+      font: '',
+      fillStyle: '',
+      textAlign: 'left',
+      textBaseline: 'top',
+      measureText: vi.fn((text: string) => ({
+        width: text.length * 10, // Mock width calculation
+        actualBoundingBoxLeft: 0,
+        actualBoundingBoxRight: text.length * 10,
+        actualBoundingBoxAscent: 10,
+        actualBoundingBoxDescent: 2,
+        fontBoundingBoxAscent: 12,
+        fontBoundingBoxDescent: 3,
+      })),
+      fillText: vi.fn(),
+      fillRect: vi.fn(),
+      clearRect: vi.fn(),
+      strokeText: vi.fn(),
+      drawImage: vi.fn(),
+      getImageData: vi.fn(() => ({
+        data: new Uint8ClampedArray(4),
+        width: 1,
+        height: 1,
+      })),
+      putImageData: vi.fn(),
+      createImageData: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      scale: vi.fn(),
+      rotate: vi.fn(),
+      translate: vi.fn(),
+      transform: vi.fn(),
+      resetTransform: vi.fn(),
+    } as any
+  }
+  return null
+}) as any
+
+// Mock document methods for DOM operations
+if (typeof document !== 'undefined') {
+  // Extend existing document mock if needed
+  const originalCreateElement = document.createElement.bind(document)
+  document.createElement = vi.fn((tagName: string) => {
+    const element = originalCreateElement(tagName)
+    if (tagName.toLowerCase() === 'a') {
+      // Mock anchor element for file downloads
+      Object.defineProperties(element, {
+        click: { value: vi.fn(), writable: true },
+        href: { value: '', writable: true },
+        download: { value: '', writable: true },
+      })
+    }
+    return element
+  }) as any
+}
+
+// Mock URL for blob operations
+global.URL = {
+  ...global.URL,
+  createObjectURL: vi.fn(() => 'blob://mock-url'),
+  revokeObjectURL: vi.fn(),
+} as any
+
+// Mock FileReader for file operations
+global.FileReader = class FileReader {
+  result: string | ArrayBuffer | null = null
+  error: any = null
+  onload: ((event: any) => void) | null = null
+  onerror: (() => void) | null = null
+
+  readAsText(file: File) {
+    // Simulate async read
+    setTimeout(() => {
+      // @ts-expect-error - accessing file content for test
+      const content = file._content || file
+      if (typeof content === 'string') {
+        this.result = content
+        if (this.onload) {
+          this.onload({ target: { result: this.result } })
+        }
+      } else {
+        this.error = new Error('Failed to read file')
+        if (this.onerror) {
+          this.onerror()
+        }
+      }
+    }, 0)
+  }
+} as any
+
+// Mock File constructor
+global.File = class File extends Blob {
+  name: string
+  lastModified: number
+  _content?: string
+
+  constructor(bits: BlobPart[], name: string, options?: FilePropertyBag) {
+    super(bits, options)
+    this.name = name
+    this.lastModified = Date.now()
+    // Store content for test access
+    if (bits.length > 0 && typeof bits[0] === 'string') {
+      this._content = bits[0]
+    }
+  }
+} as any
