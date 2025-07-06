@@ -1,5 +1,4 @@
 import { useMemo, useRef } from 'react'
-import { Sprite } from '@react-three/fiber'
 import * as THREE from 'three'
 
 export interface NodeSpriteProps {
@@ -14,8 +13,6 @@ export interface NodeSpriteProps {
   padding?: number
   visible?: boolean
   opacity?: number
-  anchorX?: number | 'left' | 'center' | 'right'
-  anchorY?: number | 'top' | 'middle' | 'bottom'
 }
 
 function createTextTexture(
@@ -83,9 +80,7 @@ export function NodeSprite({
   backgroundOpacity = 0.5,
   padding = 16,
   visible = true,
-  opacity = 1,
-  anchorX = 'center',
-  anchorY = 'middle'
+  opacity = 1
 }: NodeSpriteProps) {
   const spriteRef = useRef<THREE.Sprite>(null)
   
@@ -101,12 +96,6 @@ export function NodeSprite({
     })
   }, [text, color, fontSize, fontFamily, backgroundColor, backgroundOpacity, padding])
   
-  // Calculate anchor values
-  const anchorXValue = typeof anchorX === 'number' ? anchorX : 
-    anchorX === 'left' ? 0 : anchorX === 'right' ? 1 : 0.5
-  const anchorYValue = typeof anchorY === 'number' ? anchorY :
-    anchorY === 'top' ? 1 : anchorY === 'bottom' ? 0 : 0.5
-  
   // Clean up texture on unmount
   useMemo(() => {
     return () => {
@@ -114,8 +103,10 @@ export function NodeSprite({
     }
   }, [texture])
   
-  // Calculate scale
-  const spriteScale = Array.isArray(scale) ? scale : [scale, scale, 1]
+  // Calculate scale - ensure it's a tuple type
+  const spriteScale: [number, number, number] = Array.isArray(scale) 
+    ? [scale[0], scale[1], scale[2] ?? 1] 
+    : [scale, scale, 1]
   
   return (
     <sprite

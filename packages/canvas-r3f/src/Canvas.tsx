@@ -53,9 +53,9 @@ function Node({ node, selected, highlighted }: { node: IdeaNode; selected: boole
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={intensity * 0.3} />
       </mesh>
       {/* Label */}
-      {node.content && typeof node.content === 'object' && 'title' in node.content && (
+      {(node.label || node.content) && (
         <NodeSprite
-          text={String(node.content.title)}
+          text={node.label || node.content || ''}
           position={[0, 1, 0]}
           scale={2}
           color="#ffffff"
