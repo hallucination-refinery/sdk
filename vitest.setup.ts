@@ -2,47 +2,6 @@ import { enableMapSet } from 'immer'
 import { vi } from 'vitest'
 import '@testing-library/jest-dom'
 
-// ---------------------------------------------------------------------------
-// React 18+ createRoot shim
-// In jsdom test runs some components mount with `createRoot(null)` which React
-// rightfully disallows in production. For unit tests we fall back to a dummy
-// div so the provider tree can render without throwing. This patch is ONLY
-// applied in the Vitest environment.
-// ---------------------------------------------------------------------------
-try {
-  // Dynamically import react-dom/client then react-dom
-  const ReactDOMClient = require('react-dom/client')
-  if (ReactDOMClient?.createRoot) {
-    const realCreateRoot = ReactDOMClient.createRoot
-    ReactDOMClient.createRoot = (container: Element | null) => {
-      let safe = container
-      if (!safe) {
-        safe = globalThis.document?.createElement?.('div') as Element
-        if (safe && globalThis.document?.body) {
-          globalThis.document.body.appendChild(safe)
-        }
-      }
-      return realCreateRoot.call(ReactDOMClient, safe)
-    }
-  }
-  const ReactDOMCompat = require('react-dom')
-  if (ReactDOMCompat?.createRoot) {
-    const realCompatRoot = ReactDOMCompat.createRoot
-    ReactDOMCompat.createRoot = (container: Element | null) => {
-      let safe = container
-      if (!safe) {
-        safe = globalThis.document?.createElement?.('div') as Element
-        if (safe && globalThis.document?.body) {
-          globalThis.document.body.appendChild(safe)
-        }
-      }
-      return realCompatRoot.call(ReactDOMCompat, safe)
-    }
-  }
-} catch {
-  /* react-dom/client not available – ignore */
-}
-
 // Enable Immer MapSet plugin for Map and Set support
 enableMapSet()
 
@@ -158,24 +117,3 @@ global.File = class File extends Blob {
     }
   }
 } as any
-
-// Provide no-op implementations for document.body appendChild/removeChild for tests using mocked elements
-if (typeof document !== 'undefined') {
-  ;(document.body as any).appendChild = () => {}
-  ;(document.body as any).removeChild = () => {}
-}
-
-// Stub DOM mutation helpers globally to avoid jsdom type checks in tests
-if (typeof Node !== 'undefined') {
-  // Override once; subsequent calls will use no-op implementation
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  Node.prototype.appendChild = function () {
-    /* no-op */
-  }
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  Node.prototype.removeChild = function () {
-    /* no-op */
-  }
-}
