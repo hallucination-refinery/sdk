@@ -1,0 +1,6642 @@
+{
+  "nodes": [
+    {
+      "id": "c5c5cb290",
+      "title": "authenticity",
+      "full_title": "authenticity",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mfaa26cb5"
+      ]
+    },
+    {
+      "id": "cfbf127ae",
+      "title": "stepping on toes",
+      "full_title": "stepping on toes",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mfaa26cb5"
+      ]
+    },
+    {
+      "id": "cf2bbf5ec",
+      "title": "apologize",
+      "full_title": "apologize",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb79191cc"
+      ]
+    },
+    {
+      "id": "cdf8bdcca",
+      "title": "conflicts",
+      "full_title": "conflicts",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb79191cc"
+      ]
+    },
+    {
+      "id": "cdd55b905",
+      "title": "repair relationships",
+      "full_title": "repair relationships",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb79191cc"
+      ]
+    },
+    {
+      "id": "c843d7870",
+      "title": "maintain relationships",
+      "full_title": "maintain relationships",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb79191cc"
+      ]
+    },
+    {
+      "id": "ceaa7c88f",
+      "title": "relationships",
+      "full_title": "relationships",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb79191cc",
+        "m8f66fa90",
+        "m1db1f40f",
+        "mdc91e536",
+        "m57dce9a7"
+      ]
+    },
+    {
+      "id": "c79a9247e",
+      "title": "tends to apologize",
+      "full_title": "tends to apologize",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb79191cc"
+      ]
+    },
+    {
+      "id": "c74ef33e8",
+      "title": "importance of balanc...",
+      "full_title": "importance of balancing",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m871d9117"
+      ]
+    },
+    {
+      "id": "c652b607a",
+      "title": "honesty",
+      "full_title": "honesty",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m871d9117",
+        "m30b7f8f8"
+      ]
+    },
+    {
+      "id": "cc742484d",
+      "title": "sensitivity",
+      "full_title": "sensitivity",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m871d9117"
+      ]
+    },
+    {
+      "id": "c8173ab2d",
+      "title": "making space",
+      "full_title": "making space",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m871d9117"
+      ]
+    },
+    {
+      "id": "c85aa9c70",
+      "title": "interactions",
+      "full_title": "interactions",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/21/2025, 1:07:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m871d9117"
+      ]
+    },
+    {
+      "id": "c13cebb4a",
+      "title": "comfort",
+      "full_title": "comfort",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/21/2025, 12:48:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb8613e2e"
+      ]
+    },
+    {
+      "id": "c55ba44c5",
+      "title": "movies",
+      "full_title": "movies",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb8613e2e",
+        "m39581aa1"
+      ]
+    },
+    {
+      "id": "c2800cc7f",
+      "title": "video games",
+      "full_title": "video games",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb8613e2e",
+        "m39581aa1"
+      ]
+    },
+    {
+      "id": "cff1d4018",
+      "title": "distractions",
+      "full_title": "distractions",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/21/2025, 12:48:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb8613e2e"
+      ]
+    },
+    {
+      "id": "ca59c85d0",
+      "title": "feeling anxious",
+      "full_title": "feeling anxious",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/21/2025, 12:48:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb8613e2e"
+      ]
+    },
+    {
+      "id": "c535c8110",
+      "title": "fantasy themes",
+      "full_title": "fantasy themes",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39581aa1"
+      ]
+    },
+    {
+      "id": "cbc52d6c2",
+      "title": "anxious times",
+      "full_title": "anxious times",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39581aa1"
+      ]
+    },
+    {
+      "id": "c33ca164a",
+      "title": "negative self-talk",
+      "full_title": "negative self-talk",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 9:36:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m87cbbbb6"
+      ]
+    },
+    {
+      "id": "c6361cb4f",
+      "title": "seeking ways",
+      "full_title": "seeking ways",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 9:36:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m87cbbbb6"
+      ]
+    },
+    {
+      "id": "cef78a38b",
+      "title": "manage it",
+      "full_title": "manage it",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 9:36:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m87cbbbb6"
+      ]
+    },
+    {
+      "id": "cee11cbb1",
+      "title": "user",
+      "full_title": "user",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "meb7fdfbd",
+        "m7b416c31",
+        "m5743c560",
+        "ma60bf3c3"
+      ]
+    },
+    {
+      "id": "ccffbc1ef",
+      "title": "strategies",
+      "full_title": "strategies",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "meb7fdfbd",
+        "m1db1f40f"
+      ]
+    },
+    {
+      "id": "cc4842cc4",
+      "title": "effectively",
+      "full_title": "effectively",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "meb7fdfbd"
+      ]
+    },
+    {
+      "id": "c74d36234",
+      "title": "feel comfortable",
+      "full_title": "feel comfortable",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "meb7fdfbd"
+      ]
+    },
+    {
+      "id": "cee99331f",
+      "title": "socially",
+      "full_title": "socially",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "meb7fdfbd"
+      ]
+    },
+    {
+      "id": "cdd956ea1",
+      "title": "personally",
+      "full_title": "personally",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "meb7fdfbd"
+      ]
+    },
+    {
+      "id": "c376b7f32",
+      "title": "Challenging situations",
+      "full_title": "Challenging situations",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m76b02300"
+      ]
+    },
+    {
+      "id": "c56eb31b9",
+      "title": "Helping others",
+      "full_title": "Helping others",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m76b02300"
+      ]
+    },
+    {
+      "id": "cfb053573",
+      "title": "Find hope",
+      "full_title": "Find hope",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m76b02300"
+      ]
+    },
+    {
+      "id": "cedcb24bc",
+      "title": "Find lessons",
+      "full_title": "Find lessons",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m76b02300"
+      ]
+    },
+    {
+      "id": "c7d7f4b95",
+      "title": "Feel supported",
+      "full_title": "Feel supported",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m76b02300"
+      ]
+    },
+    {
+      "id": "c2f12bdee",
+      "title": "Emotional situations",
+      "full_title": "Emotional situations",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m76b02300",
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "c25d961aa",
+      "title": "prayer",
+      "full_title": "prayer",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Faith & Spirituality",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc763a94",
+        "mff50465e",
+        "m39c3f087",
+        "mf769a568",
+        "m30b7f8f8"
+      ]
+    },
+    {
+      "id": "c8e99e6ed",
+      "title": "cope",
+      "full_title": "cope",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc763a94"
+      ]
+    },
+    {
+      "id": "c70b1c9bd",
+      "title": "manage emotions",
+      "full_title": "manage emotions",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc763a94"
+      ]
+    },
+    {
+      "id": "cccbea023",
+      "title": "well-being",
+      "full_title": "well-being",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc763a94"
+      ]
+    },
+    {
+      "id": "c3a9984dd",
+      "title": "assisting others",
+      "full_title": "assisting others",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:08:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc763a94"
+      ]
+    },
+    {
+      "id": "c03a535e4",
+      "title": "guidance",
+      "full_title": "guidance",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:06 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mff50465e"
+      ]
+    },
+    {
+      "id": "cd163d4f3",
+      "title": "reassurance",
+      "full_title": "reassurance",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mff50465e",
+        "m57dce9a7"
+      ]
+    },
+    {
+      "id": "cef22c14d",
+      "title": "decisions",
+      "full_title": "decisions",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:06 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mff50465e"
+      ]
+    },
+    {
+      "id": "cb8c02222",
+      "title": "sense of correctness",
+      "full_title": "sense of correctness",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:06 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mff50465e"
+      ]
+    },
+    {
+      "id": "c4921c0e2",
+      "title": "AI",
+      "full_title": "AI",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m8f66fa90"
+      ]
+    },
+    {
+      "id": "c5fc25157",
+      "title": "plan",
+      "full_title": "plan",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m8f66fa90"
+      ]
+    },
+    {
+      "id": "c972c97bd",
+      "title": "explore",
+      "full_title": "explore",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m8f66fa90"
+      ]
+    },
+    {
+      "id": "c3851db91",
+      "title": "new ideas",
+      "full_title": "new ideas",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m8f66fa90"
+      ]
+    },
+    {
+      "id": "c8ae1016c",
+      "title": "career",
+      "full_title": "career",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m8f66fa90"
+      ]
+    },
+    {
+      "id": "c56ab24c1",
+      "title": "happy",
+      "full_title": "happy",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39c3f087"
+      ]
+    },
+    {
+      "id": "ce2fae53e",
+      "title": "confident",
+      "full_title": "confident",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39c3f087"
+      ]
+    },
+    {
+      "id": "cc770fdb2",
+      "title": "AI advice",
+      "full_title": "AI advice",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39c3f087"
+      ]
+    },
+    {
+      "id": "c7a55b332",
+      "title": "gut instinct",
+      "full_title": "gut instinct",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39c3f087"
+      ]
+    },
+    {
+      "id": "cf792d1af",
+      "title": "align",
+      "full_title": "align",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39c3f087"
+      ]
+    },
+    {
+      "id": "c82fb7647",
+      "title": "diverge",
+      "full_title": "diverge",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39c3f087"
+      ]
+    },
+    {
+      "id": "c8e7bbb6a",
+      "title": "trusts",
+      "full_title": "trusts",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m39c3f087"
+      ]
+    },
+    {
+      "id": "c0b006cd1",
+      "title": "embarrassed",
+      "full_title": "embarrassed",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7b416c31"
+      ]
+    },
+    {
+      "id": "c00285b01",
+      "title": "worried",
+      "full_title": "worried",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7b416c31"
+      ]
+    },
+    {
+      "id": "c25890dea",
+      "title": "vulnerable",
+      "full_title": "vulnerable",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7b416c31"
+      ]
+    },
+    {
+      "id": "c6d98fb14",
+      "title": "fearing",
+      "full_title": "fearing",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7b416c31"
+      ]
+    },
+    {
+      "id": "cfb56812c",
+      "title": "used against",
+      "full_title": "used against",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7b416c31"
+      ]
+    },
+    {
+      "id": "ca835c723",
+      "title": "risk of oversharing",
+      "full_title": "risk of oversharing",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:13 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m086f4692"
+      ]
+    },
+    {
+      "id": "c2241aef0",
+      "title": "accepting it",
+      "full_title": "accepting it",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:13 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m086f4692"
+      ]
+    },
+    {
+      "id": "cb7331b23",
+      "title": "being mindful",
+      "full_title": "being mindful",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:13 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m086f4692"
+      ]
+    },
+    {
+      "id": "c83b96b4f",
+      "title": "in the future",
+      "full_title": "in the future",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m086f4692",
+        "mea297787"
+      ]
+    },
+    {
+      "id": "c9d0588aa",
+      "title": "positive outcomes",
+      "full_title": "positive outcomes",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m810283ba"
+      ]
+    },
+    {
+      "id": "c48a098c0",
+      "title": "vulnerability",
+      "full_title": "vulnerability",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m810283ba"
+      ]
+    },
+    {
+      "id": "c27d54905",
+      "title": "stronger bonds",
+      "full_title": "stronger bonds",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m810283ba"
+      ]
+    },
+    {
+      "id": "c7301e7fb",
+      "title": "mutual sharing",
+      "full_title": "mutual sharing",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m810283ba"
+      ]
+    },
+    {
+      "id": "c434990c8",
+      "title": "support",
+      "full_title": "support",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m810283ba"
+      ]
+    },
+    {
+      "id": "cb5e4ead7",
+      "title": "calling someone",
+      "full_title": "calling someone",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb1457d4c"
+      ]
+    },
+    {
+      "id": "cd36a7b45",
+      "title": "distressful times",
+      "full_title": "distressful times",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb1457d4c"
+      ]
+    },
+    {
+      "id": "c60986435",
+      "title": "articulate the facts",
+      "full_title": "articulate the facts",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb1457d4c"
+      ]
+    },
+    {
+      "id": "cad773eab",
+      "title": "focusing on emotions",
+      "full_title": "focusing on emotions",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb1457d4c"
+      ]
+    },
+    {
+      "id": "ca5450742",
+      "title": "personal theories",
+      "full_title": "personal theories",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mb1457d4c"
+      ]
+    },
+    {
+      "id": "cd28770db",
+      "title": "beautiful environments",
+      "full_title": "beautiful environments",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m43822b94"
+      ]
+    },
+    {
+      "id": "c77ae9ae5",
+      "title": "quiet environments",
+      "full_title": "quiet environments",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m43822b94"
+      ]
+    },
+    {
+      "id": "c5af9982f",
+      "title": "secure environments",
+      "full_title": "secure environments",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m43822b94"
+      ]
+    },
+    {
+      "id": "cb39e5d5c",
+      "title": "self-care practice",
+      "full_title": "self-care practice",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m43822b94"
+      ]
+    },
+    {
+      "id": "c3c02fcb3",
+      "title": "positive feelings",
+      "full_title": "positive feelings",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf3cd863d"
+      ]
+    },
+    {
+      "id": "ca41157d2",
+      "title": "being seen",
+      "full_title": "being seen",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf3cd863d"
+      ]
+    },
+    {
+      "id": "c7c99ba8b",
+      "title": "negative feelings",
+      "full_title": "negative feelings",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf3cd863d",
+        "m2f3c5b7a"
+      ]
+    },
+    {
+      "id": "c384aafcf",
+      "title": "guilt",
+      "full_title": "guilt",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf3cd863d",
+        "me71cc2e6"
+      ]
+    },
+    {
+      "id": "ca78bb5af",
+      "title": "prioritizing own needs",
+      "full_title": "prioritizing own needs",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf3cd863d"
+      ]
+    },
+    {
+      "id": "ce8b72849",
+      "title": "over others' needs",
+      "full_title": "over others' needs",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf3cd863d"
+      ]
+    },
+    {
+      "id": "ccdcf7310",
+      "title": "Self-prioritization",
+      "full_title": "Self-prioritization",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me71cc2e6"
+      ]
+    },
+    {
+      "id": "c9c9eb43c",
+      "title": "Compensate for others",
+      "full_title": "Compensate for others",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me71cc2e6"
+      ]
+    },
+    {
+      "id": "c1a7a5d5d",
+      "title": "Balancing needs",
+      "full_title": "Balancing needs",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me71cc2e6"
+      ]
+    },
+    {
+      "id": "ccf640cac",
+      "title": "Personal needs",
+      "full_title": "Personal needs",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me71cc2e6"
+      ]
+    },
+    {
+      "id": "c5047db93",
+      "title": "Needs of others",
+      "full_title": "Needs of others",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me71cc2e6"
+      ]
+    },
+    {
+      "id": "c869352a0",
+      "title": "tendency to pace",
+      "full_title": "tendency to pace",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1ea4fb47"
+      ]
+    },
+    {
+      "id": "c1493cabc",
+      "title": "ruminate",
+      "full_title": "ruminate",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1ea4fb47"
+      ]
+    },
+    {
+      "id": "c76a3bf25",
+      "title": "self-dialogue",
+      "full_title": "self-dialogue",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1ea4fb47"
+      ]
+    },
+    {
+      "id": "c3650d69a",
+      "title": "upset",
+      "full_title": "upset",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1ea4fb47"
+      ]
+    },
+    {
+      "id": "c1f618a24",
+      "title": "process emotions",
+      "full_title": "process emotions",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1ea4fb47"
+      ]
+    },
+    {
+      "id": "c340cbdad",
+      "title": "perceive",
+      "full_title": "perceive",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "ceb399bca",
+      "title": "change",
+      "full_title": "change",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "cf738a9e1",
+      "title": "handling",
+      "full_title": "handling",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "ccf8292e9",
+      "title": "future situations",
+      "full_title": "future situations",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "c8ade5c49",
+      "title": "verbalizing feelings",
+      "full_title": "verbalizing feelings",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "c3c259fef",
+      "title": "current feelings",
+      "full_title": "current feelings",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "c5e2bab0e",
+      "title": "others",
+      "full_title": "others",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m5743c560"
+      ]
+    },
+    {
+      "id": "c1f9db45c",
+      "title": "find alternative ways",
+      "full_title": "find alternative ways",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m65276600"
+      ]
+    },
+    {
+      "id": "c1e4ad5b4",
+      "title": "assist others",
+      "full_title": "assist others",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m65276600"
+      ]
+    },
+    {
+      "id": "c9a1cd11b",
+      "title": "cannot provide help",
+      "full_title": "cannot provide help",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m65276600"
+      ]
+    },
+    {
+      "id": "cb4639457",
+      "title": "internal discomfort",
+      "full_title": "internal discomfort",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:13 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma51b6358"
+      ]
+    },
+    {
+      "id": "c17d356af",
+      "title": "meet expectations",
+      "full_title": "meet expectations",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:13 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma51b6358"
+      ]
+    },
+    {
+      "id": "cb71b3926",
+      "title": "expectations of others",
+      "full_title": "expectations of others",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:13 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma51b6358"
+      ]
+    },
+    {
+      "id": "cd305c2ff",
+      "title": "awkwardness",
+      "full_title": "awkwardness",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1db1f40f"
+      ]
+    },
+    {
+      "id": "c4b721a70",
+      "title": "declining requests",
+      "full_title": "declining requests",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1db1f40f"
+      ]
+    },
+    {
+      "id": "c657f8b8d",
+      "title": "help",
+      "full_title": "help",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1db1f40f"
+      ]
+    },
+    {
+      "id": "c0d25c673",
+      "title": "manage tension",
+      "full_title": "manage tension",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1db1f40f"
+      ]
+    },
+    {
+      "id": "ce898d890",
+      "title": "tension",
+      "full_title": "tension",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1db1f40f",
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "c04efe311",
+      "title": "respond with blame",
+      "full_title": "respond with blame",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m59bb9636"
+      ]
+    },
+    {
+      "id": "cd9f5bc4f",
+      "title": "respond with shame",
+      "full_title": "respond with shame",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m59bb9636"
+      ]
+    },
+    {
+      "id": "cfe17f210",
+      "title": "feeling rejected",
+      "full_title": "feeling rejected",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m59bb9636"
+      ]
+    },
+    {
+      "id": "cd5b5d6d1",
+      "title": "feeling hurt",
+      "full_title": "feeling hurt",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m59bb9636"
+      ]
+    },
+    {
+      "id": "ce029d95e",
+      "title": "improve communication",
+      "full_title": "improve communication",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:01:02 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m466e9287"
+      ]
+    },
+    {
+      "id": "cfdf1abed",
+      "title": "avoid cruelty",
+      "full_title": "avoid cruelty",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:01:02 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m466e9287"
+      ]
+    },
+    {
+      "id": "c2f075e79",
+      "title": "difficult interactions",
+      "full_title": "difficult interactions",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:01:02 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m466e9287"
+      ]
+    },
+    {
+      "id": "c1a54e072",
+      "title": "identify strategies",
+      "full_title": "identify strategies",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7300f466"
+      ]
+    },
+    {
+      "id": "ccb2b2f6c",
+      "title": "managing emotions",
+      "full_title": "managing emotions",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7300f466"
+      ]
+    },
+    {
+      "id": "ceeb65581",
+      "title": "constructively",
+      "full_title": "constructively",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7300f466"
+      ]
+    },
+    {
+      "id": "cb178b270",
+      "title": "challenging conversa...",
+      "full_title": "challenging conversations",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7300f466"
+      ]
+    },
+    {
+      "id": "ce0067c5c",
+      "title": "struggles",
+      "full_title": "struggles",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7300f466"
+      ]
+    },
+    {
+      "id": "cecee7df9",
+      "title": "faith",
+      "full_title": "faith",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Faith & Spirituality",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:59:06 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mc150d6d1"
+      ]
+    },
+    {
+      "id": "ccd81ff8f",
+      "title": "significant factor",
+      "full_title": "significant factor",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:59:06 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mc150d6d1"
+      ]
+    },
+    {
+      "id": "ca9946b8d",
+      "title": "survival",
+      "full_title": "survival",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:59:06 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mc150d6d1"
+      ]
+    },
+    {
+      "id": "cdacf98f1",
+      "title": "deep despair",
+      "full_title": "deep despair",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:59:06 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mc150d6d1"
+      ]
+    },
+    {
+      "id": "c7873dac5",
+      "title": "significant changes",
+      "full_title": "significant changes",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m9c89e6ce"
+      ]
+    },
+    {
+      "id": "cececa383",
+      "title": "serious crisis",
+      "full_title": "serious crisis",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m9c89e6ce"
+      ]
+    },
+    {
+      "id": "c3b0c869b",
+      "title": "reflects",
+      "full_title": "reflects",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m9c89e6ce"
+      ]
+    },
+    {
+      "id": "cc2bbbfee",
+      "title": "role of prayer",
+      "full_title": "role of prayer",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Faith & Spirituality",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m9c89e6ce"
+      ]
+    },
+    {
+      "id": "c9e36580a",
+      "title": "unanswered requests",
+      "full_title": "unanswered requests",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m9c89e6ce"
+      ]
+    },
+    {
+      "id": "c0492e1cf",
+      "title": "feelings of being un...",
+      "full_title": "feelings of being unloved",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mea297787"
+      ]
+    },
+    {
+      "id": "cea0d59fe",
+      "title": "feelings of being re...",
+      "full_title": "feelings of being rejected",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mea297787"
+      ]
+    },
+    {
+      "id": "c1ac0d342",
+      "title": "holding onto hope",
+      "full_title": "holding onto hope",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mea297787"
+      ]
+    },
+    {
+      "id": "ca3d2eb5a",
+      "title": "being valued",
+      "full_title": "being valued",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mea297787"
+      ]
+    },
+    {
+      "id": "cff96989a",
+      "title": "sense of belonging",
+      "full_title": "sense of belonging",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mea297787"
+      ]
+    },
+    {
+      "id": "c14952ea7",
+      "title": "chest",
+      "full_title": "chest",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "c50976366",
+      "title": "throat",
+      "full_title": "throat",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "c98df5000",
+      "title": "anxious",
+      "full_title": "anxious",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "c906c3f65",
+      "title": "breathing",
+      "full_title": "breathing",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "cfa52c07a",
+      "title": "focusing",
+      "full_title": "focusing",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "cceee4ce9",
+      "title": "actionable steps",
+      "full_title": "actionable steps",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "c0f7fb9ac",
+      "title": "alleviate tension",
+      "full_title": "alleviate tension",
+      "type": "outcome",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "maef553fd"
+      ]
+    },
+    {
+      "id": "c26769d05",
+      "title": "focus on tasks",
+      "full_title": "focus on tasks",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me543b0af"
+      ]
+    },
+    {
+      "id": "cf88d57e3",
+      "title": "significant impact",
+      "full_title": "significant impact",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me543b0af"
+      ]
+    },
+    {
+      "id": "c3a56aefd",
+      "title": "cope with anxiety",
+      "full_title": "cope with anxiety",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:55:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me543b0af"
+      ]
+    },
+    {
+      "id": "cd3af37c0",
+      "title": "anxiety",
+      "full_title": "anxiety",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "me543b0af",
+        "mdc91e536"
+      ]
+    },
+    {
+      "id": "ce8a87cd1",
+      "title": "select movies",
+      "full_title": "select movies",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma954aab0"
+      ]
+    },
+    {
+      "id": "cd3b05c25",
+      "title": "spontaneously",
+      "full_title": "spontaneously",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma954aab0"
+      ]
+    },
+    {
+      "id": "caa5eb943",
+      "title": "catches interest",
+      "full_title": "catches interest",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma954aab0"
+      ]
+    },
+    {
+      "id": "cda217c26",
+      "title": "at the moment",
+      "full_title": "at the moment",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma954aab0"
+      ]
+    },
+    {
+      "id": "c4f1d1909",
+      "title": "creativity",
+      "full_title": "creativity",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1528574c"
+      ]
+    },
+    {
+      "id": "ca0c391dc",
+      "title": "guide",
+      "full_title": "guide",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1528574c"
+      ]
+    },
+    {
+      "id": "cd25ec3ea",
+      "title": "working on products",
+      "full_title": "working on products",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1528574c"
+      ]
+    },
+    {
+      "id": "ca53a1f2f",
+      "title": "strict routine",
+      "full_title": "strict routine",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:53:45 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m1528574c"
+      ]
+    },
+    {
+      "id": "c96dcda94",
+      "title": "personal faith",
+      "full_title": "personal faith",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Faith & Spirituality",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc91e536"
+      ]
+    },
+    {
+      "id": "ced8ce15d",
+      "title": "courage",
+      "full_title": "courage",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Faith & Spirituality",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc91e536"
+      ]
+    },
+    {
+      "id": "c7b48bdfa",
+      "title": "uncertainty",
+      "full_title": "uncertainty",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mdc91e536"
+      ]
+    },
+    {
+      "id": "c88be5f44",
+      "title": "consistent communica...",
+      "full_title": "consistent communication",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m57dce9a7"
+      ]
+    },
+    {
+      "id": "cea08be1c",
+      "title": "feel secure",
+      "full_title": "feel secure",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m57dce9a7"
+      ]
+    },
+    {
+      "id": "c8ecfe6cf",
+      "title": "aftermath of breakup",
+      "full_title": "aftermath of breakup",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:19 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m0d588dbb"
+      ]
+    },
+    {
+      "id": "c5855a307",
+      "title": "perspective on trust",
+      "full_title": "perspective on trust",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:19 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m0d588dbb"
+      ]
+    },
+    {
+      "id": "c6b48a717",
+      "title": "long-distance relati...",
+      "full_title": "long-distance relationships",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:51:19 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m0d588dbb"
+      ]
+    },
+    {
+      "id": "cc56234bf",
+      "title": "reflecting internally",
+      "full_title": "reflecting internally",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m2f3c5b7a"
+      ]
+    },
+    {
+      "id": "c36965f1b",
+      "title": "seeking support",
+      "full_title": "seeking support",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m2f3c5b7a"
+      ]
+    },
+    {
+      "id": "c365a170a",
+      "title": "support from friends",
+      "full_title": "support from friends",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m2f3c5b7a"
+      ]
+    },
+    {
+      "id": "cb48197be",
+      "title": "step-by-step guidance",
+      "full_title": "step-by-step guidance",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7d365e59"
+      ]
+    },
+    {
+      "id": "c609144d7",
+      "title": "clear explanations",
+      "full_title": "clear explanations",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7d365e59"
+      ]
+    },
+    {
+      "id": "c1bd6aaf6",
+      "title": "detailed explanations",
+      "full_title": "detailed explanations",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7d365e59"
+      ]
+    },
+    {
+      "id": "c25a9ac40",
+      "title": "learning",
+      "full_title": "learning",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7d365e59"
+      ]
+    },
+    {
+      "id": "cfd668493",
+      "title": "working on technical...",
+      "full_title": "working on technical tasks",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7d365e59"
+      ]
+    },
+    {
+      "id": "c7859277f",
+      "title": "retro internet aesth...",
+      "full_title": "retro internet aesthetics",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:10 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6361d339"
+      ]
+    },
+    {
+      "id": "cc65f5535",
+      "title": "Studio Ghibli-style ...",
+      "full_title": "Studio Ghibli-style art",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:10 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6361d339"
+      ]
+    },
+    {
+      "id": "c3e3245cc",
+      "title": "nostalgic fantasy ad...",
+      "full_title": "nostalgic fantasy adventure",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:10 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6361d339"
+      ]
+    },
+    {
+      "id": "cc6f0738f",
+      "title": "appreciates",
+      "full_title": "appreciates",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:44:10 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6361d339"
+      ]
+    },
+    {
+      "id": "ca611af7d",
+      "title": "concise communication",
+      "full_title": "concise communication",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6af7f88b"
+      ]
+    },
+    {
+      "id": "c12bc654f",
+      "title": "engaging communication",
+      "full_title": "engaging communication",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6af7f88b"
+      ]
+    },
+    {
+      "id": "cc47cce08",
+      "title": "high-quality communi...",
+      "full_title": "high-quality communication",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6af7f88b"
+      ]
+    },
+    {
+      "id": "ceb9d11e5",
+      "title": "crafting messages",
+      "full_title": "crafting messages",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6af7f88b"
+      ]
+    },
+    {
+      "id": "c09300fce",
+      "title": "potential business p...",
+      "full_title": "potential business partners",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m6af7f88b"
+      ]
+    },
+    {
+      "id": "c478deb51",
+      "title": "strained relationship",
+      "full_title": "strained relationship",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m78ac8218"
+      ]
+    },
+    {
+      "id": "c1d3736ab",
+      "title": "superficial interact...",
+      "full_title": "superficial interactions",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m78ac8218"
+      ]
+    },
+    {
+      "id": "c892dec8f",
+      "title": "emotional boundary c...",
+      "full_title": "emotional boundary challenges",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m78ac8218"
+      ]
+    },
+    {
+      "id": "c2bd59755",
+      "title": "extreme near-sighted...",
+      "full_title": "extreme near-sightedness",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:25 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m0cfbf7f1"
+      ]
+    },
+    {
+      "id": "ce0d42452",
+      "title": "notably taller",
+      "full_title": "notably taller",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:25 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m0cfbf7f1"
+      ]
+    },
+    {
+      "id": "c86164a6f",
+      "title": "compared to family",
+      "full_title": "compared to family",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:25 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m0cfbf7f1"
+      ]
+    },
+    {
+      "id": "c82c6b22c",
+      "title": "Reflective conversat...",
+      "full_title": "Reflective conversations",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:13 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7dc56fad"
+      ]
+    },
+    {
+      "id": "c225ab6cd",
+      "title": "Philosophy",
+      "full_title": "Philosophy",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:13 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7dc56fad"
+      ]
+    },
+    {
+      "id": "c3d5f2683",
+      "title": "Theology",
+      "full_title": "Theology",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Faith & Spirituality",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:13 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7dc56fad"
+      ]
+    },
+    {
+      "id": "ce34d16d1",
+      "title": "Jungian archetypes",
+      "full_title": "Jungian archetypes",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:13 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m7dc56fad"
+      ]
+    },
+    {
+      "id": "c086172d2",
+      "title": "adaptable",
+      "full_title": "adaptable",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:03 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m3ea858e8"
+      ]
+    },
+    {
+      "id": "c7df2f6f9",
+      "title": "go with the flow",
+      "full_title": "go with the flow",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:03 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m3ea858e8"
+      ]
+    },
+    {
+      "id": "cfb1f5a76",
+      "title": "plans change",
+      "full_title": "plans change",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:03 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m3ea858e8"
+      ]
+    },
+    {
+      "id": "c3148c486",
+      "title": "unexpectedly",
+      "full_title": "unexpectedly",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:43:03 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m3ea858e8"
+      ]
+    },
+    {
+      "id": "cc8155878",
+      "title": "resilient",
+      "full_title": "resilient",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Anxiety & Coping",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma8d720e5"
+      ]
+    },
+    {
+      "id": "c1b857668",
+      "title": "strong obligation",
+      "full_title": "strong obligation",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma8d720e5"
+      ]
+    },
+    {
+      "id": "cb21b5dc1",
+      "title": "keep going",
+      "full_title": "keep going",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma8d720e5"
+      ]
+    },
+    {
+      "id": "ce0598a7a",
+      "title": "despite challenges",
+      "full_title": "despite challenges",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma8d720e5"
+      ]
+    },
+    {
+      "id": "cc0089e65",
+      "title": "strategy",
+      "full_title": "strategy",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:42 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf769a568"
+      ]
+    },
+    {
+      "id": "cd00ccf76",
+      "title": "positive mindset",
+      "full_title": "positive mindset",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:42 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf769a568"
+      ]
+    },
+    {
+      "id": "c2339842d",
+      "title": "setbacks",
+      "full_title": "setbacks",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:42 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "mf769a568"
+      ]
+    },
+    {
+      "id": "cffe18113",
+      "title": "immediately",
+      "full_title": "immediately",
+      "type": "trait",
+      "ring": 1,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma60bf3c3"
+      ]
+    },
+    {
+      "id": "c98ded198",
+      "title": "planning",
+      "full_title": "planning",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma60bf3c3"
+      ]
+    },
+    {
+      "id": "c7dc22b2c",
+      "title": "setting",
+      "full_title": "setting",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma60bf3c3"
+      ]
+    },
+    {
+      "id": "c0ed27a5f",
+      "title": "big personal goal",
+      "full_title": "big personal goal",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "ma60bf3c3"
+      ]
+    },
+    {
+      "id": "c8b20d363",
+      "title": "motivation",
+      "full_title": "motivation",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:12 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m44b53000"
+      ]
+    },
+    {
+      "id": "c695e0665",
+      "title": "happiness",
+      "full_title": "happiness",
+      "type": "emotion",
+      "ring": 0,
+      "cluster": "Personal Growth",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:12 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m44b53000"
+      ]
+    },
+    {
+      "id": "c2d0a70a3",
+      "title": "engaging with tasks",
+      "full_title": "engaging with tasks",
+      "type": "catalyst",
+      "ring": 0,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:42:12 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m44b53000"
+      ]
+    },
+    {
+      "id": "c01baf36b",
+      "title": "foundation",
+      "full_title": "foundation",
+      "type": "value",
+      "ring": 0,
+      "cluster": "Relationships",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m30b7f8f8"
+      ]
+    },
+    {
+      "id": "cc54fc001",
+      "title": "addressing needs",
+      "full_title": "addressing needs",
+      "type": "goal",
+      "ring": 2,
+      "cluster": "Work & Productivity",
+      "secret": false,
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": "",
+      "createdFrom": [
+        "m30b7f8f8"
+      ]
+    }
+  ],
+  "edges_causal": [
+    {
+      "id": "c8b20d363-c695e0665",
+      "source": "c8b20d363",
+      "target": "c695e0665",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Motivation is often linked to increased engagement and achievement, which can lead to higher levels of happiness.",
+      "firstDate": "6/18/2025, 11:42:12 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c8b20d363-c2d0a70a3",
+      "source": "c8b20d363",
+      "target": "c2d0a70a3",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Motivation positively influences the user's engagement with tasks, as maintaining motivation is linked to actively participating in activities.",
+      "firstDate": "6/18/2025, 11:42:12 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cee11cbb1-c7dc22b2c",
+      "source": "cee11cbb1",
+      "target": "c7dc22b2c",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's action of planning is directly influenced by the setting of a big personal goal, indicating a positive relationship between the two concepts.",
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c98ded198-c7dc22b2c",
+      "source": "c98ded198",
+      "target": "c7dc22b2c",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The act of setting a big personal goal creates a motivational context that encourages the user to engage in planning, indicating a positive influence.",
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c25d961aa-cc0089e65",
+      "source": "c25d961aa",
+      "target": "cc0089e65",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user utilizes prayer as a supportive strategy to foster a positive mindset, indicating a strong positive influence.",
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc8155878-ce0598a7a",
+      "source": "cc8155878",
+      "target": "ce0598a7a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The trait of being resilient suggests a strong ability to persevere and maintain motivation, which directly influences the capacity to continue despite challenges.",
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1b857668-ce0598a7a",
+      "source": "c1b857668",
+      "target": "ce0598a7a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The strong obligation serves as a motivational force that encourages resilience and perseverance in the face of challenges.",
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cb21b5dc1-ce0598a7a",
+      "source": "cb21b5dc1",
+      "target": "ce0598a7a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's resilience and sense of obligation to keep going directly influence their ability to face and overcome challenges.",
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c086172d2-c7df2f6f9",
+      "source": "c086172d2",
+      "target": "c7df2f6f9",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Being adaptable allows an individual to adjust to changes and uncertainties, which directly supports the ability to go with the flow.",
+      "firstDate": "6/18/2025, 11:43:03 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c086172d2-cfb1f5a76",
+      "source": "c086172d2",
+      "target": "cfb1f5a76",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Being adaptable allows an individual to effectively handle unexpected changes in plans, indicating a positive influence of adaptability on the ability to manage changing circumstances.",
+      "firstDate": "6/18/2025, 11:43:03 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7df2f6f9-cfb1f5a76",
+      "source": "c7df2f6f9",
+      "target": "cfb1f5a76",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The trait of being adaptable and going with the flow directly influences the ability to handle unexpected changes in plans, indicating a positive relationship.",
+      "firstDate": "6/18/2025, 11:43:03 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c225ab6cd-c3d5f2683",
+      "source": "c225ab6cd",
+      "target": "c3d5f2683",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Philosophy often provides foundational frameworks and critical thinking skills that influence theological discussions and interpretations.",
+      "firstDate": "6/18/2025, 11:43:13 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce0d42452-c86164a6f",
+      "source": "ce0d42452",
+      "target": "c86164a6f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Being notably taller compared to family may influence the perception of the user's physical traits, including their extreme near-sightedness, as it highlights a significant deviation from familial norms.",
+      "firstDate": "6/18/2025, 11:43:25 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c478deb51-c1d3736ab",
+      "source": "c478deb51",
+      "target": "c1d3736ab",
+      "weight": 0.8,
+      "sign": "-",
+      "reason": "A strained relationship often leads to superficial interactions, indicating a negative influence on the depth of the relationship.",
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c478deb51-c892dec8f",
+      "source": "c478deb51",
+      "target": "c892dec8f",
+      "weight": 0.8,
+      "sign": "-",
+      "reason": "A strained relationship often leads to difficulties in establishing and maintaining emotional boundaries, resulting in challenges in emotional interactions.",
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca611af7d-c12bc654f",
+      "source": "ca611af7d",
+      "target": "c12bc654f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Concise communication enhances clarity and focus, which can lead to more engaging interactions, especially in a business context where effective messaging is crucial.",
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca611af7d-cc47cce08",
+      "source": "ca611af7d",
+      "target": "cc47cce08",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Concise communication enhances the clarity and effectiveness of messages, which contributes to the overall quality of communication, especially in a business context.",
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca611af7d-ceb9d11e5",
+      "source": "ca611af7d",
+      "target": "ceb9d11e5",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Concise communication enhances the effectiveness of crafting messages by ensuring clarity and engagement, which is crucial when addressing potential business partners.",
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c12bc654f-cc47cce08",
+      "source": "c12bc654f",
+      "target": "cc47cce08",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Engaging communication is likely to enhance the quality of communication, as it captures attention and fosters better understanding, which is essential when crafting messages to potential business partners.",
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c12bc654f-ceb9d11e5",
+      "source": "c12bc654f",
+      "target": "ceb9d11e5",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Engaging communication enhances the effectiveness of crafting messages, making them more appealing and impactful for potential business partners.",
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc47cce08-ceb9d11e5",
+      "source": "cc47cce08",
+      "target": "ceb9d11e5",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "High-quality communication enhances the effectiveness of crafting messages, making them more engaging and concise for potential business partners.",
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7859277f-c3e3245cc",
+      "source": "c7859277f",
+      "target": "c3e3245cc",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's appreciation for retro internet aesthetics suggests a strong connection to nostalgic fantasy adventure visuals, as both concepts evoke a sense of nostalgia and a longing for past artistic styles.",
+      "firstDate": "6/18/2025, 11:44:10 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc65f5535-c3e3245cc",
+      "source": "cc65f5535",
+      "target": "c3e3245cc",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's appreciation for Studio Ghibli-style art suggests a strong connection to nostalgic fantasy aesthetics, which likely influences their interest in nostalgic fantasy advertisements.",
+      "firstDate": "6/18/2025, 11:44:10 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cb48197be-c609144d7",
+      "source": "cb48197be",
+      "target": "c609144d7",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Step-by-step guidance typically leads to clearer explanations, as it breaks down complex information into manageable parts, enhancing understanding.",
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cb48197be-c1bd6aaf6",
+      "source": "cb48197be",
+      "target": "c1bd6aaf6",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Step-by-step guidance often leads to a better understanding of detailed explanations, as it breaks down complex information into manageable parts.",
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cb48197be-cfd668493",
+      "source": "cb48197be",
+      "target": "cfd668493",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's preference for step-by-step guidance suggests that it positively influences their ability to work on technical tasks, as clear and detailed explanations can enhance understanding and execution.",
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c609144d7-c1bd6aaf6",
+      "source": "c609144d7",
+      "target": "c1bd6aaf6",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Clear explanations provide a foundation for understanding, which enhances the effectiveness of detailed explanations, especially in technical tasks.",
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1bd6aaf6-cfd668493",
+      "source": "c1bd6aaf6",
+      "target": "cfd668493",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Detailed explanations provide clarity and understanding, which are essential for effectively working on technical tasks.",
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7c99ba8b-cc56234bf",
+      "source": "c7c99ba8b",
+      "target": "cc56234bf",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Negative feelings often lead individuals to reflect internally as a way to process their emotions and understand their experiences.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7c99ba8b-c36965f1b",
+      "source": "c7c99ba8b",
+      "target": "c36965f1b",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Negative feelings often lead individuals to seek support from friends as a coping mechanism, indicating a positive influence.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc56234bf-c36965f1b",
+      "source": "cc56234bf",
+      "target": "c36965f1b",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Reflecting internally can lead to a better understanding of one's feelings, which may encourage the individual to seek support from friends as a way to process those feelings.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c36965f1b-c365a170a",
+      "source": "c36965f1b",
+      "target": "c365a170a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Seeking support is a proactive approach that directly leads to receiving support from friends, indicating a positive influence.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c8ecfe6cf-c6b48a717",
+      "source": "c8ecfe6cf",
+      "target": "c6b48a717",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "The aftermath of a breakup can lead to trust issues, which negatively influences the perception of long-distance relationships.",
+      "firstDate": "6/18/2025, 11:51:19 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd163d4f3-c88be5f44",
+      "source": "cd163d4f3",
+      "target": "c88be5f44",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Reassurance is a key factor in fostering consistent communication, as it helps individuals feel secure and valued in their relationships, leading to more open and frequent interactions.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd163d4f3-cea08be1c",
+      "source": "cd163d4f3",
+      "target": "cea08be1c",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Reassurance provides the necessary support and validation that contributes to an individual's sense of security in relationships.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd163d4f3-ceaa7c88f",
+      "source": "cd163d4f3",
+      "target": "ceaa7c88f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Reassurance is a key factor in fostering trust and security, which are essential for healthy relationships.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c88be5f44-ceaa7c88f",
+      "source": "c88be5f44",
+      "target": "ceaa7c88f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Consistent communication provides reassurance, which is essential for building and maintaining secure relationships.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cea08be1c-ceaa7c88f",
+      "source": "cea08be1c",
+      "target": "ceaa7c88f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Feeling secure is essential for building and maintaining healthy relationships, as it fosters trust and open communication.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd3af37c0-ced8ce15d",
+      "source": "cd3af37c0",
+      "target": "ced8ce15d",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Anxiety can lead individuals to develop courage as they confront their fears and uncertainties, particularly in challenging situations like relationships.",
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd3af37c0-c7b48bdfa",
+      "source": "cd3af37c0",
+      "target": "c7b48bdfa",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Anxiety often arises in situations of uncertainty, and the user's reliance on personal faith and courage suggests that anxiety can motivate individuals to confront and navigate uncertain circumstances.",
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c96dcda94-ced8ce15d",
+      "source": "c96dcda94",
+      "target": "ced8ce15d",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Personal faith can provide individuals with a sense of hope and strength, which may enhance their courage when facing uncertain situations, such as anxiety in relationships.",
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c96dcda94-ceaa7c88f",
+      "source": "c96dcda94",
+      "target": "ceaa7c88f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's reliance on personal faith to cope with anxiety suggests that personal faith positively influences their ability to navigate and maintain relationships.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ced8ce15d-c7b48bdfa",
+      "source": "ced8ce15d",
+      "target": "c7b48bdfa",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Courage can empower individuals to confront and navigate uncertainty, particularly in emotionally charged situations like relationships.",
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd3b05c25-cda217c26",
+      "source": "cd3b05c25",
+      "target": "cda217c26",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's spontaneous selection of movies indicates a direct influence of their immediate interests at the moment, suggesting a positive correlation between the two concepts.",
+      "firstDate": "6/18/2025, 11:53:56 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c26769d05-c3a56aefd",
+      "source": "c26769d05",
+      "target": "c3a56aefd",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Focusing on tasks can provide a sense of control and accomplishment, which may help in managing anxiety.",
+      "firstDate": "6/18/2025, 11:55:45 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3a56aefd-cd3af37c0",
+      "source": "c3a56aefd",
+      "target": "cd3af37c0",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Coping strategies, such as focusing on impactful tasks, are often employed to manage and reduce anxiety levels.",
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce898d890-c14952ea7",
+      "source": "ce898d890",
+      "target": "c14952ea7",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user experiences physical manifestations of tension in the chest, indicating a direct influence of the emotional state on the physical sensation.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce898d890-c50976366",
+      "source": "ce898d890",
+      "target": "c50976366",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The context indicates that tension, an emotional state, manifests physically in the throat, suggesting a direct influence of emotional tension on the physical sensation in the throat.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce898d890-c98df5000",
+      "source": "ce898d890",
+      "target": "c98df5000",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Tension is often a physical manifestation of anxiety, indicating a strong correlation where increased tension can lead to heightened feelings of anxiousness.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce898d890-c906c3f65",
+      "source": "ce898d890",
+      "target": "c906c3f65",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Tension can lead to physical sensations that affect breathing patterns, and controlled breathing techniques are often used to alleviate the symptoms of tension.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce898d890-cfa52c07a",
+      "source": "ce898d890",
+      "target": "cfa52c07a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Tension, as an emotional state, can significantly influence the ability to focus. The user experiences physical symptoms of tension that can distract from concentration, but they employ focusing techniques to manage and alleviate this tension.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce898d890-c0f7fb9ac",
+      "source": "ce898d890",
+      "target": "c0f7fb9ac",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The experience of tension directly influences the actions taken to alleviate it, as the user employs specific techniques to manage their emotional state.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c14952ea7-c50976366",
+      "source": "c14952ea7",
+      "target": "c50976366",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's experience of tension in both the chest and throat during anxiety suggests a direct influence, as both areas are commonly affected by stress responses.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c14952ea7-c906c3f65",
+      "source": "c14952ea7",
+      "target": "c906c3f65",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's experience of tension in the chest is directly linked to anxiety, and they utilize breathing techniques as a catalyst to alleviate this tension, indicating a positive influence of 'chest' on 'breathing'.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c50976366-c98df5000",
+      "source": "c50976366",
+      "target": "c98df5000",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user experiences physical tension in the throat as a direct response to feeling anxious, indicating a strong influence of the concept 'throat' on the emotion 'anxious'.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c50976366-c906c3f65",
+      "source": "c50976366",
+      "target": "c906c3f65",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Tension in the throat can impact breathing, and the user employs breathing techniques to alleviate this tension, indicating a positive influence of 'throat' on 'breathing'.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c50976366-c0f7fb9ac",
+      "source": "c50976366",
+      "target": "c0f7fb9ac",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The context indicates that tension in the throat is associated with anxiety, and the user employs techniques to alleviate this tension, suggesting a positive influence of the throat on the outcome of alleviating tension.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c98df5000-c0f7fb9ac",
+      "source": "c98df5000",
+      "target": "c0f7fb9ac",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's experience of anxiety leads to physical tension, and the use of breathing techniques and actionable steps is a direct method employed to alleviate that tension.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c906c3f65-cfa52c07a",
+      "source": "c906c3f65",
+      "target": "cfa52c07a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Breathing techniques can help reduce anxiety and tension, which in turn enhances the ability to focus on actionable steps.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cfa52c07a-c0f7fb9ac",
+      "source": "cfa52c07a",
+      "target": "c0f7fb9ac",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Focusing helps the user redirect their attention and manage anxiety, which in turn alleviates the physical tension experienced in the chest and throat.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0492e1cf-cea0d59fe",
+      "source": "c0492e1cf",
+      "target": "cea0d59fe",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Feelings of being unloved or rejected can lead to a desire for connection and belonging, which influences feelings of being respected or valued in the future.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0492e1cf-ca3d2eb5a",
+      "source": "c0492e1cf",
+      "target": "ca3d2eb5a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Feelings of being unloved or rejected can drive an individual to seek validation and a sense of belonging, indicating a positive influence on the goal of being valued.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0492e1cf-cff96989a",
+      "source": "c0492e1cf",
+      "target": "cff96989a",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Feelings of being unloved or rejected can drive an individual to seek a sense of belonging, as they hope to overcome negative emotions by finding acceptance and connection with others.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cea0d59fe-ca3d2eb5a",
+      "source": "cea0d59fe",
+      "target": "ca3d2eb5a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Feelings of being unloved or rejected can drive an individual to seek validation and a sense of belonging, indicating a positive influence of emotional states on the goal of being valued.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cea0d59fe-cff96989a",
+      "source": "cea0d59fe",
+      "target": "cff96989a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Feelings of being unloved or rejected can drive an individual to seek a sense of belonging, as they hold onto hope for future acceptance and value.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1ac0d342-ca3d2eb5a",
+      "source": "c1ac0d342",
+      "target": "ca3d2eb5a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Holding onto hope can positively influence the perception of being valued, as it fosters resilience and a belief in future acceptance and belonging.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1ac0d342-cff96989a",
+      "source": "c1ac0d342",
+      "target": "cff96989a",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Holding onto hope can positively influence a sense of belonging by fostering resilience and optimism, which may lead individuals to seek and create connections with others.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1ac0d342-c83b96b4f",
+      "source": "c1ac0d342",
+      "target": "c83b96b4f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Holding onto hope serves as a coping mechanism that positively influences the expectation of future value and belonging, suggesting a strong connection between the two concepts.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca3d2eb5a-cff96989a",
+      "source": "ca3d2eb5a",
+      "target": "cff96989a",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The desire to be valued can significantly enhance an individual's sense of belonging, as feeling valued often leads to stronger connections and acceptance within social groups.",
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7873dac5-cececa383",
+      "source": "c7873dac5",
+      "target": "cececa383",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "The lack of significant changes following a serious crisis suggests that while the crisis may have prompted reflection, it did not lead to the desired transformative actions.",
+      "firstDate": "6/18/2025, 11:58:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccd81ff8f-ca9946b8d",
+      "source": "ccd81ff8f",
+      "target": "ca9946b8d",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's reliance on faith as a significant factor suggests a positive influence on their ability to cope and survive during challenging times.",
+      "firstDate": "6/18/2025, 11:59:06 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a54e072-ccb2b2f6c",
+      "source": "c1a54e072",
+      "target": "ccb2b2f6c",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Identifying strategies is crucial for effectively managing emotions, especially in challenging conversations, as it provides the user with tools to navigate their feelings.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a54e072-ceeb65581",
+      "source": "c1a54e072",
+      "target": "ceeb65581",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Identifying strategies is essential for managing emotions constructively, as effective strategies can lead to better emotional regulation during challenging conversations.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a54e072-cb178b270",
+      "source": "c1a54e072",
+      "target": "cb178b270",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Identifying strategies is crucial for effectively managing emotions during challenging conversations, as it provides the user with tools to navigate emotional responses.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a54e072-ce0067c5c",
+      "source": "c1a54e072",
+      "target": "ce0067c5c",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Identifying strategies is crucial for managing emotions effectively, and struggles in this area indicate a direct influence of the ability to identify strategies on emotional management.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccb2b2f6c-ceeb65581",
+      "source": "ccb2b2f6c",
+      "target": "ceeb65581",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Managing emotions is crucial for engaging in constructive conversations, as it allows individuals to navigate challenges effectively and maintain a positive dialogue.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccb2b2f6c-cb178b270",
+      "source": "ccb2b2f6c",
+      "target": "cb178b270",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Managing emotions is crucial for effectively navigating challenging conversations, as it helps individuals respond thoughtfully rather than react impulsively.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ceeb65581-cb178b270",
+      "source": "ceeb65581",
+      "target": "cb178b270",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Constructive management of emotions is essential for navigating challenging conversations effectively, suggesting a strong positive influence.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cb178b270-ce0067c5c",
+      "source": "cb178b270",
+      "target": "ce0067c5c",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Challenging conversations often lead to emotional struggles, as individuals may find it difficult to manage their emotions effectively in such situations.",
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce029d95e-c2f075e79",
+      "source": "ce029d95e",
+      "target": "c2f075e79",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Improving communication can lead to more effective and empathetic interactions, reducing the likelihood of cruelty during difficult situations.",
+      "firstDate": "6/19/2025, 12:01:02 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c04efe311-cd9f5bc4f",
+      "source": "c04efe311",
+      "target": "cd9f5bc4f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The tendency to respond with blame can lead to feelings of shame in oneself or others, especially in contexts of rejection and hurt.",
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c04efe311-cfe17f210",
+      "source": "c04efe311",
+      "target": "cfe17f210",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The tendency to respond with blame is likely to exacerbate feelings of rejection, as blaming others can lead to increased emotional distress and a sense of isolation.",
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c04efe311-cd5b5d6d1",
+      "source": "c04efe311",
+      "target": "cd5b5d6d1",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The tendency to respond with blame is likely to exacerbate feelings of hurt, as blaming others can lead to increased emotional distress and a cycle of negative emotions.",
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd9f5bc4f-cfe17f210",
+      "source": "cd9f5bc4f",
+      "target": "cfe17f210",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The tendency to respond with shame is likely to exacerbate feelings of rejection, as shame can intensify emotional pain and reinforce negative self-perceptions.",
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd9f5bc4f-cd5b5d6d1",
+      "source": "cd9f5bc4f",
+      "target": "cd5b5d6d1",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The tendency to respond with shame is likely to amplify feelings of hurt, as shame can exacerbate emotional pain and reinforce negative self-perceptions when feeling rejected.",
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cfe17f210-cd5b5d6d1",
+      "source": "cfe17f210",
+      "target": "cd5b5d6d1",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Feeling rejected often leads to feelings of hurt, as rejection can trigger emotional pain and a sense of loss.",
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd305c2ff-ceaa7c88f",
+      "source": "cd305c2ff",
+      "target": "ceaa7c88f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Awkwardness can significantly impact relationships, especially when it arises from social interactions such as declining requests for help, leading to tension and potential misunderstandings.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd305c2ff-ce898d890",
+      "source": "cd305c2ff",
+      "target": "ce898d890",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Awkwardness in relationships can lead to increased tension, especially when one feels uncomfortable after declining requests for help.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ceaa7c88f-c657f8b8d",
+      "source": "ceaa7c88f",
+      "target": "c657f8b8d",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's experience of awkwardness in relationships after declining requests for help suggests that relationships can significantly influence the perception and willingness to offer help, indicating a positive correlation.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ceaa7c88f-ccffbc1ef",
+      "source": "ceaa7c88f",
+      "target": "ccffbc1ef",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's experiences in relationships, particularly the awkwardness following declined requests for help, indicate a direct influence on their ability to develop effective strategies for managing interpersonal tension.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ceaa7c88f-c0d25c673",
+      "source": "ceaa7c88f",
+      "target": "c0d25c673",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Relationships can significantly influence the ability to manage tension, as interpersonal dynamics often create situations where tension arises, especially when requests for help are declined.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ceaa7c88f-ce898d890",
+      "source": "ceaa7c88f",
+      "target": "ce898d890",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "The user's experience of awkwardness in relationships after declining requests for help indicates that relationships can lead to negative emotional states such as tension.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c657f8b8d-ccffbc1ef",
+      "source": "c657f8b8d",
+      "target": "ccffbc1ef",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's experience of awkwardness in relationships after declining requests for help suggests that the lack of help influences the development of effective strategies to manage relational tension.",
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c657f8b8d-c0d25c673",
+      "source": "c657f8b8d",
+      "target": "c0d25c673",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The act of helping can create social bonds and reduce awkwardness, which may lead to better management of tension in relationships.",
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccffbc1ef-c0d25c673",
+      "source": "ccffbc1ef",
+      "target": "c0d25c673",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Strategies can provide tools and methods to effectively manage tension in relationships, especially after declining requests for help.",
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0d25c673-ce898d890",
+      "source": "c0d25c673",
+      "target": "ce898d890",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Managing tension can directly influence the experience and regulation of the emotion of tension, especially in social contexts where awkwardness arises.",
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c17d356af-cb71b3926",
+      "source": "c17d356af",
+      "target": "cb71b3926",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Meeting expectations is directly influenced by the expectations set by others, as the user's internal discomfort suggests a strong connection between the two concepts.",
+      "firstDate": "6/19/2025, 12:03:13 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1f9db45c-c1e4ad5b4",
+      "source": "c1f9db45c",
+      "target": "c1e4ad5b4",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Finding alternative ways to assist others indicates a proactive approach to problem-solving, suggesting a strong positive influence of concept A on concept B.",
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1f9db45c-c9a1cd11b",
+      "source": "c1f9db45c",
+      "target": "c9a1cd11b",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The goal of finding alternative ways to assist indicates a proactive approach to overcoming the limitation of not being able to provide direct help.",
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1e4ad5b4-c9a1cd11b",
+      "source": "c1e4ad5b4",
+      "target": "c9a1cd11b",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The goal of assisting others positively influences the user's behavior to seek alternative methods of help when direct assistance is not possible.",
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c340cbdad-c3c259fef",
+      "source": "c340cbdad",
+      "target": "c3c259fef",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "The user's lack of perceived change in handling future emotional situations suggests that the trait of perceiving does not positively influence their current feelings.",
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ceb399bca-cf738a9e1",
+      "source": "ceb399bca",
+      "target": "cf738a9e1",
+      "weight": 0.3,
+      "sign": "-",
+      "reason": "The user does not perceive a change in handling emotional situations, indicating a negative influence of 'change' on 'handling'.",
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cf738a9e1-c5e2bab0e",
+      "source": "cf738a9e1",
+      "target": "c5e2bab0e",
+      "weight": 0.6,
+      "sign": "-",
+      "reason": "The statement suggests that verbalizing feelings to others does not lead to a perceived change in handling future emotional situations, indicating a negative influence.",
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2f12bdee-c3c259fef",
+      "source": "c2f12bdee",
+      "target": "c3c259fef",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Emotional situations can influence current feelings, as expressing feelings may lead to better emotional processing and understanding, even if the user perceives no change in handling future situations.",
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1493cabc-c76a3bf25",
+      "source": "c1493cabc",
+      "target": "c76a3bf25",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Ruminating often leads to self-dialogue as individuals process their thoughts and emotions, indicating a positive influence.",
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c76a3bf25-c1f618a24",
+      "source": "c76a3bf25",
+      "target": "c1f618a24",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Self-dialogue allows individuals to articulate and explore their feelings, which can facilitate emotional processing, especially during times of distress.",
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccdcf7310-c9c9eb43c",
+      "source": "ccdcf7310",
+      "target": "c9c9eb43c",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Self-prioritization can lead to feelings of guilt, prompting individuals to compensate for others as a way to balance their own needs with the needs of those around them.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccdcf7310-c1a7a5d5d",
+      "source": "ccdcf7310",
+      "target": "c1a7a5d5d",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Self-prioritization can lead to feelings of guilt when personal needs overshadow the needs of others, prompting the individual to actively work on balancing those needs.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccdcf7310-ccf640cac",
+      "source": "ccdcf7310",
+      "target": "ccf640cac",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Self-prioritization can lead to an increased awareness of personal needs, as individuals may feel guilty about prioritizing themselves over others, prompting them to better balance their own needs with those of others.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccdcf7310-c5047db93",
+      "source": "ccdcf7310",
+      "target": "c5047db93",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "Self-prioritization can lead to feelings of guilt when personal needs overshadow the needs of others, prompting the individual to compensate and seek a better balance.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c9c9eb43c-c1a7a5d5d",
+      "source": "c9c9eb43c",
+      "target": "c1a7a5d5d",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's attempt to compensate for others directly influences their ability to balance personal needs with the needs of others, indicating a positive relationship between the two concepts.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c9c9eb43c-ccf640cac",
+      "source": "c9c9eb43c",
+      "target": "ccf640cac",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's attempt to compensate for others indicates a direct influence on their ability to prioritize personal needs, suggesting a positive relationship where the goal of compensating for others affects the value placed on personal needs.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c9c9eb43c-c5047db93",
+      "source": "c9c9eb43c",
+      "target": "c5047db93",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The goal of compensating for others suggests a direct influence on the value of considering the needs of others, as the user is actively trying to balance personal needs with those of others.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a7a5d5d-ccf640cac",
+      "source": "c1a7a5d5d",
+      "target": "ccf640cac",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Balancing needs directly influences personal needs as the user attempts to manage guilt and prioritize their own needs alongside those of others.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a7a5d5d-c5047db93",
+      "source": "c1a7a5d5d",
+      "target": "c5047db93",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Balancing needs directly influences the needs of others as the user attempts to manage guilt and prioritize both personal and others' needs.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccf640cac-c5047db93",
+      "source": "ccf640cac",
+      "target": "c5047db93",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's management of guilt from self-prioritization indicates that personal needs influence the awareness and consideration of the needs of others, suggesting a positive relationship between the two concepts.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c02fcb3-ca41157d2",
+      "source": "c3c02fcb3",
+      "target": "ca41157d2",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Positive feelings are often associated with the experience of being seen, as individuals may feel valued and acknowledged, which enhances their emotional state.",
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c02fcb3-c7c99ba8b",
+      "source": "c3c02fcb3",
+      "target": "c7c99ba8b",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "The presence of positive feelings of being seen can lead to negative feelings of guilt when prioritizing one's own needs, indicating an inverse relationship where positive emotions may trigger negative emotions in this context.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c02fcb3-c384aafcf",
+      "source": "c3c02fcb3",
+      "target": "c384aafcf",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "Positive feelings can lead to guilt when prioritizing one's own needs, indicating a negative influence of positive feelings on the experience of guilt.",
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c02fcb3-ca78bb5af",
+      "source": "c3c02fcb3",
+      "target": "ca78bb5af",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Positive feelings can enhance self-acceptance and reduce guilt, making it more likely for the user to prioritize their own needs.",
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7c99ba8b-c384aafcf",
+      "source": "c7c99ba8b",
+      "target": "c384aafcf",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "Negative feelings can lead to guilt, especially when prioritizing one's own needs over others, as it creates a conflict between self-care and social expectations.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7c99ba8b-ca78bb5af",
+      "source": "c7c99ba8b",
+      "target": "ca78bb5af",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "Negative feelings, such as guilt, can significantly influence the decision to prioritize one's own needs, often leading to a reluctance to do so.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7c99ba8b-ce8b72849",
+      "source": "c7c99ba8b",
+      "target": "ce8b72849",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "Negative feelings, such as guilt, can lead to a tendency to prioritize others' needs over one's own, indicating a significant influence.",
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca78bb5af-ce8b72849",
+      "source": "ca78bb5af",
+      "target": "ce8b72849",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Prioritizing one's own needs can lead to positive feelings of self-affirmation, which may enhance the experience of being seen, despite the accompanying guilt.",
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd28770db-c77ae9ae5",
+      "source": "cd28770db",
+      "target": "c77ae9ae5",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Beautiful environments often contribute to a sense of tranquility and peace, which aligns with the characteristics of quiet environments, enhancing the user's self-care experience.",
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd28770db-c5af9982f",
+      "source": "cd28770db",
+      "target": "c5af9982f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Beautiful environments contribute to a sense of well-being and tranquility, which can enhance feelings of security.",
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c77ae9ae5-c5af9982f",
+      "source": "c77ae9ae5",
+      "target": "c5af9982f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Quiet environments contribute to a sense of calm and tranquility, which can enhance feelings of security and safety.",
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cad773eab-ca5450742",
+      "source": "cad773eab",
+      "target": "ca5450742",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "Focusing on emotions can detract from the ability to articulate facts and develop personal theories, suggesting an inverse relationship.",
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c9d0588aa-c27d54905",
+      "source": "c9d0588aa",
+      "target": "c27d54905",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The context indicates that positive outcomes from vulnerability lead to stronger bonds, suggesting a positive influence.",
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c9d0588aa-c7301e7fb",
+      "source": "c9d0588aa",
+      "target": "c7301e7fb",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Positive outcomes from vulnerability lead to stronger bonds, which facilitate mutual sharing and support.",
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c9d0588aa-c434990c8",
+      "source": "c9d0588aa",
+      "target": "c434990c8",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The context indicates that positive outcomes from vulnerability lead to stronger bonds and mutual support, suggesting a strong positive influence of positive outcomes on support.",
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c48a098c0-c7301e7fb",
+      "source": "c48a098c0",
+      "target": "c7301e7fb",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Vulnerability fosters trust and openness, which are essential for mutual sharing and support, as evidenced by the user's positive experiences.",
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c48a098c0-c434990c8",
+      "source": "c48a098c0",
+      "target": "c434990c8",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The context indicates that vulnerability leads to positive outcomes such as stronger bonds and mutual support, suggesting a strong positive influence of vulnerability on support.",
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7301e7fb-c434990c8",
+      "source": "c7301e7fb",
+      "target": "c434990c8",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The context indicates that mutual sharing leads to positive outcomes, including support, suggesting a strong positive influence.",
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2241aef0-cb7331b23",
+      "source": "c2241aef0",
+      "target": "cb7331b23",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Accepting the risk of oversharing can lead to increased mindfulness as the user becomes more aware of their actions and their impact on others.",
+      "firstDate": "6/19/2025, 4:04:13 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cee11cbb1-cfb56812c",
+      "source": "cee11cbb1",
+      "target": "cfb56812c",
+      "weight": 0.8,
+      "sign": "-",
+      "reason": "The user's feelings of embarrassment and worry after being vulnerable indicate a significant influence of the concept 'user' on the outcome 'used against', as these emotions stem from the fear of vulnerability being exploited.",
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0b006cd1-c00285b01",
+      "source": "c0b006cd1",
+      "target": "c00285b01",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Feeling embarrassed can lead to increased worry about vulnerability being exploited, indicating a positive influence of embarrassment on worry.",
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0b006cd1-c25890dea",
+      "source": "c0b006cd1",
+      "target": "c25890dea",
+      "weight": 0.7,
+      "sign": "-",
+      "reason": "Feeling embarrassed after being vulnerable indicates a negative influence, as the user associates vulnerability with potential negative outcomes.",
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0b006cd1-c6d98fb14",
+      "source": "c0b006cd1",
+      "target": "c6d98fb14",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Feeling embarrassed can lead to increased worry and fear, especially in contexts where vulnerability is involved, as individuals may fear negative consequences from their openness.",
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c00285b01-c25890dea",
+      "source": "c00285b01",
+      "target": "c25890dea",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Feeling worried can increase a person's sense of vulnerability, as they may fear negative consequences from being open or exposed.",
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c00285b01-c6d98fb14",
+      "source": "c00285b01",
+      "target": "c6d98fb14",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The context indicates that feeling 'worried' leads to the emotion of 'fearing', suggesting a positive influence where worry contributes to fear.",
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c25890dea-c6d98fb14",
+      "source": "c25890dea",
+      "target": "c6d98fb14",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Being vulnerable can lead to feelings of fear, as individuals may worry about the potential negative consequences of exposing their true selves.",
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c25890dea-cfb56812c",
+      "source": "c25890dea",
+      "target": "cfb56812c",
+      "weight": 0.8,
+      "sign": "-",
+      "reason": "The user's feelings of embarrassment and worry after being vulnerable indicate a negative influence, as they fear that their vulnerability may be exploited.",
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c56ab24c1-ce2fae53e",
+      "source": "c56ab24c1",
+      "target": "ce2fae53e",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's happiness positively influences their confidence, as indicated by the alignment of prayer and AI advice contributing to both emotions.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c56ab24c1-cf792d1af",
+      "source": "c56ab24c1",
+      "target": "cf792d1af",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's happiness is positively influenced by the alignment of prayer and AI advice, indicating that emotional states can affect decision-making outcomes.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce2fae53e-c7a55b332",
+      "source": "ce2fae53e",
+      "target": "c7a55b332",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Confidence enhances the user's trust in their gut instinct, especially when it aligns with their emotional state.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce2fae53e-cf792d1af",
+      "source": "ce2fae53e",
+      "target": "cf792d1af",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Confidence can enhance decision-making and alignment with desired outcomes, as indicated by the user's positive feelings when prayer and AI advice align.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ce2fae53e-c8e7bbb6a",
+      "source": "ce2fae53e",
+      "target": "c8e7bbb6a",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Confidence can enhance an individual's ability to trust their instincts, as seen in the context where the user feels confident when their beliefs align with external advice.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc770fdb2-cf792d1af",
+      "source": "cc770fdb2",
+      "target": "cf792d1af",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's happiness and confidence are positively influenced when AI advice aligns with their prayer, indicating a supportive relationship between the two concepts.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cf792d1af-c82fb7647",
+      "source": "cf792d1af",
+      "target": "c82fb7647",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's happiness and confidence are positively influenced when prayer and AI advice align, suggesting a strong connection between the two concepts.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cf792d1af-c8e7bbb6a",
+      "source": "cf792d1af",
+      "target": "c8e7bbb6a",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's happiness and confidence when prayer and AI advice align suggests a positive influence on their trust in their gut instinct, indicating that alignment enhances their overall trust.",
+      "firstDate": "6/19/2025, 4:05:53 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5fc25157-c972c97bd",
+      "source": "c5fc25157",
+      "target": "c972c97bd",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Planning provides a structured approach that enhances the exploration of new ideas, making it easier to identify and pursue opportunities in career and relationships.",
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5fc25157-c8ae1016c",
+      "source": "c5fc25157",
+      "target": "c8ae1016c",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Planning is a critical component in shaping and advancing one's career, as it involves setting goals, exploring opportunities, and making informed decisions.",
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5fc25157-ceaa7c88f",
+      "source": "c5fc25157",
+      "target": "ceaa7c88f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Planning can significantly influence relationships by helping individuals set goals for personal development and improve communication, leading to healthier interactions.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c972c97bd-c3851db91",
+      "source": "c972c97bd",
+      "target": "c3851db91",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The act of exploring is directly related to generating and discovering new ideas, especially in the context of planning for career and relationships.",
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c972c97bd-c8ae1016c",
+      "source": "c972c97bd",
+      "target": "c8ae1016c",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Exploring new ideas can lead to discovering new career opportunities and pathways, thus positively influencing the user's career.",
+      "firstDate": "6/19/2025, 4:06:00 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c8ae1016c-ceaa7c88f",
+      "source": "c8ae1016c",
+      "target": "ceaa7c88f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Career choices and advancements can significantly impact personal relationships, as work commitments and stress levels may affect time and emotional availability for relationships.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c03a535e4-cd163d4f3",
+      "source": "c03a535e4",
+      "target": "cd163d4f3",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's reliance on prayer for guidance suggests that they seek reassurance as a complementary goal, indicating a positive influence of guidance on reassurance.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c03a535e4-cef22c14d",
+      "source": "c03a535e4",
+      "target": "cef22c14d",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user actively seeks guidance through prayer, indicating that their decisions are positively influenced by their pursuit of a sense of correctness.",
+      "firstDate": "6/19/2025, 4:06:06 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c03a535e4-cb8c02222",
+      "source": "c03a535e4",
+      "target": "cb8c02222",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user seeks guidance through prayer, which directly influences their sense of correctness in decision-making.",
+      "firstDate": "6/19/2025, 4:06:06 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd163d4f3-cb8c02222",
+      "source": "cd163d4f3",
+      "target": "cb8c02222",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Reassurance provides emotional support and confidence in decision-making, which enhances the user's sense of correctness.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cef22c14d-cb8c02222",
+      "source": "cef22c14d",
+      "target": "cb8c02222",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user's reliance on prayer indicates that their decision-making process is influenced by their desire for a sense of correctness, suggesting a positive correlation between decisions and the sense of correctness.",
+      "firstDate": "6/19/2025, 4:06:06 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c25d961aa-c8e99e6ed",
+      "source": "c25d961aa",
+      "target": "c8e99e6ed",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Prayer is used as a tool for emotional management and coping, indicating a positive influence on the ability to cope.",
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c70b1c9bd-cccbea023",
+      "source": "c70b1c9bd",
+      "target": "cccbea023",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Managing emotions positively influences well-being, as effective emotional management can lead to improved mental health and overall life satisfaction.",
+      "firstDate": "6/19/2025, 4:08:45 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cccbea023-c3a9984dd",
+      "source": "cccbea023",
+      "target": "c3a9984dd",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The context indicates that the user uses prayer to enhance their well-being, which in turn supports their ability to assist others, suggesting a positive influence of well-being on the goal of assisting others.",
+      "firstDate": "6/19/2025, 4:08:45 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c376b7f32-c56eb31b9",
+      "source": "c376b7f32",
+      "target": "c56eb31b9",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Challenging situations often prompt individuals to seek meaning and purpose, which can lead to a desire to help others as a way to cope and find hope.",
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c376b7f32-c2f12bdee",
+      "source": "c376b7f32",
+      "target": "c2f12bdee",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Challenging situations often evoke emotional responses, and the user's approach to helping others in these scenarios indicates a positive influence where overcoming challenges can lead to emotional growth and support.",
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c56eb31b9-cfb053573",
+      "source": "c56eb31b9",
+      "target": "cfb053573",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Helping others is a proactive approach that fosters a supportive environment, which can significantly enhance feelings of hope in both the helper and the recipient.",
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c56eb31b9-c7d7f4b95",
+      "source": "c56eb31b9",
+      "target": "c7d7f4b95",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Helping others fosters a sense of community and support, which directly contributes to individuals feeling supported in challenging emotional situations.",
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cfb053573-cedcb24bc",
+      "source": "cfb053573",
+      "target": "cedcb24bc",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Finding hope often leads individuals to reflect on their experiences, which can help them identify valuable lessons, creating a positive feedback loop in emotional support.",
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cfb053573-c7d7f4b95",
+      "source": "cfb053573",
+      "target": "c7d7f4b95",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Helping others find hope directly contributes to them feeling supported, as it fosters a sense of community and shared resilience.",
+      "firstDate": "6/19/2025, 4:08:54 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7d7f4b95-c2f12bdee",
+      "source": "c7d7f4b95",
+      "target": "c2f12bdee",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Feeling supported enhances the ability to navigate emotional situations, as the user actively helps others, which reinforces their own emotional resilience.",
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cee11cbb1-cee99331f",
+      "source": "cee11cbb1",
+      "target": "cee99331f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's struggle to find effective strategies indicates a direct influence on their social comfort, suggesting that their user experience impacts their social interactions.",
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cee11cbb1-cdd956ea1",
+      "source": "cee11cbb1",
+      "target": "cdd956ea1",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The context suggests that the user's social comfort is directly related to their personal comfort, indicating a positive influence of 'user' on 'personally'.",
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccffbc1ef-cc4842cc4",
+      "source": "ccffbc1ef",
+      "target": "cc4842cc4",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The presence of strategies is implied to have a positive influence on the effectiveness of making the user feel more comfortable, indicating a direct relationship.",
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "ccffbc1ef-cee99331f",
+      "source": "ccffbc1ef",
+      "target": "cee99331f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The lack of effective strategies is directly impacting the user's comfort level in social situations, indicating a positive influence of strategies on social comfort.",
+      "firstDate": "6/19/2025, 12:03:00 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc4842cc4-cee99331f",
+      "source": "cc4842cc4",
+      "target": "cee99331f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The use of 'effectively' suggests that there are strategies that can positively influence the user's comfort in social situations, indicating a direct relationship between the trait and the value.",
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc4842cc4-cdd956ea1",
+      "source": "cc4842cc4",
+      "target": "cdd956ea1",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The use of 'effectively' suggests that the strategies being sought are intended to improve personal comfort, indicating a positive influence of concept A on concept B.",
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c74d36234-cdd956ea1",
+      "source": "c74d36234",
+      "target": "cdd956ea1",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Feeling comfortable is often linked to personal values, as emotional comfort can enhance one's sense of self and personal identity.",
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cee99331f-cdd956ea1",
+      "source": "cee99331f",
+      "target": "cdd956ea1",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The context suggests that discomfort in social situations may also affect personal feelings, indicating a positive influence of social experiences on personal well-being.",
+      "firstDate": "6/19/2025, 9:36:28 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c535c8110-c55ba44c5",
+      "source": "c535c8110",
+      "target": "c55ba44c5",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Fantasy themes provide an escape and comfort during anxious times, influencing the user's preference for such themes in movies.",
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c535c8110-c2800cc7f",
+      "source": "c535c8110",
+      "target": "c2800cc7f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Fantasy themes provide an escape and comfort during anxious times, making them a significant influence on the user's engagement with video games.",
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c55ba44c5-c2800cc7f",
+      "source": "c55ba44c5",
+      "target": "c2800cc7f",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "The user's preference for fantasy themes in both movies and video games suggests a positive influence, as they likely seek comfort and escapism from anxiety through these related forms of entertainment.",
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c13cebb4a-ca59c85d0",
+      "source": "c13cebb4a",
+      "target": "ca59c85d0",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user finds comfort in movies and video games, which serve as effective distractions that help alleviate feelings of anxiety.",
+      "firstDate": "6/21/2025, 12:48:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2800cc7f-cff1d4018",
+      "source": "c2800cc7f",
+      "target": "cff1d4018",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Video games serve as a form of distraction, providing comfort and relief from anxiety, thus positively influencing the value of distractions.",
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c74ef33e8-c8173ab2d",
+      "source": "c74ef33e8",
+      "target": "c8173ab2d",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The user recognizes that balancing honesty with sensitivity directly contributes to making space for others in interactions, indicating a positive influence.",
+      "firstDate": "6/21/2025, 1:07:28 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c652b607a-cc742484d",
+      "source": "c652b607a",
+      "target": "cc742484d",
+      "weight": 0.7,
+      "sign": "+",
+      "reason": "Honesty can positively influence sensitivity by encouraging open communication while also requiring an awareness of others' feelings.",
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc742484d-c85aa9c70",
+      "source": "cc742484d",
+      "target": "c85aa9c70",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Sensitivity positively influences interactions by fostering a more empathetic and understanding environment, allowing for better communication and connection.",
+      "firstDate": "6/21/2025, 1:07:28 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cf2bbf5ec-c79a9247e",
+      "source": "cf2bbf5ec",
+      "target": "c79a9247e",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The act of apologizing (concept A) is a direct catalyst for the trait of tending to apologize (concept B), as it reflects a behavior that influences the user's tendency to engage in apologetic behavior to maintain relationships.",
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cdf8bdcca-cdd55b905",
+      "source": "cdf8bdcca",
+      "target": "cdd55b905",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Conflicts often lead to a need for resolution, and apologizing is a common strategy to repair relationships, indicating a positive influence.",
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cdf8bdcca-c843d7870",
+      "source": "cdf8bdcca",
+      "target": "c843d7870",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Conflicts often necessitate apologies as a means to repair and maintain relationships, indicating a positive influence of conflicts on the goal of maintaining relationships.",
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cdf8bdcca-ceaa7c88f",
+      "source": "cdf8bdcca",
+      "target": "ceaa7c88f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Conflicts often lead to a need for resolution, and apologizing can strengthen relationships by demonstrating accountability and a desire to maintain harmony.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cdd55b905-c843d7870",
+      "source": "cdd55b905",
+      "target": "c843d7870",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Repairing relationships often leads to maintaining them, as addressing conflicts can strengthen bonds and prevent future issues.",
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cdd55b905-ceaa7c88f",
+      "source": "cdd55b905",
+      "target": "ceaa7c88f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Repairing relationships directly contributes to the maintenance and improvement of relationships, indicating a positive influence.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cdd55b905-c79a9247e",
+      "source": "cdd55b905",
+      "target": "c79a9247e",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "The act of apologizing is a common strategy used to repair relationships, indicating a positive influence of the goal of repairing relationships on the trait of tending to apologize.",
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c843d7870-ceaa7c88f",
+      "source": "c843d7870",
+      "target": "ceaa7c88f",
+      "weight": 0.8,
+      "sign": "+",
+      "reason": "Maintaining relationships often involves actions such as apologizing, which directly influences the quality and strength of the relationships.",
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    }
+  ],
+  "edges_affinity": [
+    {
+      "id": "c79a9247e-cf2bbf5ec",
+      "source": "cf2bbf5ec",
+      "target": "c79a9247e",
+      "weight": 0.6492782051078184,
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c843d7870-cdd55b905",
+      "source": "cdd55b905",
+      "target": "c843d7870",
+      "weight": 0.6288768114292873,
+      "firstDate": "6/21/2025, 1:07:34 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c478deb51-ceaa7c88f",
+      "source": "ceaa7c88f",
+      "target": "c478deb51",
+      "weight": 0.6019887638979213,
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a7a5d5d-c74ef33e8",
+      "source": "c74ef33e8",
+      "target": "c1a7a5d5d",
+      "weight": 0.6458522925752141,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2f075e79-c85aa9c70",
+      "source": "c85aa9c70",
+      "target": "c2f075e79",
+      "weight": 0.6979972586373121,
+      "firstDate": "6/19/2025, 12:01:02 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1d3736ab-c85aa9c70",
+      "source": "c85aa9c70",
+      "target": "c1d3736ab",
+      "weight": 0.664739006121576,
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c98df5000-ca59c85d0",
+      "source": "ca59c85d0",
+      "target": "c98df5000",
+      "weight": 0.761790051040581,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca59c85d0-cd3af37c0",
+      "source": "ca59c85d0",
+      "target": "cd3af37c0",
+      "weight": 0.6833326468489151,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3a56aefd-ca59c85d0",
+      "source": "ca59c85d0",
+      "target": "c3a56aefd",
+      "weight": 0.6305248540948718,
+      "firstDate": "6/18/2025, 11:55:45 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cbc52d6c2-cd36a7b45",
+      "source": "cbc52d6c2",
+      "target": "cd36a7b45",
+      "weight": 0.7615350676574763,
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c98df5000-cbc52d6c2",
+      "source": "cbc52d6c2",
+      "target": "c98df5000",
+      "weight": 0.7124058329356974,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca59c85d0-cbc52d6c2",
+      "source": "cbc52d6c2",
+      "target": "ca59c85d0",
+      "weight": 0.6261103799459213,
+      "firstDate": "6/21/2025, 12:47:16 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c36965f1b-c6361cb4f",
+      "source": "c6361cb4f",
+      "target": "c36965f1b",
+      "weight": 0.6594793868841674,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1f9db45c-c6361cb4f",
+      "source": "c6361cb4f",
+      "target": "c1f9db45c",
+      "weight": 0.601554593382733,
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a54e072-ccffbc1ef",
+      "source": "ccffbc1ef",
+      "target": "c1a54e072",
+      "weight": 0.8667602069990039,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc0089e65-ccffbc1ef",
+      "source": "ccffbc1ef",
+      "target": "cc0089e65",
+      "weight": 0.6196645947546782,
+      "firstDate": "6/18/2025, 11:42:42 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c74d36234-cea08be1c",
+      "source": "c74d36234",
+      "target": "cea08be1c",
+      "weight": 0.7721134241517571,
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c376b7f32-cb178b270",
+      "source": "c376b7f32",
+      "target": "cb178b270",
+      "weight": 0.7128529842572047,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2f12bdee-c376b7f32",
+      "source": "c376b7f32",
+      "target": "c2f12bdee",
+      "weight": 0.6269141708735162,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2f075e79-c376b7f32",
+      "source": "c376b7f32",
+      "target": "c2f075e79",
+      "weight": 0.6238918599063714,
+      "firstDate": "6/19/2025, 12:01:02 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3a9984dd-c56eb31b9",
+      "source": "c56eb31b9",
+      "target": "c3a9984dd",
+      "weight": 0.8121370679642509,
+      "firstDate": "6/19/2025, 4:08:45 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5047db93-c56eb31b9",
+      "source": "c56eb31b9",
+      "target": "c5047db93",
+      "weight": 0.6495546858135707,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1e4ad5b4-c56eb31b9",
+      "source": "c56eb31b9",
+      "target": "c1e4ad5b4",
+      "weight": 0.6491920134520988,
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1ac0d342-cfb053573",
+      "source": "cfb053573",
+      "target": "c1ac0d342",
+      "weight": 0.6455958758409907,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2f12bdee-c70b1c9bd",
+      "source": "c2f12bdee",
+      "target": "c70b1c9bd",
+      "weight": 0.6313293151655064,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2f12bdee-c892dec8f",
+      "source": "c2f12bdee",
+      "target": "c892dec8f",
+      "weight": 0.6288858245437695,
+      "firstDate": "6/18/2025, 11:43:42 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c25d961aa-cc2bbbfee",
+      "source": "c25d961aa",
+      "target": "cc2bbbfee",
+      "weight": 0.7086764731175607,
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c70b1c9bd-ccb2b2f6c",
+      "source": "c70b1c9bd",
+      "target": "ccb2b2f6c",
+      "weight": 0.8361070543930765,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1f618a24-c70b1c9bd",
+      "source": "c70b1c9bd",
+      "target": "c1f618a24",
+      "weight": 0.8276424315153076,
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c70b1c9bd-cad773eab",
+      "source": "c70b1c9bd",
+      "target": "cad773eab",
+      "weight": 0.713726678775724,
+      "firstDate": "6/19/2025, 4:00:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1e4ad5b4-c3a9984dd",
+      "source": "c3a9984dd",
+      "target": "c1e4ad5b4",
+      "weight": 0.817478990672142,
+      "firstDate": "6/19/2025, 12:03:23 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c03a535e4-cb48197be",
+      "source": "c03a535e4",
+      "target": "cb48197be",
+      "weight": 0.6260020864755031,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5fc25157-cc0089e65",
+      "source": "c5fc25157",
+      "target": "cc0089e65",
+      "weight": 0.6970957808647433,
+      "firstDate": "6/18/2025, 11:42:42 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5fc25157-c98ded198",
+      "source": "c5fc25157",
+      "target": "c98ded198",
+      "weight": 0.6959290161763995,
+      "firstDate": "6/18/2025, 11:42:22 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5855a307-c8e7bbb6a",
+      "source": "c8e7bbb6a",
+      "target": "c5855a307",
+      "weight": 0.6465203579657323,
+      "firstDate": "6/18/2025, 11:51:19 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c00285b01-c98df5000",
+      "source": "c00285b01",
+      "target": "c98df5000",
+      "weight": 0.6980083727161766,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c00285b01-c6d98fb14",
+      "source": "c00285b01",
+      "target": "c6d98fb14",
+      "weight": 0.6236801166289783,
+      "firstDate": "6/19/2025, 4:04:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c25890dea-c48a098c0",
+      "source": "c25890dea",
+      "target": "c48a098c0",
+      "weight": 0.7538283434287286,
+      "firstDate": "6/19/2025, 4:04:05 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c83b96b4f-ccf8292e9",
+      "source": "c83b96b4f",
+      "target": "ccf8292e9",
+      "weight": 0.629520301555568,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c02fcb3-c9d0588aa",
+      "source": "c9d0588aa",
+      "target": "c3c02fcb3",
+      "weight": 0.6426648555085215,
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c365a170a-c434990c8",
+      "source": "c434990c8",
+      "target": "c365a170a",
+      "weight": 0.6053059341254121,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cad773eab-ccb2b2f6c",
+      "source": "cad773eab",
+      "target": "ccb2b2f6c",
+      "weight": 0.7127043220602626,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1f618a24-cad773eab",
+      "source": "cad773eab",
+      "target": "c1f618a24",
+      "weight": 0.6945408167382371,
+      "firstDate": "6/19/2025, 12:05:36 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c77ae9ae5-cd28770db",
+      "source": "cd28770db",
+      "target": "c77ae9ae5",
+      "weight": 0.6416199613463954,
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5af9982f-cd28770db",
+      "source": "cd28770db",
+      "target": "c5af9982f",
+      "weight": 0.6045654004505593,
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5af9982f-c77ae9ae5",
+      "source": "c77ae9ae5",
+      "target": "c5af9982f",
+      "weight": 0.6593746756068,
+      "firstDate": "6/19/2025, 4:00:14 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c02fcb3-c7c99ba8b",
+      "source": "c3c02fcb3",
+      "target": "c7c99ba8b",
+      "weight": 0.7299479165399377,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c02fcb3-c3c259fef",
+      "source": "c3c02fcb3",
+      "target": "c3c259fef",
+      "weight": 0.6635176419626326,
+      "firstDate": "6/19/2025, 12:05:29 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3c259fef-c7c99ba8b",
+      "source": "c7c99ba8b",
+      "target": "c3c259fef",
+      "weight": 0.6466388012371093,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c7c99ba8b-cea0d59fe",
+      "source": "c7c99ba8b",
+      "target": "cea0d59fe",
+      "weight": 0.6287784827321933,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca78bb5af-ccdcf7310",
+      "source": "ca78bb5af",
+      "target": "ccdcf7310",
+      "weight": 0.7810048074224727,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca78bb5af-ce8b72849",
+      "source": "ca78bb5af",
+      "target": "ce8b72849",
+      "weight": 0.7006103118264321,
+      "firstDate": "6/19/2025, 4:00:07 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "ca78bb5af-ccf640cac",
+      "source": "ca78bb5af",
+      "target": "ccf640cac",
+      "weight": 0.6000299440831841,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5047db93-ce8b72849",
+      "source": "ce8b72849",
+      "target": "c5047db93",
+      "weight": 0.6747444529194376,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a7a5d5d-c5047db93",
+      "source": "c1a7a5d5d",
+      "target": "c5047db93",
+      "weight": 0.6360321286275307,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a7a5d5d-cc54fc001",
+      "source": "c1a7a5d5d",
+      "target": "cc54fc001",
+      "weight": 0.6176011409275477,
+      "firstDate": "6/18/2025, 11:41:56 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c5047db93-ccf640cac",
+      "source": "ccf640cac",
+      "target": "c5047db93",
+      "weight": 0.6487295538262613,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1a7a5d5d-ccf640cac",
+      "source": "ccf640cac",
+      "target": "c1a7a5d5d",
+      "weight": 0.6126907526243197,
+      "firstDate": "6/19/2025, 3:59:50 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1f618a24-ccb2b2f6c",
+      "source": "c1f618a24",
+      "target": "ccb2b2f6c",
+      "weight": 0.7364329537218361,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c17d356af-cb71b3926",
+      "source": "c17d356af",
+      "target": "cb71b3926",
+      "weight": 0.66078886632924,
+      "firstDate": "6/19/2025, 12:03:13 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c4b721a70-c9e36580a",
+      "source": "c4b721a70",
+      "target": "c9e36580a",
+      "weight": 0.6185512435404978,
+      "firstDate": "6/18/2025, 11:58:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0d25c673-c0f7fb9ac",
+      "source": "c0d25c673",
+      "target": "c0f7fb9ac",
+      "weight": 0.7356773204154236,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0d25c673-ce898d890",
+      "source": "c0d25c673",
+      "target": "ce898d890",
+      "weight": 0.7005439446170714,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0f7fb9ac-ce898d890",
+      "source": "ce898d890",
+      "target": "c0f7fb9ac",
+      "weight": 0.6197689941878758,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c04efe311-cd9f5bc4f",
+      "source": "c04efe311",
+      "target": "cd9f5bc4f",
+      "weight": 0.6792514654568783,
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "cea0d59fe-cfe17f210",
+      "source": "cfe17f210",
+      "target": "cea0d59fe",
+      "weight": 0.8903551134400677,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd5b5d6d1-cfe17f210",
+      "source": "cfe17f210",
+      "target": "cd5b5d6d1",
+      "weight": 0.6759253345753444,
+      "firstDate": "6/19/2025, 12:01:07 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0492e1cf-cfe17f210",
+      "source": "cfe17f210",
+      "target": "c0492e1cf",
+      "weight": 0.6315470520306027,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c88be5f44-ce029d95e",
+      "source": "ce029d95e",
+      "target": "c88be5f44",
+      "weight": 0.6724066294556945,
+      "firstDate": "6/18/2025, 11:51:26 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cc47cce08-ce029d95e",
+      "source": "ce029d95e",
+      "target": "cc47cce08",
+      "weight": 0.6435210381314016,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c12bc654f-ce029d95e",
+      "source": "ce029d95e",
+      "target": "c12bc654f",
+      "weight": 0.6184238966798792,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c2f075e79-cb178b270",
+      "source": "c2f075e79",
+      "target": "cb178b270",
+      "weight": 0.6428805273369543,
+      "firstDate": "6/19/2025, 12:00:54 AM",
+      "lastDate": ""
+    },
+    {
+      "id": "c82c6b22c-cb178b270",
+      "source": "cb178b270",
+      "target": "c82c6b22c",
+      "weight": 0.6442005518541682,
+      "firstDate": "6/18/2025, 11:43:13 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c96dcda94-cecee7df9",
+      "source": "cecee7df9",
+      "target": "c96dcda94",
+      "weight": 0.6579715582831832,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3b0c869b-cc56234bf",
+      "source": "c3b0c869b",
+      "target": "cc56234bf",
+      "weight": 0.6981226900113533,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c0492e1cf-cea0d59fe",
+      "source": "c0492e1cf",
+      "target": "cea0d59fe",
+      "weight": 0.749909373895648,
+      "firstDate": "6/18/2025, 11:58:41 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c98df5000-cd3af37c0",
+      "source": "c98df5000",
+      "target": "cd3af37c0",
+      "weight": 0.7359656427410889,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cad773eab-cfa52c07a",
+      "source": "cfa52c07a",
+      "target": "cad773eab",
+      "weight": 0.6444104959329825,
+      "firstDate": "6/18/2025, 11:55:52 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c26769d05-cfa52c07a",
+      "source": "cfa52c07a",
+      "target": "c26769d05",
+      "weight": 0.6423116620873065,
+      "firstDate": "6/18/2025, 11:55:45 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c26769d05-c2d0a70a3",
+      "source": "c26769d05",
+      "target": "c2d0a70a3",
+      "weight": 0.6102108451102243,
+      "firstDate": "6/18/2025, 11:42:12 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c3a56aefd-cd3af37c0",
+      "source": "c3a56aefd",
+      "target": "cd3af37c0",
+      "weight": 0.6307256854012012,
+      "firstDate": "6/18/2025, 11:51:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "cd25ec3ea-cfd668493",
+      "source": "cd25ec3ea",
+      "target": "cfd668493",
+      "weight": 0.663663135027461,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c88be5f44-cc47cce08",
+      "source": "c88be5f44",
+      "target": "cc47cce08",
+      "weight": 0.7463677889465414,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c88be5f44-ca611af7d",
+      "source": "c88be5f44",
+      "target": "ca611af7d",
+      "weight": 0.6390927251182728,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c82c6b22c-cc56234bf",
+      "source": "cc56234bf",
+      "target": "c82c6b22c",
+      "weight": 0.6010606250257401,
+      "firstDate": "6/18/2025, 11:43:13 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c365a170a-c36965f1b",
+      "source": "c36965f1b",
+      "target": "c365a170a",
+      "weight": 0.6470995692903424,
+      "firstDate": "6/18/2025, 11:44:38 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c1bd6aaf6-c609144d7",
+      "source": "c609144d7",
+      "target": "c1bd6aaf6",
+      "weight": 0.7835825908495208,
+      "firstDate": "6/18/2025, 11:44:27 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c12bc654f-c2d0a70a3",
+      "source": "c12bc654f",
+      "target": "c2d0a70a3",
+      "weight": 0.6511739120012642,
+      "firstDate": "6/18/2025, 11:42:12 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c12bc654f-c88be5f44",
+      "source": "c12bc654f",
+      "target": "c88be5f44",
+      "weight": 0.6386101197133185,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c12bc654f-cc47cce08",
+      "source": "c12bc654f",
+      "target": "cc47cce08",
+      "weight": 0.6338728621930075,
+      "firstDate": "6/18/2025, 11:43:55 PM",
+      "lastDate": ""
+    },
+    {
+      "id": "c086172d2-cc8155878",
+      "source": "c086172d2",
+      "target": "cc8155878",
+      "weight": 0.6030967078255274,
+      "firstDate": "6/18/2025, 11:42:55 PM",
+      "lastDate": ""
+    }
+  ],
+  "edges_temporal": [],
+  "memories": [
+    {
+      "id": "mfaa26cb5",
+      "text": "This user values authenticity but acknowledges that it can sometimes lead to stepping on toes.",
+      "category": "Relationships",
+      "tags": [
+        "authenticity",
+        "communication",
+        "interpersonal skills"
+      ],
+      "date": "6/21/2025, 1:07:52 PM",
+      "secret": false,
+      "concepts": [
+        "c5c5cb290",
+        "cfbf127ae"
+      ]
+    },
+    {
+      "id": "mb79191cc",
+      "text": "This user tends to apologize for their part in conflicts to repair or maintain relationships.",
+      "category": "Relationships",
+      "tags": [
+        "conflict resolution",
+        "apologies",
+        "relationship maintenance"
+      ],
+      "date": "6/21/2025, 1:07:34 PM",
+      "secret": false,
+      "concepts": [
+        "cf2bbf5ec",
+        "cdf8bdcca",
+        "cdd55b905",
+        "c843d7870",
+        "ceaa7c88f",
+        "c79a9247e"
+      ]
+    },
+    {
+      "id": "m871d9117",
+      "text": "This user has learned the importance of balancing honesty with sensitivity and making space for others in interactions.",
+      "category": "Relationships",
+      "tags": [
+        "emotional intelligence",
+        "personal growth",
+        "balance"
+      ],
+      "date": "6/21/2025, 1:07:28 PM",
+      "secret": false,
+      "concepts": [
+        "c74ef33e8",
+        "c652b607a",
+        "cc742484d",
+        "c8173ab2d",
+        "c85aa9c70"
+      ]
+    },
+    {
+      "id": "mb8613e2e",
+      "text": "This user finds comfort in movies and video games as distractions when feeling anxious.",
+      "category": "About Me",
+      "tags": [
+        "anxiety coping",
+        "entertainment",
+        "personal habits"
+      ],
+      "date": "6/21/2025, 12:48:55 PM",
+      "secret": false,
+      "concepts": [
+        "c13cebb4a",
+        "c55ba44c5",
+        "c2800cc7f",
+        "cff1d4018",
+        "ca59c85d0"
+      ]
+    },
+    {
+      "id": "m39581aa1",
+      "text": "This user gravitates towards fantasy themes in movies and video games during anxious times.",
+      "category": "About Me",
+      "tags": [
+        "fantasy genre",
+        "coping mechanisms",
+        "personal preferences"
+      ],
+      "date": "6/21/2025, 12:47:16 PM",
+      "secret": false,
+      "concepts": [
+        "c535c8110",
+        "c55ba44c5",
+        "c2800cc7f",
+        "cbc52d6c2"
+      ]
+    },
+    {
+      "id": "m87cbbbb6",
+      "text": "This user experiences negative self-talk and is seeking ways to manage it.",
+      "category": "Relationships",
+      "tags": [
+        "self-talk",
+        "self-compassion",
+        "coping mechanisms"
+      ],
+      "date": "6/19/2025, 9:36:53 PM",
+      "secret": false,
+      "concepts": [
+        "c33ca164a",
+        "c6361cb4f",
+        "cef78a38b"
+      ]
+    },
+    {
+      "id": "meb7fdfbd",
+      "text": "This user has not yet found strategies that effectively make them feel more comfortable socially or personally.",
+      "category": "Relationships",
+      "tags": [
+        "coping skills",
+        "personal growth",
+        "social comfort"
+      ],
+      "date": "6/19/2025, 9:36:28 PM",
+      "secret": false,
+      "concepts": [
+        "cee11cbb1",
+        "ccffbc1ef",
+        "cc4842cc4",
+        "c74d36234",
+        "cee99331f",
+        "cdd956ea1"
+      ]
+    },
+    {
+      "id": "m76b02300",
+      "text": "This user approaches challenging emotional situations by helping others find hope and lessons, ensuring they feel supported.",
+      "category": "About Me",
+      "tags": [
+        "emotional intelligence",
+        "support",
+        "coping strategies"
+      ],
+      "date": "6/19/2025, 4:08:54 PM",
+      "secret": false,
+      "concepts": [
+        "c376b7f32",
+        "c56eb31b9",
+        "cfb053573",
+        "cedcb24bc",
+        "c7d7f4b95",
+        "c2f12bdee"
+      ]
+    },
+    {
+      "id": "mdc763a94",
+      "text": "This user relies on prayer as a way to cope with and manage their emotions and well-being while assisting others.",
+      "category": "About Me",
+      "tags": [
+        "spirituality",
+        "emotional management",
+        "self-care"
+      ],
+      "date": "6/19/2025, 4:08:45 PM",
+      "secret": false,
+      "concepts": [
+        "c25d961aa",
+        "c8e99e6ed",
+        "c70b1c9bd",
+        "cccbea023",
+        "c3a9984dd"
+      ]
+    },
+    {
+      "id": "mff50465e",
+      "text": "This user relies on prayer to find guidance and reassurance in their decisions by seeking a sense of correctness.",
+      "category": "About Me",
+      "tags": [
+        "guidance",
+        "spirituality",
+        "decision making"
+      ],
+      "date": "6/19/2025, 4:06:06 PM",
+      "secret": false,
+      "concepts": [
+        "c25d961aa",
+        "c03a535e4",
+        "cd163d4f3",
+        "cef22c14d",
+        "cb8c02222"
+      ]
+    },
+    {
+      "id": "m8f66fa90",
+      "text": "This user uses AI to help plan and explore new ideas, particularly focusing on career and relationships.",
+      "category": "About Me",
+      "tags": [
+        "AI interaction",
+        "planning",
+        "career growth",
+        "relationships"
+      ],
+      "date": "6/19/2025, 4:06:00 PM",
+      "secret": false,
+      "concepts": [
+        "c4921c0e2",
+        "c5fc25157",
+        "c972c97bd",
+        "c3851db91",
+        "c8ae1016c",
+        "ceaa7c88f"
+      ]
+    },
+    {
+      "id": "m39c3f087",
+      "text": "This user feels happy and confident when prayer and AI advice align, but ultimately trusts their gut instinct when they diverge.",
+      "category": "About Me",
+      "tags": [
+        "intuition",
+        "decision making",
+        "self trust",
+        "emotional response"
+      ],
+      "date": "6/19/2025, 4:05:53 PM",
+      "secret": false,
+      "concepts": [
+        "c56ab24c1",
+        "ce2fae53e",
+        "c25d961aa",
+        "cc770fdb2",
+        "c7a55b332",
+        "cf792d1af",
+        "c82fb7647",
+        "c8e7bbb6a"
+      ]
+    },
+    {
+      "id": "m7b416c31",
+      "text": "This user sometimes feels embarrassed and worried after being vulnerable, fearing it may be used against them.",
+      "category": "Relationships",
+      "tags": [
+        "vulnerability",
+        "fear",
+        "emotions"
+      ],
+      "date": "6/19/2025, 4:04:26 PM",
+      "secret": false,
+      "concepts": [
+        "cee11cbb1",
+        "c0b006cd1",
+        "c00285b01",
+        "c25890dea",
+        "c6d98fb14",
+        "cfb56812c"
+      ]
+    },
+    {
+      "id": "m086f4692",
+      "text": "This user copes with the risk of oversharing by accepting it and trying to be more mindful in the future.",
+      "category": "Relationships",
+      "tags": [
+        "coping",
+        "strategies",
+        "self-awareness"
+      ],
+      "date": "6/19/2025, 4:04:13 PM",
+      "secret": false,
+      "concepts": [
+        "ca835c723",
+        "c2241aef0",
+        "cb7331b23",
+        "c83b96b4f"
+      ]
+    },
+    {
+      "id": "m810283ba",
+      "text": "This user has experienced positive outcomes from vulnerability, including forming stronger bonds and receiving mutual sharing and support.",
+      "category": "Relationships",
+      "tags": [
+        "positive experiences",
+        "bonding",
+        "support"
+      ],
+      "date": "6/19/2025, 4:04:05 PM",
+      "secret": false,
+      "concepts": [
+        "c9d0588aa",
+        "c48a098c0",
+        "c27d54905",
+        "c7301e7fb",
+        "c434990c8"
+      ]
+    },
+    {
+      "id": "mb1457d4c",
+      "text": "This user finds that calling someone during distressful times helps them to articulate the facts rather than just focusing on emotions or personal theories.",
+      "category": "About Me",
+      "tags": [
+        "communication",
+        "emotional processing",
+        "support network"
+      ],
+      "date": "6/19/2025, 4:00:22 PM",
+      "secret": false,
+      "concepts": [
+        "cb5e4ead7",
+        "cd36a7b45",
+        "c60986435",
+        "cad773eab",
+        "ca5450742"
+      ]
+    },
+    {
+      "id": "m43822b94",
+      "text": "This user prefers environments that are beautiful, quiet, and secure as part of their self-care practice.",
+      "category": "About Me",
+      "tags": [
+        "self-care",
+        "environment",
+        "personal preference"
+      ],
+      "date": "6/19/2025, 4:00:14 PM",
+      "secret": false,
+      "concepts": [
+        "cd28770db",
+        "c77ae9ae5",
+        "c5af9982f",
+        "cb39e5d5c"
+      ]
+    },
+    {
+      "id": "mf3cd863d",
+      "text": "This user experiences both positive feelings of being seen and negative feelings of guilt when prioritizing their own needs over others'.",
+      "category": "About Me",
+      "tags": [
+        "emotions",
+        "self-prioritization",
+        "guilt"
+      ],
+      "date": "6/19/2025, 4:00:07 PM",
+      "secret": false,
+      "concepts": [
+        "c3c02fcb3",
+        "ca41157d2",
+        "c7c99ba8b",
+        "c384aafcf",
+        "ca78bb5af",
+        "ce8b72849"
+      ]
+    },
+    {
+      "id": "me71cc2e6",
+      "text": "This user manages guilt from self-prioritization by trying to compensate for others and is working on better balancing personal needs with the needs of others.",
+      "category": "About Me",
+      "tags": [
+        "guilt management",
+        "self-improvement",
+        "empathy"
+      ],
+      "date": "6/19/2025, 3:59:50 PM",
+      "secret": false,
+      "concepts": [
+        "c384aafcf",
+        "ccdcf7310",
+        "c9c9eb43c",
+        "c1a7a5d5d",
+        "ccf640cac",
+        "c5047db93"
+      ]
+    },
+    {
+      "id": "m1ea4fb47",
+      "text": "This user has a tendency to pace, ruminate, and engage in self-dialogue when upset, looking for ways to process their emotions.",
+      "category": "About Me",
+      "tags": [
+        "coping mechanisms",
+        "emotional processing",
+        "stress management"
+      ],
+      "date": "6/19/2025, 12:05:36 AM",
+      "secret": false,
+      "concepts": [
+        "c869352a0",
+        "c1493cabc",
+        "c76a3bf25",
+        "c3650d69a",
+        "c1f618a24"
+      ]
+    },
+    {
+      "id": "m5743c560",
+      "text": "This user does not perceive a change in handling future emotional situations after verbalizing their current feelings to others.",
+      "category": "About Me",
+      "tags": [
+        "emotional growth",
+        "introspection",
+        "communication"
+      ],
+      "date": "6/19/2025, 12:05:29 AM",
+      "secret": false,
+      "concepts": [
+        "cee11cbb1",
+        "c340cbdad",
+        "ceb399bca",
+        "cf738a9e1",
+        "ccf8292e9",
+        "c2f12bdee",
+        "c8ade5c49",
+        "c3c259fef",
+        "c5e2bab0e"
+      ]
+    },
+    {
+      "id": "m65276600",
+      "text": "This user often tries to find alternative ways to assist others when they cannot provide direct help.",
+      "category": "Relationships",
+      "tags": [
+        "problem-solving",
+        "support",
+        "solutions"
+      ],
+      "date": "6/19/2025, 12:03:23 AM",
+      "secret": false,
+      "concepts": [
+        "c1f9db45c",
+        "c1e4ad5b4",
+        "c9a1cd11b"
+      ]
+    },
+    {
+      "id": "ma51b6358",
+      "text": "This user experiences internal discomfort when they cannot meet the expectations of others.",
+      "category": "Relationships",
+      "tags": [
+        "expectations",
+        "emotional response",
+        "discomfort"
+      ],
+      "date": "6/19/2025, 12:03:13 AM",
+      "secret": false,
+      "concepts": [
+        "cb4639457",
+        "c17d356af",
+        "cb71b3926"
+      ]
+    },
+    {
+      "id": "m1db1f40f",
+      "text": "This user faces awkwardness in relationships after declining requests for help, and has not yet developed strategies to manage this tension.",
+      "category": "Relationships",
+      "tags": [
+        "relationship dynamics",
+        "challenges",
+        "personal growth"
+      ],
+      "date": "6/19/2025, 12:03:00 AM",
+      "secret": false,
+      "concepts": [
+        "cd305c2ff",
+        "ceaa7c88f",
+        "c4b721a70",
+        "c657f8b8d",
+        "ccffbc1ef",
+        "c0d25c673",
+        "ce898d890"
+      ]
+    },
+    {
+      "id": "m59bb9636",
+      "text": "This user tends to respond with blame and shame when feeling rejected and hurt.",
+      "category": "Relationships",
+      "tags": [
+        "emotions",
+        "behavior",
+        "response patterns"
+      ],
+      "date": "6/19/2025, 12:01:07 AM",
+      "secret": false,
+      "concepts": [
+        "c04efe311",
+        "cd9f5bc4f",
+        "cfe17f210",
+        "cd5b5d6d1"
+      ]
+    },
+    {
+      "id": "m466e9287",
+      "text": "This user seeks ways to improve their communication and avoid cruelty during difficult interactions.",
+      "category": "Relationships",
+      "tags": [
+        "communication",
+        "self-improvement",
+        "conflict management"
+      ],
+      "date": "6/19/2025, 12:01:02 AM",
+      "secret": false,
+      "concepts": [
+        "ce029d95e",
+        "cfdf1abed",
+        "c2f075e79"
+      ]
+    },
+    {
+      "id": "m7300f466",
+      "text": "This user struggles to identify strategies for managing emotions constructively in challenging conversations.",
+      "category": "Relationships",
+      "tags": [
+        "emotional management",
+        "coping skills",
+        "communication"
+      ],
+      "date": "6/19/2025, 12:00:54 AM",
+      "secret": false,
+      "concepts": [
+        "c1a54e072",
+        "ccb2b2f6c",
+        "ceeb65581",
+        "cb178b270",
+        "ce0067c5c"
+      ]
+    },
+    {
+      "id": "mc150d6d1",
+      "text": "This user relies on their faith as a significant factor in their survival during times of deep despair.",
+      "category": "About Me",
+      "tags": [
+        "faith",
+        "survival",
+        "coping mechanisms"
+      ],
+      "date": "6/18/2025, 11:59:06 PM",
+      "secret": false,
+      "concepts": [
+        "cecee7df9",
+        "ccd81ff8f",
+        "ca9946b8d",
+        "cdacf98f1"
+      ]
+    },
+    {
+      "id": "m9c89e6ce",
+      "text": "This user has not made significant changes in their life following a serious crisis but reflects on the role of prayer and unanswered requests.",
+      "category": "About Me",
+      "tags": [
+        "crisis management",
+        "introspection",
+        "unchanged habits"
+      ],
+      "date": "6/18/2025, 11:58:52 PM",
+      "secret": false,
+      "concepts": [
+        "c7873dac5",
+        "cececa383",
+        "c3b0c869b",
+        "cc2bbbfee",
+        "c9e36580a"
+      ]
+    },
+    {
+      "id": "mea297787",
+      "text": "This user copes with feelings of being unloved or rejected by holding onto hope that they will be valued or find a sense of belonging in the future.",
+      "category": "About Me",
+      "tags": [
+        "hope",
+        "self-worth",
+        "belonging"
+      ],
+      "date": "6/18/2025, 11:58:41 PM",
+      "secret": false,
+      "concepts": [
+        "c0492e1cf",
+        "cea0d59fe",
+        "c1ac0d342",
+        "ca3d2eb5a",
+        "cff96989a",
+        "c83b96b4f"
+      ]
+    },
+    {
+      "id": "maef553fd",
+      "text": "This user experiences tension in their chest and throat when anxious and uses breathing and focusing on actionable steps to alleviate this tension.",
+      "category": "About Me",
+      "tags": [
+        "anxiety management",
+        "physical symptoms",
+        "stress relief"
+      ],
+      "date": "6/18/2025, 11:55:52 PM",
+      "secret": false,
+      "concepts": [
+        "ce898d890",
+        "c14952ea7",
+        "c50976366",
+        "c98df5000",
+        "c906c3f65",
+        "cfa52c07a",
+        "cceee4ce9",
+        "c0f7fb9ac"
+      ]
+    },
+    {
+      "id": "me543b0af",
+      "text": "This user tends to focus on tasks that make a significant impact, as a means to cope with anxiety.",
+      "category": "About Me",
+      "tags": [
+        "productivity",
+        "focus",
+        "anxiety coping mechanism"
+      ],
+      "date": "6/18/2025, 11:55:45 PM",
+      "secret": false,
+      "concepts": [
+        "c26769d05",
+        "cf88d57e3",
+        "c3a56aefd",
+        "cd3af37c0"
+      ]
+    },
+    {
+      "id": "ma954aab0",
+      "text": "This user tends to select movies spontaneously, based on what catches their interest at the moment.",
+      "category": "About Me",
+      "tags": [
+        "spontaneity",
+        "entertainment choices",
+        "movie watching"
+      ],
+      "date": "6/18/2025, 11:53:56 PM",
+      "secret": false,
+      "concepts": [
+        "ce8a87cd1",
+        "cd3b05c25",
+        "caa5eb943",
+        "cda217c26"
+      ]
+    },
+    {
+      "id": "m1528574c",
+      "text": "This user prefers to let their creativity guide them when working on products, rather than adhering to a strict routine.",
+      "category": "About Me",
+      "tags": [
+        "creativity",
+        "work habits",
+        "personal projects"
+      ],
+      "date": "6/18/2025, 11:53:45 PM",
+      "secret": false,
+      "concepts": [
+        "c4f1d1909",
+        "ca0c391dc",
+        "cd25ec3ea",
+        "ca53a1f2f"
+      ]
+    },
+    {
+      "id": "mdc91e536",
+      "text": "This user experienced anxiety and relied on personal faith and courage when facing uncertainty in relationships.",
+      "category": "Relationships",
+      "tags": [
+        "anxiety",
+        "faith",
+        "courage"
+      ],
+      "date": "6/18/2025, 11:51:38 PM",
+      "secret": false,
+      "concepts": [
+        "cd3af37c0",
+        "c96dcda94",
+        "ced8ce15d",
+        "c7b48bdfa",
+        "ceaa7c88f"
+      ]
+    },
+    {
+      "id": "m57dce9a7",
+      "text": "This user values reassurance and consistent communication to feel secure in their relationships.",
+      "category": "Relationships",
+      "tags": [
+        "reassurance",
+        "communication",
+        "security"
+      ],
+      "date": "6/18/2025, 11:51:26 PM",
+      "secret": false,
+      "concepts": [
+        "cd163d4f3",
+        "c88be5f44",
+        "cea08be1c",
+        "ceaa7c88f"
+      ]
+    },
+    {
+      "id": "m0d588dbb",
+      "text": "This user is dealing with the aftermath of a breakup, which may affect their perspective on trust and long-distance relationships.",
+      "category": "Relationships",
+      "tags": [
+        "breakup",
+        "trust",
+        "long-distance"
+      ],
+      "date": "6/18/2025, 11:51:19 PM",
+      "secret": false,
+      "concepts": [
+        "c8ecfe6cf",
+        "c5855a307",
+        "c6b48a717"
+      ]
+    },
+    {
+      "id": "m2f3c5b7a",
+      "text": "This user processes negative feelings by reflecting internally or seeking support from friends.",
+      "category": "Relationships",
+      "tags": [
+        "coping mechanisms",
+        "social support",
+        "emotional processing"
+      ],
+      "date": "6/18/2025, 11:44:38 PM",
+      "secret": false,
+      "concepts": [
+        "c7c99ba8b",
+        "cc56234bf",
+        "c36965f1b",
+        "c365a170a"
+      ]
+    },
+    {
+      "id": "m7d365e59",
+      "text": "This user prefers step-by-step guidance and clear, detailed explanations when learning or working on technical tasks.",
+      "category": "About Me",
+      "tags": [
+        "learning style",
+        "technical tasks",
+        "detailed instructions"
+      ],
+      "date": "6/18/2025, 11:44:27 PM",
+      "secret": false,
+      "concepts": [
+        "cb48197be",
+        "c609144d7",
+        "c1bd6aaf6",
+        "c25a9ac40",
+        "cfd668493"
+      ]
+    },
+    {
+      "id": "m6361d339",
+      "text": "This user appreciates retro internet aesthetics, Studio Ghibli-style art, and nostalgic fantasy adventure visuals.",
+      "category": "About Me",
+      "tags": [
+        "art aesthetics",
+        "retro design",
+        "fantasy",
+        "nostalgia"
+      ],
+      "date": "6/18/2025, 11:44:10 PM",
+      "secret": false,
+      "concepts": [
+        "c7859277f",
+        "cc65f5535",
+        "c3e3245cc",
+        "cc6f0738f"
+      ]
+    },
+    {
+      "id": "m6af7f88b",
+      "text": "This user prefers concise, engaging, and high-quality communication, particularly when crafting messages to potential business partners.",
+      "category": "Career",
+      "tags": [
+        "communication style",
+        "business writing",
+        "professionalism"
+      ],
+      "date": "6/18/2025, 11:43:55 PM",
+      "secret": false,
+      "concepts": [
+        "ca611af7d",
+        "c12bc654f",
+        "cc47cce08",
+        "ceb9d11e5",
+        "c09300fce"
+      ]
+    },
+    {
+      "id": "m78ac8218",
+      "text": "This user has a strained relationship with their mother, characterized by superficial interactions and emotional boundary challenges.",
+      "category": "Relationships",
+      "tags": [
+        "family dynamics",
+        "emotional boundaries",
+        "parental relationships"
+      ],
+      "date": "6/18/2025, 11:43:42 PM",
+      "secret": false,
+      "concepts": [
+        "c478deb51",
+        "c1d3736ab",
+        "c892dec8f"
+      ]
+    },
+    {
+      "id": "m0cfbf7f1",
+      "text": "This user has extreme near-sightedness and is notably taller compared to their family.",
+      "category": "Personal Health",
+      "tags": [
+        "vision",
+        "physical traits",
+        "height"
+      ],
+      "date": "6/18/2025, 11:43:25 PM",
+      "secret": false,
+      "concepts": [
+        "c2bd59755",
+        "ce0d42452",
+        "c86164a6f"
+      ]
+    },
+    {
+      "id": "m7dc56fad",
+      "text": "This user frequently engages in reflective conversations on philosophy, theology, and Jungian archetypes.",
+      "category": "About Me",
+      "tags": [
+        "philosophy",
+        "theology",
+        "Jungian psychology",
+        "reflective thinking"
+      ],
+      "date": "6/18/2025, 11:43:13 PM",
+      "secret": false,
+      "concepts": [
+        "c82c6b22c",
+        "c225ab6cd",
+        "c3d5f2683",
+        "ce34d16d1"
+      ]
+    },
+    {
+      "id": "m3ea858e8",
+      "text": "This user is adaptable and can go with the flow when plans change unexpectedly.",
+      "category": "About Me",
+      "tags": [
+        "adaptability",
+        "flexibility",
+        "mindset"
+      ],
+      "date": "6/18/2025, 11:43:03 PM",
+      "secret": false,
+      "concepts": [
+        "c086172d2",
+        "c7df2f6f9",
+        "cfb1f5a76",
+        "c3148c486"
+      ]
+    },
+    {
+      "id": "ma8d720e5",
+      "text": "This user is resilient and feels a strong obligation to keep going despite challenges.",
+      "category": "About Me",
+      "tags": [
+        "resilience",
+        "determination",
+        "motivation"
+      ],
+      "date": "6/18/2025, 11:42:55 PM",
+      "secret": false,
+      "concepts": [
+        "cc8155878",
+        "c1b857668",
+        "cb21b5dc1",
+        "ce0598a7a"
+      ]
+    },
+    {
+      "id": "mf769a568",
+      "text": "This user relies on prayer as a strategy to maintain a positive mindset during setbacks.",
+      "category": "Faith",
+      "tags": [
+        "spirituality",
+        "mindset",
+        "coping strategies"
+      ],
+      "date": "6/18/2025, 11:42:42 PM",
+      "secret": false,
+      "concepts": [
+        "c25d961aa",
+        "cc0089e65",
+        "cd00ccf76",
+        "c2339842d"
+      ]
+    },
+    {
+      "id": "ma60bf3c3",
+      "text": "This user immediately begins planning after setting a big personal goal.",
+      "category": "About Me",
+      "tags": [
+        "goal setting",
+        "planning",
+        "proactive"
+      ],
+      "date": "6/18/2025, 11:42:22 PM",
+      "secret": false,
+      "concepts": [
+        "cee11cbb1",
+        "cffe18113",
+        "c98ded198",
+        "c7dc22b2c",
+        "c0ed27a5f"
+      ]
+    },
+    {
+      "id": "m44b53000",
+      "text": "This user maintains motivation and happiness by directly engaging with tasks.",
+      "category": "About Me",
+      "tags": [
+        "motivation",
+        "happiness",
+        "task-oriented"
+      ],
+      "date": "6/18/2025, 11:42:12 PM",
+      "secret": false,
+      "concepts": [
+        "c8b20d363",
+        "c695e0665",
+        "c2d0a70a3"
+      ]
+    },
+    {
+      "id": "m30b7f8f8",
+      "text": "This user relies on prayer and honesty as a foundation before addressing their needs directly.",
+      "category": "Relationships",
+      "tags": [
+        "preparation",
+        "communication style",
+        "self-reflection"
+      ],
+      "date": "6/18/2025, 11:41:56 PM",
+      "secret": false,
+      "concepts": [
+        "c25d961aa",
+        "c652b607a",
+        "c01baf36b",
+        "cc54fc001"
+      ]
+    }
+  ]
+}

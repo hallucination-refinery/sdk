@@ -1,0 +1,1232 @@
+{
+  "memories": [
+    {
+      "id": "mem_001",
+      "content": "Collaborative session on goals with Alex",
+      "position": [
+        -28.235007572254137,
+        -2.912349636338134,
+        -35.69778480324403
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_005",
+        "mem_034"
+      ],
+      "metadata": {
+        "contact": "Alex",
+        "date": "2025-01-05",
+        "topics": [
+          "goals"
+        ]
+      }
+    },
+    {
+      "id": "mem_002",
+      "content": "Discussion with Alex about requirements",
+      "position": [
+        25.009613955306996,
+        -4.422134846590186,
+        42.19160776459357
+      ],
+      "cluster": "product",
+      "connections": [
+        "mem_016",
+        "mem_004",
+        "mem_035"
+      ],
+      "metadata": {
+        "contact": "Alex",
+        "date": "2025-05-04",
+        "topics": [
+          "requirements"
+        ]
+      }
+    },
+    {
+      "id": "mem_003",
+      "content": "Discussion with Sam about training and checklist and orientation",
+      "position": [
+        39.19884412396791,
+        -14.415262007342333,
+        -15.073663339803007
+      ],
+      "cluster": "onboarding",
+      "connections": [
+        "mem_022",
+        "mem_044",
+        "mem_018"
+      ],
+      "metadata": {
+        "contact": "Sam",
+        "date": "2025-04-02",
+        "topics": [
+          "training",
+          "checklist",
+          "orientation"
+        ]
+      }
+    },
+    {
+      "id": "mem_004",
+      "content": "Discussion with Casey about features and requirements",
+      "position": [
+        16.303685890479173,
+        -13.072078307288592,
+        30.163009215032528
+      ],
+      "cluster": "product",
+      "connections": [],
+      "metadata": {
+        "contact": "Casey",
+        "date": "2025-06-15",
+        "topics": [
+          "features",
+          "requirements"
+        ]
+      }
+    },
+    {
+      "id": "mem_005",
+      "content": "Collaborative session on goals & development with Avery",
+      "position": [
+        -25.727911560567858,
+        3.400882501575795,
+        -33.149429121925095
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_001",
+        "mem_048",
+        "mem_039",
+        "mem_042"
+      ],
+      "metadata": {
+        "contact": "Avery",
+        "date": "2025-03-12",
+        "topics": [
+          "goals",
+          "development"
+        ]
+      }
+    },
+    {
+      "id": "mem_006",
+      "content": "Reviewed user feedback with Taylor",
+      "position": [
+        19.563558501019582,
+        5.010098664472579,
+        25.838546577948225
+      ],
+      "cluster": "product",
+      "connections": [
+        "mem_016",
+        "mem_020",
+        "mem_029"
+      ],
+      "metadata": {
+        "contact": "Taylor",
+        "date": "2025-02-07",
+        "topics": [
+          "user feedback"
+        ]
+      }
+    },
+    {
+      "id": "mem_007",
+      "content": "Collaborative session on architecture & debugging with Drew",
+      "position": [
+        8.818559620970733,
+        11.73666317055168,
+        32.27064623141714
+      ],
+      "cluster": "engineering",
+      "connections": [
+        "mem_011",
+        "mem_019",
+        "mem_026"
+      ],
+      "metadata": {
+        "contact": "Drew",
+        "date": "2025-05-13",
+        "topics": [
+          "architecture",
+          "debugging"
+        ]
+      }
+    },
+    {
+      "id": "mem_008",
+      "content": "Casey shared insights on strategy",
+      "position": [
+        38.11317971950138,
+        7.008855207274585,
+        -29.817247668164445
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_027",
+        "mem_031",
+        "mem_033",
+        "mem_045"
+      ],
+      "metadata": {
+        "contact": "Casey",
+        "date": "2025-03-06",
+        "topics": [
+          "strategy",
+          "sprint"
+        ]
+      }
+    },
+    {
+      "id": "mem_009",
+      "content": "Discussion with Quinn about insights and market trends",
+      "position": [
+        3.4148179588812875,
+        -2.9106365112835797,
+        -49.553438944448445
+      ],
+      "cluster": "research",
+      "connections": [
+        "mem_025"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-01-24",
+        "topics": [
+          "insights",
+          "market trends"
+        ]
+      }
+    },
+    {
+      "id": "mem_010",
+      "content": "Avery: deployment meeting notes and action items",
+      "position": [
+        -5.031685260224271,
+        -12.687252204941526,
+        41.17200266403325
+      ],
+      "cluster": "engineering",
+      "connections": [
+        "mem_007",
+        "mem_017",
+        "mem_048",
+        "mem_030"
+      ],
+      "metadata": {
+        "contact": "Avery",
+        "date": "2025-02-12",
+        "topics": [
+          "deployment",
+          "code review"
+        ]
+      }
+    },
+    {
+      "id": "mem_011",
+      "content": "Collaborative session on branding & prototypes with Drew",
+      "position": [
+        -37.85342772261528,
+        -10.036660506656037,
+        24.23257612897042
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_014",
+        "mem_038",
+        "mem_042",
+        "mem_021"
+      ],
+      "metadata": {
+        "contact": "Drew",
+        "date": "2025-05-20",
+        "topics": [
+          "branding",
+          "prototypes"
+        ]
+      }
+    },
+    {
+      "id": "mem_012",
+      "content": "Discussion with Quinn about retrospective and planning and standup",
+      "position": [
+        -33.6468717501812,
+        1.7151564092095684,
+        -8.111795359806159
+      ],
+      "cluster": "meetings",
+      "connections": [
+        "mem_028",
+        "mem_030",
+        "mem_031",
+        "mem_036",
+        "mem_040"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-03-13",
+        "topics": [
+          "retrospective",
+          "planning",
+          "standup"
+        ]
+      }
+    },
+    {
+      "id": "mem_013",
+      "content": "Discussion with Riley about mockups and branding",
+      "position": [
+        -25.270608114491434,
+        -1.5942699508552538,
+        18.78712431951625
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_024",
+        "mem_038",
+        "mem_025"
+      ],
+      "metadata": {
+        "contact": "Riley",
+        "date": "2025-04-16",
+        "topics": [
+          "mockups",
+          "branding"
+        ]
+      }
+    },
+    {
+      "id": "mem_014",
+      "content": "Reviewed prototypes with Jordan",
+      "position": [
+        -42.00001493280165,
+        12.015451848826924,
+        24.410331465752254
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_024",
+        "mem_025",
+        "mem_023",
+        "mem_036"
+      ],
+      "metadata": {
+        "contact": "Jordan",
+        "date": "2025-02-21",
+        "topics": [
+          "prototypes"
+        ]
+      }
+    },
+    {
+      "id": "mem_015",
+      "content": "Discussion with Quinn about branding and user flow",
+      "position": [
+        -35.324203723981924,
+        10.478921319836388,
+        24.48687234060166
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_013",
+        "mem_025",
+        "mem_009"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-02-01",
+        "topics": [
+          "branding",
+          "user flow"
+        ]
+      }
+    },
+    {
+      "id": "mem_016",
+      "content": "Collaborative session on requirements with Alex",
+      "position": [
+        24.757092368540754,
+        -13.625917939319454,
+        33.48857654143895
+      ],
+      "cluster": "product",
+      "connections": [
+        "mem_004",
+        "mem_001",
+        "mem_002",
+        "mem_035"
+      ],
+      "metadata": {
+        "contact": "Alex",
+        "date": "2025-05-24",
+        "topics": [
+          "requirements"
+        ]
+      }
+    },
+    {
+      "id": "mem_017",
+      "content": "Discussion with Drew about deployment and architecture and debugging",
+      "position": [
+        -2.3467609932374485,
+        8.386723891382506,
+        43.548295947761076
+      ],
+      "cluster": "engineering",
+      "connections": [
+        "mem_019",
+        "mem_007",
+        "mem_041",
+        "mem_042"
+      ],
+      "metadata": {
+        "contact": "Drew",
+        "date": "2025-04-17",
+        "topics": [
+          "deployment",
+          "architecture",
+          "debugging"
+        ]
+      }
+    },
+    {
+      "id": "mem_018",
+      "content": "Alex shared insights on checklist",
+      "position": [
+        35.09429494393359,
+        -8.571286872887827,
+        -11.96605019231599
+      ],
+      "cluster": "onboarding",
+      "connections": [
+        "mem_024",
+        "mem_052",
+        "mem_029"
+      ],
+      "metadata": {
+        "contact": "Alex",
+        "date": "2025-04-29",
+        "topics": [
+          "checklist",
+          "orientation",
+          "introduction"
+        ]
+      }
+    },
+    {
+      "id": "mem_019",
+      "content": "Taylor shared insights on code review",
+      "position": [
+        11.994086365623012,
+        4.774111558936642,
+        45.82323685125963
+      ],
+      "cluster": "engineering",
+      "connections": [
+        "mem_022",
+        "mem_029",
+        "mem_007"
+      ],
+      "metadata": {
+        "contact": "Taylor",
+        "date": "2025-04-11",
+        "topics": [
+          "code review",
+          "testing",
+          "architecture"
+        ]
+      }
+    },
+    {
+      "id": "mem_020",
+      "content": "Taylor shared insights on demo",
+      "position": [
+        -36.25093959075615,
+        -4.094047746700689,
+        5.680751985579825
+      ],
+      "cluster": "meetings",
+      "connections": [
+        "mem_012",
+        "mem_019",
+        "mem_022",
+        "mem_032",
+        "mem_050"
+      ],
+      "metadata": {
+        "contact": "Taylor",
+        "date": "2025-05-09",
+        "topics": [
+          "demo",
+          "retrospective"
+        ]
+      }
+    },
+    {
+      "id": "mem_021",
+      "content": "Collaborative session on branding & mockups with Sam",
+      "position": [
+        -22.37886203071234,
+        4.064163136056296,
+        33.30250788880835
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_013",
+        "mem_043",
+        "mem_023",
+        "mem_024"
+      ],
+      "metadata": {
+        "contact": "Sam",
+        "date": "2025-03-21",
+        "topics": [
+          "branding",
+          "mockups"
+        ]
+      }
+    },
+    {
+      "id": "mem_022",
+      "content": "Collaborative session on orientation with Taylor",
+      "position": [
+        41.710807759587446,
+        -5.878623362966251,
+        -10.821654861926358
+      ],
+      "cluster": "onboarding",
+      "connections": [
+        "mem_018",
+        "mem_019",
+        "mem_029"
+      ],
+      "metadata": {
+        "contact": "Taylor",
+        "date": "2025-05-18",
+        "topics": [
+          "orientation"
+        ]
+      }
+    },
+    {
+      "id": "mem_023",
+      "content": "Collaborative session on prototypes & mockups with Riley",
+      "position": [
+        -20.859757944801157,
+        -0.4236535969750288,
+        35.34978109225044
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_021",
+        "mem_026",
+        "mem_011",
+        "mem_013"
+      ],
+      "metadata": {
+        "contact": "Riley",
+        "date": "2025-03-26",
+        "topics": [
+          "prototypes",
+          "mockups"
+        ]
+      }
+    },
+    {
+      "id": "mem_024",
+      "content": "Alex shared insights on UI components",
+      "position": [
+        -22.87517800755,
+        0.17654610586161912,
+        24.059174955893702
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_015",
+        "mem_023",
+        "mem_036",
+        "mem_018",
+        "mem_013"
+      ],
+      "metadata": {
+        "contact": "Alex",
+        "date": "2025-01-23",
+        "topics": [
+          "UI components",
+          "mockups"
+        ]
+      }
+    },
+    {
+      "id": "mem_025",
+      "content": "Discussion with Quinn about branding",
+      "position": [
+        -23.70275987318639,
+        2.6426954123207502,
+        22.60011426344693
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_021",
+        "mem_015",
+        "mem_036"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-03-03",
+        "topics": [
+          "branding"
+        ]
+      }
+    },
+    {
+      "id": "mem_026",
+      "content": "Riley: architecture meeting notes and action items",
+      "position": [
+        -6.967094754665017,
+        6.3836625668700115,
+        31.648204355772133
+      ],
+      "cluster": "engineering",
+      "connections": [
+        "mem_019",
+        "mem_013",
+        "mem_023",
+        "mem_035"
+      ],
+      "metadata": {
+        "contact": "Riley",
+        "date": "2025-01-08",
+        "topics": [
+          "architecture"
+        ]
+      }
+    },
+    {
+      "id": "mem_027",
+      "content": "Avery shared insights on milestones",
+      "position": [
+        24.57761705258841,
+        7.4003293310728235,
+        -17.724787174468354
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_032"
+      ],
+      "metadata": {
+        "contact": "Avery",
+        "date": "2025-06-07",
+        "topics": [
+          "milestones",
+          "quarterly goals"
+        ]
+      }
+    },
+    {
+      "id": "mem_028",
+      "content": "Quinn: career meeting notes and action items",
+      "position": [
+        -35.76364055681245,
+        4.899763800025214,
+        -26.578206108332463
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_039",
+        "mem_030",
+        "mem_036"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-02-01",
+        "topics": [
+          "career"
+        ]
+      }
+    },
+    {
+      "id": "mem_029",
+      "content": "Collaborative session on orientation & introduction with Taylor",
+      "position": [
+        40.78714425327018,
+        -11.636780512572312,
+        11.170116539780341
+      ],
+      "cluster": "onboarding",
+      "connections": [
+        "mem_050",
+        "mem_003"
+      ],
+      "metadata": {
+        "contact": "Taylor",
+        "date": "2025-01-08",
+        "topics": [
+          "orientation",
+          "introduction"
+        ]
+      }
+    },
+    {
+      "id": "mem_030",
+      "content": "Reviewed deployment with Quinn",
+      "position": [
+        -9.990302497394183,
+        7.061405204547643,
+        37.3108015496252
+      ],
+      "cluster": "engineering",
+      "connections": [
+        "mem_015",
+        "mem_028",
+        "mem_031",
+        "mem_036"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2024-12-31",
+        "topics": [
+          "deployment"
+        ]
+      }
+    },
+    {
+      "id": "mem_031",
+      "content": "Quinn: sprint meeting notes and action items",
+      "position": [
+        42.085151155149035,
+        -7.969257760995649,
+        -22.346924971494715
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_027",
+        "mem_032",
+        "mem_053",
+        "mem_009"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-02-27",
+        "topics": [
+          "sprint",
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "mem_032",
+      "content": "Collaborative session on milestones with Taylor",
+      "position": [
+        40.80669852380658,
+        3.019266844066437,
+        -19.756183201572338
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_045",
+        "mem_019",
+        "mem_029",
+        "mem_053"
+      ],
+      "metadata": {
+        "contact": "Taylor",
+        "date": "2025-03-17",
+        "topics": [
+          "milestones"
+        ]
+      }
+    },
+    {
+      "id": "mem_033",
+      "content": "Discussion with Morgan about strategy",
+      "position": [
+        26.1736824652739,
+        -8.199603401652041,
+        -20.046182440358304
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_027",
+        "mem_031",
+        "mem_045",
+        "mem_047"
+      ],
+      "metadata": {
+        "contact": "Morgan",
+        "date": "2025-04-30",
+        "topics": [
+          "strategy"
+        ]
+      }
+    },
+    {
+      "id": "mem_034",
+      "content": "Avery: feedback meeting notes and action items",
+      "position": [
+        -24.446311582989164,
+        -9.8425298207262,
+        -37.8179413198238
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_001"
+      ],
+      "metadata": {
+        "contact": "Avery",
+        "date": "2025-05-25",
+        "topics": [
+          "feedback",
+          "goals"
+        ]
+      }
+    },
+    {
+      "id": "mem_035",
+      "content": "Riley: requirements meeting notes and action items",
+      "position": [
+        36.44473570287303,
+        6.114028065376216,
+        32.640592834855404
+      ],
+      "cluster": "product",
+      "connections": [
+        "mem_016",
+        "mem_023",
+        "mem_004",
+        "mem_043"
+      ],
+      "metadata": {
+        "contact": "Riley",
+        "date": "2025-03-28",
+        "topics": [
+          "requirements"
+        ]
+      }
+    },
+    {
+      "id": "mem_036",
+      "content": "Quinn: branding meeting notes and action items",
+      "position": [
+        -24.093715896137308,
+        -8.378331343533754,
+        39.19379306024548
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_015",
+        "mem_012",
+        "mem_031"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-04-26",
+        "topics": [
+          "branding",
+          "UI components",
+          "prototypes"
+        ]
+      }
+    },
+    {
+      "id": "mem_037",
+      "content": "Collaborative session on user flow & prototypes with Jordan",
+      "position": [
+        -44.92115467003959,
+        4.986049984156031,
+        19.51797423123244
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_036",
+        "mem_038",
+        "mem_011"
+      ],
+      "metadata": {
+        "contact": "Jordan",
+        "date": "2025-02-05",
+        "topics": [
+          "user flow",
+          "prototypes"
+        ]
+      }
+    },
+    {
+      "id": "mem_038",
+      "content": "Collaborative session on prototypes with Drew",
+      "position": [
+        -23.50718513779178,
+        -12.42533412223395,
+        34.04998465223074
+      ],
+      "cluster": "design",
+      "connections": [
+        "mem_011",
+        "mem_017",
+        "mem_023"
+      ],
+      "metadata": {
+        "contact": "Drew",
+        "date": "2025-02-22",
+        "topics": [
+          "prototypes"
+        ]
+      }
+    },
+    {
+      "id": "mem_039",
+      "content": "Collaborative session on development & feedback with Casey",
+      "position": [
+        -35.81608659532421,
+        3.19501542649004,
+        -31.93849116700908
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_047",
+        "mem_004",
+        "mem_005",
+        "mem_034"
+      ],
+      "metadata": {
+        "contact": "Casey",
+        "date": "2025-05-14",
+        "topics": [
+          "development",
+          "feedback"
+        ]
+      }
+    },
+    {
+      "id": "mem_040",
+      "content": "Discussion with Sam about retrospective and demo",
+      "position": [
+        -31.801736829754816,
+        8.76207281967018,
+        -7.617641933879704
+      ],
+      "cluster": "meetings",
+      "connections": [
+        "mem_044",
+        "mem_049",
+        "mem_003",
+        "mem_020"
+      ],
+      "metadata": {
+        "contact": "Sam",
+        "date": "2025-03-23",
+        "topics": [
+          "retrospective",
+          "demo"
+        ]
+      }
+    },
+    {
+      "id": "mem_041",
+      "content": "Drew: roadmap meeting notes and action items",
+      "position": [
+        41.135283967357765,
+        -5.249262232584115,
+        18.071215039019634
+      ],
+      "cluster": "product",
+      "connections": [],
+      "metadata": {
+        "contact": "Drew",
+        "date": "2025-05-20",
+        "topics": [
+          "roadmap"
+        ]
+      }
+    },
+    {
+      "id": "mem_042",
+      "content": "Collaborative session on career & development with Drew",
+      "position": [
+        -24.110115613891875,
+        9.896105454831098,
+        -20.632130191688855
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_005",
+        "mem_028",
+        "mem_039"
+      ],
+      "metadata": {
+        "contact": "Drew",
+        "date": "2025-06-16",
+        "topics": [
+          "career",
+          "development"
+        ]
+      }
+    },
+    {
+      "id": "mem_043",
+      "content": "Discussion with Sam about requirements",
+      "position": [
+        23.977929085430233,
+        -7.862498416709558,
+        33.74390616150598
+      ],
+      "cluster": "product",
+      "connections": [
+        "mem_049",
+        "mem_002",
+        "mem_016"
+      ],
+      "metadata": {
+        "contact": "Sam",
+        "date": "2025-01-17",
+        "topics": [
+          "requirements"
+        ]
+      }
+    },
+    {
+      "id": "mem_044",
+      "content": "Reviewed standup with Sam",
+      "position": [
+        -29.421259465279867,
+        7.934932841837781,
+        -7.335218935603628
+      ],
+      "cluster": "meetings",
+      "connections": [
+        "mem_040",
+        "mem_049",
+        "mem_003",
+        "mem_021"
+      ],
+      "metadata": {
+        "contact": "Sam",
+        "date": "2025-01-22",
+        "topics": [
+          "standup"
+        ]
+      }
+    },
+    {
+      "id": "mem_045",
+      "content": "Morgan: strategy meeting notes and action items",
+      "position": [
+        39.00720522815887,
+        -13.66314997310846,
+        -17.18063069267847
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_008",
+        "mem_032",
+        "mem_047",
+        "mem_051",
+        "mem_033"
+      ],
+      "metadata": {
+        "contact": "Morgan",
+        "date": "2024-12-29",
+        "topics": [
+          "strategy"
+        ]
+      }
+    },
+    {
+      "id": "mem_046",
+      "content": "Discussion with Quinn about debugging and architecture",
+      "position": [
+        18.29927873444668,
+        -9.55484095918788,
+        46.0447684098451
+      ],
+      "cluster": "engineering",
+      "connections": [
+        "mem_030",
+        "mem_009",
+        "mem_028"
+      ],
+      "metadata": {
+        "contact": "Quinn",
+        "date": "2025-05-17",
+        "topics": [
+          "debugging",
+          "architecture"
+        ]
+      }
+    },
+    {
+      "id": "mem_047",
+      "content": "Reviewed development, feedback with Morgan",
+      "position": [
+        -40.49271391259474,
+        -13.056207629202346,
+        -19.344885806182287
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_001",
+        "mem_052",
+        "mem_034"
+      ],
+      "metadata": {
+        "contact": "Morgan",
+        "date": "2025-06-20",
+        "topics": [
+          "development",
+          "feedback"
+        ]
+      }
+    },
+    {
+      "id": "mem_048",
+      "content": "Discussion with Avery about training",
+      "position": [
+        36.71129055449481,
+        -9.548212319653953,
+        -14.015830250962779
+      ],
+      "cluster": "onboarding",
+      "connections": [
+        "mem_051",
+        "mem_003"
+      ],
+      "metadata": {
+        "contact": "Avery",
+        "date": "2025-05-05",
+        "topics": [
+          "training"
+        ]
+      }
+    },
+    {
+      "id": "mem_049",
+      "content": "Discussion with Sam about demo",
+      "position": [
+        -33.71755407936449,
+        -13.605224944603558,
+        2.7914921685905227
+      ],
+      "cluster": "meetings",
+      "connections": [
+        "mem_003",
+        "mem_043",
+        "mem_040"
+      ],
+      "metadata": {
+        "contact": "Sam",
+        "date": "2025-05-27",
+        "topics": [
+          "demo"
+        ]
+      }
+    },
+    {
+      "id": "mem_050",
+      "content": "Taylor: timeline meeting notes and action items",
+      "position": [
+        34.43680001511269,
+        11.05268898085958,
+        -26.93719582411586
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_008",
+        "mem_033",
+        "mem_022",
+        "mem_029"
+      ],
+      "metadata": {
+        "contact": "Taylor",
+        "date": "2025-01-06",
+        "topics": [
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "mem_051",
+      "content": "Discussion with Morgan about checklist and setup",
+      "position": [
+        40.44139331691032,
+        8.70955640039683,
+        -17.085985114834884
+      ],
+      "cluster": "onboarding",
+      "connections": [
+        "mem_029",
+        "mem_018"
+      ],
+      "metadata": {
+        "contact": "Morgan",
+        "date": "2025-03-30",
+        "topics": [
+          "checklist",
+          "setup"
+        ]
+      }
+    },
+    {
+      "id": "mem_052",
+      "content": "Discussion with Alex about goals and development",
+      "position": [
+        -29.827142703518646,
+        -3.3733665505329213,
+        -32.57054551273711
+      ],
+      "cluster": "personal",
+      "connections": [
+        "mem_042",
+        "mem_001",
+        "mem_053"
+      ],
+      "metadata": {
+        "contact": "Alex",
+        "date": "2025-05-20",
+        "topics": [
+          "goals",
+          "development"
+        ]
+      }
+    },
+    {
+      "id": "mem_053",
+      "content": "Reviewed milestones with Alex",
+      "position": [
+        15.298510660146817,
+        -10.967872866065045,
+        -33.688890942504216
+      ],
+      "cluster": "planning",
+      "connections": [
+        "mem_050",
+        "mem_016",
+        "mem_018",
+        "mem_032"
+      ],
+      "metadata": {
+        "contact": "Alex",
+        "date": "2025-06-20",
+        "topics": [
+          "milestones"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "totalCount": 53,
+    "clusters": [
+      "onboarding",
+      "product",
+      "engineering",
+      "design",
+      "meetings",
+      "personal",
+      "research",
+      "planning"
+    ],
+    "generatedAt": "2025-06-24T01:06:50.274Z",
+    "description": "Test data for Cryptic Vault 3D visualization demo"
+  }
+}
