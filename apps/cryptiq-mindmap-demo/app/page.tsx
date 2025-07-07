@@ -1,95 +1,90 @@
 'use client'
 
-import { IdeaAperture } from '@refinery/widget-aperture'
-import { ApertureThemeProvider } from '@refinery/widget-aperture'
+import { useState, useEffect, useReducer } from 'react'
+import { IdeaCanvas, processCanvasCommand, createInitialCanvasState } from '@refinery/sdk-core'
 import type { Graph } from '@refinery/schema'
+import type { RendererCommand } from '@refinery/store'
 
-// Generate sample data
-const generateSampleGraph = (): Graph => {
-  const nodes = []
-  const edges = []
-
-  // Create central node
-  nodes.push({
-    id: 'center',
-    label: 'Cryptiq Mind Map',
-    position: { x: 0, y: 0, z: 0 },
-  })
-
-  // Create topic nodes
-  const topics = [
-    'Product Features',
-    'User Research',
-    'Technical Architecture',
-    'Marketing Strategy',
-    'Competitive Analysis',
-    'Roadmap',
-  ]
-
-  topics.forEach((topic, i) => {
-    const angle = (i / topics.length) * Math.PI * 2
-    const radius = 200
-    const id = `topic-${i}`
-
-    nodes.push({
-      id,
-      label: topic,
-      position: {
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-        z: 0,
-      },
-    })
-
-    edges.push({
-      id: `edge-center-${id}`,
-      source: 'center',
-      target: id,
-      type: 'relates-to' as const,
-      strength: 1,
-      directed: false,
-      visible: true,
-    })
-
-    // Add sub-nodes
-    for (let j = 0; j < 3; j++) {
-      const subId = `${id}-sub-${j}`
-      const subAngle = angle + (j - 1) * 0.3
-      const subRadius = radius + 100
-
-      nodes.push({
-        id: subId,
-        label: `${topic} Item ${j + 1}`,
-        position: {
-          x: Math.cos(subAngle) * subRadius,
-          y: Math.sin(subAngle) * subRadius,
-          z: 0,
-        },
-      })
-
-      edges.push({
-        id: `edge-${id}-${subId}`,
-        source: id,
-        target: subId,
-        type: 'contains' as const,
-        strength: 0.8,
-        directed: true,
-        visible: true,
-      })
-    }
-  })
-
-  return { nodes, edges }
+// Canvas state reducer
+function canvasReducer(state: any, command: RendererCommand) {
+  return processCanvasCommand(state, command)
 }
 
 export default function Home() {
-  const graph = generateSampleGraph()
+  const [graph, setGraph] = useState<Graph | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Initialize canvas state
+  const [canvasState, dispatch] = useReducer(canvasReducer, null, () => createInitialCanvasState())
+
+  // Fetch graph data from API
+  useEffect(() => {
+    async function fetchGraph() {
+      try {
+        const response = await fetch('/api/mindmap')
+        if (!response.ok) {
+          throw new Error(`Failed to fetch graph: ${response.statusText}`)
+        }
+        const data = await response.json()
+        setGraph(data)
+        
+        // Initialize canvas state with loaded graph data
+        if (data.nodes && data.edges) {
+          dispatch({ type: 'BATCH_ADD_NODES', payload: { nodes: data.nodes } })
+          dispatch({ type: 'BATCH_ADD_EDGES', payload: { edges: data.edges } })
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load graph')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGraph()
+  }, [])
+
+  if (loading) {
+    return (
+      <main className="w-screen h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-white text-xl">Loading 71-node graph...</div>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="w-screen h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-red-500 text-xl">Error: {error}</div>
+      </main>
+    )
+  }
+
+  if (!graph) {
+    return (
+      <main className="w-screen h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-white text-xl">No graph data available</div>
+      </main>
+    )
+  }
 
   return (
     <main className="w-screen h-screen">
-      <ApertureThemeProvider>
-        <IdeaAperture graph={graph} showHelp={false} ariaLabel="Cryptiq Mind Map Demo" />
-      </ApertureThemeProvider>
+      <IdeaCanvas
+        nodes={graph.nodes}
+        edges={graph.edges}
+        selectedNodeIds={canvasState.selectedNodeIds}
+        selectedEdgeIds={canvasState.selectedEdgeIds}
+        hoveredNodeId={canvasState.hoveredNodeId}
+        hoveredEdgeId={canvasState.hoveredEdgeId}
+        camera={canvasState.camera}
+        zoom={canvasState.zoom}
+        theme={canvasState.theme}
+        highlightedNodes={canvasState.highlightedNodes}
+        highlightedEdges={canvasState.highlightedEdges}
+        onCommand={dispatch}
+        showStats={true}
+      />
     </main>
   )
 }
