@@ -70,3 +70,6 @@ dev-debug.log
 /apps/legacy-import/cryptic-vault-demo/node_modules/
 /apps/legacy-import/cryptic-vault-demo/.turbo/
 /apps/legacy-import/cryptic-vault-demo/.DS_Store
+
+# Git worktrees
+.worktrees/
