@@ -12,8 +12,12 @@ const NODE_TYPE_COLORS: Record<string, string> = {
   Analytics: '#6366f1',
 };
 
+interface CategoryNode {
+  label?: string;
+}
+
 export interface CategoryHUDProps {
-  nodes: any[];
+  nodes: CategoryNode[];
   /**
    * Called every time the active categories set changes.
    * The callback receives a Set<string> with the active category names.

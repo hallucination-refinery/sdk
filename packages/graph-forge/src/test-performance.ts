@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 import { forgeFromJSON } from './forgeGraph.js'
 import { writeFileSync } from 'fs'
 import { tmpdir } from 'os'

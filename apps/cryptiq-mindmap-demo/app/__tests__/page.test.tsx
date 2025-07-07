@@ -4,12 +4,12 @@ import Home from '../page'
 
 // Mock the IdeaAperture component since it depends on Three.js
 vi.mock('@refinery/widget-aperture', () => ({
-  IdeaAperture: ({ graph, ariaLabel }: any) => (
+  IdeaAperture: ({ graph, ariaLabel }: { graph: { nodes: { length: number }[], edges: { length: number }[] }; ariaLabel?: string }) => (
     <div data-testid="idea-aperture" aria-label={ariaLabel} data-nodes={graph.nodes.length} data-edges={graph.edges.length}>
       Mindmap visualization
     </div>
   ),
-  ApertureThemeProvider: ({ children }: any) => <>{children}</>,
+  ApertureThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
 describe('Home Page', () => {
