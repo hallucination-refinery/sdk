@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "dist",
+    "composite": false,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "rootDir": "../..",
+    "skipLibCheck": true
+  },
+  "include": ["src", "../ideanode/src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "ignorePatterns": ["dist"]
+}

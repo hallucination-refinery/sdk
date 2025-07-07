@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense } from 'react';
 
 // Dynamic import for Three.js components to avoid SSR issues
 const CrypticVaultScene = dynamic(
@@ -21,9 +20,7 @@ const CrypticVaultScene = dynamic(
 export default function Home() {
   return (
     <main className="relative w-screen h-screen overflow-hidden">
-      <Suspense fallback={null}>
-        <CrypticVaultScene />
-      </Suspense>
+      <CrypticVaultScene />
     </main>
   );
 }

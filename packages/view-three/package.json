@@ -1,0 +1,44 @@
+{
+  "name": "@refinery/view-three",
+  "version": "0.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {},
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ]
+  },
+  "sideEffects": false,
+  "peerDependencies": {
+    "@react-three/fiber": "^9.1.2",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "0.176.0"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.103.0",
+    "@react-three/fiber": "^9.0.0",
+    "@refinery/gesture-hands": "workspace:*",
+    "@refinery/ideanode": "workspace:*",
+    "@refinery/interaction": "workspace:*",
+    "@refinery/thinkable": "workspace:*",
+    "gsap": "^3.12.5",
+    "r3f-forcegraph": "^1.0.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "three": "^0.176.0",
+    "three-stdlib": "^2.35.6"
+  },
+  "devDependencies": {
+    "@types/next": "9.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.176.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "next": "15.3.2",
+    "typescript": "^5.0.0"
+  }
+}

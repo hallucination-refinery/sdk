@@ -1,0 +1,7 @@
+{
+  "name": "@refinery/gesture-hands",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false
+}
