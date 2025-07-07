@@ -14,7 +14,8 @@
     "next": "15.3.5",
     "@refinery/sdk-core": "workspace:*",
     "@refinery/graph-forge": "workspace:*",
-    "@refinery/widget-aperture": "workspace:*"
+    "@refinery/widget-aperture": "workspace:*",
+    "three": "^0.173.0"
   },
   "devDependencies": {
     "typescript": "^5",
