@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  * {
+    @apply border-border;
+  }
+}
+
+@layer components {
+  .privacy-badge {
+    @apply fixed top-4 right-4 px-4 py-2 rounded-lg;
+    @apply bg-green-900/20 border border-green-500/30;
+    @apply backdrop-blur-md text-green-400;
+    @apply flex items-center gap-2 text-sm font-medium;
+    @apply animate-fade-in;
+  }
+
+  .memory-label {
+    @apply absolute px-2 py-1 rounded text-xs;
+    @apply bg-slate-900/80 backdrop-blur-sm;
+    @apply border border-slate-700/50;
+    @apply pointer-events-none select-none;
+    @apply transition-opacity duration-200;
+  }
+
+  .hud-overlay {
+    @apply fixed inset-0 pointer-events-none;
+    @apply flex flex-col justify-between p-8;
+  }
+
+  .logo-container {
+    @apply fixed bottom-8 left-8 opacity-0;
+    @apply transition-opacity duration-1000;
+  }
+}
+
+@layer utilities {
+  .glow {
+    filter: drop-shadow(0 0 20px currentColor);
+  }
+
+  .brain-glow {
+    filter: drop-shadow(0 0 40px rgba(236, 72, 153, 0.5));
+  }
+
+  .hippo-bounce {
+    animation: bounce-in 0.5s ease-out;
+  }
+}

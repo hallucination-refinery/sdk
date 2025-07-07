@@ -63,3 +63,10 @@ dev-debug.log
 .cursor/
 .pnpm-store/
 .taskmaster/state.json
+
+# vault import artefacts
+/apps/legacy-import/cryptic-vault-demo/.next/
+/apps/legacy-import/cryptic-vault-demo/dist/
+/apps/legacy-import/cryptic-vault-demo/node_modules/
+/apps/legacy-import/cryptic-vault-demo/.turbo/
+/apps/legacy-import/cryptic-vault-demo/.DS_Store
