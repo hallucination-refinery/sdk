@@ -1,0 +1,3017 @@
+{
+  "nodes": [
+    {
+      "id": "c_001",
+      "type": "Value",
+      "label": "Authenticity",
+      "topics": [
+        "value",
+        "authenticity",
+        "communication",
+        "interpersonal skills"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "meta": {
+        "topics": [
+          "value",
+          "authenticity",
+          "communication",
+          "interpersonal skills"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_002",
+      "type": "Trait",
+      "label": "Apologize",
+      "topics": [
+        "trait",
+        "conflict resolution",
+        "apologies",
+        "relationship maintenance"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "trait",
+          "conflict resolution",
+          "apologies",
+          "relationship maintenance"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_003",
+      "type": "Value",
+      "label": "Honesty",
+      "topics": [
+        "value",
+        "emotional intelligence",
+        "personal growth",
+        "balance"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "meta": {
+        "topics": [
+          "value",
+          "emotional intelligence",
+          "personal growth",
+          "balance"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_004",
+      "type": "Value",
+      "label": "Sensitivity",
+      "topics": [
+        "value",
+        "emotional intelligence",
+        "personal growth",
+        "balance"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "meta": {
+        "topics": [
+          "value",
+          "emotional intelligence",
+          "personal growth",
+          "balance"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_005",
+      "type": "Emotion",
+      "label": "Anxiety",
+      "topics": [
+        "emotion",
+        "anxiety coping",
+        "entertainment",
+        "personal habits"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotion",
+          "anxiety coping",
+          "entertainment",
+          "personal habits"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_006",
+      "type": "Coping-Action",
+      "label": "Movies",
+      "topics": [
+        "coping",
+        "anxiety coping",
+        "entertainment",
+        "personal habits"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping",
+          "anxiety coping",
+          "entertainment",
+          "personal habits"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_007",
+      "type": "Coping-Action",
+      "label": "Video Games",
+      "topics": [
+        "coping",
+        "anxiety coping",
+        "entertainment",
+        "personal habits"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping",
+          "anxiety coping",
+          "entertainment",
+          "personal habits"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_008",
+      "type": "Coping-Action",
+      "label": "Games",
+      "topics": [
+        "coping",
+        "anxiety coping",
+        "entertainment",
+        "personal habits"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping",
+          "anxiety coping",
+          "entertainment",
+          "personal habits"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_009",
+      "type": "Coping-Action",
+      "label": "Fantasy",
+      "topics": [
+        "coping",
+        "fantasy genre",
+        "coping mechanisms",
+        "personal preferences"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping",
+          "fantasy genre",
+          "coping mechanisms",
+          "personal preferences"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_010",
+      "type": "Trait",
+      "label": "Self-talk",
+      "topics": [
+        "trait",
+        "self-talk",
+        "self-compassion",
+        "coping mechanisms"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "trait",
+          "self-talk",
+          "self-compassion",
+          "coping mechanisms"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_011",
+      "type": "Emotion",
+      "label": "Comfortable",
+      "topics": [
+        "emotion",
+        "coping skills",
+        "personal growth",
+        "social comfort"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotion",
+          "coping skills",
+          "personal growth",
+          "social comfort"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_012",
+      "type": "Trait",
+      "label": "Supportive Helper",
+      "topics": [
+        "emotional intelligence",
+        "support",
+        "coping strategies"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "emotional intelligence",
+          "support",
+          "coping strategies"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_013",
+      "type": "Coping-Action",
+      "label": "Prayer",
+      "topics": [
+        "coping",
+        "spirituality",
+        "emotional management",
+        "self-care"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping",
+          "spirituality",
+          "emotional management",
+          "self-care"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_015",
+      "type": "Coping-Action",
+      "label": "AI Planning",
+      "topics": [
+        "AI interaction",
+        "planning",
+        "career growth",
+        "relationships"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "AI interaction",
+          "planning",
+          "career growth",
+          "relationships"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_016",
+      "type": "Emotion",
+      "label": "Happy",
+      "topics": [
+        "emotion",
+        "intuition",
+        "decision making",
+        "self trust",
+        "emotional response"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotion",
+          "intuition",
+          "decision making",
+          "self trust",
+          "emotional response"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_017",
+      "type": "Emotion",
+      "label": "Confident",
+      "topics": [
+        "emotion",
+        "intuition",
+        "decision making",
+        "self trust",
+        "emotional response"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotion",
+          "intuition",
+          "decision making",
+          "self trust",
+          "emotional response"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_018",
+      "type": "Value",
+      "label": "Trust",
+      "topics": [
+        "value",
+        "intuition",
+        "decision making",
+        "self trust",
+        "emotional response"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "narrativeRole": "hub",
+      "meta": {
+        "topics": [
+          "value",
+          "intuition",
+          "decision making",
+          "self trust",
+          "emotional response"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_019",
+      "type": "Emotion",
+      "label": "Embarrassed",
+      "topics": [
+        "emotion",
+        "vulnerability",
+        "fear",
+        "emotions"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotion",
+          "vulnerability",
+          "fear",
+          "emotions"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_020",
+      "type": "Emotion",
+      "label": "Worried",
+      "topics": [
+        "emotion",
+        "vulnerability",
+        "fear",
+        "emotions"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotion",
+          "vulnerability",
+          "fear",
+          "emotions"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_021",
+      "type": "Emotion",
+      "label": "Fear",
+      "topics": [
+        "emotion",
+        "vulnerability",
+        "fear",
+        "emotions"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotion",
+          "vulnerability",
+          "fear",
+          "emotions"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_022",
+      "type": "Trait",
+      "label": "Oversharing",
+      "topics": [
+        "trait",
+        "coping",
+        "strategies",
+        "self-awareness"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "trait",
+          "coping",
+          "strategies",
+          "self-awareness"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_023",
+      "type": "Value",
+      "label": "Vulnerability",
+      "topics": [
+        "value",
+        "positive experiences",
+        "bonding",
+        "support"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "meta": {
+        "topics": [
+          "value",
+          "positive experiences",
+          "bonding",
+          "support"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_024",
+      "type": "Coping-Action",
+      "label": "Calling",
+      "topics": [
+        "coping",
+        "communication",
+        "emotional processing",
+        "support network"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping",
+          "communication",
+          "emotional processing",
+          "support network"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_025",
+      "type": "Value",
+      "label": "Self-care",
+      "topics": [
+        "value",
+        "self-care",
+        "environment",
+        "personal preference"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "narrativeRole": "hub",
+      "meta": {
+        "topics": [
+          "value",
+          "self-care",
+          "environment",
+          "personal preference"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_026",
+      "type": "Emotion",
+      "label": "Guilt from Self-Care",
+      "topics": [
+        "emotions",
+        "self-prioritization",
+        "guilt"
+      ],
+      "secret": false,
+      "clusterId": "cluster_emotion",
+      "meta": {
+        "topics": [
+          "emotions",
+          "self-prioritization",
+          "guilt"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_027",
+      "type": "Trait",
+      "label": "Balancing Self vs Others",
+      "topics": [
+        "guilt management",
+        "self-improvement",
+        "empathy"
+      ],
+      "secret": false,
+      "clusterId": "cluster_challenge",
+      "meta": {
+        "topics": [
+          "guilt management",
+          "self-improvement",
+          "empathy"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_028",
+      "type": "Coping-Action",
+      "label": "Pacing & Rumination",
+      "topics": [
+        "coping mechanisms",
+        "emotional processing",
+        "stress management"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping mechanisms",
+          "emotional processing",
+          "stress management"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_029",
+      "type": "Trait",
+      "label": "Limited Verbal Processing",
+      "topics": [
+        "emotional growth",
+        "introspection",
+        "communication"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "emotional growth",
+          "introspection",
+          "communication"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_030",
+      "type": "Trait",
+      "label": "Alternative Helper",
+      "topics": [
+        "problem-solving",
+        "support",
+        "solutions"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "problem-solving",
+          "support",
+          "solutions"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_031",
+      "type": "Challenge",
+      "label": "Awkward After Declining",
+      "topics": [
+        "relationship dynamics",
+        "challenges",
+        "personal growth"
+      ],
+      "secret": false,
+      "clusterId": "cluster_challenge",
+      "meta": {
+        "topics": [
+          "relationship dynamics",
+          "challenges",
+          "personal growth"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_032",
+      "type": "Pattern",
+      "label": "Blame When Hurt",
+      "topics": [
+        "emotions",
+        "behavior",
+        "response patterns"
+      ],
+      "secret": false,
+      "clusterId": "cluster_challenge",
+      "meta": {
+        "topics": [
+          "emotions",
+          "behavior",
+          "response patterns"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_033",
+      "type": "Goal",
+      "label": "Compassionate Communication",
+      "topics": [
+        "communication",
+        "self-improvement",
+        "conflict management"
+      ],
+      "secret": false,
+      "clusterId": "cluster_challenge",
+      "narrativeRole": "hub",
+      "meta": {
+        "topics": [
+          "communication",
+          "self-improvement",
+          "conflict management"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_034",
+      "type": "Challenge",
+      "label": "Emotional Regulation Gap",
+      "topics": [
+        "emotional management",
+        "coping skills",
+        "communication"
+      ],
+      "secret": false,
+      "clusterId": "cluster_challenge",
+      "meta": {
+        "topics": [
+          "emotional management",
+          "coping skills",
+          "communication"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_035",
+      "type": "Value",
+      "label": "Faith as Survival",
+      "topics": [
+        "faith",
+        "survival",
+        "coping mechanisms"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "meta": {
+        "topics": [
+          "faith",
+          "survival",
+          "coping mechanisms"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_036",
+      "type": "Coping-Action",
+      "label": "Hope for Belonging",
+      "topics": [
+        "hope",
+        "self-worth",
+        "belonging"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "narrativeRole": "hub",
+      "meta": {
+        "topics": [
+          "hope",
+          "self-worth",
+          "belonging"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_038",
+      "type": "Trait",
+      "label": "Creative Flow",
+      "topics": [
+        "creativity",
+        "work habits",
+        "personal projects"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "narrativeRole": "hub",
+      "meta": {
+        "topics": [
+          "creativity",
+          "work habits",
+          "personal projects"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_039",
+      "type": "Value",
+      "label": "Need for Reassurance",
+      "topics": [
+        "reassurance",
+        "communication",
+        "security"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "meta": {
+        "topics": [
+          "reassurance",
+          "communication",
+          "security"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_040",
+      "type": "Coping-Action",
+      "label": "Internal & Social Processing",
+      "topics": [
+        "coping mechanisms",
+        "social support",
+        "emotional processing"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "coping mechanisms",
+          "social support",
+          "emotional processing"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_041",
+      "type": "Trait",
+      "label": "Deep Philosophical Thinker",
+      "topics": [
+        "philosophy",
+        "theology",
+        "Jungian psychology",
+        "reflective thinking"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "philosophy",
+          "theology",
+          "Jungian psychology",
+          "reflective thinking"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_042",
+      "type": "Trait",
+      "label": "Adaptability",
+      "topics": [
+        "adaptability",
+        "flexibility",
+        "mindset"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "narrativeRole": "hub",
+      "meta": {
+        "topics": [
+          "adaptability",
+          "flexibility",
+          "mindset"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_043",
+      "type": "Trait",
+      "label": "Immediate Planner",
+      "topics": [
+        "goal setting",
+        "planning",
+        "proactive"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "goal setting",
+          "planning",
+          "proactive"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_044",
+      "type": "Trait",
+      "label": "Task-Driven Happiness",
+      "topics": [
+        "motivation",
+        "happiness",
+        "task-oriented"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "narrativeRole": "hub",
+      "meta": {
+        "topics": [
+          "motivation",
+          "happiness",
+          "task-oriented"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_045",
+      "type": "Coping-Action",
+      "label": "Exercise & Mindfulness",
+      "topics": [
+        "exercise",
+        "mindfulness",
+        "wellness"
+      ],
+      "secret": false,
+      "clusterId": "cluster_coping",
+      "meta": {
+        "topics": [
+          "exercise",
+          "mindfulness",
+          "wellness"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_046",
+      "type": "Value",
+      "label": "Philosophical Gratitude",
+      "topics": [
+        "philosophy",
+        "spirituality",
+        "gratitude"
+      ],
+      "secret": false,
+      "clusterId": "cluster_value",
+      "meta": {
+        "topics": [
+          "philosophy",
+          "spirituality",
+          "gratitude"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "c_047",
+      "type": "Trait",
+      "label": "Tech Explorer",
+      "topics": [
+        "technology",
+        "creativity",
+        "self-reflection"
+      ],
+      "secret": false,
+      "clusterId": "cluster_trait",
+      "meta": {
+        "topics": [
+          "technology",
+          "creativity",
+          "self-reflection"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_101",
+      "type": "Pattern",
+      "label": "Proactive Coping",
+      "topics": [
+        "behaviour"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "behaviour"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_102",
+      "type": "Emotion",
+      "label": "Curiosity",
+      "topics": [
+        "emotion",
+        "motivation"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "emotion",
+          "motivation"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_103",
+      "type": "Pattern",
+      "label": "Tech Experimentation",
+      "topics": [
+        "technology",
+        "learning"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "technology",
+          "learning"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_104",
+      "type": "Trait",
+      "label": "Resilience",
+      "topics": [
+        "trait",
+        "persistence"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "trait",
+          "persistence"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_105",
+      "type": "Emotion",
+      "label": "Calm Focus",
+      "topics": [
+        "emotion",
+        "mindfulness"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "emotion",
+          "mindfulness"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_106",
+      "type": "Pattern",
+      "label": "Empathic Listening",
+      "topics": [
+        "communication"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "communication"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_107",
+      "type": "Trait",
+      "label": "Goal Orientation",
+      "topics": [
+        "motivation"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "motivation"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_108",
+      "type": "Emotion",
+      "label": "Mindful Awareness",
+      "topics": [
+        "emotion",
+        "mindfulness"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "emotion",
+          "mindfulness"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_109",
+      "type": "Trait",
+      "label": "Digital Escape",
+      "topics": [
+        "coping",
+        "technology"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "coping",
+          "technology"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_110",
+      "type": "Pattern",
+      "label": "Adaptive Strategy",
+      "topics": [
+        "adaptability"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "adaptability"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_111",
+      "type": "Emotion",
+      "label": "Self-Compassion",
+      "topics": [
+        "emotion",
+        "self-care"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "emotion",
+          "self-care"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_112",
+      "type": "Pattern",
+      "label": "Guilt Cycle",
+      "topics": [
+        "behaviour",
+        "emotion"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "behaviour",
+          "emotion"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_113",
+      "type": "Value",
+      "label": "Interpersonal Trust",
+      "topics": [
+        "value",
+        "relationships"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "value",
+          "relationships"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_114",
+      "type": "Pattern",
+      "label": "Inspirational Imagery",
+      "topics": [
+        "creativity"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "creativity"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_115",
+      "type": "Trait",
+      "label": "Flexibility Drive",
+      "topics": [
+        "adaptability"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "adaptability"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_116",
+      "type": "Pattern",
+      "label": "Productive Momentum",
+      "topics": [
+        "productivity"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "productivity"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_117",
+      "type": "Trait",
+      "label": "Conflict Reflection",
+      "topics": [
+        "communication",
+        "self-awareness"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "communication",
+          "self-awareness"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_118",
+      "type": "Emotion",
+      "label": "Wonder",
+      "topics": [
+        "emotion",
+        "curiosity"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "emotion",
+          "curiosity"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_119",
+      "type": "Pattern",
+      "label": "Body–Mind Alignment",
+      "topics": [
+        "wellness"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "wellness"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_120",
+      "type": "Emotion",
+      "label": "Assurance",
+      "topics": [
+        "emotion",
+        "security"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "emotion",
+          "security"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_121",
+      "type": "Value",
+      "label": "Environment Quality",
+      "topics": [
+        "value",
+        "self-care"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "value",
+          "self-care"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_122",
+      "type": "Trait",
+      "label": "Imaginative Vision",
+      "topics": [
+        "creativity",
+        "future"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "creativity",
+          "future"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_123",
+      "type": "Pattern",
+      "label": "Achievement Satisfaction",
+      "topics": [
+        "motivation",
+        "success"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "motivation",
+          "success"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_124",
+      "type": "Value",
+      "label": "Relational Security",
+      "topics": [
+        "value",
+        "relationships"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "value",
+          "relationships"
+        ],
+        "secret": false
+      }
+    },
+    {
+      "id": "n_125",
+      "type": "Emotion",
+      "label": "Belonging Anticipation",
+      "topics": [
+        "emotion",
+        "relationships"
+      ],
+      "secret": false,
+      "clusterId": "cluster_bridge",
+      "narrativeRole": "bridge",
+      "meta": {
+        "topics": [
+          "emotion",
+          "relationships"
+        ],
+        "secret": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "c_003",
+      "target": "c_004",
+      "type": "balances_with"
+    },
+    {
+      "source": "c_005",
+      "target": "c_006",
+      "type": "alleviates"
+    },
+    {
+      "source": "c_005",
+      "target": "c_007",
+      "type": "alleviates"
+    },
+    {
+      "source": "c_005",
+      "target": "c_008",
+      "type": "alleviates"
+    },
+    {
+      "source": "c_005",
+      "target": "c_009",
+      "type": "alleviates"
+    },
+    {
+      "source": "c_005",
+      "target": "c_028",
+      "type": "triggers"
+    },
+    {
+      "source": "c_005",
+      "target": "c_045",
+      "type": "managed_by"
+    },
+    {
+      "source": "c_010",
+      "target": "c_022",
+      "type": "leads_to"
+    },
+    {
+      "source": "c_013",
+      "target": "c_016",
+      "type": "produces"
+    },
+    {
+      "source": "c_013",
+      "target": "c_017",
+      "type": "produces"
+    },
+    {
+      "source": "c_013",
+      "target": "c_035",
+      "type": "foundation_of"
+    },
+    {
+      "source": "c_015",
+      "target": "c_016",
+      "type": "produces"
+    },
+    {
+      "source": "c_015",
+      "target": "c_017",
+      "type": "produces"
+    },
+    {
+      "source": "c_018",
+      "target": "c_013",
+      "type": "supported_by"
+    },
+    {
+      "source": "c_018",
+      "target": "c_015",
+      "type": "supported_by"
+    },
+    {
+      "source": "c_019",
+      "target": "c_020",
+      "type": "co_occurs_with"
+    },
+    {
+      "source": "c_019",
+      "target": "c_021",
+      "type": "co_occurs_with"
+    },
+    {
+      "source": "c_020",
+      "target": "c_021",
+      "type": "co_occurs_with"
+    },
+    {
+      "source": "c_021",
+      "target": "c_023",
+      "type": "barrier_to"
+    },
+    {
+      "source": "c_023",
+      "target": "c_022",
+      "type": "risk_of"
+    },
+    {
+      "source": "c_023",
+      "target": "c_018",
+      "type": "builds"
+    },
+    {
+      "source": "c_024",
+      "target": "c_040",
+      "type": "method_of"
+    },
+    {
+      "source": "c_026",
+      "target": "c_027",
+      "type": "resolved_by"
+    },
+    {
+      "source": "c_032",
+      "target": "c_033",
+      "type": "contradicts"
+    },
+    {
+      "source": "c_033",
+      "target": "c_034",
+      "type": "blocked_by"
+    },
+    {
+      "source": "c_041",
+      "target": "c_046",
+      "type": "relates_to"
+    },
+    {
+      "source": "c_043",
+      "target": "c_044",
+      "type": "enables"
+    },
+    {
+      "source": "c_001",
+      "target": "c_002",
+      "type": "requires"
+    },
+    {
+      "source": "c_001",
+      "target": "c_003",
+      "type": "reinforces"
+    },
+    {
+      "source": "c_003",
+      "target": "c_001",
+      "type": "reinforces"
+    },
+    {
+      "source": "c_039",
+      "target": "c_018",
+      "type": "seeks"
+    },
+    {
+      "source": "c_029",
+      "target": "c_030",
+      "type": "compensated_by"
+    },
+    {
+      "source": "c_042",
+      "target": "c_043",
+      "type": "balances_with"
+    },
+    {
+      "source": "c_038",
+      "target": "c_047",
+      "type": "synergises"
+    },
+    {
+      "source": "c_047",
+      "target": "c_038",
+      "type": "synergises"
+    },
+    {
+      "source": "c_045",
+      "target": "c_011",
+      "type": "produces"
+    },
+    {
+      "source": "c_024",
+      "target": "c_036",
+      "type": "supported_by"
+    },
+    {
+      "source": "c_031",
+      "target": "c_033",
+      "type": "resolved_by"
+    },
+    {
+      "source": "c_041",
+      "target": "c_038",
+      "type": "inspires"
+    },
+    {
+      "source": "c_009",
+      "target": "c_038",
+      "type": "fuels"
+    },
+    {
+      "source": "c_005",
+      "target": "c_044",
+      "type": "triggers"
+    },
+    {
+      "source": "c_007",
+      "target": "c_044",
+      "type": "alleviates"
+    },
+    {
+      "source": "c_001",
+      "target": "c_033",
+      "type": "motivates"
+    },
+    {
+      "source": "c_004",
+      "target": "c_033",
+      "type": "informs"
+    },
+    {
+      "source": "c_011",
+      "target": "c_025",
+      "type": "supports"
+    },
+    {
+      "source": "c_045",
+      "target": "c_025",
+      "type": "produces"
+    },
+    {
+      "source": "c_020",
+      "target": "c_036",
+      "type": "co_occurs_with"
+    },
+    {
+      "source": "c_030",
+      "target": "c_042",
+      "type": "compensated_by"
+    },
+    {
+      "source": "c_029",
+      "target": "c_042",
+      "type": "leads_to"
+    },
+    {
+      "source": "c_038",
+      "target": "c_005",
+      "type": "reduces"
+    },
+    {
+      "source": "c_044",
+      "target": "c_043",
+      "type": "enables"
+    },
+    {
+      "source": "c_044",
+      "target": "c_032",
+      "type": "mitigates"
+    },
+    {
+      "source": "c_033",
+      "target": "c_034",
+      "type": "resolves"
+    },
+    {
+      "source": "c_033",
+      "target": "c_022",
+      "type": "lowers_risk_of"
+    },
+    {
+      "source": "c_018",
+      "target": "c_016",
+      "type": "produces"
+    },
+    {
+      "source": "c_018",
+      "target": "c_017",
+      "type": "produces"
+    },
+    {
+      "source": "c_025",
+      "target": "c_026",
+      "type": "reduces"
+    },
+    {
+      "source": "c_036",
+      "target": "c_027",
+      "type": "influences"
+    },
+    {
+      "source": "c_042",
+      "target": "c_031",
+      "type": "alleviates"
+    },
+    {
+      "source": "c_042",
+      "target": "c_040",
+      "type": "encourages"
+    },
+    {
+      "source": "n_101",
+      "target": "c_044",
+      "type": "reinforces"
+    },
+    {
+      "source": "c_042",
+      "target": "n_101",
+      "type": "enables"
+    },
+    {
+      "source": "n_102",
+      "target": "c_038",
+      "type": "inspires"
+    },
+    {
+      "source": "n_102",
+      "target": "n_103",
+      "type": "synergises"
+    },
+    {
+      "source": "n_103",
+      "target": "c_047",
+      "type": "encourages"
+    },
+    {
+      "source": "n_104",
+      "target": "c_018",
+      "type": "shapes"
+    },
+    {
+      "source": "c_039",
+      "target": "n_104",
+      "type": "seeks"
+    },
+    {
+      "source": "n_105",
+      "target": "c_025",
+      "type": "supports"
+    },
+    {
+      "source": "n_105",
+      "target": "c_036",
+      "type": "enables"
+    },
+    {
+      "source": "n_106",
+      "target": "c_033",
+      "type": "enables"
+    },
+    {
+      "source": "c_033",
+      "target": "n_106",
+      "type": "reinforces"
+    },
+    {
+      "source": "n_107",
+      "target": "c_044",
+      "type": "drives"
+    },
+    {
+      "source": "c_043",
+      "target": "n_107",
+      "type": "supported_by"
+    },
+    {
+      "source": "n_108",
+      "target": "c_041",
+      "type": "influences"
+    },
+    {
+      "source": "n_108",
+      "target": "c_045",
+      "type": "encourages"
+    },
+    {
+      "source": "n_109",
+      "target": "c_005",
+      "type": "alleviates"
+    },
+    {
+      "source": "c_006",
+      "target": "n_109",
+      "type": "enables"
+    },
+    {
+      "source": "n_110",
+      "target": "c_042",
+      "type": "reinforces"
+    },
+    {
+      "source": "n_110",
+      "target": "c_032",
+      "type": "mitigates"
+    },
+    {
+      "source": "n_111",
+      "target": "c_025",
+      "type": "produces"
+    },
+    {
+      "source": "n_111",
+      "target": "n_112",
+      "type": "leads_to"
+    },
+    {
+      "source": "n_112",
+      "target": "c_026",
+      "type": "reduces"
+    },
+    {
+      "source": "c_026",
+      "target": "n_112",
+      "type": "triggers"
+    },
+    {
+      "source": "n_113",
+      "target": "c_018",
+      "type": "strengthens"
+    },
+    {
+      "source": "n_113",
+      "target": "c_036",
+      "type": "supports"
+    },
+    {
+      "source": "n_114",
+      "target": "c_038",
+      "type": "enables"
+    },
+    {
+      "source": "n_114",
+      "target": "c_041",
+      "type": "inspired_by"
+    },
+    {
+      "source": "n_115",
+      "target": "c_042",
+      "type": "drives"
+    },
+    {
+      "source": "n_115",
+      "target": "c_022",
+      "type": "reduces"
+    },
+    {
+      "source": "n_116",
+      "target": "c_044",
+      "type": "boosts"
+    },
+    {
+      "source": "n_116",
+      "target": "c_040",
+      "type": "encourages"
+    },
+    {
+      "source": "n_117",
+      "target": "c_033",
+      "type": "enables"
+    },
+    {
+      "source": "n_117",
+      "target": "c_031",
+      "type": "alleviates"
+    },
+    {
+      "source": "n_118",
+      "target": "c_047",
+      "type": "amplifies"
+    },
+    {
+      "source": "n_119",
+      "target": "c_045",
+      "type": "reinforces"
+    },
+    {
+      "source": "n_120",
+      "target": "c_018",
+      "type": "enables"
+    },
+    {
+      "source": "n_121",
+      "target": "c_025",
+      "type": "enhances"
+    },
+    {
+      "source": "n_122",
+      "target": "c_038",
+      "type": "fuels"
+    },
+    {
+      "source": "n_123",
+      "target": "c_044",
+      "type": "boosts"
+    },
+    {
+      "source": "n_124",
+      "target": "c_018",
+      "type": "builds"
+    },
+    {
+      "source": "n_125",
+      "target": "c_036",
+      "type": "enables"
+    },
+    {
+      "source": "c_022",
+      "target": "c_031",
+      "type": "contributes_to"
+    },
+    {
+      "source": "c_032",
+      "target": "c_031",
+      "type": "leads_to"
+    },
+    {
+      "source": "n_109",
+      "target": "c_047",
+      "type": "supports"
+    },
+    {
+      "source": "n_109",
+      "target": "c_038",
+      "type": "fuels"
+    },
+    {
+      "source": "c_036",
+      "target": "c_012",
+      "type": "motivates"
+    },
+    {
+      "source": "c_012",
+      "target": "c_033",
+      "type": "supports"
+    },
+    {
+      "source": "c_012",
+      "target": "c_040",
+      "type": "relates_to"
+    }
+  ],
+  "clusters": {
+    "cluster_value": {
+      "name": "Core Values",
+      "color": "#4ECDC4"
+    },
+    "cluster_trait": {
+      "name": "Personality Traits",
+      "color": "#FFE66D"
+    },
+    "cluster_emotion": {
+      "name": "Emotional States",
+      "color": "#FF6B6B"
+    },
+    "cluster_coping": {
+      "name": "Coping Strategies",
+      "color": "#95E1D3"
+    },
+    "cluster_growth": {
+      "name": "Growth Areas",
+      "color": "#F38181"
+    },
+    "cluster_challenge": {
+      "name": "Growth Areas",
+      "color": "#F38181"
+    },
+    "cluster_bridge": {
+      "name": "cluster_bridge",
+      "color": "#AA96DA"
+    }
+  },
+  "memories": [
+    {
+      "id": "m_001",
+      "sentence": "This user values authenticity but acknowledges that it can sometimes lead to stepping on toes.",
+      "conceptIds": [
+        "c_001"
+      ],
+      "secret": false,
+      "date": "2025-06-21",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_002",
+      "sentence": "This user tends to apologize for their part in conflicts to repair or maintain relationships.",
+      "conceptIds": [
+        "c_002"
+      ],
+      "secret": false,
+      "date": "2025-06-21",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_003",
+      "sentence": "This user has learned the importance of balancing honesty with sensitivity and making space for others in interactions.",
+      "conceptIds": [
+        "c_003",
+        "c_004"
+      ],
+      "secret": false,
+      "date": "2025-06-21",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_004",
+      "sentence": "This user finds comfort in movies and video games as distractions when feeling anxious.",
+      "conceptIds": [
+        "c_005",
+        "c_006",
+        "c_007",
+        "c_008"
+      ],
+      "secret": false,
+      "date": "2025-06-21",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_005",
+      "sentence": "This user gravitates towards fantasy themes in movies and video games during anxious times.",
+      "conceptIds": [
+        "c_005",
+        "c_006",
+        "c_007",
+        "c_008",
+        "c_009"
+      ],
+      "secret": false,
+      "date": "2025-06-21",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_006",
+      "sentence": "This user experiences negative self-talk and is seeking ways to manage it.",
+      "conceptIds": [
+        "c_010"
+      ],
+      "secret": false,
+      "date": "2025-06-20",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_007",
+      "sentence": "This user has not yet found strategies that effectively make them feel more comfortable socially or personally.",
+      "conceptIds": [
+        "c_011"
+      ],
+      "secret": false,
+      "date": "2025-06-20",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_008",
+      "sentence": "This user approaches challenging emotional situations by helping others find hope and lessons, ensuring they feel supported.",
+      "conceptIds": [
+        "c_012"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_009",
+      "sentence": "This user relies on prayer as a way to cope with and manage their emotions and well-being while assisting others.",
+      "conceptIds": [
+        "c_013"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_010",
+      "sentence": "This user relies on prayer to find guidance and reassurance in their decisions by seeking a sense of correctness.",
+      "conceptIds": [
+        "c_013"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_011",
+      "sentence": "This user uses AI to help plan and explore new ideas, particularly focusing on career and relationships.",
+      "conceptIds": [
+        "c_015"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_012",
+      "sentence": "This user feels happy and confident when prayer and AI advice align, but ultimately trusts their gut instinct when they diverge.",
+      "conceptIds": [
+        "c_016",
+        "c_017",
+        "c_013",
+        "c_018"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_013",
+      "sentence": "This user sometimes feels embarrassed and worried after being vulnerable, fearing it may be used against them.",
+      "conceptIds": [
+        "c_019",
+        "c_020",
+        "c_021"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_014",
+      "sentence": "This user copes with the risk of oversharing by accepting it and trying to be more mindful in the future.",
+      "conceptIds": [
+        "c_022"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_015",
+      "sentence": "This user has experienced positive outcomes from vulnerability, including forming stronger bonds and receiving mutual sharing and support.",
+      "conceptIds": [
+        "c_023"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_016",
+      "sentence": "This user finds that calling someone during distressful times helps them to articulate the facts rather than just focusing on emotions or personal theories.",
+      "conceptIds": [
+        "c_024"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_017",
+      "sentence": "This user prefers environments that are beautiful, quiet, and secure as part of their self-care practice.",
+      "conceptIds": [
+        "c_025"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_018",
+      "sentence": "This user experiences both positive feelings of being seen and negative feelings of guilt when prioritizing their own needs over others'.",
+      "conceptIds": [
+        "c_026"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_019",
+      "sentence": "This user manages guilt from self-prioritization by trying to compensate for others and is working on better balancing personal needs with the needs of others.",
+      "conceptIds": [
+        "c_027"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_020",
+      "sentence": "This user finds that calling someone during distressful times helps them to articulate the facts rather than just focusing on emotions or personal theories.",
+      "conceptIds": [
+        "c_024"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_021",
+      "sentence": "This user has a tendency to pace, ruminate, and engage in self-dialogue when upset, looking for ways to process their emotions.",
+      "conceptIds": [
+        "c_028"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_022",
+      "sentence": "This user does not perceive a change in handling future emotional situations after verbalizing their current feelings to others.",
+      "conceptIds": [
+        "c_029"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_023",
+      "sentence": "This user often tries to find alternative ways to assist others when they cannot provide direct help.",
+      "conceptIds": [
+        "c_030"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_024",
+      "sentence": "This user experiences internal discomfort when they cannot meet the expectations of others.",
+      "conceptIds": [
+        "c_026"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_025",
+      "sentence": "This user faces awkwardness in relationships after declining requests for help, and has not yet developed strategies to manage this tension.",
+      "conceptIds": [
+        "c_031"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_026",
+      "sentence": "This user tends to respond with blame and shame when feeling rejected and hurt.",
+      "conceptIds": [
+        "c_032"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_027",
+      "sentence": "This user seeks ways to improve their communication and avoid cruelty during difficult interactions.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_028",
+      "sentence": "This user struggles to identify strategies for managing emotions constructively in challenging conversations.",
+      "conceptIds": [
+        "c_034"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_029",
+      "sentence": "This user relies on their faith as a significant factor in their survival during times of deep despair.",
+      "conceptIds": [
+        "c_035"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_030",
+      "sentence": "This user has not made significant changes in their life following a serious crisis but reflects on the role of prayer and unanswered requests.",
+      "conceptIds": [
+        "c_013"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_031",
+      "sentence": "This user copes with feelings of being unloved or rejected by holding onto hope that they will be valued or find a sense of belonging in the future.",
+      "conceptIds": [
+        "c_036"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_032",
+      "sentence": "This user experiences tension in their chest and throat when anxious and uses breathing and focusing on actionable steps to alleviate this tension.",
+      "conceptIds": [
+        "c_005"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_033",
+      "sentence": "This user tends to focus on tasks that make a significant impact, as a means to cope with anxiety.",
+      "conceptIds": [
+        "c_005"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_034",
+      "sentence": "This user tends to select movies spontaneously, based on what catches their interest at the moment.",
+      "conceptIds": [
+        "c_006"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_035",
+      "sentence": "This user prefers to let their creativity guide them when working on products, rather than adhering to a strict routine.",
+      "conceptIds": [
+        "c_038"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_036",
+      "sentence": "This user experienced anxiety and relied on personal faith and courage when facing uncertainty in relationships.",
+      "conceptIds": [
+        "c_005"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_037",
+      "sentence": "This user values reassurance and consistent communication to feel secure in their relationships.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_038",
+      "sentence": "This user is dealing with the aftermath of a breakup, which may affect their perspective on trust and long-distance relationships.",
+      "conceptIds": [
+        "c_018"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_039",
+      "sentence": "This user processes negative feelings by reflecting internally or seeking support from friends.",
+      "conceptIds": [
+        "c_040"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_040",
+      "sentence": "This user prefers step-by-step guidance and clear, detailed explanations when learning or working on technical tasks.",
+      "conceptIds": [
+        "c_038"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_041",
+      "sentence": "This user appreciates retro internet aesthetics, Studio Ghibli-style art, and nostalgic fantasy adventure visuals.",
+      "conceptIds": [
+        "c_009"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_042",
+      "sentence": "This user prefers concise, engaging, and high-quality communication, particularly when crafting messages to potential business partners.",
+      "conceptIds": [
+        "c_038"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_043",
+      "sentence": "This user has a strained relationship with their mother, characterized by superficial interactions and emotional boundary challenges.",
+      "conceptIds": [
+        "c_028"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_044",
+      "sentence": "This user has extreme near-sightedness and is notably taller compared to their family.",
+      "conceptIds": [
+        "c_028"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_045",
+      "sentence": "This user frequently engages in reflective conversations on philosophy, theology, and Jungian archetypes.",
+      "conceptIds": [
+        "c_041"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_046",
+      "sentence": "This user is adaptable and can go with the flow when plans change unexpectedly.",
+      "conceptIds": [
+        "c_042"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_047",
+      "sentence": "This user is resilient and feels a strong obligation to keep going despite challenges.",
+      "conceptIds": [
+        "c_042"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_048",
+      "sentence": "This user relies on prayer as a strategy to maintain a positive mindset during setbacks.",
+      "conceptIds": [
+        "c_013"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_049",
+      "sentence": "This user immediately begins planning after setting a big personal goal.",
+      "conceptIds": [
+        "c_043"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_050",
+      "sentence": "This user maintains motivation and happiness by directly engaging with tasks.",
+      "conceptIds": [
+        "c_044"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_051",
+      "sentence": "This user relies on prayer and honesty as a foundation before addressing their needs directly.",
+      "conceptIds": [
+        "c_013",
+        "c_003"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_052",
+      "sentence": "This user processes negative feelings by reflecting internally or seeking support from friends.",
+      "conceptIds": [
+        "c_040"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_053",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": true,
+      "date": "2025-04-27",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_054",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": false,
+      "date": "2025-05-24",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_055",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": true,
+      "date": "2025-05-14",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_056",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": false,
+      "date": "2025-05-31",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_057",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": false,
+      "date": "2025-06-06",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_058",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-05-17",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_059",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": false,
+      "date": "2025-06-14",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_060",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": true,
+      "date": "2025-05-31",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_061",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": false,
+      "date": "2025-06-05",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_062",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": true,
+      "date": "2025-05-05",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_063",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": false,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_064",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": true,
+      "date": "2025-06-10",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_065",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-05-13",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_066",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": false,
+      "date": "2025-06-13",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_067",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": false,
+      "date": "2025-06-22",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_068",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-06-05",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_069",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": true,
+      "date": "2025-05-22",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_070",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": false,
+      "date": "2025-06-03",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_071",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": false,
+      "date": "2025-05-31",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_072",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": true,
+      "date": "2025-06-06",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_073",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": true,
+      "date": "2025-06-19",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_074",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-06-14",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_075",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": true,
+      "date": "2025-05-24",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_076",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": true,
+      "date": "2025-04-26",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_077",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": false,
+      "date": "2025-05-29",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_078",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": true,
+      "date": "2025-05-28",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_079",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-06-08",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_080",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": true,
+      "date": "2025-04-25",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_081",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": true,
+      "date": "2025-05-31",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_082",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": true,
+      "date": "2025-05-10",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_083",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": false,
+      "date": "2025-05-17",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_084",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": true,
+      "date": "2025-06-23",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_085",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": false,
+      "date": "2025-04-25",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_086",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-04-28",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_087",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": false,
+      "date": "2025-05-05",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_088",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-04-27",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_089",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-06-18",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_090",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": false,
+      "date": "2025-05-22",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_091",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-05-18",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_092",
+      "sentence": "This user prioritizes regular exercise and mindful routines to maintain mental clarity.",
+      "conceptIds": [
+        "c_045"
+      ],
+      "secret": true,
+      "date": "2025-06-01",
+      "originalCategory": "Personal Health"
+    },
+    {
+      "id": "m_093",
+      "sentence": "This user draws inspiration from diverse philosophical traditions and practices gratitude.",
+      "conceptIds": [
+        "c_046"
+      ],
+      "secret": false,
+      "date": "2025-05-01",
+      "originalCategory": "Faith"
+    },
+    {
+      "id": "m_094",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": true,
+      "date": "2025-06-21",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_095",
+      "sentence": "This user enjoys exploring new technologies and reflecting on their creative process.",
+      "conceptIds": [
+        "c_047"
+      ],
+      "secret": true,
+      "date": "2025-05-28",
+      "originalCategory": "About Me"
+    },
+    {
+      "id": "m_096",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": true,
+      "date": "2025-05-06",
+      "originalCategory": "Relationships"
+    },
+    {
+      "id": "m_097",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": true,
+      "date": "2025-05-21",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_098",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": true,
+      "date": "2025-06-05",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_099",
+      "sentence": "This user seeks roles blending strategy with hands‑on product execution.",
+      "conceptIds": [
+        "c_033"
+      ],
+      "secret": false,
+      "date": "2025-06-13",
+      "originalCategory": "Career"
+    },
+    {
+      "id": "m_100",
+      "sentence": "This user values open dialogue and believes consistent effort nurtures lasting bonds.",
+      "conceptIds": [
+        "c_039"
+      ],
+      "secret": false,
+      "date": "2025-06-04",
+      "originalCategory": "Relationships"
+    }
+  ],
+  "meta": {
+    "conceptCount": 70,
+    "edgeCount": 108,
+    "lastUpdated": "2025-06-25T04:07:55.314Z"
+  }
+}
