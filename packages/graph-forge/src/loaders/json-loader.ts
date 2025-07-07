@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises'
 import { z } from 'zod'
-import type { Graph, IdeaNode, Edge } from '@refinery/schema'
+import type { Graph, IdeaNode, Edge, EdgeType } from '@refinery/schema'
 import { ForgeError } from '../forgeGraph'
 
 /**
@@ -57,7 +57,7 @@ export async function loadJSON(
     const content = await readFile(filePath, 'utf-8')
     
     // Parse JSON
-    let data: any
+    let data: unknown
     try {
       data = JSON.parse(content)
     } catch (error) {
@@ -124,7 +124,7 @@ export async function loadJSON(
         id: options.generateIds && !edge.id ? `edge-${Date.now()}-${i}` : edge.id,
         source: edge.source,
         target: edge.target,
-        type: (edge.type as any) || 'relates-to',
+        type: (edge.type as EdgeType) || 'relates-to',
         label: '',
         strength: 0.5,
         directed: edge.directed ?? false,

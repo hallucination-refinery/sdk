@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { bench, describe } from 'vitest'
 import { forgeGraph, forgeFromJSON } from './forgeGraph'
 import { writeFileSync } from 'fs'

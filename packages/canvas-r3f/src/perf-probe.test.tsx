@@ -43,7 +43,7 @@ describe('PerfProbe', () => {
     
     // Render component
     const start = performance.now()
-    const { container } = render(<PerfProbe />)
+    const { container: _container } = render(<PerfProbe />)
     const renderTime = performance.now() - start
     
     console.log(`Initial render time: ${renderTime.toFixed(2)} ms`)
