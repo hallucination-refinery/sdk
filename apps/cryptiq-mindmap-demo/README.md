@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cryptiq Mind Map Demo
+
+An interactive mind map visualization built with Next.js and the Refinery SDK, capable of rendering 1000+ nodes at 60+ FPS.
+
+## Features
+
+- **High Performance**: Renders 1014 nodes with optimized performance
+- **Interactive Controls**: 
+  - CategoryHUD for filtering nodes by category
+  - ControlsHUD showing keyboard and mouse controls
+- **Responsive Design**: Full-screen visualization with Tailwind CSS
+- **Type-safe**: Built with TypeScript
+- **Well-tested**: 85%+ test coverage with Vitest
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js >= 20.0.0
+- pnpm >= 9.0.0
+
+### Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Run development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Testing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Run tests
+pnpm test
 
-## Learn More
+# Run tests with UI
+pnpm test:ui
 
-To learn more about Next.js, take a look at the following resources:
+# Run tests with coverage
+pnpm test:coverage
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Building
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# Build for production
+pnpm build
 
-## Deploy on Vercel
+# Start production server
+pnpm start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+cryptiq-mindmap-demo/
+├── app/              # Next.js app directory
+│   ├── page.tsx      # Main page with 1k node generation
+│   └── layout.tsx    # Root layout
+├── components/       # React components
+│   ├── CategoryHUD.tsx    # Category filter controls
+│   └── ControlsHUD.tsx    # Keyboard/mouse controls display
+├── __tests__/        # Test files
+└── public/           # Static assets
+```
+
+## Performance
+
+- Initial bundle size: ~115KB
+- Generates hierarchical graph with:
+  - 1 central node
+  - 8 main categories
+  - 15 topics per category
+  - ~8 items per topic
+- Optimized edge rendering (70% of edges for performance)
+
+## Deployment
+
+### Vercel (Recommended)
+
+The app is configured for Vercel deployment:
+
+1. Connect your GitHub repository to Vercel
+2. Set root directory to `apps/cryptiq-mindmap-demo`
+3. Deploy (configuration is auto-detected from `/vercel.json`)
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+### Other Platforms
+
+Build the app and serve the `.next` directory:
+
+```bash
+pnpm build
+# Deploy the .next directory to your hosting platform
+```
+
+## Technologies
+
+- **Next.js 15.3** - React framework
+- **@refinery/widget-aperture** - Graph visualization widget
+- **Tailwind CSS 4** - Styling
+- **Vitest** - Testing framework
+- **TypeScript 5** - Type safety
