@@ -10,7 +10,8 @@
       "cache": true
     },
     "lint": {
-      "cache": true
+      "cache": true,
+      "filter": ["./packages/**", "./apps/cryptiq-mindmap-demo/**"]
     },
     "dev": {
       "cache": false,
