@@ -2,69 +2,30 @@
 export const version = '0.0.0'
 
 import type { RendererCommand } from '@refinery/store'
+import type { Intent, GestureInput, VoiceInput, MultimodalInput, IntentContext } from '@refinery/schema'
 
-/**
- * Supported intent types for graph manipulation
- */
-export enum Intent {
-  // Node operations
-  CREATE_NODE = 'CREATE_NODE',
-  DELETE_NODE = 'DELETE_NODE',
-  SELECT_NODE = 'SELECT_NODE',
-  MOVE_NODE = 'MOVE_NODE',
-  
-  // Edge operations
-  CREATE_EDGE = 'CREATE_EDGE',
-  DELETE_EDGE = 'DELETE_EDGE',
-  
-  // Navigation
-  PAN_CAMERA = 'PAN_CAMERA',
-  ZOOM_IN = 'ZOOM_IN',
-  ZOOM_OUT = 'ZOOM_OUT',
-  FIT_VIEW = 'FIT_VIEW',
-  
-  // Selection
-  SELECT_ALL = 'SELECT_ALL',
-  CLEAR_SELECTION = 'CLEAR_SELECTION',
-  
-  // Layout
-  TOGGLE_LAYOUT = 'TOGGLE_LAYOUT',
-  RESET_LAYOUT = 'RESET_LAYOUT'
+// Re-export Intent types from schema for convenience
+export type { Intent, GestureInput, VoiceInput, MultimodalInput, IntentContext } from '@refinery/schema'
+
+// Create Intent enum for switch statement compatibility
+const IntentValues = {
+  CREATE_NODE: 'CREATE_NODE' as const,
+  DELETE_NODE: 'DELETE_NODE' as const,
+  SELECT_NODE: 'SELECT_NODE' as const,
+  MOVE_NODE: 'MOVE_NODE' as const,
+  CREATE_EDGE: 'CREATE_EDGE' as const,
+  DELETE_EDGE: 'DELETE_EDGE' as const,
+  PAN_CAMERA: 'PAN_CAMERA' as const,
+  ZOOM_IN: 'ZOOM_IN' as const,
+  ZOOM_OUT: 'ZOOM_OUT' as const,
+  FIT_VIEW: 'FIT_VIEW' as const,
+  SELECT_ALL: 'SELECT_ALL' as const,
+  CLEAR_SELECTION: 'CLEAR_SELECTION' as const,
+  TOGGLE_LAYOUT: 'TOGGLE_LAYOUT' as const,
+  RESET_LAYOUT: 'RESET_LAYOUT' as const,
 }
 
-/**
- * Gesture input data from Mediapipe
- */
-export interface GestureInput {
-  type: 'gesture'
-  gesture: string
-  confidence: number
-  landmarks?: Array<{ x: number; y: number; z: number }>
-}
-
-/**
- * Voice command input from Eleven Labs
- */
-export interface VoiceInput {
-  type: 'voice'
-  command: string
-  confidence: number
-  transcript?: string
-}
-
-/**
- * Union type for all input modalities
- */
-export type MultimodalInput = GestureInput | VoiceInput
-
-/**
- * Intent context with additional parameters
- */
-export interface IntentContext {
-  intent: Intent
-  input: MultimodalInput
-  parameters?: Record<string, unknown>
-}
+export const Intent = IntentValues
 
 /**
  * Emits an intent as a RendererCommand for the store to process
