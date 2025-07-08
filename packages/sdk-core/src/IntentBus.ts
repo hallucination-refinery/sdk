@@ -1,8 +1,8 @@
-import type { IdeaNode, Edge } from '@refinery/schema'
+import type { Node, Edge } from '@refinery/schema'
 import type { RendererCommand } from '@refinery/store'
 
 export interface CanvasState {
-  nodes: Map<string, IdeaNode>
+  nodes: Map<string, Node>
   edges: Map<string, Edge>
   selectedNodeIds: Set<string>
   selectedEdgeIds: Set<string>

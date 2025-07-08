@@ -1,6 +1,6 @@
 'use client';
 
-import { Canvas } from '@react-three/fiber';
+import { Canvas, CanvasProvider } from '@refinery/sdk-core';
 import { OrbitControls as DreiOrbitControls, Stats } from '@react-three/drei';
 import {
   Suspense,
@@ -467,8 +467,10 @@ function CrypticVaultSceneContent() {
 
 export default function CrypticVaultScene() {
   return (
+    <CanvasProvider>
       <CategoryProvider>
         <CrypticVaultSceneContent />
       </CategoryProvider>
+    </CanvasProvider>
   );
 }
