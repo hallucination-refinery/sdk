@@ -12,6 +12,9 @@
   "dependencies": {
     "@react-three/drei": "10.1.2",
     "@react-three/fiber": "9.1.2",
+    "@refinery/interaction": "workspace:*",
+    "@refinery/view-three": "workspace:*",
+    "@refinery/ideanode": "workspace:*",
     "@refinery/canvas-r3f": "workspace:*",
     "@refinery/schema": "workspace:*",
     "@refinery/store": "workspace:*",
