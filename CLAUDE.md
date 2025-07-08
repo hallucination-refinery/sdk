@@ -58,7 +58,41 @@ _For extended Task Master commands, MCP setup, API key matrix, and troubleshooti
 
 ## Workflow Reminders (2025-07-07)
 
-1. Always consult `.taskmaster/scratchpads/2025-07-07` when uncertain; update it with decisions, trade-offs, and Δ logs.
+1. Always consult `.taskmaster/scratchpads/2025-07-08` when uncertain; update it with decisions, trade-offs, and Δ logs.
 2. Working definition of **W**: "Cryptiq-Mindmap uses SDK, renders ≥1 k nodes @ 60 FPS, type-checks, tests pass, Vercel build green."
 3. Principle: if evidence contradicts W at any checkpoint ➜ enlarge Δ, log in scratchpad, seek clarification, stay pragmatic.
 4. Regularly run Taskmaster commands (`list`, `next`, `set-status`, etc.) to keep tasks in sync with reality.
+
+## Sprint-1 · Task 1 — Core package extraction (Schema slice)
+
+> **Why first?** Types are contract. Moving them early locks the interface for downstream slices and is low-risk to demo performance.
+
+**Success condition**
+
+1. New workspace package `packages/schema` contains all shared TS types (`Node`, `Edge`, Intents) validated by Zod.
+2. All other packages and the demo import from `@refinery/schema` with no remaining legacy paths.
+3. `pnpm -r run build`, `lint`, `type-check`, and unit tests are green; demo runs unchanged.
+4. Commit history: one atomic commit per bullet below, messages include `(task schema-1)`.
+
+**Execution checklist**
+
+- [ ] `git checkout -b feat/schema-extract` _(task schema-1)_
+- [ ] Scaffold `packages/schema` with `package.json`, `tsconfig.json`, `README.md`.
+- [ ] Copy/rename legacy types; update names (`IdeaNode` → `Node`).
+- [ ] Export barrel in `index.ts` with Zod schemas.
+- [ ] Search & replace imports across repo (`rg "IdeaNode"` etc.).
+- [ ] Run `pnpm -r run type-check`; fix errors.
+- [ ] Add unit tests for schema parsing.
+- [ ] Update docs & coverage badge.
+- [ ] Push branch; open draft PR referencing Task ID.
+
+**Evidence logging**
+After each major command (build, test) capture the log excerpt and paste into `.taskmaster/scratchpads/2025-07-08.md` under a new _Evidence_ sub-heading.
+
+**Guard-rails**
+
+- Never edit demo logic in this slice.
+- If FPS drops or build time rises, stop and diagnose before continuing.
+- Append-only scratchpad; include Δ expansions if new risks surface.
+
+Use the prompt template below when instructing Claude Code to run this slice.

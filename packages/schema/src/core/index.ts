@@ -7,7 +7,7 @@
 export * from './vectors'
 
 // Node types
-export * from './idea-node'
+export * from './node'
 
 // Edge types
 export * from './edge'
