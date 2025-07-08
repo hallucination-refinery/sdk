@@ -20,3 +20,6 @@ export * from './selection'
 
 // Layout types
 export * from './layout'
+
+// Intent types
+export * from './intent'
