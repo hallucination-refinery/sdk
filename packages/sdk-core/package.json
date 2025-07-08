@@ -16,9 +16,13 @@
   ],
   "scripts": {
     "build": "tsc -b",
+    "dev": "tsc -b --watch",
     "test": "vitest",
     "test:run": "vitest run",
-    "clean": "rm -rf dist"
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@react-three/drei": "^10.4.4",
@@ -29,8 +33,13 @@
     "three": "^0.176.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
     "@types/react": "^19.0.3",
     "@types/three": "^0.176.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.8",
+    "jsdom": "^25.0.1",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
   },

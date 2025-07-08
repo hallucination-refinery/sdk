@@ -1,10 +1,13 @@
-// Scene component for rendering 3D graph content
-export { Scene } from './Scene'
-export type { SceneProps } from './Scene'
+// Main canvas component (Animus)
+export { Animus } from './Animus'
+export type { AnimusProps } from './Animus'
 
-// IdeaCanvas component for the main canvas interface
-export { IdeaCanvas } from './IdeaCanvas'
-export type { IdeaCanvasProps } from './IdeaCanvas'
+// Canvas component for custom content
+export { Canvas } from './Canvas'
+export type { CanvasProps } from './Canvas'
+
+// Canvas provider and hooks
+export { CanvasProvider, useCanvas } from './CanvasProvider'
 
 // Intent bus for command processing and state management
 export { 
@@ -14,5 +17,5 @@ export {
 export type { CanvasState } from './IntentBus'
 
 // Re-export types from dependencies for convenience
-export type { IdeaNode, Edge } from '@refinery/schema'
+export type { Node, Edge } from '@refinery/schema'
 export type { RendererCommand } from '@refinery/store'
