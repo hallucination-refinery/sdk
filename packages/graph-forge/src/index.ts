@@ -1,18 +1,21 @@
 /**
  * @refinery/graph-forge
  * 
- * Graph loading and transformation utilities for the Refinery SDK
+ * Deterministic graph layout generator for the Refinery SDK
  */
 
+// Main forge function
+export { forgeGraph, type ForgeResult } from './forge.js'
+
+// Schemas and types
 export {
-  forgeGraph,
-  forgeFromJSON,
-  forgeFromYAML,
-  forgeFromCSV,
-  forgeFromGraphML,
-  ForgeError,
-  type ForgeConfig,
-  type ForgeResult,
-  ForgeConfigSchema,
-  ForgeResultSchema,
-} from './forgeGraph'
+  RawMemorySchema,
+  ForgeOptionsSchema,
+  WidgetManifestSchema,
+  type RawMemory,
+  type ForgeOptions,
+  type WidgetManifest,
+} from './schemas.js'
+
+// Re-export types from schema package for convenience
+export type { IdeaNode, Edge } from '@refinery/schema'

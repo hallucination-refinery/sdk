@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
-import { forgeGraph, ForgeError } from '../src/index.js'
+#!/usr/bin/env node
+
+import { readFile, writeFile } from 'fs/promises'
+import { forgeGraph, type RawMemory } from '../dist/index.js'
 import { z } from 'zod'
 
 /**
@@ -8,11 +11,10 @@ import { z } from 'zod'
  */
 const CLIArgsSchema = z.object({
   source: z.string(),
-  format: z.enum(['json', 'yaml', 'csv', 'graphml']).optional(),
   output: z.string().optional(),
-  maxNodes: z.number().int().positive().optional(),
-  maxEdges: z.number().int().positive().optional(),
-  noValidate: z.boolean().optional(),
+  seed: z.number().int().optional(),
+  iterations: z.number().int().positive().optional(),
+  pretty: z.boolean().optional(),
 })
 
 /**
@@ -33,16 +35,14 @@ function parseArgs(): z.infer<typeof CLIArgsSchema> {
     
     if (arg === '--source' || arg === '-s') {
       parsed.source = args[++i]
-    } else if (arg === '--format' || arg === '-f') {
-      parsed.format = args[++i]
     } else if (arg === '--output' || arg === '-o') {
       parsed.output = args[++i]
-    } else if (arg === '--max-nodes') {
-      parsed.maxNodes = parseInt(args[++i], 10)
-    } else if (arg === '--max-edges') {
-      parsed.maxEdges = parseInt(args[++i], 10)
-    } else if (arg === '--no-validate') {
-      parsed.noValidate = true
+    } else if (arg === '--seed') {
+      parsed.seed = parseInt(args[++i], 10)
+    } else if (arg === '--iterations') {
+      parsed.iterations = parseInt(args[++i], 10)
+    } else if (arg === '--pretty') {
+      parsed.pretty = true
     } else if (!arg.startsWith('-') && !parsed.source) {
       // First non-flag argument is the source
       parsed.source = arg
@@ -63,24 +63,35 @@ function parseArgs(): z.infer<typeof CLIArgsSchema> {
  */
 function showHelp(): void {
   console.log(`
-graph-forge - Load and validate graphs for the Refinery SDK
+graph-forge - Generate deterministic graph layouts for the Refinery SDK
 
 Usage:
   graph-forge [options] <source>
 
 Options:
-  -s, --source <path>      Source file path (can also be provided as first argument)
-  -f, --format <format>    Input format: json, yaml, csv, graphml (default: json)
+  -s, --source <path>      Source JSON file with RawMemory array
   -o, --output <path>      Output file path (default: stdout)
-  --max-nodes <number>     Maximum number of nodes to load
-  --max-edges <number>     Maximum number of edges to load
-  --no-validate            Skip schema validation
+  --seed <number>          Random seed for deterministic layout (default: 42)
+  --iterations <number>    Force simulation iterations (default: 300)
+  --pretty                 Pretty print JSON output
   -h, --help               Show this help message
 
+Input format:
+  The source file should contain a JSON array of RawMemory objects:
+  [
+    {
+      "id": "mem_001",
+      "content": "Example memory",
+      "connections": ["mem_002"],
+      "cluster": "work",
+      "metadata": {}
+    }
+  ]
+
 Examples:
-  graph-forge graph.json
-  graph-forge --source graph.yaml --format yaml
-  graph-forge --source data.csv --format csv --output graph.json
+  graph-forge memories.json
+  graph-forge memories.json --output graph.json
+  graph-forge memories.json --seed 123 --iterations 500
 `)
 }
 
@@ -91,53 +102,55 @@ async function main(): Promise<void> {
   const args = parseArgs()
   
   try {
-    console.error(`Loading graph from ${args.source}...`)
+    // Read input file
+    console.error(`Loading memories from ${args.source}...`)
+    const content = await readFile(args.source, 'utf-8')
     
-    const result = await forgeGraph({
-      source: args.source,
-      format: args.format || 'json',
-      validate: !args.noValidate,
-      maxNodes: args.maxNodes,
-      maxEdges: args.maxEdges,
-    })
-    
-    // Log warnings to stderr
-    if (result.warnings.length > 0) {
-      console.error('\nWarnings:')
-      result.warnings.forEach(warning => {
-        console.error(`  - ${warning}`)
-      })
+    let rawMemories: RawMemory[]
+    try {
+      const parsed = JSON.parse(content)
+      // Support both array format and object with 'memories' key
+      rawMemories = Array.isArray(parsed) ? parsed : parsed.memories || []
+    } catch (error) {
+      console.error('Error: Invalid JSON in source file')
+      process.exit(1)
     }
     
-    // Log metadata to stderr
-    console.error('\nMetadata:')
-    console.error(`  Load time: ${result.metadata.loadTime}ms`)
-    console.error(`  Nodes: ${result.metadata.nodeCount}`)
-    console.error(`  Edges: ${result.metadata.edgeCount}`)
-    console.error(`  Format: ${result.metadata.format}`)
+    console.error(`Found ${rawMemories.length} memories`)
     
-    // Output the graph
-    const output = JSON.stringify(result.graph, null, 2)
+    // Generate graph layout
+    const startTime = Date.now()
+    const result = await forgeGraph(rawMemories, {
+      seed: args.seed,
+      ...(args.iterations && {
+        simulation: {
+          iterations: args.iterations,
+        },
+      }),
+    })
+    const elapsed = Date.now() - startTime
+    
+    // Log statistics to stderr
+    console.error('\nLayout generation complete:')
+    console.error(`  Time: ${elapsed}ms`)
+    console.error(`  Nodes: ${result.nodes.length}`)
+    console.error(`  Edges: ${result.edges.length}`)
+    console.error(`  Seed: ${args.seed || 42}`)
+    console.error(`  Iterations: ${args.iterations || 300}`)
+    
+    // Prepare output
+    const output = JSON.stringify(result, null, args.pretty ? 2 : 0)
     
     if (args.output) {
-      // TODO: Write to file
-      console.error(`\nWriting to ${args.output} (not implemented yet)`)
-      console.log(output)
+      await writeFile(args.output, output, 'utf-8')
+      console.error(`\nWritten to ${args.output}`)
     } else {
       console.log(output)
     }
     
     process.exit(0)
   } catch (error) {
-    if (error instanceof ForgeError) {
-      console.error(`\nError: ${error.message}`)
-      console.error(`Code: ${error.code}`)
-      if (error.details) {
-        console.error('Details:', error.details)
-      }
-    } else {
-      console.error('\nUnexpected error:', error)
-    }
+    console.error('\nUnexpected error:', error)
     process.exit(1)
   }
 }

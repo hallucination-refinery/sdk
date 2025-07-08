@@ -58,41 +58,39 @@ _For extended Task Master commands, MCP setup, API key matrix, and troubleshooti
 
 ## Workflow Reminders (2025-07-07)
 
-1. Always consult `.taskmaster/scratchpads/2025-07-08` when uncertain; update it with decisions, trade-offs, and Δ logs.
+1. Always consult `.taskmaster/scratchpads/2025-07-07` when uncertain; update it with decisions, trade-offs, and Δ logs.
 2. Working definition of **W**: "Cryptiq-Mindmap uses SDK, renders ≥1 k nodes @ 60 FPS, type-checks, tests pass, Vercel build green."
 3. Principle: if evidence contradicts W at any checkpoint ➜ enlarge Δ, log in scratchpad, seek clarification, stay pragmatic.
 4. Regularly run Taskmaster commands (`list`, `next`, `set-status`, etc.) to keep tasks in sync with reality.
 
-## Sprint-1 · Task 1 — Core package extraction (Schema slice)
+## Sprint-1 · Task 2 — Graph-Forge loader (graph-forge slice)
 
-> **Why first?** Types are contract. Moving them early locks the interface for downstream slices and is low-risk to demo performance.
+> **Why second?** The demo and future apps need a deterministic, headless layout generator before we extract the canvas.
 
 **Success condition**
 
-1. New workspace package `packages/schema` contains all shared TS types (`Node`, `Edge`, Intents) validated by Zod.
-2. All other packages and the demo import from `@refinery/schema` with no remaining legacy paths.
-3. `pnpm -r run build`, `lint`, `type-check`, and unit tests are green; demo runs unchanged.
-4. Commit history: one atomic commit per bullet below, messages include `(task schema-1)`.
+1. New package `packages/graph-forge` exports `forgeGraph(raw, opts)` + CLI `graph-forge` producing `{ nodes, edges, widgetSpec }`.
+2. Benchmark: `pnpm --filter @refinery/graph-forge exec vitest bench` shows 2 k-node layout ≤ 300 ms on CI hardware.
+3. Zod validation rejects invalid input and produces descriptive error.
+4. Unit tests & bench reach ≥ 80 % coverage; package builds green.
+5. Legacy demo temporarily _skips_ using loader (integration handled in later slice) to keep CI green.
 
 **Execution checklist**
 
-- [ ] `git checkout -b feat/schema-extract` _(task schema-1)_
-- [ ] Scaffold `packages/schema` with `package.json`, `tsconfig.json`, `README.md`.
-- [ ] Copy/rename legacy types; update names (`IdeaNode` → `Node`).
-- [ ] Export barrel in `index.ts` with Zod schemas.
-- [ ] Search & replace imports across repo (`rg "IdeaNode"` etc.).
-- [ ] Run `pnpm -r run type-check`; fix errors.
-- [ ] Add unit tests for schema parsing.
-- [ ] Update docs & coverage badge.
-- [ ] Push branch; open draft PR referencing Task ID.
+- [ ] `git checkout -b feat/graph-forge-loader` _(task forge-2)_
+- [ ] Scaffold package with `package.json`, `tsconfig.json`, README.
+- [ ] Implement Zod schemas for RawMemory input.
+- [ ] Implement `forgeGraph` with seeded RNG + force-simulation.
+- [ ] Add Vitest unit tests + benchmark.
+- [ ] Add CLI wrapper (`bin` entry) + docs.
+- [ ] Wire build & test scripts; ensure coverage passes.
+- [ ] Push branch; open draft PR `(task forge-2)`.
 
 **Evidence logging**
-After each major command (build, test) capture the log excerpt and paste into `.taskmaster/scratchpads/2025-07-08.md` under a new _Evidence_ sub-heading.
+Append bench runs, test output, and coverage summary to `.taskmaster/scratchpads/2025-07-08.md` under _Evidence_.
 
 **Guard-rails**
 
-- Never edit demo logic in this slice.
-- If FPS drops or build time rises, stop and diagnose before continuing.
-- Append-only scratchpad; include Δ expansions if new risks surface.
-
-Use the prompt template below when instructing Claude Code to run this slice.
+- Keep all heavy dependencies optional/peer.
+- No changes to demo imports in this slice.
+- If benchmark fails the 300 ms budget, stop and optimise before pushing.
