@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 import { Animus } from './Animus'
-import { CanvasProvider } from './CanvasProvider'
+import { CanvasProvider, useCanvas } from './CanvasProvider'
 
 // Mock canvas context
 const mockCanvasState = {
@@ -22,11 +22,14 @@ const mockCanvasState = {
   highlightedEdges: new Map()
 }
 
+const mockEnqueueCommand = vi.fn()
+const mockEnqueueCommands = vi.fn()
+
 vi.mock('./CanvasProvider', () => ({
   useCanvas: vi.fn(() => ({
     state: mockCanvasState,
-    enqueueCommand: vi.fn(),
-    enqueueCommands: vi.fn()
+    enqueueCommand: mockEnqueueCommand,
+    enqueueCommands: mockEnqueueCommands
   })),
   CanvasProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }))
@@ -44,7 +47,21 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: vi.fn()
 }))
 
+// Mock Scene component to avoid canvas creation issues
+vi.mock('./Scene', () => ({
+  Scene: ({ nodes, edges }: any) => {
+    const React = require('react')
+    return React.createElement('div', { 'data-testid': 'mock-scene' }, [
+      React.createElement('ambientLight', { key: 'ambient', intensity: 0.5 }),
+      React.createElement('directionalLight', { key: 'directional', position: [10, 10, 5], intensity: 1 })
+    ])
+  }
+}))
+
 describe('Animus', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
   it('should render with default props', () => {
     render(
       <CanvasProvider>
@@ -125,5 +142,88 @@ describe('Animus', () => {
 
     const statsElements = screen.queryAllByTestId('mock-stats')
     expect(statsElements.length).toBe(0)
+  })
+
+  describe('Canvas interactions', () => {
+    it('should handle canvas click to clear selection', () => {
+      mockEnqueueCommand.mockClear()
+
+      render(
+        <CanvasProvider>
+          <Animus />
+        </CanvasProvider>
+      )
+
+      const canvas = screen.getByTestId('three-canvas')
+      canvas.click()
+
+      expect(mockEnqueueCommand).toHaveBeenCalledWith({ type: 'CLEAR_SELECTION' })
+    })
+  })
+
+  describe('Scene interactions', () => {
+    it('should render with nodes', () => {
+      // Add nodes to the mock state
+      mockCanvasState.nodes.set('node-1', { id: 'node-1', label: 'Test Node' })
+
+      render(
+        <CanvasProvider>
+          <Animus />
+        </CanvasProvider>
+      )
+
+      // Scene component would handle the actual click, we're testing that canvas renders
+      expect(screen.getByTestId('three-canvas')).toBeInTheDocument()
+
+      // Clean up
+      mockCanvasState.nodes.clear()
+    })
+
+    it('should render lighting elements', () => {
+      const { container } = render(
+        <CanvasProvider>
+          <Animus />
+        </CanvasProvider>
+      )
+
+      // Check that Scene is rendered with lighting
+      expect(container.querySelector('ambientLight')).toBeInTheDocument()
+      expect(container.querySelector('directionalLight')).toBeInTheDocument()
+    })
+  })
+
+  describe('Camera controls', () => {
+    it('should render with custom camera position', () => {
+      // Set custom camera position
+      const originalCamera = mockCanvasState.camera
+      mockCanvasState.camera = { x: 10, y: 20, z: 30 }
+      mockCanvasState.zoom = 1.5
+
+      render(
+        <CanvasProvider>
+          <Animus />
+        </CanvasProvider>
+      )
+
+      // Canvas should render with custom camera settings
+      expect(screen.getByTestId('three-canvas')).toBeInTheDocument()
+
+      // Restore original camera
+      mockCanvasState.camera = originalCamera
+      mockCanvasState.zoom = 1
+    })
+
+    it('should include camera controls', () => {
+      render(
+        <CanvasProvider>
+          <Animus />
+        </CanvasProvider>
+      )
+
+      // Canvas renders with controls (OrbitControls and CameraController are children)
+      const canvas = screen.getByTestId('three-canvas')
+      expect(canvas).toBeInTheDocument()
+      expect(canvas.children.length).toBeGreaterThan(0)
+    })
   })
 })

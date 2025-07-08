@@ -1,0 +1,83 @@
+{
+  "timestamp": "2025-07-08T23:06:34.708Z",
+  "demoUrl": "http://localhost:3000",
+  "nodeCount": 1000,
+  "usingSDKCore": true,
+  "scenarios": [
+    {
+      "scenario": "Idle (no interaction)",
+      "average": 72,
+      "min": 69,
+      "max": 75,
+      "samples": [
+        69,
+        71,
+        73,
+        75,
+        74
+      ],
+      "passesTarget": true
+    },
+    {
+      "scenario": "Camera rotation",
+      "average": 67,
+      "min": 64,
+      "max": 70,
+      "samples": [
+        70,
+        70,
+        66,
+        64,
+        65
+      ],
+      "passesTarget": true
+    },
+    {
+      "scenario": "Node hover",
+      "average": 63,
+      "min": 61,
+      "max": 67,
+      "samples": [
+        67,
+        62,
+        64,
+        61,
+        61
+      ],
+      "passesTarget": true
+    },
+    {
+      "scenario": "Node selection + highlight",
+      "average": 64,
+      "min": 60,
+      "max": 67,
+      "samples": [
+        66,
+        60,
+        67,
+        65,
+        62
+      ],
+      "passesTarget": true
+    },
+    {
+      "scenario": "Force simulation active",
+      "average": 61,
+      "min": 55,
+      "max": 67,
+      "samples": [
+        67,
+        60,
+        63,
+        55,
+        59
+      ],
+      "passesTarget": true
+    }
+  ],
+  "overall": {
+    "averageFPS": 65,
+    "allScenariosPass": true,
+    "meetsTarget": true
+  }
+}
