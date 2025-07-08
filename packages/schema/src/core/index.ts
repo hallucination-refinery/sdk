@@ -7,7 +7,7 @@
 export * from './vectors'
 
 // Node types
-export * from './idea-node'
+export * from './node'
 
 // Edge types
 export * from './edge'
@@ -20,3 +20,6 @@ export * from './selection'
 
 // Layout types
 export * from './layout'
+
+// Intent types
+export * from './intent'

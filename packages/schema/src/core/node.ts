@@ -2,16 +2,16 @@ import { z } from 'zod'
 import { Vector3 } from './vectors'
 
 /**
- * Base schema for IdeaNode metadata
+ * Base schema for Node metadata
  * Allows for arbitrary key-value pairs while maintaining type safety
  */
-export const IdeaNodeMetadataSchema = z.record(z.string(), z.unknown())
+export const NodeMetadataSchema = z.record(z.string(), z.unknown())
 
 /**
- * Schema for the core IdeaNode type
+ * Schema for the core Node type
  * Represents a node in the idea graph with position, content, and metadata
  */
-export const IdeaNodeSchema = z.object({
+export const NodeSchema = z.object({
   /**
    * Unique identifier for the node
    */
@@ -66,7 +66,7 @@ export const IdeaNodeSchema = z.object({
    * Open metadata field for extensibility
    * Allows any additional properties without breaking the schema
    */
-  metadata: IdeaNodeMetadataSchema.optional(),
+  metadata: NodeMetadataSchema.optional(),
   
   /**
    * Timestamp when the node was created
@@ -82,46 +82,57 @@ export const IdeaNodeSchema = z.object({
 /**
  * TypeScript type generated from the Zod schema
  */
-export type IdeaNode = z.infer<typeof IdeaNodeSchema>
+export type Node = z.infer<typeof NodeSchema>
 
 /**
- * Schema for partial IdeaNode updates
+ * Schema for partial Node updates
  */
-export const PartialIdeaNodeSchema = IdeaNodeSchema.partial()
+export const PartialNodeSchema = NodeSchema.partial()
 
 /**
- * Type for partial IdeaNode updates
+ * Type for partial Node updates
  */
-export type PartialIdeaNode = z.infer<typeof PartialIdeaNodeSchema>
+export type PartialNode = z.infer<typeof PartialNodeSchema>
 
 /**
- * Type for IdeaNode creation (requires only essential fields)
+ * Type for Node creation (requires only essential fields)
  */
-export const CreateIdeaNodeSchema = IdeaNodeSchema.pick({
+export const CreateNodeSchema = NodeSchema.pick({
   id: true,
   label: true,
-}).merge(IdeaNodeSchema.omit({ id: true, label: true }).partial())
+}).merge(NodeSchema.omit({ id: true, label: true }).partial())
 
-export type CreateIdeaNode = z.infer<typeof CreateIdeaNodeSchema>
+export type CreateNode = z.infer<typeof CreateNodeSchema>
 
 /**
- * Type guard to check if an object is an IdeaNode
+ * Type guard to check if an object is a Node
  */
-export function isIdeaNode(obj: unknown): obj is IdeaNode {
-  return IdeaNodeSchema.safeParse(obj).success
+export function isNode(obj: unknown): obj is Node {
+  return NodeSchema.safeParse(obj).success
 }
 
 /**
- * Validate and parse an IdeaNode
+ * Validate and parse a Node
  */
-export function parseIdeaNode(obj: unknown): IdeaNode {
-  return IdeaNodeSchema.parse(obj)
+export function parseNode(obj: unknown): Node {
+  return NodeSchema.parse(obj)
 }
 
 /**
- * Safely parse an IdeaNode, returning undefined on failure
+ * Safely parse a Node, returning undefined on failure
  */
-export function safeParseIdeaNode(obj: unknown): IdeaNode | undefined {
-  const result = IdeaNodeSchema.safeParse(obj)
+export function safeParseNode(obj: unknown): Node | undefined {
+  const result = NodeSchema.safeParse(obj)
   return result.success ? result.data : undefined
 }
+
+// Legacy exports for backward compatibility
+export const IdeaNodeSchema = NodeSchema
+export type IdeaNode = Node
+export const PartialIdeaNodeSchema = PartialNodeSchema
+export type PartialIdeaNode = PartialNode
+export const CreateIdeaNodeSchema = CreateNodeSchema
+export type CreateIdeaNode = CreateNode
+export const isIdeaNode = isNode
+export const parseIdeaNode = parseNode
+export const safeParseIdeaNode = safeParseNode

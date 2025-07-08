@@ -2,69 +2,28 @@
 export const version = '0.0.0'
 
 import type { RendererCommand } from '@refinery/store'
+import type { Intent, IntentContext } from '@refinery/schema'
 
-/**
- * Supported intent types for graph manipulation
- */
-export enum Intent {
-  // Node operations
-  CREATE_NODE = 'CREATE_NODE',
-  DELETE_NODE = 'DELETE_NODE',
-  SELECT_NODE = 'SELECT_NODE',
-  MOVE_NODE = 'MOVE_NODE',
-  
-  // Edge operations
-  CREATE_EDGE = 'CREATE_EDGE',
-  DELETE_EDGE = 'DELETE_EDGE',
-  
-  // Navigation
-  PAN_CAMERA = 'PAN_CAMERA',
-  ZOOM_IN = 'ZOOM_IN',
-  ZOOM_OUT = 'ZOOM_OUT',
-  FIT_VIEW = 'FIT_VIEW',
-  
-  // Selection
-  SELECT_ALL = 'SELECT_ALL',
-  CLEAR_SELECTION = 'CLEAR_SELECTION',
-  
-  // Layout
-  TOGGLE_LAYOUT = 'TOGGLE_LAYOUT',
-  RESET_LAYOUT = 'RESET_LAYOUT'
-}
+// Re-export Intent types from schema for convenience
+export type { Intent, GestureInput, VoiceInput, MultimodalInput, IntentContext } from '@refinery/schema'
 
-/**
- * Gesture input data from Mediapipe
- */
-export interface GestureInput {
-  type: 'gesture'
-  gesture: string
-  confidence: number
-  landmarks?: Array<{ x: number; y: number; z: number }>
-}
-
-/**
- * Voice command input from Eleven Labs
- */
-export interface VoiceInput {
-  type: 'voice'
-  command: string
-  confidence: number
-  transcript?: string
-}
-
-/**
- * Union type for all input modalities
- */
-export type MultimodalInput = GestureInput | VoiceInput
-
-/**
- * Intent context with additional parameters
- */
-export interface IntentContext {
-  intent: Intent
-  input: MultimodalInput
-  parameters?: Record<string, unknown>
-}
+// Create Intent constants for switch statement compatibility
+export const IntentValues = {
+  CREATE_NODE: 'CREATE_NODE' as Intent,
+  DELETE_NODE: 'DELETE_NODE' as Intent,
+  SELECT_NODE: 'SELECT_NODE' as Intent,
+  MOVE_NODE: 'MOVE_NODE' as Intent,
+  CREATE_EDGE: 'CREATE_EDGE' as Intent,
+  DELETE_EDGE: 'DELETE_EDGE' as Intent,
+  PAN_CAMERA: 'PAN_CAMERA' as Intent,
+  ZOOM_IN: 'ZOOM_IN' as Intent,
+  ZOOM_OUT: 'ZOOM_OUT' as Intent,
+  FIT_VIEW: 'FIT_VIEW' as Intent,
+  SELECT_ALL: 'SELECT_ALL' as Intent,
+  CLEAR_SELECTION: 'CLEAR_SELECTION' as Intent,
+  TOGGLE_LAYOUT: 'TOGGLE_LAYOUT' as Intent,
+  RESET_LAYOUT: 'RESET_LAYOUT' as Intent,
+} as const
 
 /**
  * Emits an intent as a RendererCommand for the store to process
@@ -76,7 +35,7 @@ export function emitIntent(context: IntentContext): RendererCommand | null {
   const { intent, parameters = {} } = context
   
   switch (intent) {
-    case Intent.CREATE_NODE:
+    case IntentValues.CREATE_NODE:
       // TODO: Generate proper node ID and position
       return {
         type: 'ADD_NODE',
@@ -89,7 +48,7 @@ export function emitIntent(context: IntentContext): RendererCommand | null {
         }
       }
       
-    case Intent.SELECT_NODE:
+    case IntentValues.SELECT_NODE:
       return {
         type: 'SELECT_NODES',
         payload: {
@@ -98,28 +57,28 @@ export function emitIntent(context: IntentContext): RendererCommand | null {
         }
       }
       
-    case Intent.CLEAR_SELECTION:
+    case IntentValues.CLEAR_SELECTION:
       return { type: 'CLEAR_SELECTION' }
       
-    case Intent.ZOOM_IN:
+    case IntentValues.ZOOM_IN:
       return {
         type: 'SET_ZOOM',
         payload: { zoom: parameters.zoom as number || 1.2 }
       }
       
-    case Intent.ZOOM_OUT:
+    case IntentValues.ZOOM_OUT:
       return {
         type: 'SET_ZOOM',
         payload: { zoom: parameters.zoom as number || 0.8 }
       }
       
-    case Intent.FIT_VIEW:
+    case IntentValues.FIT_VIEW:
       return {
         type: 'FIT_TO_NODES',
         payload: { nodeIds: parameters.nodeIds as string[] }
       }
       
-    case Intent.RESET_LAYOUT:
+    case IntentValues.RESET_LAYOUT:
       return { type: 'RESET_LAYOUT' }
       
     default:
