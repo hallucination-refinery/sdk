@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import type { Node, Edge } from '@refinery/schema'
-import { NodeSprite } from './components'
+import type { IdeaNode, Edge } from '@refinery/schema'
 
 export interface SceneProps {
-  nodes: Node[]
+  nodes: IdeaNode[]
   edges: Edge[]
   selectedNodeIds: Set<string>
   selectedEdgeIds: Set<string>
@@ -31,7 +30,7 @@ function Node({
   onPointerOut,
   onClick
 }: { 
-  node: Node
+  node: IdeaNode
   selected: boolean
   highlighted?: { color?: string; intensity?: number }
   onPointerOver?: () => void
@@ -61,17 +60,10 @@ function Node({
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={intensity * 0.3} />
       </mesh>
       {/* Label */}
-      {(node.label || node.content) && (
-        <NodeSprite
-          text={node.label || node.content || ''}
-          position={[0, 1, 0]}
-          scale={2}
-          color="#ffffff"
-          backgroundColor="#000000"
-          backgroundOpacity={0.7}
-          fontSize={32}
-          padding={8}
-        />
+      {node.content && typeof node.content === 'object' && node.content !== null && 'title' in node.content && (
+        <sprite position={[0, 1, 0]} scale={[2, 0.5, 1]}>
+          <spriteMaterial color="white" />
+        </sprite>
       )}
     </group>
   )
@@ -91,8 +83,8 @@ function EdgeLine({
   edge: Edge
   selected: boolean
   highlighted?: { color?: string; intensity?: number }
-  sourceNode: Node | undefined
-  targetNode: Node | undefined
+  sourceNode: IdeaNode | undefined
+  targetNode: IdeaNode | undefined
   onPointerOver?: () => void
   onPointerOut?: () => void
   onClick?: (event: any) => void
@@ -152,7 +144,7 @@ export function Scene({
 
   // Create node map for edge lookups
   const nodeMap = React.useMemo(() => {
-    const map = new Map<string, Node>()
+    const map = new Map<string, IdeaNode>()
     nodes.forEach(node => map.set(node.id, node))
     return map
   }, [nodes])

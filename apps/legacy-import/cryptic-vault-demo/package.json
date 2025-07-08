@@ -16,7 +16,6 @@
     "@refinery/view-three": "workspace:*",
     "@refinery/ideanode": "workspace:*",
     "@refinery/canvas-r3f": "workspace:*",
-    "@refinery/sdk-core": "workspace:*",
     "@refinery/schema": "workspace:*",
     "@refinery/store": "workspace:*",
     "@reduxjs/toolkit": "^2.5.2",
