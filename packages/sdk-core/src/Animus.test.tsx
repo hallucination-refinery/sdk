@@ -54,7 +54,9 @@ describe('Animus', () => {
 
     const canvas = screen.getByTestId('three-canvas')
     expect(canvas).toBeInTheDocument()
-    expect(canvas).toHaveStyle({ width: '100%', height: '100vh' })
+    // Check parent div has correct dimensions
+    const parent = canvas.parentElement
+    expect(parent).toHaveStyle({ width: '100%', height: '100vh' })
   })
 
   it('should accept custom dimensions', () => {
@@ -103,23 +105,25 @@ describe('Animus', () => {
   })
 
   it('should render Stats component when showStats is true', () => {
-    const { container } = render(
+    render(
       <CanvasProvider>
         <Animus showStats={true} />
       </CanvasProvider>
     )
 
-    // Stats component is mocked, so we just check if it's rendered
-    expect(container.innerHTML).toContain('Stats')
+    // Stats component is mocked, check if our mock was called
+    const statsElements = screen.queryAllByTestId('mock-stats')
+    expect(statsElements.length).toBeGreaterThan(0)
   })
 
   it('should not render Stats component when showStats is false', () => {
-    const { container } = render(
+    render(
       <CanvasProvider>
         <Animus showStats={false} />
       </CanvasProvider>
     )
 
-    expect(container.innerHTML).not.toContain('Stats')
+    const statsElements = screen.queryAllByTestId('mock-stats')
+    expect(statsElements.length).toBe(0)
   })
 })
