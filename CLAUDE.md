@@ -63,6 +63,44 @@ _For extended Task Master commands, MCP setup, API key matrix, and troubleshooti
 3. Principle: if evidence contradicts W at any checkpoint ➜ enlarge Δ, log in scratchpad, seek clarification, stay pragmatic.
 4. Regularly run Taskmaster commands (`list`, `next`, `set-status`, etc.) to keep tasks in sync with reality.
 
+## Sprint-1 · Task 1 — Core package extraction (Schema slice)
+
+> **Why first?** Moving all domain types into a dedicated package establishes a single source of truth and prevents cross-package drift before heavier runtime extraction begins.
+
+**Success condition**
+
+1. New package `packages/schema` exports Zod models + TypeScript types (`Node`, `Edge`, `Intent`, etc.) under `@refinery/schema`.
+2. All workspace imports updated to use `@refinery/schema`; legacy `cryptic-vault-demo` builds and runs unchanged.
+3. Unit-test suite for schema achieves ≥ 80 % statement, branch, and function coverage.
+4. CI pipeline (lint → type-check → tests → build) is green on the branch and in the PR view.
+
+**Execution checklist**
+
+- [ ] `git checkout -b feat/schema-extract` _(task schema-1)_
+- [ ] Scaffold `packages/schema` (`package.json`, `tsconfig.json`, `README.md`, `src/index.ts`)
+- [ ] Migrate types from legacy code; rename `IdeaNode` → `Node`
+- [ ] Add Zod schemas + validation helpers
+- [ ] Replace imports across workspace (`rg` assist)
+- [ ] Add vitest unit tests + coverage threshold config
+- [ ] Update demo and CI filters; run `pnpm -r exec vitest run --coverage`
+- [ ] Open draft PR `(task schema-1)`
+
+**Evidence logging**
+
+Update `.taskmaster/scratchpads/2025-07-08.md` after every significant action:
+
+- commands and their output (lint / test / build)
+- coverage reports
+- git diff snapshots
+- screenshots or perf numbers (if relevant)
+
+**Guard-rails**
+
+- No breaking API changes to downstream packages
+- Avoid circular dependencies (`workspace:*` banned in published pkgs)
+- Keep `@refinery/schema` runtime-light (<1 KiB gzipped)
+- Commit messages follow Conventional Commits (`feat(schema): … (task schema-1)`)
+
 ## Sprint-1 · Task 2 — Graph-Forge loader (graph-forge slice)
 
 > **Why second?** The demo and future apps need a deterministic, headless layout generator before we extract the canvas.
@@ -94,3 +132,37 @@ Append bench runs, test output, and coverage summary to `.taskmaster/scratchpads
 - Keep all heavy dependencies optional/peer.
 - No changes to demo imports in this slice.
 - If benchmark fails the 300 ms budget, stop and optimise before pushing.
+
+## Sprint-1 · Task 4 — Canvas-R3F cleanup (canvas slice)
+
+> **Why fourth?** After sdk-core extraction, the legacy `canvas-r3f` package must be slimmed to low-level R3F adapters so sdk-core’s public canvas remains small and tree-shakeable.
+
+**Success condition**
+
+1. `packages/canvas-r3f` exports only low-level R3F adapters and helpers; no business logic or provider code remains.
+2. Bundle is tree-shakeable; running `size-limit` reports ≤ 25 KB gzipped for the package.
+3. Unit-test suite hits ≥ 80 % coverage and passes CI.
+4. Legacy demo still builds and runs at ≥ 60 FPS using sdk-core + slimmed canvas-r3f.
+5. No circular deps; peer deps list is correct (`react`, `react-three/fiber`, `three`).
+
+**Execution checklist**
+
+- [ ] `git checkout -b feat/canvas-r3f-cleanup` _(task canvas-4)_
+- [ ] Remove HUD, provider, business logic now in sdk-core
+- [ ] Ensure only adapter utilities/components remain
+- [ ] Update `peerDependencies` and `exports` map
+- [ ] Add/adjust unit tests & coverage threshold
+- [ ] Run `pnpm size-limit` and record output
+- [ ] Run full workspace CI (`pnpm -r run lint type-check test build`)
+- [ ] Open draft PR `(task canvas-4)`
+
+**Evidence logging**
+
+Append build logs, size-limit output, coverage reports, and demo FPS screenshots to `.taskmaster/scratchpads/2025-07-08.md` under _Evidence_.
+
+**Guard-rails**
+
+- Do **NOT** break sdk-core public API
+- Tree-shakeable build is mandatory (no side-effectful barrel)
+- Keep bundle ≤ 25 KB gzipped
+- Commit messages follow Conventional Commits (`refactor(canvas): slim to adapters (task canvas-4)`)
