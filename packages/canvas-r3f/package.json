@@ -17,33 +17,46 @@
   ],
   "scripts": {
     "clean": "rm -rf dist *.tsbuildinfo",
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
   },
   "dependencies": {
-    "@react-three/drei": "^10.4.2",
-    "@react-three/fiber": "^9.1.2",
-    "@refinery/schema": "workspace:*",
-    "@refinery/store": "workspace:*",
-    "three": "0.176.0"
+    "@refinery/schema": "workspace:*"
   },
   "devDependencies": {
+    "@react-three/drei": "^10.4.2",
+    "@react-three/fiber": "^9.1.2",
+    "@size-limit/preset-small-lib": "^11.1.0",
     "@testing-library/react": "^16.1.0",
-    "@testing-library/react-hooks": "^8.0.1",
     "@types/node": "^20.17.15",
     "@types/react": "^19.0.3",
     "@types/three": "0.176.0",
     "jsdom": "^26.0.0",
     "react": "19.1.0",
     "react-dom": "^19.1.0",
+    "size-limit": "^11.1.0",
+    "three": "0.176.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
-    "react": ">=19.0.0",
-    "react-dom": ">=19.0.0",
-    "typescript": "^5.0.0"
-  }
+    "@react-three/drei": ">=10.0.0",
+    "@react-three/fiber": ">=8.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "three": ">=0.150.0"
+  },
+  "size-limit": [
+    {
+      "name": "@refinery/canvas-r3f",
+      "path": "dist/index.js",
+      "limit": "25 KB"
+    }
+  ]
 }

@@ -8,6 +8,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        '**/*.test.{js,ts,jsx,tsx}',
+        '**/perf-probe.{ts,tsx}',
+        '**/test-utils.{ts,tsx}',
+        'dist/**',
+        '**/*.d.ts',
+      ],
       thresholds: {
         branches: 80,
         functions: 80,
