@@ -4,24 +4,40 @@
 
 import { produce } from 'immer'
 import type { IdeaNode, Edge } from '@refinery/schema'
+import { EdgeSchema } from '@refinery/schema'
 import type { GraphState } from '../types/state'
 import type { RendererCommand } from '../types/renderer-commands'
+import { 
+  createValidatedAction,
+  AddNodePayloadSchema,
+  UpdateNodePayloadSchema,
+  RemoveNodePayloadSchema,
+  BatchAddNodesPayloadSchema,
+  BatchUpdateNodesPayloadSchema,
+  BatchRemoveNodesPayloadSchema,
+  AddEdgePayloadSchema,
+  UpdateEdgePayloadSchema,
+  RemoveEdgePayloadSchema,
+  BatchAddEdgesPayloadSchema,
+  BatchUpdateEdgesPayloadSchema,
+  BatchRemoveEdgesPayloadSchema
+} from '../validation'
 
 export interface GraphSlice extends GraphState {
   // Node actions
   addNode: (node: IdeaNode) => RendererCommand
-  updateNode: (id: string, updates: Partial<IdeaNode>) => RendererCommand | null
+  updateNode: (payload: { id: string; data: Partial<IdeaNode> }) => RendererCommand | null
   removeNode: (id: string) => RendererCommand | null
   batchAddNodes: (nodes: IdeaNode[]) => RendererCommand
-  batchUpdateNodes: (updates: Array<{ id: string; updates: Partial<IdeaNode> }>) => RendererCommand
+  batchUpdateNodes: (updates: Array<{ id: string; data: Partial<IdeaNode> }>) => RendererCommand
   batchRemoveNodes: (ids: string[]) => RendererCommand
   
   // Edge actions
   addEdge: (edge: Edge) => RendererCommand
-  updateEdge: (id: string, updates: Partial<Edge>) => RendererCommand | null
+  updateEdge: (payload: { id: string; data: Partial<Edge> }) => RendererCommand | null
   removeEdge: (id: string) => RendererCommand | null
   batchAddEdges: (edges: Edge[]) => RendererCommand
-  batchUpdateEdges: (updates: Array<{ id: string; updates: Partial<Edge> }>) => RendererCommand
+  batchUpdateEdges: (updates: Array<{ id: string; data: Partial<Edge> }>) => RendererCommand
   batchRemoveEdges: (ids: string[]) => RendererCommand
   
   // Query methods
@@ -45,16 +61,16 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
   edgeIdCounter: 0,
 
   // Node actions
-  addNode: (node) => {
+  addNode: createValidatedAction('addNode', AddNodePayloadSchema, (node) => {
     set(
       produce((state: GraphSlice) => {
         state.nodes.set(node.id, node)
       })
     )
     return { type: 'ADD_NODE', payload: { node } }
-  },
+  }),
 
-  updateNode: (id, updates) => {
+  updateNode: createValidatedAction('updateNode', UpdateNodePayloadSchema, ({ id, data }) => {
     const node = get().nodes.get(id)
     if (!node) return null
 
@@ -62,14 +78,14 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       produce((state: GraphSlice) => {
         const existing = state.nodes.get(id)
         if (existing) {
-          state.nodes.set(id, { ...existing, ...updates })
+          state.nodes.set(id, { ...existing, ...data })
         }
       })
     )
-    return { type: 'UPDATE_NODE', payload: { id, updates } }
-  },
+    return { type: 'UPDATE_NODE', payload: { id, updates: data } }
+  }),
 
-  removeNode: (id) => {
+  removeNode: createValidatedAction('removeNode', RemoveNodePayloadSchema, (id) => {
     const node = get().nodes.get(id)
     if (!node) return null
 
@@ -85,9 +101,9 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       })
     )
     return { type: 'REMOVE_NODE', payload: { id } }
-  },
+  }),
 
-  batchAddNodes: (nodes) => {
+  batchAddNodes: createValidatedAction('batchAddNodes', BatchAddNodesPayloadSchema, (nodes) => {
     set(
       produce((state: GraphSlice) => {
         for (const node of nodes) {
@@ -96,23 +112,23 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       })
     )
     return { type: 'BATCH_ADD_NODES', payload: { nodes } }
-  },
+  }),
 
-  batchUpdateNodes: (updates) => {
+  batchUpdateNodes: createValidatedAction('batchUpdateNodes', BatchUpdateNodesPayloadSchema, (updates) => {
     set(
       produce((state: GraphSlice) => {
-        for (const { id, updates: nodeUpdates } of updates) {
+        for (const { id, data } of updates) {
           const existing = state.nodes.get(id)
           if (existing) {
-            state.nodes.set(id, { ...existing, ...nodeUpdates })
+            state.nodes.set(id, { ...existing, ...data })
           }
         }
       })
     )
-    return { type: 'BATCH_UPDATE_NODES', payload: { updates } }
-  },
+    return { type: 'BATCH_UPDATE_NODES', payload: { updates: updates.map(u => ({ id: u.id, updates: u.data })) } }
+  }),
 
-  batchRemoveNodes: (ids) => {
+  batchRemoveNodes: createValidatedAction('batchRemoveNodes', BatchRemoveNodesPayloadSchema, (ids) => {
     set(
       produce((state: GraphSlice) => {
         for (const id of ids) {
@@ -127,19 +143,21 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       })
     )
     return { type: 'BATCH_REMOVE_NODES', payload: { ids } }
-  },
+  }),
 
   // Edge actions
-  addEdge: (edge) => {
+  addEdge: createValidatedAction('addEdge', AddEdgePayloadSchema, (edge) => {
+    // Parse edge to apply defaults
+    const parsedEdge = EdgeSchema.parse(edge) as Edge
     set(
       produce((state: GraphSlice) => {
-        state.edges.set(edge.id, edge)
+        state.edges.set(parsedEdge.id, parsedEdge)
       })
     )
-    return { type: 'ADD_EDGE', payload: { edge } }
-  },
+    return { type: 'ADD_EDGE', payload: { edge: parsedEdge } }
+  }),
 
-  updateEdge: (id, updates) => {
+  updateEdge: createValidatedAction('updateEdge', UpdateEdgePayloadSchema, ({ id, data }) => {
     const edge = get().edges.get(id)
     if (!edge) return null
 
@@ -147,14 +165,14 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       produce((state: GraphSlice) => {
         const existing = state.edges.get(id)
         if (existing) {
-          state.edges.set(id, { ...existing, ...updates })
+          state.edges.set(id, { ...existing, ...data })
         }
       })
     )
-    return { type: 'UPDATE_EDGE', payload: { id, updates } }
-  },
+    return { type: 'UPDATE_EDGE', payload: { id, updates: data } }
+  }),
 
-  removeEdge: (id) => {
+  removeEdge: createValidatedAction('removeEdge', RemoveEdgePayloadSchema, (id) => {
     const edge = get().edges.get(id)
     if (!edge) return null
 
@@ -164,34 +182,36 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       })
     )
     return { type: 'REMOVE_EDGE', payload: { id } }
-  },
+  }),
 
-  batchAddEdges: (edges) => {
+  batchAddEdges: createValidatedAction('batchAddEdges', BatchAddEdgesPayloadSchema, (edges) => {
+    // Parse edges to apply defaults
+    const parsedEdges = edges.map(edge => EdgeSchema.parse(edge) as Edge)
     set(
       produce((state: GraphSlice) => {
-        for (const edge of edges) {
+        for (const edge of parsedEdges) {
           state.edges.set(edge.id, edge)
         }
       })
     )
-    return { type: 'BATCH_ADD_EDGES', payload: { edges } }
-  },
+    return { type: 'BATCH_ADD_EDGES', payload: { edges: parsedEdges } }
+  }),
 
-  batchUpdateEdges: (updates) => {
+  batchUpdateEdges: createValidatedAction('batchUpdateEdges', BatchUpdateEdgesPayloadSchema, (updates) => {
     set(
       produce((state: GraphSlice) => {
-        for (const { id, updates: edgeUpdates } of updates) {
+        for (const { id, data } of updates) {
           const existing = state.edges.get(id)
           if (existing) {
-            state.edges.set(id, { ...existing, ...edgeUpdates })
+            state.edges.set(id, { ...existing, ...data })
           }
         }
       })
     )
-    return { type: 'BATCH_UPDATE_EDGES', payload: { updates } }
-  },
+    return { type: 'BATCH_UPDATE_EDGES', payload: { updates: updates.map(u => ({ id: u.id, updates: u.data })) } }
+  }),
 
-  batchRemoveEdges: (ids) => {
+  batchRemoveEdges: createValidatedAction('batchRemoveEdges', BatchRemoveEdgesPayloadSchema, (ids) => {
     set(
       produce((state: GraphSlice) => {
         for (const id of ids) {
@@ -200,7 +220,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       })
     )
     return { type: 'BATCH_REMOVE_EDGES', payload: { ids } }
-  },
+  }),
 
   // Query methods
   getNode: (id) => get().nodes.get(id),
