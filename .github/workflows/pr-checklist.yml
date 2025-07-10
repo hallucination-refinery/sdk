@@ -1,0 +1,82 @@
+name: PR Checklist Compliance
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+
+jobs:
+  check-checklist:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      checks: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check PR Checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            
+            // Find all checkbox items in the QA Checklist section
+            const qaSection = body.match(/## QA Checklist[\s\S]*?(?=##|$)/);
+            if (!qaSection) {
+              core.setFailed('QA Checklist section not found in PR description');
+              return;
+            }
+            
+            const checklistItems = qaSection[0].match(/- \[([ x])\]/g) || [];
+            const totalItems = checklistItems.length;
+            const checkedItems = checklistItems.filter(item => item.includes('[x]')).length;
+            
+            // Define required checkboxes that must be checked
+            const requiredPatterns = [
+              /- \[([ x])\] Unit tests added\/updated/,
+              /- \[([ x])\] Test coverage meets or exceeds 80%/,
+              /- \[([ x])\] All CI checks passing/,
+              /- \[([ x])\] No new warnings introduced/
+            ];
+            
+            const missingRequired = [];
+            requiredPatterns.forEach(pattern => {
+              const match = qaSection[0].match(pattern);
+              if (match && match[1] !== 'x') {
+                missingRequired.push(pattern.source.replace(/\\(.)/g, '$1').replace(/- \\\[\(.*?\)\\\] /, ''));
+              }
+            });
+            
+            // Create check run
+            const checkName = 'QA Checklist Compliance';
+            const checkRunParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: checkName,
+              head_sha: pr.head.sha,
+              status: 'completed'
+            };
+            
+            if (missingRequired.length > 0) {
+              checkRunParams.conclusion = 'failure';
+              checkRunParams.output = {
+                title: `QA Checklist: ${checkedItems}/${totalItems} items checked`,
+                summary: `The following required items must be checked before merging:\n\n${missingRequired.map(item => `- ❌ ${item}`).join('\n')}`,
+                text: `Please complete all required checklist items in your PR description.\n\nProgress: ${checkedItems}/${totalItems} items checked.`
+              };
+              
+              await github.rest.checks.create(checkRunParams);
+              core.setFailed(`Required checklist items not completed: ${missingRequired.join(', ')}`);
+            } else {
+              checkRunParams.conclusion = 'success';
+              checkRunParams.output = {
+                title: `QA Checklist: ${checkedItems}/${totalItems} items checked`,
+                summary: `All required QA checklist items have been completed! ✅`,
+                text: `Great job! All required quality assurance checks have been marked as complete.`
+              };
+              
+              await github.rest.checks.create(checkRunParams);
+              console.log(`QA Checklist complete: ${checkedItems}/${totalItems} items checked`);
+            }
