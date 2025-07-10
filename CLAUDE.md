@@ -1,3 +1,7 @@
+### TASK
+
+Ultrathink, observe, orient, decide and execute: perform a full verification & evaluation audit of every Sprint-1 slice completed so far (tasks schema-1, forge-2, sdk-3, canvas-4), collecting evidence from scratchpad logs, PRs #4/#5/#6/#8, CI artefacts, coverage and size-limit reports; for each package (@refinery/schema, graph-forge, sdk-core, canvas-r3f) inspect test suites for edge-case depth, negative paths, mocking philosophy and performance benches, confirm coverage thresholds, bundle-size and FPS/perf budgets, cross-check logged evidence versus raw artefacts, then rate testing thought-quality, implementation correctness and evidence hygiene, flag brittle gaps and enlarge Δ where mismatches appear, and finally append a concise markdown report plus any follow-up QA tasks under “## QA-Verification 2025-07-09 – Sprint-1 audit” in the scratchpad, committing the update atomically with chore(qa): sprint-1 verification log (task qa-1) while leaving production code unchanged.
+
 # Refinery SDK – Claude Code Quick-Start
 
 > Always open **@docs/PROJECT_HUB.md** first; it links to the current spec, scratchpad, and decision log.
