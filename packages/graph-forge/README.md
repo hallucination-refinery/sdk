@@ -32,7 +32,7 @@ const memories: RawMemory[] = [
     connections: ['mem_002'],
   },
   {
-    id: 'mem_002', 
+    id: 'mem_002',
     content: 'Related thought',
     position: [10, 20, 0], // Optional initial position
   },
@@ -46,8 +46,8 @@ const result = forgeGraph(memories, {
   },
 })
 
-console.log(result.nodes)      // Positioned IdeaNode[]
-console.log(result.edges)      // Edge[] with relationships
+console.log(result.nodes) // Positioned IdeaNode[]
+console.log(result.edges) // Edge[] with relationships
 console.log(result.widgetSpec) // UI rendering hints
 ```
 
@@ -107,17 +107,19 @@ All fields except `id` and `content` are optional.
 ## Performance
 
 The package is optimized for performance with:
+
 - Pre-allocated arrays
 - Efficient force calculations
 - Minimal object allocations
 - Early termination via alpha decay
 
 Benchmark results (mean times):
+
 - 100 nodes: ~53ms (300 iterations)
 - 500 nodes: ~216ms (300 iterations)
 - 1,000 nodes: ~419ms (300 iterations)
 - 2,000 nodes: ~874ms (300 iterations)
-- 2,000 nodes: ~305ms (100 iterations)
+- 2,000 nodes: ~289ms (100 iterations)
 
 ## Development
 
