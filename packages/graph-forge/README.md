@@ -112,11 +112,12 @@ The package is optimized for performance with:
 - Minimal object allocations
 - Early termination via alpha decay
 
-Benchmark results:
-- 100 nodes: ~5ms
-- 500 nodes: ~40ms
-- 1,000 nodes: ~100ms
-- 2,000 nodes: ~250ms
+Benchmark results (mean times):
+- 100 nodes: ~53ms (300 iterations)
+- 500 nodes: ~216ms (300 iterations)
+- 1,000 nodes: ~419ms (300 iterations)
+- 2,000 nodes: ~874ms (300 iterations)
+- 2,000 nodes: ~305ms (100 iterations)
 
 ## Development
 
