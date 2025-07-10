@@ -16,13 +16,9 @@ import PrivacyBadge from './PrivacyBadge';
 import ControlsHUD from './ControlsHUD';
 import CategoryHUD from './CategoryHUD';
 import { CategoryProvider, useCategory } from '@/contexts/CategoryContext';
-import {
-  useInteractionDispatch,
-  useInteractionState,
-  useTimeIndex,
-  setTimeIndex,
-} from '@refinery/interaction';
-import { type IdeaNode } from '@refinery/ideanode';
+import { useCanvas } from '@refinery/sdk-core';
+import { useRefineryStore } from '@refinery/store';
+import { type IdeaNode } from '@refinery/schema';
 import { ClusterVisualization } from './ClusterVisualization';
 import { useThree } from '@react-three/fiber';
 import CrypticAnimusScene from './CrypticAnimusScene';
@@ -216,13 +212,23 @@ function SceneContent({
 
 function CrypticVaultSceneContent() {
   const controlsRef = useRef<any>(null);
-  const interactionState = useInteractionState();
-  const interactionDispatch = useInteractionDispatch();
+  const { state: canvasState, enqueueCommand } = useCanvas();
+  const store = useRefineryStore();
   const [loading, setLoading] = useState(true);
   const [enrichedImages] = useState(new Map<string, string>());
   const [viewMode] = useState<'nodes' | 'clusters' | 'brain'>('nodes');
   const { setActiveCategories } = useCategory();
-  const timeIndex = useTimeIndex();
+  const [timeIndex, setTimeIndex] = useState(0);
+  const [activeLens, setActiveLens] = useState<'causal' | 'affinity' | 'temporal'>('causal');
+  const [timelineDate, setTimelineDate] = useState<string>('');
+  const [interactionState, setInteractionState] = useState({
+    masterGraphData: null as any,
+    mouseSelectedNodeId: null as string | null,
+    searchResultNodeIds: [] as string[],
+    currentInteractionMode: 'mouse' as string,
+    gesturedNodeId: null as string | null,
+    activeLens: 'causal' as 'causal' | 'affinity' | 'temporal',
+  });
   const [highlightState, setHighlightState] = useState<TraversalResult | null>(
     null,
   );
@@ -237,7 +243,7 @@ function CrypticVaultSceneContent() {
     edges_temporal: rawEdgesTemporal = [],
   } = graphBundle as any;
 
-  const activeLens = interactionState.activeLens || 'causal';
+  // activeLens is now managed in local state
 
   // choose edge array based on active lens
   const rawEdges =
@@ -312,28 +318,43 @@ function CrypticVaultSceneContent() {
 
   useEffect(() => {
     // Initialize graph data with all nodes
-    interactionDispatch({
-      type: 'SET_MASTER_GRAPH_DATA',
-      // Cast to any to allow extra edge arrays beyond the typed shape
-      payload: graphData as any,
-    });
+    setInteractionState(prev => ({
+      ...prev,
+      masterGraphData: graphData,
+    }));
 
-    // Initialize dial state to bypass filtering
-    interactionDispatch({
-      type: 'SET_DIAL_STATE',
-      payload: {
-        interwingleMode: 0, // Minimal filtering
-        searchDepth: 3, // Maximum allowed depth
-      },
-    });
+    // Initialize nodes and edges in the store
+    const nodesToAdd = allNodes.map((node: any) => ({
+      id: node.id,
+      label: node.label,
+      content: node.label,
+      metadata: node.meta,
+    }));
+    
+    store.batchAddNodes(nodesToAdd);
+    
+    const edgesToAdd = allLinks.map((link: any) => ({
+      id: link.id,
+      source: link.source,
+      target: link.target,
+      label: '',
+    }));
+    
+    store.batchAddEdges(edgesToAdd);
 
     setLoading(false);
-  }, [graphData, interactionDispatch]);
+  }, [graphData, allNodes, allLinks, store]);
 
   const handleNodeClick = useCallback(
     (clickedNode: any) => {
       const nodeId = clickedNode.id as string;
-      interactionDispatch({ type: 'MOUSE_SELECT_NODE', payload: { nodeId } });
+      setInteractionState(prev => ({
+        ...prev,
+        mouseSelectedNodeId: nodeId,
+      }));
+      
+      // Update selection in store
+      store.selectNodes([nodeId], 'replace');
 
       // Perform two-hop traversal using currently visible subset
       const traversalResult = performTwoHopTraversal(
@@ -344,27 +365,25 @@ function CrypticVaultSceneContent() {
       setHighlightState(traversalResult);
       setHighlightActiveTime(Date.now());
     },
-    [interactionDispatch, visibleNodesCurrent, visibleEdgesCurrent],
+    [store, visibleNodesCurrent, visibleEdgesCurrent],
   );
 
   const handleNodeHover = useCallback(
     (nodeId: string | null) => {
-      interactionDispatch({
-        type: 'SET_MOUSE_HOVERED_NODE',
-        payload: { nodeId },
-      });
+      store.setHoverNode(nodeId);
     },
-    [interactionDispatch],
+    [store],
   );
 
   const handleBackgroundClick = useCallback(() => {
-    interactionDispatch({
-      type: 'MOUSE_SELECT_NODE',
-      payload: { nodeId: null },
-    });
+    setInteractionState(prev => ({
+      ...prev,
+      mouseSelectedNodeId: null,
+    }));
+    store.clearSelection();
     setHighlightState(null);
     setHighlightActiveTime(0);
-  }, [interactionDispatch]);
+  }, [store]);
 
   // Handle keyboard events
   useEffect(() => {
@@ -372,21 +391,23 @@ function CrypticVaultSceneContent() {
       if (e.key === 'Escape') {
         setHighlightState(null);
         setHighlightActiveTime(0);
-        interactionDispatch({
-          type: 'MOUSE_SELECT_NODE',
-          payload: { nodeId: null },
-        });
+        setInteractionState(prev => ({
+          ...prev,
+          mouseSelectedNodeId: null,
+        }));
+        store.clearSelection();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [interactionDispatch]);
+  }, [store]);
 
   // set initial timeIndex to latest on mount
   useEffect(() => {
-    interactionDispatch(setTimeIndex(dates.length - 1));
-  }, [interactionDispatch]);
+    setTimeIndex(dates.length - 1);
+    setTimelineDate(dates[dates.length - 1]);
+  }, []);
 
   if (loading) {
     return (
@@ -458,9 +479,22 @@ function CrypticVaultSceneContent() {
       <CategoryHUD nodes={rawNodes} onCategoriesChange={setActiveCategories} />
 
       {/* Time slider */}
-      <TimeSlider dates={dates} />
+      <TimeSlider 
+        dates={dates} 
+        timeIndex={timeIndex}
+        onTimeIndexChange={(idx) => {
+          setTimeIndex(idx);
+          setTimelineDate(dates[idx]);
+        }}
+      />
       {/* Lens selector */}
-      <LensSelector />
+      <LensSelector 
+        activeLens={activeLens}
+        onLensChange={(lens) => {
+          setActiveLens(lens);
+          setInteractionState(prev => ({ ...prev, activeLens: lens }));
+        }}
+      />
     </>
   );
 }

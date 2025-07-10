@@ -1,9 +1,5 @@
 'use client';
 import React from 'react';
-import {
-  useInteractionDispatch,
-  useInteractionState,
-} from '@refinery/interaction';
 
 const lenses: Array<{
   id: 'causal' | 'affinity' | 'temporal';
@@ -15,9 +11,12 @@ const lenses: Array<{
   { id: 'temporal', label: 'Temporal', color: '#3498DB' },
 ];
 
-export default function LensSelector() {
-  const dispatch = useInteractionDispatch();
-  const { activeLens } = useInteractionState();
+interface LensSelectorProps {
+  activeLens: 'causal' | 'affinity' | 'temporal';
+  onLensChange: (lens: 'causal' | 'affinity' | 'temporal') => void;
+}
+
+export default function LensSelector({ activeLens, onLensChange }: LensSelectorProps) {
 
   return (
     <div
@@ -52,9 +51,7 @@ export default function LensSelector() {
       {lenses.map((lens) => (
         <button
           key={lens.id}
-          onClick={() =>
-            dispatch({ type: 'SET_ACTIVE_LENS', payload: { lens: lens.id } })
-          }
+          onClick={() => onLensChange(lens.id)}
           style={{
             padding: '6px 14px',
             borderRadius: '8px',

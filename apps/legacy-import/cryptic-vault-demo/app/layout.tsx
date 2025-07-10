@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { InteractionProvider } from '@refinery/interaction'
+import { ClientProviders } from '@/components/ClientProviders'
 
 export const metadata: Metadata = {
   title: 'Cryptic Vault - Privacy-First Memory Visualization',
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-black text-white">
-        <InteractionProvider>{children}</InteractionProvider>
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   )

@@ -3,7 +3,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { type IdeaNode } from '@refinery/ideanode';
+import { type IdeaNode } from '@refinery/schema';
 
 // Extended IdeaNode type with position for 3D visualization
 interface IdeaNodeWithPosition extends IdeaNode {

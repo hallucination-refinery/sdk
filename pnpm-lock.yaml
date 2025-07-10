@@ -168,24 +168,15 @@ importers:
       '@reduxjs/toolkit':
         specifier: ^2.5.2
         version: 2.8.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
-      '@refinery/canvas-r3f':
-        specifier: workspace:*
-        version: link:../../../packages/canvas-r3f
-      '@refinery/ideanode':
-        specifier: workspace:*
-        version: link:../../../packages/ideanode
-      '@refinery/interaction':
-        specifier: workspace:*
-        version: link:../../../packages/interaction
       '@refinery/schema':
         specifier: workspace:*
         version: link:../../../packages/schema
+      '@refinery/sdk-core':
+        specifier: workspace:*
+        version: link:../../../packages/sdk-core
       '@refinery/store':
         specifier: workspace:*
         version: link:../../../packages/store
-      '@refinery/view-three':
-        specifier: workspace:*
-        version: link:../../../packages/view-three
       clsx:
         specifier: ^2.1.1
         version: 2.1.1

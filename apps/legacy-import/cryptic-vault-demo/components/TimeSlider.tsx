@@ -1,22 +1,15 @@
 import React, { ChangeEvent } from 'react';
-import {
-  useInteractionDispatch,
-  useTimeIndex,
-  setTimeIndex,
-} from '@refinery/interaction';
 
 interface Props {
   dates: string[]; // sorted ascending
+  timeIndex: number;
+  onTimeIndexChange: (index: number) => void;
 }
 
-const TimeSlider: React.FC<Props> = ({ dates }) => {
-  const timeIndex = useTimeIndex();
-  const dispatch = useInteractionDispatch();
-
+const TimeSlider: React.FC<Props> = ({ dates, timeIndex, onTimeIndexChange }) => {
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const idx = Number(e.target.value);
-    dispatch(setTimeIndex(idx));
-    dispatch({ type: 'SET_TIMELINE_DATE', payload: { date: dates[idx] } });
+    onTimeIndexChange(idx);
   };
 
   const dateLabel = new Date(dates[timeIndex]).toLocaleDateString(undefined, {
