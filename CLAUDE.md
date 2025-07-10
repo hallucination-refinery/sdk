@@ -170,3 +170,37 @@ Append build logs, size-limit output, coverage reports, and demo FPS screenshots
 - Tree-shakeable build is mandatory (no side-effectful barrel)
 - Keep bundle ≤ 25 KB gzipped
 - Commit messages follow Conventional Commits (`refactor(canvas): slim to adapters (task canvas-4)`)
+
+## Sprint-1 · Task 5 — Store hardening (store-5)
+
+> **Why fifth?** A validated, standalone state layer is required before extracting widgets and completing the SDK demo migration.
+
+**Success condition**
+
+1. New package `packages/store` exports a Zustand-based global graph store (`useStore`) with action helpers.
+2. All actions validated via Zod; invalid payloads throw descriptive errors in dev.
+3. Optional persistence middleware saves/loads state to `localStorage` when enabled.
+4. Unit-test suite reaches ≥ 80 % statement & branch coverage, covering action validation and persistence.
+5. Legacy demo and sdk-core updated to import from `@refinery/store`; CI green.
+
+**Execution checklist**
+
+- [ ] `git checkout -b feat/store-extraction` _(task store-5)_
+- [ ] Scaffold `packages/store` (`package.json`, `tsconfig.json`, README, src/`)
+- [ ] Move Zustand slices from legacy demo; refactor to typed actions.
+- [ ] Implement Zod schemas + `createValidatedAction` helper.
+- [ ] Add persistence middleware (toggle via opts).
+- [ ] Replace imports across workspace (`rg @refinery/store` assist).
+- [ ] Write Vitest unit tests + coverage threshold config.
+- [ ] Demo builds & runs; coverage ≥ 80 %.
+- [ ] Open draft PR `(task store-5)`
+
+**Evidence logging**
+
+Log build/test output, coverage table, and demo screenshots in `.taskmaster/scratchpads/2025-07-08.md`.
+
+**Guard-rails**
+
+- No circular deps; store depends only on `schema` types.
+- Persistence opt-in; disabled by default for CI.
+- Coverage ≥ 80 %; commit messages Conventional Commits (`feat(store): … (task store-5)`).

@@ -75,3 +75,10 @@ export {
   // Types
   type SerializedState
 } from './persistence'
+
+// Validation
+export {
+  ValidationError,
+  createValidatedAction,
+  type ValidatedAction
+} from './validation'

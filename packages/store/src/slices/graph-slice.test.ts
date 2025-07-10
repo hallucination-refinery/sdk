@@ -24,7 +24,8 @@ describe('GraphSlice', () => {
       const node: IdeaNode = {
         id: 'node-1',
         label: 'Test Node',
-        metadata: { type: 'test' }
+        content: 'Test Node',
+        position: { x: 0, y: 0, z: 0 }
       }
 
       const command = slice.addNode(node)
@@ -40,26 +41,27 @@ describe('GraphSlice', () => {
       const node: IdeaNode = {
         id: 'node-1',
         label: 'Test Node',
-        metadata: {}
+        content: 'Test Node',
+        position: { x: 0, y: 0, z: 0 }
       }
       slice.addNode(node)
 
-      const command = slice.updateNode('node-1', { label: 'Updated' })
+      const command = slice.updateNode({ id: 'node-1', data: { content: 'Updated' } })
 
-      expect(slice.nodes.get('node-1')?.label).toBe('Updated')
+      expect(slice.nodes.get('node-1')?.content).toBe('Updated')
       expect(command).toEqual({
         type: 'UPDATE_NODE',
-        payload: { id: 'node-1', updates: { label: 'Updated' } }
+        payload: { id: 'node-1', updates: { content: 'Updated' } }
       })
     })
 
     it('should return null when updating non-existent node', () => {
-      const command = slice.updateNode('non-existent', { label: 'Updated' })
+      const command = slice.updateNode({ id: 'non-existent', data: { content: 'Updated' } })
       expect(command).toBeNull()
     })
 
     it('should remove a node and connected edges', () => {
-      const node: IdeaNode = { id: 'node-1', label: 'Node 1', metadata: {} }
+      const node: IdeaNode = { id: 'node-1', label: 'Node 1', content: 'Node 1', position: { x: 0, y: 0, z: 0 } }
       const edge: Edge = { id: 'edge-1', source: 'node-1', target: 'node-2' }
       
       slice.addNode(node)
@@ -77,8 +79,8 @@ describe('GraphSlice', () => {
 
     it('should batch add nodes', () => {
       const nodes: IdeaNode[] = [
-        { id: 'node-1', label: 'Node 1', metadata: {} },
-        { id: 'node-2', label: 'Node 2', metadata: {} }
+        { id: 'node-1', label: 'Node 1', content: 'Node 1', position: { x: 0, y: 0, z: 0 } },
+        { id: 'node-2', label: 'Node 2', content: 'Node 2', position: { x: 100, y: 100, z: 0 } }
       ]
 
       const command = slice.batchAddNodes(nodes)
@@ -94,30 +96,33 @@ describe('GraphSlice', () => {
 
     it('should batch update nodes', () => {
       slice.batchAddNodes([
-        { id: 'node-1', label: 'Node 1', metadata: {} },
-        { id: 'node-2', label: 'Node 2', metadata: {} }
+        { id: 'node-1', label: 'Node 1', content: 'Node 1', position: { x: 0, y: 0, z: 0 } },
+        { id: 'node-2', label: 'Node 2', content: 'Node 2', position: { x: 100, y: 100, z: 0 } }
       ])
 
       const updates = [
-        { id: 'node-1', updates: { label: 'Updated 1' } },
-        { id: 'node-2', updates: { label: 'Updated 2' } }
+        { id: 'node-1', data: { content: 'Updated 1' } },
+        { id: 'node-2', data: { content: 'Updated 2' } }
       ]
 
       const command = slice.batchUpdateNodes(updates)
 
-      expect(slice.nodes.get('node-1')?.label).toBe('Updated 1')
-      expect(slice.nodes.get('node-2')?.label).toBe('Updated 2')
+      expect(slice.nodes.get('node-1')?.content).toBe('Updated 1')
+      expect(slice.nodes.get('node-2')?.content).toBe('Updated 2')
       expect(command).toEqual({
         type: 'BATCH_UPDATE_NODES',
-        payload: { updates }
+        payload: { updates: [
+          { id: 'node-1', updates: { content: 'Updated 1' } },
+          { id: 'node-2', updates: { content: 'Updated 2' } }
+        ] }
       })
     })
 
     it('should batch remove nodes and connected edges', () => {
       slice.batchAddNodes([
-        { id: 'node-1', label: 'Node 1', metadata: {} },
-        { id: 'node-2', label: 'Node 2', metadata: {} },
-        { id: 'node-3', label: 'Node 3', metadata: {} }
+        { id: 'node-1', label: 'Node 1', content: 'Node 1', position: { x: 0, y: 0, z: 0 } },
+        { id: 'node-2', label: 'Node 2', content: 'Node 2', position: { x: 100, y: 100, z: 0 } },
+        { id: 'node-3', label: 'Node 3', content: 'Node 3', position: { x: 200, y: 200, z: 0 } }
       ])
       slice.batchAddEdges([
         { id: 'edge-1', source: 'node-1', target: 'node-2' },
@@ -146,10 +151,19 @@ describe('GraphSlice', () => {
 
       const command = slice.addEdge(edge)
 
-      expect(slice.edges.get('edge-1')).toEqual(edge)
+      // After parsing, edge should have defaults applied
+      const expectedEdge = {
+        ...edge,
+        type: 'relates-to',
+        strength: 1,
+        directed: false,
+        visible: true
+      }
+
+      expect(slice.edges.get('edge-1')).toEqual(expectedEdge)
       expect(command).toEqual({
         type: 'ADD_EDGE',
-        payload: { edge }
+        payload: { edge: expectedEdge }
       })
     })
 
@@ -161,7 +175,7 @@ describe('GraphSlice', () => {
       }
       slice.addEdge(edge)
 
-      const command = slice.updateEdge('edge-1', { metadata: { weight: 1 } })
+      const command = slice.updateEdge({ id: 'edge-1', data: { metadata: { weight: 1 } } })
 
       expect(slice.edges.get('edge-1')?.metadata).toEqual({ weight: 1 })
       expect(command).toEqual({
@@ -191,10 +205,19 @@ describe('GraphSlice', () => {
 
       const command = slice.batchAddEdges(edges)
 
+      // After parsing, edges should have defaults applied
+      const expectedEdges = edges.map(edge => ({
+        ...edge,
+        type: 'relates-to',
+        strength: 1,
+        directed: false,
+        visible: true
+      }))
+
       expect(slice.edges.size).toBe(2)
       expect(command).toEqual({
         type: 'BATCH_ADD_EDGES',
-        payload: { edges }
+        payload: { edges: expectedEdges }
       })
     })
   })
@@ -202,9 +225,9 @@ describe('GraphSlice', () => {
   describe('Query methods', () => {
     beforeEach(() => {
       slice.batchAddNodes([
-        { id: 'node-1', label: 'Node 1', metadata: {} },
-        { id: 'node-2', label: 'Node 2', metadata: {} },
-        { id: 'node-3', label: 'Node 3', metadata: {} }
+        { id: 'node-1', label: 'Node 1', content: 'Node 1', position: { x: 0, y: 0, z: 0 } },
+        { id: 'node-2', label: 'Node 2', content: 'Node 2', position: { x: 100, y: 100, z: 0 } },
+        { id: 'node-3', label: 'Node 3', content: 'Node 3', position: { x: 200, y: 200, z: 0 } }
       ])
       slice.batchAddEdges([
         { id: 'edge-1', source: 'node-1', target: 'node-2' },
@@ -215,7 +238,7 @@ describe('GraphSlice', () => {
 
     it('should get a node by id', () => {
       const node = slice.getNode('node-1')
-      expect(node?.label).toBe('Node 1')
+      expect(node?.content).toBe('Node 1')
     })
 
     it('should get an edge by id', () => {
@@ -244,8 +267,8 @@ describe('GraphSlice', () => {
   describe('Utility methods', () => {
     it('should clear the graph', () => {
       slice.batchAddNodes([
-        { id: 'node-1', label: 'Node 1', metadata: {} },
-        { id: 'node-2', label: 'Node 2', metadata: {} }
+        { id: 'node-1', label: 'Node 1', content: 'Node 1', position: { x: 0, y: 0, z: 0 } },
+        { id: 'node-2', label: 'Node 2', content: 'Node 2', position: { x: 100, y: 100, z: 0 } }
       ])
       slice.addEdge({ id: 'edge-1', source: 'node-1', target: 'node-2' })
 
