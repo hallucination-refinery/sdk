@@ -17,9 +17,12 @@
     "clean": "turbo run clean",
     "dev": "turbo run dev",
     "docs": "typedoc --plugin typedoc-plugin-markdown --entryPointStrategy Packages --entryPoints packages/* --skipErrorChecking --githubPages false --tsconfig tsconfig.build.json",
-    "docs:watch": "typedoc --watch"
+    "docs:watch": "typedoc --watch",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/node": "^20.17.15",
     "@typescript-eslint/eslint-plugin": "^8.19.1",
@@ -28,6 +31,7 @@
     "@vitest/ui": "^2.1.8",
     "clsx": "^2.1.1",
     "eslint": "^9.17.0",
+    "husky": "^9.1.7",
     "immer": "^10.1.1",
     "prettier": "^3.4.2",
     "tailwind-merge": "^3.3.1",
