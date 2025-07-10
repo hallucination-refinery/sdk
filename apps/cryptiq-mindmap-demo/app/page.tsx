@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { IdeaAperture } from '@refinery/widget-aperture'
-import { ApertureThemeProvider } from '@refinery/widget-aperture'
+import { Animus, CanvasProvider, createInitialCanvasState } from '@refinery/sdk-core'
+import type { Node, Edge } from '@refinery/sdk-core'
 import type { Graph } from '@refinery/schema'
 import CategoryHUD from '../components/CategoryHUD'
 import ControlsHUD from '../components/ControlsHUD'
@@ -117,6 +117,7 @@ const generate1kNodeGraph = (): Graph => {
 export default function Home() {
   const [fullGraph] = useState(() => generate1kNodeGraph())
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set())
+  const [canvasState] = useState(() => createInitialCanvasState())
   
   // Filter nodes based on active categories
   const filteredGraph = useCallback(() => {
@@ -141,18 +142,23 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen">
-      <ApertureThemeProvider>
-        <IdeaAperture 
-          graph={filteredGraph()} 
-          showHelp={false} 
-          ariaLabel="Cryptiq Mind Map Demo" 
+      <CanvasProvider initialState={{
+        ...canvasState,
+        nodes: filteredGraph().nodes as Node[],
+        edges: filteredGraph().edges as Edge[]
+      }}>
+        <Animus 
+          width="100%"
+          height="100%"
+          camera={{ position: [0, 0, 1000] }}
+          showStats={true}
         />
         <CategoryHUD 
           nodes={fullGraph.nodes}
           onCategoriesChange={setActiveCategories}
         />
         <ControlsHUD />
-      </ApertureThemeProvider>
+      </CanvasProvider>
     </main>
   )
 }
