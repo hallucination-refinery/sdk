@@ -3,7 +3,7 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls as DreiOrbitControls, Stats } from '@react-three/drei'
 import { Suspense, useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import dynamic from 'next/dynamic'
+// dynamic import no longer used
 // import KeyboardControls from './KeyboardControls';
 import PrivacyBadge from './PrivacyBadge'
 import ControlsHUD from './ControlsHUD'
@@ -32,17 +32,8 @@ interface Edge {
   type: string
 }
 
-interface ConceptsData {
-  nodes: Concept[]
-  edges: Edge[]
-  memories?: any[]
-  clusters: Record<string, { name: string; color: string }>
-  meta: any
-}
+// graphBundle imported as JSON ESM above
 
-// Load graph bundle with edge arrays
-const graphBundle = require('@/data/graph_bundle.json')
-const conceptsJson = require('@/data/concepts.json') as ConceptsData
 const dates: string[] = (timelineData as any[]).map((d) => d.date)
 
 // Note: We're using CrypticAnimusScene instead of the SDK's AnimusScene
@@ -50,59 +41,11 @@ const dates: string[] = (timelineData as any[]).map((d) => d.date)
 
 // Extended IdeaNode type moved to SceneContent.tsx
 
-// Convert concepts data to IdeaNode format
-function convertConceptsToIdeaNodes(
-  concepts: Concept[],
-  edges: Edge[]
-): {
-  nodes: IdeaNodeWithPosition[]
-  links: { source: string; target: string; tier: 0 }[]
-} {
-  const nodes: IdeaNodeWithPosition[] = concepts.map((concept) => ({
-    id: concept.id,
-    type: concept.type as any,
-    label: concept.label,
-    links: [], // Will be populated from edges
-    meta: {
-      source: 'system' as const,
-      created: Date.now(),
-      relevanceScore: 0.8,
-      conceptType: concept.type,
-      topics: concept.meta?.topics ?? [],
-      secret: concept.meta?.secret ?? false,
-      cluster: concept.clusterId || 'cluster_bridge',
-    },
-    secret: concept.meta?.secret ?? false,
-    state: {
-      isSelected: false,
-      currentLOD: 'Mid' as const,
-      isCollapsed: false,
-      isHidden: false,
-      isLinkingStart: false,
-    },
-    // Remove position assignment - let physics engine calculate
-    // position: concept.position, // Pre-computed 3D position
-  }))
-
-  // Create links from edges
-  const links: { source: string; target: string; tier: 0 }[] = edges.map((edge) => ({
-    source: edge.source,
-    target: edge.target,
-    tier: 0,
-  }))
-
-  // Update node links array for each node
-  nodes.forEach((node) => {
-    const nodeLinks = edges.filter((edge) => edge.source === node.id).map((edge) => edge.target)
-    node.links = nodeLinks
-  })
-
-  return { nodes, links }
-}
+// convertConceptsToIdeaNodes no longer used
 
 function CrypticVaultSceneContent() {
   const controlsRef = useRef<any>(null)
-  const { state: canvasState, enqueueCommand } = useCanvas()
+  const { state: _canvasState, enqueueCommand: _enqueueCommand } = useCanvas()
   const store = useRefineryStore()
   const [loading, setLoading] = useState(true)
   const [enrichedImages] = useState(new Map<string, string>())
@@ -110,7 +53,7 @@ function CrypticVaultSceneContent() {
   const { setActiveCategories } = useCategory()
   const [timeIndex, setTimeIndex] = useState(0)
   const [activeLens, setActiveLens] = useState<'causal' | 'affinity' | 'temporal'>('causal')
-  const [timelineDate, setTimelineDate] = useState<string>('')
+  const [_timelineDate, _setTimelineDate] = useState<string>('')
   const isInitializedRef = useRef(false)
   const [interactionState, setInteractionState] = useState({
     masterGraphData: null as any,
@@ -144,7 +87,7 @@ function CrypticVaultSceneContent() {
 
   // Build full node & link object caches ONCE (they keep positions/state)
   const allNodes: IdeaNodeWithPosition[] = useMemo(() => {
-    return rawNodes.map((n: any) => {
+    const created = rawNodes.map((n: any) => {
       if (!nodeCache.current[n.id]) {
         nodeCache.current[n.id] = {
           id: n.id,
@@ -155,10 +98,21 @@ function CrypticVaultSceneContent() {
           state: { isCollapsed: false, isHidden: false },
           secret: n.secret ?? false,
         }
+        // One-off probe – should run only during first creation
+        if (n.id === 'c_001') {
+          // eslint-disable-next-line no-console
+          console.log(
+            '[Probe A0] Newly created node frozen?',
+            Object.isFrozen(nodeCache.current[n.id])
+          )
+        }
       }
       return nodeCache.current[n.id]
     })
+    return created
   }, [])
+
+  // (diagnostic logs removed)
 
   const allLinks = useMemo(() => {
     return rawEdges.map((e: any) => {
@@ -222,7 +176,14 @@ function CrypticVaultSceneContent() {
       metadata: node.meta,
     }))
 
-    store.batchAddNodes(nodesToAdd)
+    // Probe before store update
+    // removed diagnostic log
+
+    // Pass a deep JSON clone to the store to decouple references
+    store.batchAddNodes(JSON.parse(JSON.stringify(nodesToAdd)))
+
+    // Probe right after store update
+    // removed diagnostic log
 
     const edgesToAdd = allLinks.map((link: any) => ({
       id: link.id,
@@ -232,6 +193,10 @@ function CrypticVaultSceneContent() {
     }))
 
     store.batchAddEdges(edgesToAdd)
+
+    if (allNodes.length > 0) {
+      // removed diagnostic log
+    }
 
     setLoading(false)
   }, [graphData, allNodes, allLinks, store])
@@ -297,7 +262,7 @@ function CrypticVaultSceneContent() {
   // set initial timeIndex to latest on mount
   useEffect(() => {
     setTimeIndex(dates.length - 1)
-    setTimelineDate(dates[dates.length - 1])
+    _setTimelineDate(dates[dates.length - 1])
   }, [])
 
   if (loading) {
@@ -307,6 +272,8 @@ function CrypticVaultSceneContent() {
       </div>
     )
   }
+
+  // removed diagnostic log
 
   return (
     <>
@@ -373,7 +340,7 @@ function CrypticVaultSceneContent() {
         timeIndex={timeIndex}
         onTimeIndexChange={(idx) => {
           setTimeIndex(idx)
-          setTimelineDate(dates[idx])
+          _setTimelineDate(dates[idx])
         }}
       />
       {/* Lens selector */}
