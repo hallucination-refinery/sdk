@@ -35,6 +35,14 @@ interface SceneContentProps {
   highlightActiveTime: number;
 }
 
+// Deep-clone helper – falls back to JSON for older browsers
+const deepClone = <T,>(obj: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  }
+  return JSON.parse(JSON.stringify(obj)) as T;
+};
+
 // Scene content component that renders based on view mode
 export default function SceneContent({
   viewMode,
@@ -60,7 +68,11 @@ export default function SceneContent({
   const { activeCategories } = useCategory();
   // Transform nodes and links inside the component to prevent unnecessary recreations
   const transformedData = useMemo(() => {
-    const transformedNodes: any[] = nodes.map((node) => ({
+    // Deep clone nodes and links before transformation to allow d3-force mutation
+    const clonedNodes = nodes.map(node => deepClone(node));
+    const clonedLinks = links.map(link => deepClone(link));
+    
+    const transformedNodes: any[] = clonedNodes.map((node) => ({
       ...node,
       childLinks: [],
       state: {
@@ -70,7 +82,7 @@ export default function SceneContent({
       },
     }));
 
-    const transformedLinks: any[] = links.map((link) => ({
+    const transformedLinks: any[] = clonedLinks.map((link) => ({
       id: `${link.source}-${link.target}`,
       source: link.source,
       target: link.target,
