@@ -18,18 +18,13 @@ import CategoryHUD from './CategoryHUD';
 import { CategoryProvider, useCategory } from '@/contexts/CategoryContext';
 import { useCanvas } from '@refinery/sdk-core';
 import { useRefineryStore } from '@refinery/store';
-import { type IdeaNode } from '@refinery/schema';
-import { ClusterVisualization } from './ClusterVisualization';
-import { useThree } from '@react-three/fiber';
-import CrypticAnimusScene from './CrypticAnimusScene';
-import { BrainMeshView } from './BrainMeshView';
 import {
   performTwoHopTraversal,
   type TraversalResult,
 } from '@/utils/graphTraversal';
-import EnergyRippleOverlay from './EnergyRippleOverlay';
 import TimeSlider from './TimeSlider';
 import LensSelector from './LensSelector';
+import SceneContent, { type IdeaNodeWithPosition } from './SceneContent';
 const timelineData = require('@/data/timeline.json');
 
 // Types for concepts data
@@ -63,10 +58,7 @@ const dates: string[] = (timelineData as any[]).map((d) => d.date);
 // Note: We're using CrypticAnimusScene instead of the SDK's AnimusScene
 // for custom glowing orb visualization
 
-// Extended IdeaNode type with position for 3D visualization
-interface IdeaNodeWithPosition extends IdeaNode {
-  position?: number[];
-}
+// Extended IdeaNode type moved to SceneContent.tsx
 
 // Convert concepts data to IdeaNode format
 function convertConceptsToIdeaNodes(
@@ -122,93 +114,6 @@ function convertConceptsToIdeaNodes(
   return { nodes, links };
 }
 
-// Scene content component that renders based on view mode
-function SceneContent({
-  viewMode,
-  nodes,
-  links,
-  visibleIds,
-  handleNodeClick,
-  handleNodeHover,
-  handleBackgroundClick,
-  enrichedImages,
-  interactionState,
-  highlightState,
-  highlightActiveTime,
-}: {
-  viewMode: 'nodes' | 'clusters' | 'brain';
-  nodes: IdeaNodeWithPosition[];
-  links: { source: string; target: string; tier: 0 }[];
-  visibleIds: Set<string>;
-  handleNodeClick: (node: any) => void;
-  handleNodeHover: (nodeId: string | null) => void;
-  handleBackgroundClick: () => void;
-  enrichedImages: Map<string, string>;
-  interactionState: any;
-  highlightState: TraversalResult | null;
-  highlightActiveTime: number;
-}) {
-  const { activeCategories } = useCategory();
-  // Transform nodes and links inside the component to prevent unnecessary recreations
-  const transformedData = useMemo(() => {
-    const transformedNodes: any[] = nodes.map((node) => ({
-      ...node,
-      childLinks: [],
-      state: {
-        ...node.state,
-        isCollapsed: node.state?.isCollapsed ?? false,
-        isHidden: node.state?.isHidden ?? false,
-      },
-    }));
-
-    const transformedLinks: any[] = links.map((link) => ({
-      id: `${link.source}-${link.target}`,
-      source: link.source,
-      target: link.target,
-      tier: link.tier,
-      confidence: 0.8,
-    }));
-
-    // Return a stable object matching ForceGraph3D's expected shape
-    return { nodes: transformedNodes, links: transformedLinks };
-  }, [nodes, links]);
-
-  return (
-    <>
-      {/* Nodes View: Individual memory nodes */}
-      {viewMode === 'nodes' &&
-        interactionState.masterGraphData?.nodes?.length > 0 && (
-          <CrypticAnimusScene
-            data={transformedData}
-            onNodeClick={handleNodeClick}
-            onNodeHoverProp={handleNodeHover}
-            mouseSelectedNodeId={interactionState.mouseSelectedNodeId}
-            searchResultOutlineIds={interactionState.searchResultNodeIds || []}
-            currentInteractionMode={
-              interactionState.currentInteractionMode || 'mouse'
-            }
-            gesturedNodeId={interactionState.gesturedNodeId || null}
-            activeCategories={activeCategories}
-            onBackgroundClickRequest={handleBackgroundClick}
-            highlightState={highlightState}
-            visibleIds={visibleIds}
-          />
-        )}
-
-      {/* Clusters View: Grouped patterns */}
-      {viewMode === 'clusters' && (
-        <ClusterVisualization nodes={nodes} opacity={1} visible={true} />
-      )}
-
-      {/* Brain View: Brain mesh visualization */}
-      {viewMode === 'brain' && (
-        <BrainMeshView nodes={nodes} opacity={1} visible={true} />
-      )}
-
-      {/* EnergyRippleOverlay disabled for now */}
-    </>
-  );
-}
 
 function CrypticVaultSceneContent() {
   const controlsRef = useRef<any>(null);
