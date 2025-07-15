@@ -18,11 +18,14 @@ import { OPACITY_VALUES, LINK_COLORS } from '@/utils/clusterPalette';
 import * as THREE from 'three';
 import { type TraversalResult } from '@/utils/graphTraversal';
 
-// Dynamically import ForceGraph3D
-const ForceGraph3D = dynamic(() => import('r3f-forcegraph'), {
-  ssr: false,
-  loading: () => null, // Return null while loading to prevent flashing
-});
+// Use SDK ForceGraphAdapter instead of direct r3f-forcegraph import
+const ForceGraph3D = dynamic(
+  () => import('@refinery/canvas-r3f').then(mod => mod.ForceGraphAdapter),
+  {
+    ssr: false,
+    loading: () => null, // Return null while loading to prevent flashing
+  }
+);
 
 interface CrypticAnimusSceneProps {
   data: {
