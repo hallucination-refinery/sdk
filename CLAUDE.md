@@ -1,3 +1,27 @@
+## SYSTEM
+
+Ultrathink mode. Greater rigor, attention to detail, and multi-angle verification. Start by outlining the task and breaking down the problem into subtasks. For each subtask, explore multiple perspectives, even those that seem initially irrelevant or improbable. Purposefully attempt to disprove or challenge your own assumptions at every step. Triple-verify everything. Critically review each step, scrutinize your logic, assumptions, and conclusions, explicitly calling out uncertainties and alternative viewpoints. Independently verify your reasoning using alternative methodologies or tools, cross-checking every fact, inference, and conclusion against external data, calculation, or authoritative sources. Deliberately seek out and employ at least twice as many verification tools or methods as you typically would. Use mathematical validations, web searches, logic evaluation frameworks, and additional resources explicitly and liberally to cross-verify your claims. Even if you feel entirely confident in your solution, explicitly dedicate additional time and effort to systematically search for weaknesses, logical gaps, hidden assumptions, or oversights. Clearly document these potential pitfalls and how you’ve addressed them. Once you’re fully convinced your analysis is robust and complete, deliberately pause and force yourself to reconsider the entire reasoning chain one final time from scratch. Explicitly detail this last reflective step.
+
+### CURRENT TASK – 2025-07-13
+
+> This section supersedes any older instructions below it. The content after “## Archived Quick-Start” is preserved for context only and may be out of date.
+
+### WARNING
+
+A lack of integrity and/or conscientiousness is unacceptable. I can and will audit each and every tool call you make, files/lines you look at and exact steps taken. Each and every discrepency or omission between what you document in @chief-of-staff-working.md and what you did will immediately be obvious resulting in a -$ 10,000 fine and disciplinary action.
+
+### GOAL
+
+Cross-reference and verify that each and every claim outlined in @docs/tmp-groupchat/claude-diff-investigation.md reflect the reality on the ground.
+
+### PRINCIPAL
+
+Run a tight, focused and falsifiable OODA loop for each and every claim. Treat every observation as evidence that updates your probability mass over whether W is satisfied. If you find a mismatch, assume Δ was understated, enlarge it, and ask for clarification rather than guessing.
+
+---
+
+## Archived Quick-Start (legacy – may be outdated)
+
 # Refinery SDK – Claude Code Quick-Start
 
 > Always open **@docs/PROJECT_HUB.md** first; it links to the current spec, scratchpad, and decision log.
@@ -63,34 +87,19 @@ _For extended Task Master commands, MCP setup, API key matrix, and troubleshooti
 3. Principle: if evidence contradicts W at any checkpoint ➜ enlarge Δ, log in scratchpad, seek clarification, stay pragmatic.
 4. Regularly run Taskmaster commands (`list`, `next`, `set-status`, etc.) to keep tasks in sync with reality.
 
-## Sprint-1 · Task 2 — Graph-Forge loader (graph-forge slice)
+## Sprint-1 · Task 1 — Core package extraction (Schema slice)
 
-> **Why second?** The demo and future apps need a deterministic, headless layout generator before we extract the canvas.
+> **Why first?** Moving all domain types into a dedicated package establishes a single source of truth and prevents cross-package drift before heavier runtime extraction begins.
 
 **Success condition**
 
-1. New package `packages/graph-forge` exports `forgeGraph(raw, opts)` + CLI `graph-forge` producing `{ nodes, edges, widgetSpec }`.
-2. Benchmark: `pnpm --filter @refinery/graph-forge exec vitest bench` shows 2 k-node layout ≤ 300 ms on CI hardware.
-3. Zod validation rejects invalid input and produces descriptive error.
-4. Unit tests & bench reach ≥ 80 % coverage; package builds green.
-5. Legacy demo temporarily _skips_ using loader (integration handled in later slice) to keep CI green.
+1. New package `packages/schema` exports Zod models + TypeScript types (`Node`, `Edge`, `Intent`, etc.) under `@refinery/schema`.
+2. All workspace imports updated to use `@refinery/schema`; legacy `cryptic-vault-demo` builds and runs unchanged.
+3. Unit-test suite for schema achieves ≥ 80 % statement, branch, and function coverage.
+4. CI pipeline (lint → type-check → tests → build) is green on the branch and in the PR view.
 
 **Execution checklist**
 
-- [ ] `git checkout -b feat/graph-forge-loader` _(task forge-2)_
-- [ ] Scaffold package with `package.json`, `tsconfig.json`, README.
-- [ ] Implement Zod schemas for RawMemory input.
-- [ ] Implement `forgeGraph` with seeded RNG + force-simulation.
-- [ ] Add Vitest unit tests + benchmark.
-- [ ] Add CLI wrapper (`bin` entry) + docs.
-- [ ] Wire build & test scripts; ensure coverage passes.
-- [ ] Push branch; open draft PR `(task forge-2)`.
-
-**Evidence logging**
-Append bench runs, test output, and coverage summary to `.taskmaster/scratchpads/2025-07-08.md` under _Evidence_.
-
-**Guard-rails**
-
-- Keep all heavy dependencies optional/peer.
-- No changes to demo imports in this slice.
-- If benchmark fails the 300 ms budget, stop and optimise before pushing.
+- [ ] `git checkout -b feat/schema-extract` _(task schema-1)_
+- [ ] Scaffold `packages/schema` (`package.json`, `tsconfig.json`, `README.md`, `src/index.ts`)
+- [ ] Migrate types from legacy code; rename `

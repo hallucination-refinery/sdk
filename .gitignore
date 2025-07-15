@@ -73,3 +73,7 @@ dev-debug.log
 
 # Git worktrees
 .worktrees/
+
+# Ignore local caches and worktrees
+.pnpm-store/
+worktrees/
