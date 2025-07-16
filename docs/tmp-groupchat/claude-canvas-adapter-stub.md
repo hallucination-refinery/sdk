@@ -342,3 +342,41 @@ The commit 37cb1a3c was oversized and included many unintended files beyond the 
 ### Result
 
 Successfully split the oversized commit into an atomic commit containing only the canvas-r3f adapter changes. The new commit hash is 6fae6d13.
+
+## Module Export Resolution (2025-07-16)
+
+### Problem Statement
+
+User reported module-not-found error for ForceGraphAdapter export from @refinery/canvas-r3f.
+
+### Investigation Process
+
+1. **Export Chain Verification**:
+   - ✅ `ForceGraphAdapter.tsx` has default export
+   - ✅ `adapters/index.ts` exports as named export: `export { default as ForceGraphAdapter }`
+   - ✅ `src/index.ts` re-exports all from adapters: `export * from './adapters'`
+   - ✅ `package.json` has correct exports configuration
+
+2. **Build Output Verification**:
+   - ✅ `dist/adapters/ForceGraphAdapter.js` exists
+   - ✅ `dist/adapters/index.js` correctly exports ForceGraphAdapter
+   - ✅ `dist/index.js` correctly exports from adapters
+
+3. **Import Verification**:
+   - ✅ `CrypticAnimusScene.tsx` uses dynamic import: `import('@refinery/canvas-r3f').then(mod => mod.ForceGraphAdapter)`
+   - ✅ No TypeScript errors in IDE diagnostics
+
+4. **Resolution Steps**:
+   - Rebuilt canvas-r3f package with `pnpm --filter @refinery/canvas-r3f build`
+   - Ran full monorepo build with `pnpm build`
+   - Started dev server with `pnpm dev --filter cryptic-vault-demo`
+   - ✅ Dev server started successfully without module errors
+
+### Conclusion
+
+The ForceGraphAdapter export was already correctly configured. The module-not-found error was likely due to:
+1. Stale build artifacts
+2. Dev server needing restart after package changes
+3. Possible pnpm linking issues resolved by rebuild
+
+No code changes were required. The export chain was functioning correctly, and rebuilding packages resolved the issue.
