@@ -2,15 +2,6 @@ import React, { forwardRef } from 'react'
 // TODO: Remove this adapter once force-graph is replaced with SDK renderer
 import ForceGraph3D from 'r3f-forcegraph'
 
-/**
- * ForceGraphAdapter - Thin wrapper around r3f-forcegraph for legacy compatibility
- * 
- * This adapter isolates the force-graph dependency and provides a migration path
- * to the SDK's native renderer. All props are passed through unchanged.
- * 
- * @deprecated Will be removed once Cryptiq Mindmap migrates to SDK renderer
- */
-
 export interface ForceGraphAdapterProps {
   // Core props
   ref?: React.Ref<any>
@@ -95,8 +86,17 @@ export interface ForceGraphAdapterRef {
   getGraphBbox: (nodeFilter?: (node: any) => boolean) => { x: [number, number]; y: [number, number]; z: [number, number] }
 }
 
+/**
+ * ForceGraphAdapter - Thin wrapper around r3f-forcegraph for legacy compatibility
+ * 
+ * This adapter isolates the force-graph dependency and provides a migration path
+ * to the SDK's native renderer. All props are passed through unchanged.
+ * 
+ * @deprecated Will be removed once Cryptiq Mindmap migrates to SDK renderer
+ */
 const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProps>((props, ref) => {
   // Pass through all props to the underlying ForceGraph3D component
+  // @ts-expect-error - ForceGraph3D has its own ref type that we're wrapping
   return <ForceGraph3D ref={ref} {...props} />
 })
 
