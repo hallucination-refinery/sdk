@@ -29,7 +29,7 @@ export interface SerializedState {
     }
     theme: {
       mode: 'light' | 'dark' | 'custom'
-      customTheme?: any
+      customTheme?: Record<string, unknown>
     }
   }
 }

@@ -55,8 +55,8 @@ export type LayoutCommand =
 
 // Theme commands
 export type ThemeCommand =
-  | { type: 'SET_THEME'; payload: { theme: 'light' | 'dark' | 'custom'; customTheme?: any } }
-  | { type: 'UPDATE_THEME_PROPERTY'; payload: { property: string; value: any } }
+  | { type: 'SET_THEME'; payload: { theme: 'light' | 'dark' | 'custom'; customTheme?: Record<string, unknown> } }
+  | { type: 'UPDATE_THEME_PROPERTY'; payload: { property: string; value: unknown } }
 
 // Highlight commands
 export type HighlightCommand =

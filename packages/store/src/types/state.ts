@@ -28,7 +28,7 @@ export interface UIState {
   }
   theme: {
     mode: 'light' | 'dark' | 'custom'
-    customTheme?: any
+    customTheme?: Record<string, unknown>
   }
   highlights: {
     nodes: Map<string, { color: string; intensity: number }>

@@ -27,8 +27,8 @@ export interface UISlice extends UIState {
   resetLayout: () => RendererCommand
   
   // Theme actions
-  setTheme: (theme: 'light' | 'dark' | 'custom', customTheme?: any) => RendererCommand
-  updateThemeProperty: (property: string, value: any) => RendererCommand
+  setTheme: (theme: 'light' | 'dark' | 'custom', customTheme?: Record<string, unknown>) => RendererCommand
+  updateThemeProperty: (property: string, value: unknown) => RendererCommand
   
   // Highlight actions
   highlightNodes: (nodeIds: string[], color?: string, intensity?: number) => RendererCommand
