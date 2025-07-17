@@ -1,6 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "*.tsbuildinfo"],
+      "cache": true
+    },
     "test": {
       "outputs": ["coverage/**"],
       "cache": true
@@ -10,8 +15,7 @@
       "cache": true
     },
     "lint": {
-      "cache": true,
-      "filter": ["./packages/**", "./apps/cryptiq-mindmap-demo/**"]
+      "cache": true
     },
     "dev": {
       "cache": false,

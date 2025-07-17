@@ -8,7 +8,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "files": [
@@ -17,6 +18,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist *.tsbuildinfo",
+    "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
@@ -27,6 +29,7 @@
     "@react-three/fiber": "^9.1.2",
     "@refinery/schema": "workspace:*",
     "@refinery/store": "workspace:*",
+    "r3f-forcegraph": "^1.1.1",
     "three": "0.176.0"
   },
   "devDependencies": {

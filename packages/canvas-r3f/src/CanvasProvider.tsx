@@ -3,6 +3,10 @@ import { useRefineryStore } from '@refinery/store'
 import type { RendererCommand } from '@refinery/store'
 import type { IdeaNode, Edge } from '@refinery/schema'
 
+interface CanvasTheme {
+  [key: string]: unknown
+}
+
 interface CanvasState {
   nodes: Map<string, IdeaNode>
   edges: Map<string, Edge>
@@ -15,7 +19,7 @@ interface CanvasState {
   layout: 'force' | 'radial' | 'hierarchical'
   layoutPaused: boolean
   theme: 'light' | 'dark' | 'custom'
-  customTheme?: any
+  customTheme?: CanvasTheme
   highlightedNodes: Map<string, { color?: string; intensity?: number }>
   highlightedEdges: Map<string, { color?: string; intensity?: number }>
 }
@@ -93,14 +97,14 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
 
         case 'BATCH_ADD_NODES':
           newState.nodes = new Map(newState.nodes)
-          command.payload.nodes.forEach(node => {
+          command.payload.nodes.forEach((node: IdeaNode) => {
             newState.nodes.set(node.id, node)
           })
           break
 
         case 'BATCH_UPDATE_NODES':
           newState.nodes = new Map(newState.nodes)
-          command.payload.updates.forEach(({ id, updates }) => {
+          command.payload.updates.forEach(({ id, updates }: { id: string; updates: Partial<IdeaNode> }) => {
             const node = newState.nodes.get(id)
             if (node) {
               newState.nodes.set(id, { ...node, ...updates })
@@ -111,7 +115,7 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
         case 'BATCH_REMOVE_NODES':
           newState.nodes = new Map(newState.nodes)
           newState.selectedNodeIds = new Set(newState.selectedNodeIds)
-          command.payload.ids.forEach(id => {
+          command.payload.ids.forEach((id: string) => {
             newState.nodes.delete(id)
             newState.selectedNodeIds.delete(id)
           })
@@ -146,14 +150,14 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
 
         case 'BATCH_ADD_EDGES':
           newState.edges = new Map(newState.edges)
-          command.payload.edges.forEach(edge => {
+          command.payload.edges.forEach((edge: Edge) => {
             newState.edges.set(edge.id, edge)
           })
           break
 
         case 'BATCH_UPDATE_EDGES':
           newState.edges = new Map(newState.edges)
-          command.payload.updates.forEach(({ id, updates }) => {
+          command.payload.updates.forEach(({ id, updates }: { id: string; updates: Partial<Edge> }) => {
             const edge = newState.edges.get(id)
             if (edge) {
               newState.edges.set(id, { ...edge, ...updates })
@@ -164,7 +168,7 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
         case 'BATCH_REMOVE_EDGES':
           newState.edges = new Map(newState.edges)
           newState.selectedEdgeIds = new Set(newState.selectedEdgeIds)
-          command.payload.ids.forEach(id => {
+          command.payload.ids.forEach((id: string) => {
             newState.edges.delete(id)
             newState.selectedEdgeIds.delete(id)
           })
@@ -196,9 +200,9 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
           if (command.payload.mode === 'replace') {
             newState.selectedNodeIds = new Set(command.payload.nodeIds)
           } else if (command.payload.mode === 'add') {
-            command.payload.nodeIds.forEach(id => newState.selectedNodeIds.add(id))
+            command.payload.nodeIds.forEach((id: string) => newState.selectedNodeIds.add(id))
           } else if (command.payload.mode === 'toggle') {
-            command.payload.nodeIds.forEach(id => {
+            command.payload.nodeIds.forEach((id: string) => {
               if (newState.selectedNodeIds.has(id)) {
                 newState.selectedNodeIds.delete(id)
               } else {
@@ -213,9 +217,9 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
           if (command.payload.mode === 'replace') {
             newState.selectedEdgeIds = new Set(command.payload.edgeIds)
           } else if (command.payload.mode === 'add') {
-            command.payload.edgeIds.forEach(id => newState.selectedEdgeIds.add(id))
+            command.payload.edgeIds.forEach((id: string) => newState.selectedEdgeIds.add(id))
           } else if (command.payload.mode === 'toggle') {
-            command.payload.edgeIds.forEach(id => {
+            command.payload.edgeIds.forEach((id: string) => {
               if (newState.selectedEdgeIds.has(id)) {
                 newState.selectedEdgeIds.delete(id)
               } else {
@@ -271,7 +275,7 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
         // Highlight commands
         case 'HIGHLIGHT_NODES':
           newState.highlightedNodes = new Map(newState.highlightedNodes)
-          command.payload.nodeIds.forEach(id => {
+          command.payload.nodeIds.forEach((id: string) => {
             newState.highlightedNodes.set(id, {
               color: command.payload.color,
               intensity: command.payload.intensity
@@ -281,7 +285,7 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
 
         case 'HIGHLIGHT_EDGES':
           newState.highlightedEdges = new Map(newState.highlightedEdges)
-          command.payload.edgeIds.forEach(id => {
+          command.payload.edgeIds.forEach((id: string) => {
             newState.highlightedEdges.set(id, {
               color: command.payload.color,
               intensity: command.payload.intensity
@@ -301,7 +305,7 @@ export function CanvasProvider({ children, initialState }: CanvasProviderProps) 
 
   // Subscribe to command queue
   useEffect(() => {
-    const unsubscribe = store.subscribeToCommands((commands) => {
+    const unsubscribe = store.subscribeToCommands((commands: RendererCommand[]) => {
       commands.forEach(processCommand)
     })
 

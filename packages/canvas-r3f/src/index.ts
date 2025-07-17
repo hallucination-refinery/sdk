@@ -12,3 +12,6 @@ export type { RendererCommand } from '@refinery/store'
 
 // Performance testing
 export { PerfProbe } from './perf-probe'
+
+// Adapters
+export * from './adapters'
