@@ -10,28 +10,27 @@ import {
   useCallback,
   useMemo,
 } from 'react';
-import dynamic from 'next/dynamic';
 // import KeyboardControls from './KeyboardControls';
 import PrivacyBadge from './PrivacyBadge';
 import ControlsHUD from './ControlsHUD';
 import CategoryHUD from './CategoryHUD';
 import { CategoryProvider, useCategory } from '@/contexts/CategoryContext';
 import {
-  useInteractionDispatch,
-  useInteractionState,
-  useTimeIndex,
-  setTimeIndex,
-} from '@refinery/interaction';
-import { type IdeaNode } from '@refinery/ideanode';
+  useGraphStore,
+  useUIStore,
+  useAppStore,
+  useSingleSelectedNode,
+  mapToArrays,
+  arraysToMaps,
+} from '@/store';
+import { type IdeaNode } from '@refinery/schema';
 import { ClusterVisualization } from './ClusterVisualization';
-import { useThree } from '@react-three/fiber';
 import CrypticAnimusScene from './CrypticAnimusScene';
 import { BrainMeshView } from './BrainMeshView';
 import {
   performTwoHopTraversal,
   type TraversalResult,
 } from '@/utils/graphTraversal';
-import EnergyRippleOverlay from './EnergyRippleOverlay';
 import TimeSlider from './TimeSlider';
 import LensSelector from './LensSelector';
 const timelineData = require('@/data/timeline.json');
@@ -85,7 +84,7 @@ function convertConceptsToIdeaNodes(
     type: concept.type as any,
     label: concept.label,
     links: [], // Will be populated from edges
-    meta: {
+    metadata: {
       source: 'system' as const,
       created: Date.now(),
       relevanceScore: 0.8,
@@ -129,33 +128,53 @@ function convertConceptsToIdeaNodes(
 // Scene content component that renders based on view mode
 function SceneContent({
   viewMode,
-  nodes,
-  links,
   visibleIds,
   handleNodeClick,
   handleNodeHover,
   handleBackgroundClick,
   enrichedImages,
-  interactionState,
   highlightState,
   highlightActiveTime,
 }: {
   viewMode: 'nodes' | 'clusters' | 'brain';
-  nodes: IdeaNodeWithPosition[];
-  links: { source: string; target: string; tier: 0 }[];
   visibleIds: Set<string>;
   handleNodeClick: (node: any) => void;
   handleNodeHover: (nodeId: string | null) => void;
   handleBackgroundClick: () => void;
   enrichedImages: Map<string, string>;
-  interactionState: any;
   highlightState: TraversalResult | null;
   highlightActiveTime: number;
 }) {
   const { activeCategories } = useCategory();
+  // Get graph data from store and convert to arrays for ForceGraph3D
+  const graphStore = useGraphStore();
+  const appStore = useAppStore();
+  const uiStore = useUIStore();
+  
   // Transform nodes and links inside the component to prevent unnecessary recreations
   const transformedData = useMemo(() => {
-    const transformedNodes: any[] = nodes.map((node) => ({
+    // Filter nodes by visibility
+    const visibleNodes = new Map<string, any>();
+    const visibleEdges = new Map<string, any>();
+    
+    // Filter nodes
+    graphStore.nodes.forEach((node, id) => {
+      if (visibleIds.has(id)) {
+        visibleNodes.set(id, node);
+      }
+    });
+    
+    // Filter edges
+    graphStore.edges.forEach((edge, id) => {
+      if (visibleIds.has(edge.source) && visibleIds.has(edge.target)) {
+        visibleEdges.set(id, edge);
+      }
+    });
+    
+    // Convert to arrays for ForceGraph3D
+    const { nodes: nodesArray, links: linksArray } = mapToArrays(visibleNodes, visibleEdges);
+    
+    const transformedNodes: any[] = nodesArray.map((node) => ({
       ...node,
       childLinks: [],
       state: {
@@ -165,33 +184,31 @@ function SceneContent({
       },
     }));
 
-    const transformedLinks: any[] = links.map((link) => ({
-      id: `${link.source}-${link.target}`,
+    const transformedLinks: any[] = linksArray.map((link) => ({
+      id: link.id || `${link.source}-${link.target}`,
       source: link.source,
       target: link.target,
-      tier: link.tier,
-      confidence: 0.8,
+      tier: link.tier || 0,
+      confidence: link.confidence || 0.8,
     }));
 
     // Return a stable object matching ForceGraph3D's expected shape
     return { nodes: transformedNodes, links: transformedLinks };
-  }, [nodes, links]);
+  }, [graphStore.nodes, graphStore.edges, visibleIds]);
 
   return (
     <>
       {/* Nodes View: Individual memory nodes */}
       {viewMode === 'nodes' &&
-        interactionState.masterGraphData?.nodes?.length > 0 && (
+        transformedData.nodes.length > 0 && (
           <CrypticAnimusScene
             data={transformedData}
             onNodeClick={handleNodeClick}
             onNodeHoverProp={handleNodeHover}
-            mouseSelectedNodeId={interactionState.mouseSelectedNodeId}
-            searchResultOutlineIds={interactionState.searchResultNodeIds || []}
-            currentInteractionMode={
-              interactionState.currentInteractionMode || 'mouse'
-            }
-            gesturedNodeId={interactionState.gesturedNodeId || null}
+            mouseSelectedNodeId={singleSelectedNodeId}
+            searchResultOutlineIds={appStore.searchResultNodeIds}
+            currentInteractionMode={appStore.currentInteractionMode}
+            gesturedNodeId={appStore.gesturedNodeId}
             activeCategories={activeCategories}
             onBackgroundClickRequest={handleBackgroundClick}
             highlightState={highlightState}
@@ -201,12 +218,12 @@ function SceneContent({
 
       {/* Clusters View: Grouped patterns */}
       {viewMode === 'clusters' && (
-        <ClusterVisualization nodes={nodes} opacity={1} visible={true} />
+        <ClusterVisualization nodes={transformedData.nodes} opacity={1} visible={true} />
       )}
 
       {/* Brain View: Brain mesh visualization */}
       {viewMode === 'brain' && (
-        <BrainMeshView nodes={nodes} opacity={1} visible={true} />
+        <BrainMeshView nodes={transformedData.nodes} opacity={1} visible={true} />
       )}
 
       {/* EnergyRippleOverlay disabled for now */}
@@ -216,13 +233,14 @@ function SceneContent({
 
 function CrypticVaultSceneContent() {
   const controlsRef = useRef<any>(null);
-  const interactionState = useInteractionState();
-  const interactionDispatch = useInteractionDispatch();
+  const graphStore = useGraphStore();
+  const uiStore = useUIStore();
+  const appStore = useAppStore();
+  const singleSelectedNodeId = useSingleSelectedNode();
   const [loading, setLoading] = useState(true);
-  const [enrichedImages] = useState(new Map<string, string>());
   const [viewMode] = useState<'nodes' | 'clusters' | 'brain'>('nodes');
   const { setActiveCategories } = useCategory();
-  const timeIndex = useTimeIndex();
+  const timeIndex = appStore.timeIndex;
   const [highlightState, setHighlightState] = useState<TraversalResult | null>(
     null,
   );
@@ -237,7 +255,7 @@ function CrypticVaultSceneContent() {
     edges_temporal: rawEdgesTemporal = [],
   } = graphBundle as any;
 
-  const activeLens = interactionState.activeLens || 'causal';
+  const activeLens = appStore.activeLens;
 
   // choose edge array based on active lens
   const rawEdges =
@@ -256,7 +274,7 @@ function CrypticVaultSceneContent() {
           type: n.type,
           label: n.title,
           links: [],
-          meta: { ...(n.meta || {}), source: 'system', created: Date.now() },
+          metadata: { ...(n.meta || {}), source: 'system', created: Date.now() },
           state: { isCollapsed: false, isHidden: false },
           secret: n.secret ?? false,
         };
@@ -311,29 +329,43 @@ function CrypticVaultSceneContent() {
   }, [visibleIdSet, allLinks]);
 
   useEffect(() => {
-    // Initialize graph data with all nodes
-    interactionDispatch({
-      type: 'SET_MASTER_GRAPH_DATA',
-      // Cast to any to allow extra edge arrays beyond the typed shape
-      payload: graphData as any,
-    });
+    // Convert array data to Maps and initialize graph store
+    const nodeArray = graphData.nodes.map((n: any) => ({
+      id: n.id,
+      label: n.label || n.title || '',
+      type: n.type || 'idea',
+      links: n.links || [],
+      metadata: { ...n.meta, source: 'system', created: n.meta?.created || Date.now() },
+      state: n.state || { isSelected: false, currentLOD: 'Mid', isCollapsed: false, isHidden: false, isLinkingStart: false },
+      secret: n.secret ?? false,
+    }));
 
-    // Initialize dial state to bypass filtering
-    interactionDispatch({
-      type: 'SET_DIAL_STATE',
-      payload: {
-        interwingleMode: 0, // Minimal filtering
-        searchDepth: 3, // Maximum allowed depth
-      },
+    const edgeArray = [...graphData.edges_causal, ...graphData.edges_affinity, ...graphData.edges_temporal].map((e: any) => ({
+      id: e.id || `${e.source}-${e.target}`,
+      source: e.source,
+      target: e.target,
+      confidence: e.confidence || e.weight || 0.8,
+    }));
+
+    const { nodes: nodesMap, edges: edgesMap } = arraysToMaps(nodeArray, edgeArray);
+    
+    // Batch add nodes and edges to store
+    graphStore.batchAddNodes(nodeArray);
+    graphStore.batchAddEdges(edgeArray);
+
+    // Initialize dial state
+    appStore.setDialState({
+      interwingleMode: 0, // Minimal filtering
+      searchDepth: 3, // Maximum allowed depth
     });
 
     setLoading(false);
-  }, [graphData, interactionDispatch]);
+  }, [graphData, graphStore, appStore]);
 
   const handleNodeClick = useCallback(
     (clickedNode: any) => {
       const nodeId = clickedNode.id as string;
-      interactionDispatch({ type: 'MOUSE_SELECT_NODE', payload: { nodeId } });
+      uiStore.selectNodes([nodeId], 'replace');
 
       // Perform two-hop traversal using currently visible subset
       const traversalResult = performTwoHopTraversal(
@@ -344,27 +376,21 @@ function CrypticVaultSceneContent() {
       setHighlightState(traversalResult);
       setHighlightActiveTime(Date.now());
     },
-    [interactionDispatch, visibleNodesCurrent, visibleEdgesCurrent],
+    [uiStore, visibleNodesCurrent, visibleEdgesCurrent],
   );
 
   const handleNodeHover = useCallback(
     (nodeId: string | null) => {
-      interactionDispatch({
-        type: 'SET_MOUSE_HOVERED_NODE',
-        payload: { nodeId },
-      });
+      uiStore.setHoverNode(nodeId);
     },
-    [interactionDispatch],
+    [uiStore],
   );
 
   const handleBackgroundClick = useCallback(() => {
-    interactionDispatch({
-      type: 'MOUSE_SELECT_NODE',
-      payload: { nodeId: null },
-    });
+    uiStore.selectNodes([], 'replace');
     setHighlightState(null);
     setHighlightActiveTime(0);
-  }, [interactionDispatch]);
+  }, [uiStore]);
 
   // Handle keyboard events
   useEffect(() => {
@@ -372,21 +398,18 @@ function CrypticVaultSceneContent() {
       if (e.key === 'Escape') {
         setHighlightState(null);
         setHighlightActiveTime(0);
-        interactionDispatch({
-          type: 'MOUSE_SELECT_NODE',
-          payload: { nodeId: null },
-        });
+        uiStore.selectNodes([], 'replace');
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [interactionDispatch]);
+  }, [uiStore]);
 
   // set initial timeIndex to latest on mount
   useEffect(() => {
-    interactionDispatch(setTimeIndex(dates.length - 1));
-  }, [interactionDispatch]);
+    appStore.setTimeIndex(dates.length - 1);
+  }, [appStore, dates]);
 
   if (loading) {
     return (
@@ -422,14 +445,11 @@ function CrypticVaultSceneContent() {
           <Suspense fallback={null}>
             <SceneContent
               viewMode={viewMode}
-              nodes={allNodes}
-              links={allLinks}
               visibleIds={visibleIdSet}
               handleNodeClick={handleNodeClick}
               handleNodeHover={handleNodeHover}
               handleBackgroundClick={handleBackgroundClick}
               enrichedImages={enrichedImages}
-              interactionState={interactionState}
               highlightState={highlightState}
               highlightActiveTime={highlightActiveTime}
             />

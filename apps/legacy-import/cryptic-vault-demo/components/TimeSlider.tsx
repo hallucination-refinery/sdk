@@ -1,22 +1,17 @@
 import React, { ChangeEvent } from 'react';
-import {
-  useInteractionDispatch,
-  useTimeIndex,
-  setTimeIndex,
-} from '@refinery/interaction';
+import { useAppStore } from '@/store';
 
 interface Props {
   dates: string[]; // sorted ascending
 }
 
 const TimeSlider: React.FC<Props> = ({ dates }) => {
-  const timeIndex = useTimeIndex();
-  const dispatch = useInteractionDispatch();
+  const { timeIndex, setTimeIndex, setTimelineDate } = useAppStore();
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const idx = Number(e.target.value);
-    dispatch(setTimeIndex(idx));
-    dispatch({ type: 'SET_TIMELINE_DATE', payload: { date: dates[idx] } });
+    setTimeIndex(idx);
+    setTimelineDate(dates[idx]);
   };
 
   const dateLabel = new Date(dates[timeIndex]).toLocaleDateString(undefined, {
