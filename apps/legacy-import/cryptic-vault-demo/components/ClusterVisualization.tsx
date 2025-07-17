@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
-import { type IdeaNode } from '@refinery/ideanode';
+import { type IdeaNode } from '@refinery/schema';
 import { useCategory } from '@/contexts/CategoryContext';
 import { getClusterColor, OPACITY_VALUES } from '@/utils/clusterPalette';
 
@@ -33,7 +33,7 @@ function computeClusters(nodes: IdeaNodeWithPosition[]): Cluster[] {
 
   // Group nodes by cluster
   nodes.forEach((node) => {
-    const clusterId = (node.meta as any)?.cluster || 'default';
+    const clusterId = (node.metadata as any)?.cluster || 'default';
     if (!clusterMap.has(clusterId)) {
       clusterMap.set(clusterId, []);
     }

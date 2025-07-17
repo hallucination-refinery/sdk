@@ -140,7 +140,7 @@ export default function CrypticAnimusScene({
 
       // Get node metadata - the data structure has these directly on the node
       const conceptType = node.type || 'default';
-      const cluster = node.meta?.cluster || 'default';
+      const cluster = node.metadata?.cluster || 'default';
       const isSecret = node.secret || false;
 
       const sprite = buildCrypticNodeSprite(
@@ -208,8 +208,8 @@ export default function CrypticAnimusScene({
         (n: any) => n.id === targetId,
       );
 
-      const sourceCluster = sourceNode?.meta?.cluster || sourceNode?.cluster;
-      const targetCluster = targetNode?.meta?.cluster || targetNode?.cluster;
+      const sourceCluster = sourceNode?.metadata?.cluster || sourceNode?.cluster;
+      const targetCluster = targetNode?.metadata?.cluster || targetNode?.cluster;
 
       const sourceVisible = !visibleIds || visibleIds.has(sourceId);
       const targetVisible = !visibleIds || visibleIds.has(targetId);
@@ -352,7 +352,7 @@ export default function CrypticAnimusScene({
       const tagMatch =
         !activeTags ||
         activeTags.size === 0 ||
-        (node.topics || node.meta?.topics || []).some((t: string) =>
+        (node.topics || node.metadata?.topics || []).some((t: string) =>
           activeTags.has(t),
         );
       if (!tagMatch) return false;

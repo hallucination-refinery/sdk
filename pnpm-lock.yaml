@@ -168,9 +168,6 @@ importers:
       '@refinery/ideanode':
         specifier: workspace:*
         version: link:../../../packages/ideanode
-      '@refinery/interaction':
-        specifier: workspace:*
-        version: link:../../../packages/interaction
       '@refinery/schema':
         specifier: workspace:*
         version: link:../../../packages/schema

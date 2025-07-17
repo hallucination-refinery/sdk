@@ -1,0 +1,3 @@
+// In CrypticVaultScene.tsx
+const graphBundle = require('@/data/graph_bundle.json');
+const timelineData = require('@/data/timeline.json'); 

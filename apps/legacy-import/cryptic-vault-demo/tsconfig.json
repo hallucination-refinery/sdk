@@ -20,13 +20,16 @@
     "noEmit": true,
     "incremental": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": [
     "app",
     "components",
     "data",
     "lib",
+    "store",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
