@@ -8,7 +8,14 @@ import React, {
   useMemo,
 } from 'react';
 import dynamic from 'next/dynamic';
-import type { NodeObject } from 'r3f-forcegraph';
+// Local type definition to avoid r3f-forcegraph dependency
+type NodeObject<T = any> = T & {
+  id?: string | number;
+  x?: number;
+  y?: number;
+  z?: number;
+  [key: string]: any;
+};
 import {
   buildCrypticNodeSprite,
   cleanupCrypticSpriteCache,
