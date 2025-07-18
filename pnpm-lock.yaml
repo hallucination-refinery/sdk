@@ -340,9 +340,6 @@ importers:
 
   packages/interaction:
     dependencies:
-      '@refinery/ideanode':
-        specifier: workspace:*
-        version: link:../ideanode
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -472,9 +469,6 @@ importers:
       '@refinery/gesture-hands':
         specifier: workspace:*
         version: link:../gesture-hands
-      '@refinery/ideanode':
-        specifier: workspace:*
-        version: link:../ideanode
       '@refinery/interaction':
         specifier: workspace:*
         version: link:../interaction

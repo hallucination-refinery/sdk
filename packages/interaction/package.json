@@ -7,7 +7,6 @@
   "types": "src/index.ts",
   "scripts": {},
   "dependencies": {
-    "@refinery/ideanode": "workspace:*",
     "three": "^0.176.0"
   },
   "devDependencies": {
