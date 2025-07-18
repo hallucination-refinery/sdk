@@ -22,7 +22,6 @@
     "@react-three/drei": "^9.103.0",
     "@react-three/fiber": "^9.0.0",
     "@refinery/gesture-hands": "workspace:*",
-    "@refinery/interaction": "workspace:*",
     "@refinery/thinkable": "workspace:*",
     "gsap": "^3.12.5",
     "r3f-forcegraph": "^1.0.7",
