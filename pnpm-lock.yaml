@@ -165,9 +165,6 @@ importers:
       '@refinery/canvas-r3f':
         specifier: workspace:*
         version: link:../../../packages/canvas-r3f
-      '@refinery/ideanode':
-        specifier: workspace:*
-        version: link:../../../packages/ideanode
       '@refinery/schema':
         specifier: workspace:*
         version: link:../../../packages/schema
