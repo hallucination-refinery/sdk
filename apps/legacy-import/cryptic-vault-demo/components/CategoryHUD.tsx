@@ -1,62 +1,57 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CATEGORY_MAPPINGS, NODE_TYPE_COLORS } from '@/utils/clusterPalette';
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { NODE_TYPE_COLORS } from '@/utils/clusterPalette'
 
 // A simple color hash for consistent-ish button colors
-const a = (c: string) => c.charCodeAt(0);
-const colorHash = (t: string) => NODE_TYPE_COLORS[t] || '#94a3b8';
+const colorHash = (t: string) => NODE_TYPE_COLORS[t] || '#94a3b8'
 
 export interface CategoryHUDProps {
-  nodes: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  nodes: any[]
   /**
    * Called every time the active categories set changes.
    * The callback receives a Set<string> with the active cluster IDs.
    */
-  onCategoriesChange?: (active: Set<string>) => void;
+  onCategoriesChange?: (active: Set<string>) => void
 }
 
 /**
  * CategoryHUD renders a bottom-right floating panel with seven toggle chips and a
  * "Reset filters" button, as described in the Cryptic Vault PRD (F7).
  */
-export default function CategoryHUD({
-  nodes,
-  onCategoriesChange,
-}: CategoryHUDProps) {
+export default function CategoryHUD({ nodes, onCategoriesChange }: CategoryHUDProps) {
   const nodeTypes = useMemo<string[]>(() => {
-    const types = new Set<string>(nodes.map((n) => n.type));
-    return Array.from(types).sort();
-  }, [nodes]);
+    const types = new Set<string>(nodes.map((n) => n.type))
+    return Array.from(types).sort()
+  }, [nodes])
 
-  const [activeCategories, setActiveCategories] = useState<Set<string>>(
-    () => new Set(nodeTypes),
-  );
+  const [activeCategories, setActiveCategories] = useState<Set<string>>(() => new Set(nodeTypes))
 
   // Inform parent component whenever activeCategories changes
   useEffect(() => {
-    onCategoriesChange?.(new Set(activeCategories));
-  }, [activeCategories, onCategoriesChange]);
+    onCategoriesChange?.(new Set(activeCategories))
+  }, [activeCategories, onCategoriesChange])
 
   /**
    * Toggle the active state of a single category chip.
    */
   const handleToggle = useCallback((categoryType: string) => {
     setActiveCategories((prev) => {
-      const next = new Set(prev);
+      const next = new Set(prev)
       if (next.has(categoryType)) {
-        next.delete(categoryType);
+        next.delete(categoryType)
       } else {
-        next.add(categoryType);
+        next.add(categoryType)
       }
-      return next;
-    });
-  }, []);
+      return next
+    })
+  }, [])
 
   /**
    * Reset all chips to the active state.
    */
   const handleReset = useCallback(() => {
-    setActiveCategories(new Set(nodeTypes));
-  }, [nodeTypes]);
+    setActiveCategories(new Set(nodeTypes))
+  }, [nodeTypes])
 
   return (
     <div
@@ -66,19 +61,15 @@ export default function CategoryHUD({
       {/* Chips container */}
       <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-lg p-3 flex flex-wrap gap-2 justify-end max-w-xs">
         {nodeTypes.map((type) => {
-          const isActive = activeCategories.has(type);
-          const color = colorHash(type);
-          const label = type.charAt(0).toUpperCase() + type.slice(1);
+          const isActive = activeCategories.has(type)
+          const color = colorHash(type)
+          const label = type.charAt(0).toUpperCase() + type.slice(1)
           return (
             <button
               key={type}
               onClick={() => handleToggle(type)}
               className={`px-3 py-1 rounded-full font-medium transition-all duration-200 border-2 text-xs whitespace-nowrap
-                ${
-                  isActive
-                    ? 'shadow-lg transform scale-105'
-                    : 'opacity-60 hover:opacity-80'
-                }
+                ${isActive ? 'shadow-lg transform scale-105' : 'opacity-60 hover:opacity-80'}
               `}
               style={{
                 backgroundColor: isActive ? color : 'transparent',
@@ -88,7 +79,7 @@ export default function CategoryHUD({
             >
               {label}
             </button>
-          );
+          )
         })}
       </div>
 
@@ -100,5 +91,5 @@ export default function CategoryHUD({
         Reset filters
       </button>
     </div>
-  );
+  )
 }

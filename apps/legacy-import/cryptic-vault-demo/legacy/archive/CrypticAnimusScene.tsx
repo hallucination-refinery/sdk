@@ -1,21 +1,16 @@
-// @ts-nocheck
 'use client'
 
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
+import React, { useRef, useEffect, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-// Local type definition to avoid r3f-forcegraph dependency
-type NodeObject<T = any> = T & {
-  id?: string | number
-  x?: number
-  y?: number
-  z?: number
-  [key: string]: any
-}
 import { buildCrypticNodeSprite, cleanupCrypticSpriteCache } from './CrypticNodeSprite'
 import { useFrame } from '@react-three/fiber'
-import { OPACITY_VALUES, LINK_COLORS } from '@/utils/clusterPalette'
+import { OPACITY_VALUES, LINK_COLORS } from '../utils/clusterPalette'
 import * as THREE from 'three'
-import { type TraversalResult } from '@/utils/graphTraversal'
+import { type TraversalResult } from '../utils/graphTraversal'
+import { type IdeaNode, type Edge } from '@refinery/schema'
+
+// Local type for nodes that have been processed by r3f-forcegraph
+type IdeaNodeWithObj = IdeaNode & { __threeObj?: THREE.Object3D }
 
 // Use SDK ForceGraphAdapter instead of direct r3f-forcegraph import
 const ForceGraph3D = dynamic(
@@ -28,16 +23,16 @@ const ForceGraph3D = dynamic(
 
 interface CrypticAnimusSceneProps {
   data: {
-    nodes: any[]
-    links: any[]
+    nodes: IdeaNode[]
+    links: Edge[]
   }
-  onNodeClick?: (node: any) => void
-  onNodeHoverProp?: (node: any | null) => void
+  onNodeClick?: (node: IdeaNode) => void
+  onNodeHoverProp?: (node: IdeaNode | null) => void
   mouseSelectedNodeId?: string | null
   searchResultOutlineIds?: string[]
   currentInteractionMode?: 'mouse' | 'gesture'
   gesturedNodeId?: string | null
-  onBackgroundClickRequest?: () => void
+  _onBackgroundClickRequest?: () => void
   activeCategories?: Set<string>
   highlightState?: TraversalResult | null
   visibleIds?: Set<string>
@@ -53,7 +48,7 @@ export default function CrypticAnimusScene({
   searchResultOutlineIds,
   currentInteractionMode = 'mouse',
   gesturedNodeId,
-  onBackgroundClickRequest,
+  _onBackgroundClickRequest,
   activeCategories,
   highlightState,
   visibleIds,
@@ -101,7 +96,7 @@ export default function CrypticAnimusScene({
     fgRef.current.d3Force('center')?.strength(0.1)
 
     // Let the simulation run continuously; we will let ForceGraph manage alpha decay
-  }, [fgRef.current]) // Run when ref changes from null to ForceGraph instance
+  }, []) // Run when ref changes from null to ForceGraph instance
 
   // PERFORMANCE: Cleanup sprite cache on unmount
   useEffect(() => {
@@ -112,14 +107,14 @@ export default function CrypticAnimusScene({
 
   // Custom node rendering - memoized to prevent recreating the callback
   const nodeThreeObject = useCallback(
-    (node: any): any => {
+    (node: IdeaNode): any => {
       // Calculate selection states
       const isSelected = currentInteractionMode === 'mouse' && node.id === mouseSelectedNodeId
       const isGestureSelected = currentInteractionMode === 'gesture' && node.id === gesturedNodeId
       const isSearchResult = searchResultOutlineIds?.includes(node.id)
 
       // Determine selection color
-      let selectionColor = undefined
+      let selectionColor: string | undefined = undefined
       if (isSelected) {
         selectionColor = '#FFA500' // Orange
       } else if (isGestureSelected) {
@@ -129,9 +124,9 @@ export default function CrypticAnimusScene({
       }
 
       // Get node metadata - the data structure has these directly on the node
-      const conceptType = node.type || 'default'
+      const conceptType = node.metadata?.type || 'default'
       const cluster = node.metadata?.cluster || 'default'
-      const isSecret = node.secret || false
+      const isSecret = node.metadata?.secret || false
 
       const sprite = buildCrypticNodeSprite(
         node.label || 'Untitled',
@@ -160,7 +155,7 @@ export default function CrypticAnimusScene({
 
   // Handle node click - memoized
   const handleNodeClick = useCallback(
-    (node: NodeObject<any>) => {
+    (node: IdeaNode) => {
       if (onNodeClick) {
         onNodeClick(node)
       }
@@ -170,48 +165,10 @@ export default function CrypticAnimusScene({
 
   // Handle node hover - memoized to prevent re-creating function
   const handleNodeHover = useCallback(
-    (node: any) => {
+    (node: IdeaNode | null) => {
       onNodeHoverProp?.(node)
     },
     [onNodeHoverProp]
-  )
-
-  // Memoize link opacity function to prevent recreating on every render
-  const getLinkOpacity = useCallback(
-    (link: any) => {
-      // Get source and target IDs first
-      const sourceId = typeof link.source === 'object' ? link.source.id : link.source
-      const targetId = typeof link.target === 'object' ? link.target.id : link.target
-
-      // Check if both source and target nodes are active
-      const sourceNode = memoizedGraphData.nodes.find((n: any) => n.id === sourceId)
-      const targetNode = memoizedGraphData.nodes.find((n: any) => n.id === targetId)
-
-      const sourceCluster = sourceNode?.metadata?.cluster || sourceNode?.cluster
-      const targetCluster = targetNode?.metadata?.cluster || targetNode?.cluster
-
-      const sourceVisible = !visibleIds || visibleIds.has(sourceId)
-      const targetVisible = !visibleIds || visibleIds.has(targetId)
-
-      const sourceActive =
-        !activeCategories || activeCategories.size === 0 || activeCategories.has(sourceCluster)
-      const targetActive =
-        !activeCategories || activeCategories.size === 0 || activeCategories.has(targetCluster)
-
-      // Check if link is highlighted
-      const isHighlighted =
-        highlightState &&
-        highlightState.nodeIds.has(sourceId) &&
-        highlightState.nodeIds.has(targetId)
-
-      const visible = sourceVisible && targetVisible
-
-      // Link is active if both nodes are active or if it's highlighted
-      return visible && ((sourceActive && targetActive) || isHighlighted)
-        ? OPACITY_VALUES.linkDefault
-        : OPACITY_VALUES.dimmed
-    },
-    [memoizedGraphData.nodes, activeCategories, highlightState, visibleIds]
   )
 
   // --- Runtime sprite material updates each frame ---
@@ -229,17 +186,17 @@ export default function CrypticAnimusScene({
         : fgRef.current.graphData
     if (!graphAccessor) return
 
-    const nodesArr: any[] = graphAccessor.nodes || []
-    nodesArr.forEach((n: any) => {
+    const nodesArr: IdeaNodeWithObj[] = graphAccessor.nodes || []
+    nodesArr.forEach((n: IdeaNodeWithObj) => {
       const sprite = n.__threeObj as THREE.Sprite | undefined
       if (!sprite || !sprite.material) return // Guard against missing sprites
 
-      const nodeType = n.type
+      const nodeType = n.metadata?.type
       const isVisibleByTime = visibleIds ? visibleIds.has(n.id) : true
-      const isVisibleByPrivacy = showSecrets || !n.secret
+      const isVisibleByPrivacy = showSecrets || !n.metadata?.secret
 
       const isActive =
-        !activeCategories || activeCategories.size === 0 || activeCategories.has(nodeType)
+        !activeCategories || activeCategories.size === 0 || activeCategories.has(nodeType || '')
 
       const isHighlighted = highlightState && highlightState.nodeIds.has(n.id)
 
@@ -261,10 +218,12 @@ export default function CrypticAnimusScene({
 
   // Memoize link color function to prevent recreating on every render
   const getLinkColor = useCallback(
-    (link: any) => {
+    (link: Edge) => {
       if (highlightState) {
-        const sourceId = typeof link.source === 'object' ? link.source.id : link.source
-        const targetId = typeof link.target === 'object' ? link.target.id : link.target
+        const sourceId =
+          typeof link.source === 'string' ? link.source : (link.source as IdeaNode).id
+        const targetId =
+          typeof link.target === 'string' ? link.target : (link.target as IdeaNode).id
 
         const isUpstream =
           highlightState.upstreamNodes.has(sourceId) || highlightState.upstreamNodes.has(targetId)
@@ -280,8 +239,8 @@ export default function CrypticAnimusScene({
         if (bothInHighlight) return LINK_COLORS.highlighted
       }
 
-      if (link.sign === '+') return LINK_COLORS.positive
-      if (link.sign === '-') return LINK_COLORS.negative
+      if (link.metadata?.sign === '+') return LINK_COLORS.positive
+      if (link.metadata?.sign === '-') return LINK_COLORS.negative
 
       return LINK_COLORS.default
     },
@@ -289,14 +248,16 @@ export default function CrypticAnimusScene({
   )
 
   const getLinkWidth = useCallback(
-    (link: any) => {
+    (link: Edge) => {
       const isHighlighted =
         highlightState?.nodeIds.has(
-          typeof link.source === 'object' ? link.source.id : link.source
+          typeof link.source === 'string' ? link.source : (link.source as IdeaNode).id
         ) &&
-        highlightState?.nodeIds.has(typeof link.target === 'object' ? link.target.id : link.target)
+        highlightState?.nodeIds.has(
+          typeof link.target === 'string' ? link.target : (link.target as IdeaNode).id
+        )
       const baseWidth = 0.4
-      const weightedWidth = 0.5 + 2 * (link.weight || 0.5)
+      const weightedWidth = 0.5 + 2 * (link.metadata?.weight || 0.5)
       return isHighlighted ? Math.min(weightedWidth + 1, 3) : baseWidth
     },
     [highlightState]
@@ -304,20 +265,22 @@ export default function CrypticAnimusScene({
 
   // Memoize helper to decide if a node passes current filters
   const nodePassesFilters = useCallback(
-    (node: any): boolean => {
+    (node: IdeaNode): boolean => {
       if (!node) return false
-      if (!showSecrets && node.secret) return false
+      if (!showSecrets && node.metadata?.secret) return false
       // Time slider filter
       if (visibleIds && !visibleIds.has(node.id)) return false
       // Category/type filter
       const typeMatch =
-        !activeCategories || activeCategories.size === 0 || activeCategories.has(node.type)
+        !activeCategories ||
+        activeCategories.size === 0 ||
+        activeCategories.has(node.metadata?.type || '')
       if (!typeMatch) return false
       // Tag filter (from TagHUD)
       const tagMatch =
         !activeTags ||
         activeTags.size === 0 ||
-        (node.topics || node.metadata?.topics || []).some((t: string) => activeTags.has(t))
+        (node.metadata?.topics || []).some((t: string) => activeTags.has(t))
       if (!tagMatch) return false
       return true
     },
@@ -340,9 +303,9 @@ export default function CrypticAnimusScene({
       linkCurvature={0.2}
       cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
       nodeVisibility={nodePassesFilters}
-      linkVisibility={(link: any) => {
-        const sId = typeof link.source === 'object' ? link.source.id : link.source
-        const tId = typeof link.target === 'object' ? link.target.id : link.target
+      linkVisibility={(link: Edge) => {
+        const sId = typeof link.source === 'string' ? link.source : (link.source as IdeaNode).id
+        const tId = typeof link.target === 'string' ? link.target : (link.target as IdeaNode).id
 
         const sourceNode = nodeMap.get(sId)
         const targetNode = nodeMap.get(tId)

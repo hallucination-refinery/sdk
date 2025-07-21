@@ -15,19 +15,19 @@ export interface DialState {
 export interface AppState {
   // Lens selection
   activeLens: 'causal' | 'affinity' | 'temporal'
-  
+
   // Timeline navigation
   timeIndex: number
   timelineDate: string | null // Derived from timeIndex
-  
+
   // Dial/filter settings
   dialState: DialState
-  
+
   // Search and interaction
   searchResultNodeIds: string[]
   currentInteractionMode: string
   gesturedNodeId: string | null
-  
+
   // Actions
   setActiveLens: (lens: 'causal' | 'affinity' | 'temporal') => void
   setTimeIndex: (index: number) => void
@@ -36,62 +36,59 @@ export interface AppState {
   setSearchResultNodeIds: (ids: string[]) => void
   setCurrentInteractionMode: (mode: string) => void
   setGesturedNodeId: (id: string | null) => void
-  
+
   // Utility
   reset: () => void
 }
 
 // Initial state
-const initialState = {
+const getInitialState = () => ({
   activeLens: 'causal' as const,
   timeIndex: 0,
   timelineDate: null,
   dialState: {
     interwingleMode: 0,
-    searchDepth: 3
+    searchDepth: 3,
   },
   searchResultNodeIds: [],
   currentInteractionMode: 'mouse',
-  gesturedNodeId: null
-}
+  gesturedNodeId: null,
+})
 
 // Create store
 export const useAppStore = create<AppState>()(
   devtools(
     (set) => ({
-      ...initialState,
-      
+      ...getInitialState(),
+
       // Actions
       setActiveLens: (lens) => set({ activeLens: lens }),
-      
+
       setTimeIndex: (index) => set({ timeIndex: index }),
-      
+
       setTimelineDate: (date) => set({ timelineDate: date }),
-      
+
       setDialState: (dialState) => set({ dialState }),
-      
+
       setSearchResultNodeIds: (ids) => set({ searchResultNodeIds: ids }),
-      
+
       setCurrentInteractionMode: (mode) => set({ currentInteractionMode: mode }),
-      
+
       setGesturedNodeId: (id) => set({ gesturedNodeId: id }),
-      
-      reset: () => set(initialState)
+
+      reset: () => set(getInitialState()),
     }),
     {
-      name: 'cryptic-vault-app-store'
+      name: 'cryptic-vault-app-store',
     }
   )
 )
 
 // Selectors
-export const selectTimelineDate = (dates: string[]) => (state: AppState) => 
+export const selectTimelineDate = (dates: string[]) => (state: AppState) =>
   dates[state.timeIndex] || null
 
 // Convenience hooks
-export const useActiveLens = () => useAppStore(state => state.activeLens)
-export const useTimeIndex = () => useAppStore(state => state.timeIndex)
-export const useDialState = () => useAppStore(state => state.dialState)
-
-// Get initial state for testing
-useAppStore.getInitialState = () => initialState
+export const useActiveLens = () => useAppStore((state) => state.activeLens)
+export const useTimeIndex = () => useAppStore((state) => state.timeIndex)
+export const useDialState = () => useAppStore((state) => state.dialState)

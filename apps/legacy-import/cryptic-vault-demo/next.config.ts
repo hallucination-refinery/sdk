@@ -3,19 +3,19 @@ import path from 'path'
 
 const nextConfig: NextConfig = {
   eslint: {
-    // Disable ESLint during production builds
+    // Sub-W: Temporarily ignore ESLint during Next.js production build
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Disable TypeScript errors during production builds
-    ignoreBuildErrors: true,
+    // TypeScript errors will now fail the build
+    ignoreBuildErrors: false,
   },
   distDir: '.next',
   generateBuildId: async () => {
     // You can use any logic here to generate a build ID
     return 'build-' + Date.now()
   },
-  webpack: (config, { isServer, defaultLoaders }) => {
+  webpack: (config, { isServer: _isServer, defaultLoaders: _defaultLoaders }) => {
     // Ensure symlinks are resolved, which is important for monorepos
     config.resolve.symlinks = true
 

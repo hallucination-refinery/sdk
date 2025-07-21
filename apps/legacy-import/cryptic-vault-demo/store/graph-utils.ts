@@ -7,8 +7,9 @@ import type { IdeaNode, Edge } from '@refinery/schema'
 
 // WeakMap cache for referential stability
 // Prevents recreating arrays on every render
-const nodeArrayCache = new WeakMap<Map<string, IdeaNode>, IdeaNode[]>()
-const edgeArrayCache = new WeakMap<Map<string, Edge>, any[]>()
+let nodeArrayCache = new WeakMap<Map<string, IdeaNode>, IdeaNode[]>()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let edgeArrayCache = new WeakMap<Map<string, Edge>, any[]>()
 
 /**
  * Convert Map-based graph data to Array format for ForceGraph3D
@@ -25,81 +26,77 @@ export function mapToArrays(
     nodeArrayCache.set(nodes, nodesArray)
   }
 
-  // Check cache for edges
-  let linksArray = edgeArrayCache.get(edges)
-  if (!linksArray) {
-    // ForceGraph3D expects 'links' with source/target/tier
-    linksArray = Array.from(edges.values()).map(edge => ({
+  // Check cache first for edges.
+  const cachedEdges = edgeArrayCache.get(edges)
+  if (cachedEdges) {
+    return { nodes: nodesArray, links: cachedEdges }
+  } else {
+    // If edges are not in cache, create the array and cache it.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const linksArray = Array.from(edges.values()).map((edge): any => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      tier: 0, // Legacy compatibility
-      confidence: edge.confidence
+      tier: 0, // Legacy compatibility for ForceGraph3D
+      strength: edge.strength,
     }))
     edgeArrayCache.set(edges, linksArray)
+    return { nodes: nodesArray, links: linksArray }
   }
-
-  return { nodes: nodesArray, links: linksArray }
 }
 
 /**
- * Convert Array-based graph data to Map format for store
- * Used when loading initial data from JSON files
+ * Converts arrays of nodes and edges into Maps for use in the store.
+ * This is a "dumb" converter, it expects partials and applies schema defaults.
  */
 export function arraysToMaps(
-  nodes: any[],
-  edges: any[]
+  nodes: Partial<IdeaNode>[],
+
+  edges: Partial<Edge>[]
 ): { nodes: Map<string, IdeaNode>; edges: Map<string, Edge> } {
   const nodesMap = new Map<string, IdeaNode>()
   const edgesMap = new Map<string, Edge>()
 
   // Convert nodes
-  nodes.forEach(node => {
-    // Ensure node has required IdeaNode properties
-    const ideaNode: IdeaNode = {
-      id: node.id,
-      type: node.type || 'idea',
-      label: node.label || node.title || '',
-      links: node.links || [],
-      meta: {
-        source: node.meta?.source || 'system',
-        created: node.meta?.created || Date.now(),
-        relevanceScore: node.meta?.relevanceScore || 0.8,
-        ...node.meta
-      },
-      state: {
-        isSelected: false,
-        currentLOD: 'Mid',
-        isCollapsed: false,
-        isHidden: false,
-        isLinkingStart: false,
-        ...node.state
-      },
-      secret: node.secret || false,
-      ...node
+  nodes.forEach((node) => {
+    if (node && node.id) {
+      // Create a schema-compliant node, applying defaults only where necessary.
+      const ideaNode: IdeaNode = {
+        id: node.id,
+        label: node.label || '',
+        ...node, // Spread the rest of the partial data
+      }
+      nodesMap.set(node.id, ideaNode)
     }
-    nodesMap.set(node.id, ideaNode)
   })
 
   // Convert edges
-  edges.forEach(edge => {
-    const edgeId = edge.id || `${edge.source}-${edge.target}`
-    const refineryEdge: Edge = {
-      id: edgeId,
-      source: edge.source,
-      target: edge.target,
-      confidence: edge.confidence || edge.weight || 0.8
+  edges.forEach((edge) => {
+    if (edge && edge.source && edge.target) {
+      const edgeId = edge.id || `${edge.source}-${edge.target}`
+      const refineryEdge: Edge = {
+        id: edgeId,
+        source: edge.source,
+        target: edge.target,
+        type: edge.type || 'relates-to',
+        strength: edge.strength || 1.0,
+        directed: edge.directed || false,
+        visible: edge.visible ?? true,
+        ...edge, // Spread the rest of the partial data
+      }
+      edgesMap.set(edgeId, refineryEdge)
     }
-    edgesMap.set(edgeId, refineryEdge)
   })
 
   return { nodes: nodesMap, edges: edgesMap }
 }
 
 /**
- * Clear the cache (useful for testing or when graph data is replaced entirely)
+ * Clear the cache by re-initializing the WeakMaps.
+ * (Useful for testing or when graph data is replaced entirely)
  */
 export function clearConversionCache(): void {
-  nodeArrayCache.clear()
-  edgeArrayCache.clear()
+  nodeArrayCache = new WeakMap<Map<string, IdeaNode>, IdeaNode[]>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  edgeArrayCache = new WeakMap<Map<string, Edge>, any[]>()
 }

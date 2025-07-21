@@ -1,0 +1,4 @@
+legacy/ 
+components/CrypticAnimusScene.tsx
+components/CrypticVaultScene.tsx 
+scripts/**/*.js 
