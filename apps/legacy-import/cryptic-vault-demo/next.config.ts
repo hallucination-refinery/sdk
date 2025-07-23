@@ -4,7 +4,7 @@ import path from 'path'
 const nextConfig: NextConfig = {
   eslint: {
     // Sub-W: Temporarily ignore ESLint during Next.js production build
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
     // TypeScript errors will now fail the build

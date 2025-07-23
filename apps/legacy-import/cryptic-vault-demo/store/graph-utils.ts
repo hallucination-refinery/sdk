@@ -5,11 +5,31 @@
 
 import type { IdeaNode, Edge } from '@refinery/schema'
 
+// Cache entry types to track Map size
+type NodeCacheEntry = {
+  size: number
+  data: IdeaNode[]
+}
+
+type EdgeCacheEntry = {
+  size: number
+  data: any[]
+}
+
 // WeakMap cache for referential stability
 // Prevents recreating arrays on every render
-let nodeArrayCache = new WeakMap<Map<string, IdeaNode>, IdeaNode[]>()
+let nodeArrayCache = new WeakMap<Map<string, IdeaNode>, NodeCacheEntry>()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let edgeArrayCache = new WeakMap<Map<string, Edge>, any[]>()
+let edgeArrayCache = new WeakMap<Map<string, Edge>, EdgeCacheEntry>()
+
+// Shallow clone helpers to prevent mutation of cached data
+function shallowCloneNode(node: IdeaNode): IdeaNode {
+  return { ...node }
+}
+
+function shallowCloneLink(link: any): any {
+  return { ...link }
+}
 
 /**
  * Convert Map-based graph data to Array format for ForceGraph3D
@@ -19,30 +39,50 @@ export function mapToArrays(
   nodes: Map<string, IdeaNode>,
   edges: Map<string, Edge>
 ): { nodes: IdeaNode[]; links: any[] } {
-  // Check cache for nodes
-  let nodesArray = nodeArrayCache.get(nodes)
-  if (!nodesArray) {
-    nodesArray = Array.from(nodes.values())
-    nodeArrayCache.set(nodes, nodesArray)
+  // Check cache for nodes with size validation
+  let nodeCache = nodeArrayCache.get(nodes)
+  let nodesArray: IdeaNode[]
+
+  if (!nodeCache || nodeCache.size !== nodes.size) {
+    // Create array from Map values (store original references in cache)
+    const originalArray = Array.from(nodes.values())
+    nodeArrayCache.set(nodes, {
+      size: nodes.size,
+      data: originalArray,
+    })
+    // Return shallow clones
+    nodesArray = originalArray.map(shallowCloneNode)
+  } else {
+    // Return fresh clones from cache
+    nodesArray = nodeCache.data.map(shallowCloneNode)
   }
 
-  // Check cache first for edges.
-  const cachedEdges = edgeArrayCache.get(edges)
-  if (cachedEdges) {
-    return { nodes: nodesArray, links: cachedEdges }
-  } else {
-    // If edges are not in cache, create the array and cache it.
+  // Check cache for edges with size validation
+  let edgeCache = edgeArrayCache.get(edges)
+  let linksArray: any[]
+
+  if (!edgeCache || edgeCache.size !== edges.size) {
+    // Create the array and cache it (store original format in cache)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const linksArray = Array.from(edges.values()).map((edge): any => ({
+    const originalLinks = Array.from(edges.values()).map((edge): any => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
       tier: 0, // Legacy compatibility for ForceGraph3D
       strength: edge.strength,
     }))
-    edgeArrayCache.set(edges, linksArray)
-    return { nodes: nodesArray, links: linksArray }
+    edgeArrayCache.set(edges, {
+      size: edges.size,
+      data: originalLinks,
+    })
+    // Return shallow clones
+    linksArray = originalLinks.map(shallowCloneLink)
+  } else {
+    // Return fresh clones from cache
+    linksArray = edgeCache.data.map(shallowCloneLink)
   }
+
+  return { nodes: nodesArray, links: linksArray }
 }
 
 /**
@@ -79,10 +119,11 @@ export function arraysToMaps(
         source: edge.source,
         target: edge.target,
         type: edge.type || 'relates-to',
-        strength: edge.strength || 1.0,
         directed: edge.directed || false,
         visible: edge.visible ?? true,
         ...edge, // Spread the rest of the partial data
+        // Apply defaults after spread to ensure they're not overwritten
+        strength: edge.strength ?? 1.0,
       }
       edgesMap.set(edgeId, refineryEdge)
     }
@@ -96,7 +137,7 @@ export function arraysToMaps(
  * (Useful for testing or when graph data is replaced entirely)
  */
 export function clearConversionCache(): void {
-  nodeArrayCache = new WeakMap<Map<string, IdeaNode>, IdeaNode[]>()
+  nodeArrayCache = new WeakMap<Map<string, IdeaNode>, NodeCacheEntry>()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  edgeArrayCache = new WeakMap<Map<string, Edge>, any[]>()
+  edgeArrayCache = new WeakMap<Map<string, Edge>, EdgeCacheEntry>()
 }

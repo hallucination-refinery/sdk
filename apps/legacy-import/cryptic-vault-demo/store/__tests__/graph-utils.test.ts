@@ -92,7 +92,7 @@ describe('Graph Utils - Map↔Array Conversions', () => {
       })
     })
 
-    it('should cache converted arrays for referential stability', () => {
+    it('should return different object references on each call (shallow clones)', () => {
       const nodes = new Map<string, IdeaNode>([
         [
           'n1',
@@ -124,9 +124,17 @@ describe('Graph Utils - Map↔Array Conversions', () => {
       // Second call with same Maps
       const result2 = mapToArrays(nodes, edges)
 
-      // Should return same array references
-      expect(result1.nodes).toBe(result2.nodes)
-      expect(result1.links).toBe(result2.links)
+      // Arrays should be different references
+      expect(result1.nodes).not.toBe(result2.nodes)
+      expect(result1.links).not.toBe(result2.links)
+      
+      // Individual objects should be different references
+      expect(result1.nodes[0]).not.toBe(result2.nodes[0])
+      expect(result1.links[0]).not.toBe(result2.links[0])
+      
+      // But content should be equal
+      expect(result1.nodes).toEqual(result2.nodes)
+      expect(result1.links).toEqual(result2.links)
 
       // Modify the Map (new Map reference)
       const newNodes = new Map(nodes)
@@ -139,10 +147,69 @@ describe('Graph Utils - Map↔Array Conversions', () => {
       // Third call with modified Map
       const result3 = mapToArrays(newNodes, edges)
 
-      // Should return new node array but same edge array
+      // Should return new node array AND new edge array (due to shallow cloning)
       expect(result3.nodes).not.toBe(result1.nodes)
-      expect(result3.links).toBe(result1.links) // edges unchanged
+      expect(result3.links).not.toBe(result1.links) // always returns clones
       expect(result3.nodes).toHaveLength(2)
+      // But edge content should be the same
+      expect(result3.links).toEqual(result1.links)
+    })
+
+    it('should invalidate cache when Map size changes', () => {
+      const nodes = new Map<string, IdeaNode>([
+        ['n1', { id: 'n1', label: 'Node 1', metadata: { source: 'test', created: 1000 } }],
+      ])
+      const edges = new Map<string, Edge>()
+
+      const result1 = mapToArrays(nodes, edges)
+      
+      // Add a node without changing Map reference
+      nodes.set('n2', {
+        id: 'n2',
+        label: 'Node 2',
+        metadata: { source: 'test', created: 2000 },
+      })
+
+      const result2 = mapToArrays(nodes, edges)
+
+      // Should have 2 nodes now
+      expect(result2.nodes).toHaveLength(2)
+      expect(result2.nodes.map(n => n.id)).toContain('n2')
+      
+      // Remove a node
+      nodes.delete('n1')
+      const result3 = mapToArrays(nodes, edges)
+      
+      // Should have only 1 node now
+      expect(result3.nodes).toHaveLength(1)
+      expect(result3.nodes[0].id).toBe('n2')
+    })
+
+    it('should create shallow clones that can be safely mutated', () => {
+      const nodes = new Map<string, IdeaNode>([
+        ['n1', {
+          id: 'n1',
+          label: 'Original',
+          metadata: { source: 'test', created: 1000 }
+        }],
+      ])
+      const edges = new Map<string, Edge>()
+
+      const result1 = mapToArrays(nodes, edges)
+      
+      // Mutate the returned object
+      result1.nodes[0].label = 'Mutated'
+      
+      // Get fresh data
+      const result2 = mapToArrays(nodes, edges)
+      
+      // Original should be unchanged
+      expect(nodes.get('n1')?.label).toBe('Original')
+      // New result should have original value
+      expect(result2.nodes[0].label).toBe('Original')
+      
+      // First result should still have mutated value
+      expect(result1.nodes[0].label).toBe('Mutated')
     })
   })
 
