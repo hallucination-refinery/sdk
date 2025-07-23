@@ -45,7 +45,5 @@
       "@react-three/fiber": "^9.1.2"
     }
   },
-  "dependencies": {
-    "task-master-ai": "^0.18.0"
-  }
+  "dependencies": {}
 }

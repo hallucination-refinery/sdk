@@ -63,3 +63,7 @@ dev-debug.log
 .cursor/
 .pnpm-store/
 .taskmaster/state.json
+
+# Git worktrees
+.worktrees/
+worktrees/
