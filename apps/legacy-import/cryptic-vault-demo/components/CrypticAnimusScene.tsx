@@ -104,6 +104,13 @@ export default function CrypticAnimusScene({
     // Let the simulation run continuously; we will let ForceGraph manage alpha decay
   }, [fgRef.current]) // Run when ref changes from null to ForceGraph instance
 
+  // Expose ForceGraph ref for console inspection
+  useEffect(() => {
+    if (fgRef.current) {
+      ;(window as any).__FG = fgRef.current
+    }
+  }, [fgRef.current])
+
   // PERFORMANCE: Cleanup sprite cache on unmount
   useEffect(() => {
     return () => {
