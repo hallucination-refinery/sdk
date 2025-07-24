@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
       ...config.resolve.alias,
       three: path.resolve('../../../../node_modules/three'),
       '@': path.resolve(__dirname),
+      '@refinery/store': path.resolve(__dirname, '../../../packages/store/src'),
     }
 
     // Important: return the modified config
