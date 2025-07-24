@@ -124,6 +124,7 @@ export default function CrypticAnimusScene({
     if (fgRef.current) {
       console.log('FG ref', fgRef.current)
       ;(window as any).__FG = fgRef.current
+      fgRef.current.d3ReheatSimulation?.()
     }
   }, [fgRef.current])
 
@@ -365,7 +366,6 @@ export default function CrypticAnimusScene({
         linkCurvature={0.2}
         cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
         nodeVisibility={nodePassesFilters}
-        disableLinkForce // disable link force to prevent freeze crashes
         linkVisibility={(link: any) => {
           const sId = typeof link.source === 'object' ? link.source.id : link.source
           const tId = typeof link.target === 'object' ? link.target.id : link.target
