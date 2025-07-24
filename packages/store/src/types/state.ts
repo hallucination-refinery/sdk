@@ -10,6 +10,7 @@ export interface GraphState {
   edges: Map<string, Edge>
   nodeIdCounter: number
   edgeIdCounter: number
+  graphVersion: number // Incremented on structural mutations only
 }
 
 // UI slice state

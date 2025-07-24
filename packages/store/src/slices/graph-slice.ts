@@ -7,6 +7,14 @@ import type { IdeaNode, Edge } from '@refinery/schema'
 import type { GraphState } from '../types/state'
 import type { RendererCommand } from '../types/renderer-commands'
 
+// Helper to increment version for structural mutations
+const incrementVersion = (state: GraphSlice) => {
+  state.graphVersion = (state.graphVersion ?? 0) + 1
+  // Temporary alias until all callers migrate
+  // @ts-expect-error temporary alias property for migration
+  state.version = state.graphVersion
+}
+
 export interface GraphSlice extends GraphState {
   // Node actions
   addNode: (node: IdeaNode) => RendererCommand
@@ -15,7 +23,7 @@ export interface GraphSlice extends GraphState {
   batchAddNodes: (nodes: IdeaNode[]) => RendererCommand
   batchUpdateNodes: (updates: Array<{ id: string; updates: Partial<IdeaNode> }>) => RendererCommand
   batchRemoveNodes: (ids: string[]) => RendererCommand
-  
+
   // Edge actions
   addEdge: (edge: Edge) => RendererCommand
   updateEdge: (id: string, updates: Partial<Edge>) => RendererCommand | null
@@ -23,14 +31,14 @@ export interface GraphSlice extends GraphState {
   batchAddEdges: (edges: Edge[]) => RendererCommand
   batchUpdateEdges: (updates: Array<{ id: string; updates: Partial<Edge> }>) => RendererCommand
   batchRemoveEdges: (ids: string[]) => RendererCommand
-  
+
   // Query methods
   getNode: (id: string) => IdeaNode | undefined
   getEdge: (id: string) => Edge | undefined
   getAllNodes: () => IdeaNode[]
   getAllEdges: () => Edge[]
   getNodeEdges: (nodeId: string) => Edge[]
-  
+
   // Utility methods
   clearGraph: () => RendererCommand[]
   generateNodeId: () => string
@@ -43,12 +51,17 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
   edges: new Map(),
   nodeIdCounter: 0,
   edgeIdCounter: 0,
+  graphVersion: 0,
+  // Temporary alias field – remove after migration
+  // @ts-expect-error temporary alias property for migration
+  version: 0,
 
   // Node actions
   addNode: (node) => {
     set(
       produce((state: GraphSlice) => {
         state.nodes.set(node.id, node)
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'ADD_NODE', payload: { node } }
@@ -82,6 +95,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
             state.edges.delete(edgeId)
           }
         }
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'REMOVE_NODE', payload: { id } }
@@ -93,6 +107,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
         for (const node of nodes) {
           state.nodes.set(node.id, node)
         }
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'BATCH_ADD_NODES', payload: { nodes } }
@@ -124,6 +139,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
             state.edges.delete(edgeId)
           }
         }
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'BATCH_REMOVE_NODES', payload: { ids } }
@@ -134,6 +150,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
     set(
       produce((state: GraphSlice) => {
         state.edges.set(edge.id, edge)
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'ADD_EDGE', payload: { edge } }
@@ -161,6 +178,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
     set(
       produce((state: GraphSlice) => {
         state.edges.delete(id)
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'REMOVE_EDGE', payload: { id } }
@@ -172,6 +190,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
         for (const edge of edges) {
           state.edges.set(edge.id, edge)
         }
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'BATCH_ADD_EDGES', payload: { edges } }
@@ -197,6 +216,7 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
         for (const id of ids) {
           state.edges.delete(id)
         }
+        incrementVersion(state) // Structural mutation
       })
     )
     return { type: 'BATCH_REMOVE_EDGES', payload: { ids } }
@@ -209,24 +229,25 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
   getAllEdges: () => Array.from(get().edges.values()),
   getNodeEdges: (nodeId) => {
     const edges = Array.from(get().edges.values()) as Edge[]
-    return edges.filter(edge => edge.source === nodeId || edge.target === nodeId)
+    return edges.filter((edge) => edge.source === nodeId || edge.target === nodeId)
   },
 
   // Utility methods
   clearGraph: () => {
     const nodeIds = Array.from(get().nodes.keys()) as string[]
     const edgeIds = Array.from(get().edges.keys()) as string[]
-    
+
     set(
       produce((state: GraphSlice) => {
         state.nodes.clear()
         state.edges.clear()
+        incrementVersion(state) // Structural mutation
       })
     )
-    
+
     const commands: RendererCommand[] = [
       { type: 'BATCH_REMOVE_NODES', payload: { ids: nodeIds } },
-      { type: 'BATCH_REMOVE_EDGES', payload: { ids: edgeIds } }
+      { type: 'BATCH_REMOVE_EDGES', payload: { ids: edgeIds } },
     ]
     return commands
   },
@@ -247,5 +268,5 @@ export const createGraphSlice = (set: any, get: any): GraphSlice => ({
       })
     )
     return `edge-${get().edgeIdCounter}`
-  }
+  },
 })

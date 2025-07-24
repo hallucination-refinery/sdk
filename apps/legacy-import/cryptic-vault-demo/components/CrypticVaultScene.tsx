@@ -8,23 +8,24 @@ import { Suspense, useEffect, useState, useRef, useCallback, useMemo } from 'rea
 import PrivacyBadge from './PrivacyBadge'
 import ControlsHUD from './ControlsHUD'
 import CategoryHUD from './CategoryHUD'
+import CrypticAnimusScene from './CrypticAnimusScene'
+import TimeSlider from './TimeSlider'
+import LensSelector from './LensSelector'
+import { performTwoHopTraversal } from '@/utils/graphTraversal'
 import { CategoryProvider, useCategory } from '@/contexts/CategoryContext'
 import {
   useGraphStore,
   useUIStore,
   useAppStore,
   useSingleSelectedNode,
-  mapToArrays,
+  mapToArraysCached,
   arraysToMaps,
+  useRefineryStore,
 } from '@/store'
-import { type IdeaNode } from '@refinery/schema'
-import { ClusterVisualization } from './ClusterVisualization'
-import CrypticAnimusScene from './CrypticAnimusScene'
-import BrainMeshView from './BrainMeshView'
-import { performTwoHopTraversal, type TraversalResult } from '@/utils/graphTraversal'
-import TimeSlider from './TimeSlider'
-import LensSelector from './LensSelector'
-const timelineData = require('@/data/timeline.json')
+
+// Temporary diagnostics: log full store once per hot-reload
+// eslint-disable-next-line no-console
+console.log('[store snapshot]', useRefineryStore.getState())
 
 // Types for concepts data
 interface Concept {
@@ -52,6 +53,7 @@ interface ConceptsData {
 // Load graph bundle with edge arrays
 const graphBundle = require('@/data/graph_bundle.json')
 const conceptsJson = require('@/data/concepts.json') as ConceptsData
+const timelineData = require('@/data/timeline.json')
 const dates: string[] = (timelineData as any[]).map((d) => d.date)
 
 // Note: We're using CrypticAnimusScene instead of the SDK's AnimusScene
@@ -123,6 +125,7 @@ function SceneContent({
   highlightState,
   highlightActiveTime,
   singleSelectedNodeId,
+  graphVersion,
 }: {
   viewMode: 'nodes' | 'clusters' | 'brain'
   visibleIds: Set<string>
@@ -133,64 +136,34 @@ function SceneContent({
   highlightState: TraversalResult | null
   highlightActiveTime: number
   singleSelectedNodeId: string | null
+  graphVersion: number
 }) {
   const { activeCategories } = useCategory()
   // Get graph data from store and convert to arrays for ForceGraph3D
   const graphStore = useGraphStore()
+  const version = graphVersion
   const appStore = useAppStore()
   const uiStore = useUIStore()
 
   // Transform nodes and links inside the component to prevent unnecessary recreations
   const transformedData = useMemo(() => {
-    // Filter nodes by visibility
-    const visibleNodes = new Map<string, any>()
-    const visibleEdges = new Map<string, any>()
+    if (version === 0) return null
+    const { nodes: nodesArr, links: linksArr } = mapToArraysCached(
+      graphStore.nodes,
+      graphStore.edges,
+      version
+    )
+    return { nodes: nodesArr, links: linksArr }
+  }, [version])
 
-    // Filter nodes
-    graphStore.nodes.forEach((node, id) => {
-      if (visibleIds.has(id)) {
-        visibleNodes.set(id, node)
-      }
-    })
-
-    // Filter edges
-    graphStore.edges.forEach((edge, id) => {
-      if (visibleIds.has(edge.source) && visibleIds.has(edge.target)) {
-        visibleEdges.set(id, edge)
-      }
-    })
-
-    // Convert to arrays for ForceGraph3D
-    const { nodes: nodesArray, links: linksArray } = mapToArrays(visibleNodes, visibleEdges)
-
-    const transformedNodes: any[] = nodesArray.map((node) => ({
-      ...node,
-      childLinks: [],
-      state: {
-        ...node.state,
-        isCollapsed: node.state?.isCollapsed ?? false,
-        isHidden: node.state?.isHidden ?? false,
-      },
-    }))
-
-    const transformedLinks: any[] = linksArray.map((link) => ({
-      id: link.id || `${link.source}-${link.target}`,
-      source: link.source,
-      target: link.target,
-      tier: link.tier || 0,
-      confidence: link.confidence || 0.8,
-    }))
-
-    // Return a stable object matching ForceGraph3D's expected shape
-    return { nodes: transformedNodes, links: transformedLinks }
-  }, [graphStore.nodes, graphStore.edges, visibleIds])
+  console.info('[graphVersion]', version)
 
   return (
     <>
       {/* Nodes View: Individual memory nodes */}
-      {viewMode === 'nodes' && transformedData.nodes.length > 0 && (
+      {viewMode === 'nodes' && transformedData && (
         <CrypticAnimusScene
-          data={transformedData}
+          data={transformedData!}
           onNodeClick={handleNodeClick}
           onNodeHoverProp={handleNodeHover}
           mouseSelectedNodeId={singleSelectedNodeId}
@@ -201,6 +174,7 @@ function SceneContent({
           onBackgroundClickRequest={handleBackgroundClick}
           highlightState={highlightState}
           visibleIds={visibleIds}
+          graphVersion={version}
         />
       )}
 
@@ -234,7 +208,7 @@ function CrypticVaultSceneContent() {
   const nodeCache = useRef<Record<string, any>>({})
   const linkCache = useRef<Record<string, any>>({})
   const hasInitialisedGraph = useRef<boolean>(false)
-  
+
   // Stub for enrichedImages - empty Map as documented
   const enrichedImages = new Map<string, string>()
 
@@ -318,9 +292,9 @@ function CrypticVaultSceneContent() {
 
   useEffect(() => {
     // Guard to prevent re-initialization
-    if (hasInitialisedGraph.current) return;
-    hasInitialisedGraph.current = true;
-    
+    if (hasInitialisedGraph.current) return
+    hasInitialisedGraph.current = true
+
     // Convert array data to Maps and initialize graph store
     const nodeArray = graphData.nodes.map((n: any) => ({
       id: n.id,
@@ -453,6 +427,7 @@ function CrypticVaultSceneContent() {
               highlightState={highlightState}
               highlightActiveTime={highlightActiveTime}
               singleSelectedNodeId={singleSelectedNodeId}
+              graphVersion={graphStore.graphVersion}
             />
           </Suspense>
 

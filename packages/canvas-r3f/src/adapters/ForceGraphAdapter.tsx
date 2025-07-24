@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo, useEffect } from 'react'
+import React, { forwardRef, useMemo } from 'react'
 // TODO: Remove this adapter once force-graph is replaced with SDK renderer
 import ForceGraph3D from 'r3f-forcegraph'
 
@@ -14,12 +14,9 @@ import ForceGraph3D from 'r3f-forcegraph'
 // normally by delegating to the original implementation.
 // ---------------------------------------------------------------------------
 const __origFreeze = Object.freeze
+// TEMP: disable freezing entirely while verifying physics
 Object.freeze = function (obj: any) {
-  if (obj && typeof obj === 'object' && 'vx' in obj && 'vy' in obj && 'vz' in obj) {
-    // Skip freezing physics node objects
-    return obj
-  }
-  return __origFreeze(obj)
+  return obj
 }
 // ---------------------------------------------------------------------------
 
@@ -72,7 +69,10 @@ export interface ForceGraphAdapterProps {
   enableZoomPanInteraction?: boolean
 
   // Freeze crash guard
-  disableLinkForce?: boolean // defaults to false
+
+  // Version key used to memoize deep-clone boundary so identity only changes
+  // on true structural mutations. Defaults to 0 when not provided.
+  dataVersion?: number
 
   // Other
   [key: string]: any
@@ -120,26 +120,18 @@ export interface ForceGraphAdapterRef {
  * @deprecated Will be removed once Cryptiq Mindmap migrates to SDK renderer
  */
 const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProps>((props, ref) => {
-  const { graphData, disableLinkForce, ...restProps } = props
-  const safeGraphData = useMemo(() => structuredClone(graphData), [graphData])
-
-  // --- freeze-crash guard ----------------------------------------------
-  useEffect(() => {
-    if (disableLinkForce) {
-      ;(ref as React.RefObject<any>).current?.d3Force('link', null)
-    }
-  }, [disableLinkForce, ref])
-  // ----------------------------------------------------------------------
+  const { graphData, dataVersion = 0, ...restProps } = props
+  // Deep-clone only when the structural version changes
+  const safeGraphData = useMemo(() => structuredClone(graphData), [dataVersion])
 
   return (
-    // @ts-expect-error - ForceGraph3D has its own ref type that we're wrapping
     <ForceGraph3D
-      ref={ref}
+      ref={ref as any}
       {...restProps} /* all user props EXCEPT graphData */
       graphData={safeGraphData} /* deep‑cloned, unfrozen data       */
       cooldownTime={Infinity} /* time‑freeze guard  */
       cooldownTicks={0} /* tick‑freeze guard  */
-      d3AlphaDecay={0} /* alpha‑freeze guard */
+      d3AlphaDecay={0.02} /* natural cooling */
       onEngineStop={() => {
         const api = (ref as React.RefObject<any>).current
         api?.d3AlphaTarget?.(0.3)?.restart?.()

@@ -5,7 +5,6 @@ import { NODE_TYPE_COLORS } from '@/utils/clusterPalette'
 const colorHash = (t: string) => NODE_TYPE_COLORS[t] || '#94a3b8'
 
 export interface CategoryHUDProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nodes: any[]
   /**
    * Called every time the active categories set changes.

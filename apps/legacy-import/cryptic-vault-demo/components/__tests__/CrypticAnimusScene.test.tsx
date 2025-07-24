@@ -123,6 +123,8 @@ vi.mock('@refinery/canvas-r3f', () => {
     )
   })
 
+  MockForceGraphAdapter.displayName = 'MockForceGraphAdapter'
+
   return {
     __esModule: true,
     ForceGraphAdapter: MockForceGraphAdapter,
@@ -138,6 +140,7 @@ vi.mock('@refinery/canvas-r3f', () => {
 vi.mock('next/dynamic', () => ({
   default: vi.fn(() => {
     // Return the mocked ForceGraphAdapter from @refinery/canvas-r3f
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('@refinery/canvas-r3f').ForceGraphAdapter
   })
 }))
@@ -165,12 +168,10 @@ const createTestData = () => ({
 })
 
 describe('CrypticAnimusScene - Node Hover After Idle', () => {
-  let forceGraphRef: any
-  
   beforeAll(async () => {
     // Import the component after mocks are set up
-    const module = await import('../CrypticAnimusScene')
-    CrypticAnimusScene = module.default
+    const componentModule = await import('../CrypticAnimusScene')
+    CrypticAnimusScene = componentModule.default
   })
   
   beforeEach(() => {
@@ -342,8 +343,8 @@ describe('CrypticAnimusScene - Node Hover After Idle', () => {
 describe('CrypticAnimusScene - Node Mutability', () => {
   beforeAll(async () => {
     // Import the component after mocks are set up
-    const module = await import('../CrypticAnimusScene')
-    CrypticAnimusScene = module.default
+    const componentModule = await import('../CrypticAnimusScene')
+    CrypticAnimusScene = componentModule.default
   })
   
   beforeEach(() => {
@@ -443,4 +444,5 @@ describe('CrypticAnimusScene - Node Mutability', () => {
       }).not.toThrow()
     })
   })
+})
 })

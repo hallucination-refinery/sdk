@@ -118,6 +118,8 @@ vi.mock('@refinery/canvas-r3f', () => {
     )
   })
   
+  MockForceGraphAdapter.displayName = 'MockForceGraphAdapter'
+  
   return {
     ForceGraphAdapter: MockForceGraphAdapter,
     Canvas: () => null,

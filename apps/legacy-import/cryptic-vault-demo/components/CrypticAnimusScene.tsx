@@ -1,8 +1,13 @@
 // @ts-nocheck
 'use client'
 
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useMemo, useLayoutEffect, useRef } from 'react'
+// Static import ensures ref is forwarded correctly
 import dynamic from 'next/dynamic'
+const ForceGraph3D = dynamic(
+  () => import('@refinery/canvas-r3f').then((m) => m.ForceGraphAdapter),
+  { ssr: false, loading: () => null, forwardRef: true }
+)
 // Local type definition to avoid r3f-forcegraph dependency
 type NodeObject<T = any> = T & {
   id?: string | number
@@ -16,15 +21,6 @@ import { useFrame } from '@react-three/fiber'
 import { OPACITY_VALUES, LINK_COLORS } from '@/utils/clusterPalette'
 import * as THREE from 'three'
 import { type TraversalResult } from '@/utils/graphTraversal'
-
-// Use SDK ForceGraphAdapter instead of direct r3f-forcegraph import
-const ForceGraph3D = dynamic(
-  () => import('@refinery/canvas-r3f').then((mod) => mod.ForceGraphAdapter),
-  {
-    ssr: false,
-    loading: () => null, // Return null while loading to prevent flashing
-  }
-)
 
 interface CrypticAnimusSceneProps {
   data: {
@@ -43,6 +39,7 @@ interface CrypticAnimusSceneProps {
   visibleIds?: Set<string>
   showSecrets?: boolean
   activeTags?: Set<string>
+  graphVersion?: number
 }
 
 export default function CrypticAnimusScene({
@@ -59,17 +56,29 @@ export default function CrypticAnimusScene({
   visibleIds,
   showSecrets = true,
   activeTags,
+  graphVersion = 0,
 }: CrypticAnimusSceneProps) {
-  const fgRef = useRef<any>(null)
+  console.log('[Animus mounted] version', graphVersion)
+  const fgInstanceRef = useRef<any>(null)
+  const [ready, setReady] = useState(false)
+
+  // Callback ref – saves instance without causing re-render loop
+  const handleFGRef = useCallback((inst: any) => {
+    if (inst && !fgInstanceRef.current) {
+      fgInstanceRef.current = inst
+      ;(window as any).__FG = inst
+      setReady(true) // flips exactly once
+    }
+  }, [])
 
   const {
     nodes: memoizedNodes,
     links: memoizedLinks,
     nodeMap,
   } = useMemo(() => {
-    // Use structuredClone to ensure fresh objects, replacing shallow spreads
-    const nodes = structuredClone(data.nodes)
-    const links = structuredClone(data.links)
+    // Use data directly - ForceGraphAdapter will handle the single necessary clone
+    const nodes = data.nodes
+    const links = data.links
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     return { nodes, links, nodeMap }
   }, [data])
@@ -82,27 +91,37 @@ export default function CrypticAnimusScene({
     [memoizedNodes, memoizedLinks]
   )
 
-  // Configure physics forces
+  // Configure physics forces once per structural graph version
+  const version = graphVersion
+
+  // Unified physics setup + alpha kick (robust against race)
   useEffect(() => {
-    if (!fgRef.current || !fgRef.current.d3Force) return
+    if (!ready || version === 0) return
 
-    console.log('[CrypticAnimusScene] Configuring physics forces!')
+    const api = fgInstanceRef.current
+    if (!api) return
 
-    // Configure physics for a very spread-out layout with rigid links
-    fgRef.current
-      .d3Force('link')
-      ?.distance(200) // Significantly increase the target link length
-      ?.strength(0.5) // Make links very stiff to enforce equal distance
+    // If API not yet fully initialised, retry next frame
+    if (!api.d3Force || !api.d3Alpha) {
+      const id = requestAnimationFrame(() => setReady((r) => !r))
+      return () => cancelAnimationFrame(id)
+    }
 
-    fgRef.current
-      .d3Force('charge')
-      ?.strength(-200) // Increase repulsion to push nodes far apart
-      ?.distanceMax(600)
+    console.log('[Physics] configuring forces + alpha kick (v', version, ')')
 
-    fgRef.current.d3Force('center')?.strength(0.1)
+    // Configure forces
+    api.d3Force('link')?.distance(200)?.strength(0.2)
+    api.d3Force('charge')?.strength(-200)?.distanceMax(600)
+    api.d3Force('center')?.strength(0.1)
 
-    // Let the simulation run continuously; we will let ForceGraph manage alpha decay
-  }, [fgRef.current]) // Run when ref changes from null to ForceGraph instance
+    // Kick simulation energy
+    api.d3ReheatSimulation?.()
+    api.d3Alpha(0.8).restart()
+
+    console.log('α =', api.d3Alpha(), 'frozen?', Object.isFrozen(api.graphData().nodes[0]))
+  }, [ready, version])
+
+  // Reheat simulation when graph version changes (structural mutations)
 
   // PERFORMANCE: Cleanup sprite cache on unmount
   useEffect(() => {
@@ -217,17 +236,15 @@ export default function CrypticAnimusScene({
 
   // --- Runtime sprite material updates each frame ---
   useFrame(() => {
-    if (!fgRef.current) return
+    const api = fgInstanceRef.current
+    if (!api) return
 
     // Tick the physics simulation
-    if (fgRef.current.tickFrame) {
-      fgRef.current.tickFrame()
+    if (api.tickFrame) {
+      api.tickFrame()
     }
 
-    const graphAccessor: any =
-      typeof fgRef.current.graphData === 'function'
-        ? fgRef.current.graphData()
-        : fgRef.current.graphData
+    const graphAccessor: any = typeof api.graphData === 'function' ? api.graphData() : api.graphData
     if (!graphAccessor) return
 
     const nodesArr: any[] = graphAccessor.nodes || []
@@ -327,8 +344,9 @@ export default function CrypticAnimusScene({
 
   return (
     <ForceGraph3D
-      ref={fgRef}
+      ref={handleFGRef}
       graphData={memoizedGraphData}
+      dataVersion={version}
       nodeId="id"
       linkSource="source"
       linkTarget="target"
@@ -341,7 +359,6 @@ export default function CrypticAnimusScene({
       linkCurvature={0.2}
       cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
       nodeVisibility={nodePassesFilters}
-      disableLinkForce // disable link force to prevent freeze crashes
       linkVisibility={(link: any) => {
         const sId = typeof link.source === 'object' ? link.source.id : link.source
         const tId = typeof link.target === 'object' ? link.target.id : link.target
