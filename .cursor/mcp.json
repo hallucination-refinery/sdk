@@ -4,13 +4,6 @@
       "command": "claude",
       "args": [],
       "type": "stdio"
-    },
-    "taskmaster-ai": {
-      "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
-      "env": {
-        "CLAUDE_CODE": "1"
-      }
     }
   }
 }

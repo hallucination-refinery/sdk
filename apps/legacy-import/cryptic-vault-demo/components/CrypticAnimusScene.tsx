@@ -67,8 +67,9 @@ export default function CrypticAnimusScene({
     links: memoizedLinks,
     nodeMap,
   } = useMemo(() => {
-    const nodes = data.nodes.map((n) => ({ ...n }))
-    const links = data.links.map((l) => ({ ...l }))
+    // Use structuredClone to ensure fresh objects, replacing shallow spreads
+    const nodes = structuredClone(data.nodes)
+    const links = structuredClone(data.links)
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     return { nodes, links, nodeMap }
   }, [data])
@@ -340,6 +341,7 @@ export default function CrypticAnimusScene({
       linkCurvature={0.2}
       cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
       nodeVisibility={nodePassesFilters}
+      disableLinkForce // disable link force to prevent freeze crashes
       linkVisibility={(link: any) => {
         const sId = typeof link.source === 'object' ? link.source.id : link.source
         const tId = typeof link.target === 'object' ? link.target.id : link.target

@@ -1,6 +1,10 @@
 import React from 'react'
-import { describe, it, expect } from 'vitest'
-import ForceGraphAdapter, { type ForceGraphAdapterProps, type ForceGraphAdapterRef } from './ForceGraphAdapter'
+import { describe, it, expect, vi } from 'vitest'
+import { render } from '@testing-library/react'
+import ForceGraphAdapter, {
+  type ForceGraphAdapterProps,
+  type ForceGraphAdapterRef,
+} from './ForceGraphAdapter'
 
 describe('ForceGraphAdapter', () => {
   it('should export ForceGraphAdapter as default', () => {
@@ -17,7 +21,7 @@ describe('ForceGraphAdapter', () => {
     const props: ForceGraphAdapterProps = {
       graphData: { nodes: [], links: [] },
       nodeId: 'id',
-      linkSource: 'source', 
+      linkSource: 'source',
       linkTarget: 'target',
       onNodeClick: () => {},
       onNodeHover: () => {},
@@ -28,7 +32,7 @@ describe('ForceGraphAdapter', () => {
       linkCurvature: 0.2,
       cooldownTime: 1000,
       nodeVisibility: () => true,
-      linkVisibility: () => true
+      linkVisibility: () => true,
     }
 
     // Ref type check
@@ -44,12 +48,12 @@ describe('ForceGraphAdapter', () => {
     const allProps: ForceGraphAdapterProps = {
       // Core props
       graphData: { nodes: [], links: [] },
-      
+
       // Node/Link ID accessors
       nodeId: 'id',
       linkSource: 'source',
       linkTarget: 'target',
-      
+
       // Event handlers
       onNodeClick: () => {},
       onNodeHover: () => {},
@@ -58,7 +62,7 @@ describe('ForceGraphAdapter', () => {
       onLinkHover: () => {},
       onBackgroundClick: () => {},
       onBackgroundRightClick: () => {},
-      
+
       // Node rendering
       nodeThreeObject: () => null,
       nodeThreeObjectExtend: () => true,
@@ -69,7 +73,7 @@ describe('ForceGraphAdapter', () => {
       nodeVal: () => 1,
       nodeLabel: () => 'label',
       nodeDesc: () => 'desc',
-      
+
       // Link rendering
       linkVisibility: () => true,
       linkColor: () => '#000',
@@ -79,22 +83,22 @@ describe('ForceGraphAdapter', () => {
       linkMaterial: {},
       linkOpacity: 0.6,
       linkResolution: 8,
-      
+
       // Force simulation
       d3AlphaDecay: 0.01,
       d3VelocityDecay: 0.4,
       warmupTicks: 100,
       cooldownTicks: 200,
       cooldownTime: 5000,
-      
+
       // Camera
       enableNodeDrag: true,
       enableNavigationControls: true,
       enablePointerInteraction: true,
       enableZoomPanInteraction: true,
-      
+
       // Other
-      customProp: 'allowed'
+      customProp: 'allowed',
     }
 
     expect(allProps).toBeDefined()
@@ -113,9 +117,20 @@ describe('ForceGraphAdapter', () => {
       camera: () => ({}),
       renderer: () => ({}),
       controls: () => ({}),
-      getGraphBbox: () => ({ x: [0, 1], y: [0, 1], z: [0, 1] })
+      getGraphBbox: () => ({ x: [0, 1], y: [0, 1], z: [0, 1] }),
     }
 
     expect(mockRef).toBeDefined()
+  })
+
+  it('accepts disableLinkForce prop', () => {
+    // Since ForceGraph3D is an external component, we can't easily mock the ref
+    // Just verify the prop is accepted without TypeScript errors
+    const props: ForceGraphAdapterProps = {
+      graphData: { nodes: [], links: [] },
+      disableLinkForce: true,
+    }
+
+    expect(props.disableLinkForce).toBe(true)
   })
 })

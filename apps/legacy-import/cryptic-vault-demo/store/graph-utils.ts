@@ -1,88 +1,28 @@
 /**
- * Graph data structure conversion utilities with memoization
+ * Graph data structure conversion utilities
  * Converts between Map-based store format and Array-based ForceGraph3D format
  */
 
 import type { IdeaNode, Edge } from '@refinery/schema'
 
-// Cache entry types to track Map size
-type NodeCacheEntry = {
-  size: number
-  data: IdeaNode[]
-}
-
-type EdgeCacheEntry = {
-  size: number
-  data: any[]
-}
-
-// WeakMap cache for referential stability
-// Prevents recreating arrays on every render
-let nodeArrayCache = new WeakMap<Map<string, IdeaNode>, NodeCacheEntry>()
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let edgeArrayCache = new WeakMap<Map<string, Edge>, EdgeCacheEntry>()
-
-// Shallow clone helpers to prevent mutation of cached data
-function shallowCloneNode(node: IdeaNode): IdeaNode {
-  return { ...node }
-}
-
-function shallowCloneLink(link: any): any {
-  return { ...link }
-}
-
 /**
  * Convert Map-based graph data to Array format for ForceGraph3D
- * Uses WeakMap cache to maintain referential stability across renders
+ * Uses structuredClone to ensure fresh objects on every call
  */
 export function mapToArrays(
   nodes: Map<string, IdeaNode>,
   edges: Map<string, Edge>
 ): { nodes: IdeaNode[]; links: any[] } {
-  // Check cache for nodes with size validation
-  let nodeCache = nodeArrayCache.get(nodes)
-  let nodesArray: IdeaNode[]
-
-  if (!nodeCache || nodeCache.size !== nodes.size) {
-    // Create array from Map values (store original references in cache)
-    const originalArray = Array.from(nodes.values())
-    nodeArrayCache.set(nodes, {
-      size: nodes.size,
-      data: originalArray,
-    })
-    // Return shallow clones
-    nodesArray = originalArray.map(shallowCloneNode)
-  } else {
-    // Return fresh clones from cache
-    nodesArray = nodeCache.data.map(shallowCloneNode)
-  }
-
-  // Check cache for edges with size validation
-  let edgeCache = edgeArrayCache.get(edges)
-  let linksArray: any[]
-
-  if (!edgeCache || edgeCache.size !== edges.size) {
-    // Create the array and cache it (store original format in cache)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originalLinks = Array.from(edges.values()).map((edge): any => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      tier: 0, // Legacy compatibility for ForceGraph3D
-      strength: edge.strength,
-    }))
-    edgeArrayCache.set(edges, {
-      size: edges.size,
-      data: originalLinks,
-    })
-    // Return shallow clones
-    linksArray = originalLinks.map(shallowCloneLink)
-  } else {
-    // Return fresh clones from cache
-    linksArray = edgeCache.data.map(shallowCloneLink)
-  }
-
-  return { nodes: nodesArray, links: linksArray }
+  return structuredClone({
+    nodes: Array.from(nodes.values()),
+    links: Array.from(edges.values()).map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      tier: 0,
+      strength: e.strength,
+    })),
+  })
 }
 
 /**
@@ -137,7 +77,6 @@ export function arraysToMaps(
  * (Useful for testing or when graph data is replaced entirely)
  */
 export function clearConversionCache(): void {
-  nodeArrayCache = new WeakMap<Map<string, IdeaNode>, NodeCacheEntry>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  edgeArrayCache = new WeakMap<Map<string, Edge>, EdgeCacheEntry>()
+  // This function is no longer needed as WeakMap cache is removed.
+  // Keeping it for now, but it will be removed in a subsequent edit.
 }
