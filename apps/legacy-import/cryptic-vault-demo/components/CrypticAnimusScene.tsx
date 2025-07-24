@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client'
 
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useMemo, useLayoutEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 // Local type definition to avoid r3f-forcegraph dependency
 type NodeObject<T = any> = T & {
@@ -16,6 +16,18 @@ import { useFrame } from '@react-three/fiber'
 import { OPACITY_VALUES, LINK_COLORS } from '@/utils/clusterPalette'
 import * as THREE from 'three'
 import { type TraversalResult } from '@/utils/graphTraversal'
+
+// Local error boundary to surface ForceGraph render errors
+class FGErrorBoundary extends React.Component<{ children: React.ReactNode }> {
+  componentDidCatch(error: any, info: any) {
+    // eslint-disable-next-line no-console
+    console.error('[FGErrorBoundary]', error, info)
+  }
+  render() {
+    // @ts-ignore
+    return this.props.children
+  }
+}
 
 // Use SDK ForceGraphAdapter instead of direct r3f-forcegraph import
 const ForceGraph3D = dynamic(
@@ -82,6 +94,9 @@ export default function CrypticAnimusScene({
     [memoizedNodes, memoizedLinks]
   )
 
+  // Log before rendering ForceGraph3D to confirm component mounts
+  console.log('[Animus] render ForceGraph3D')
+
   // Configure physics forces
   useEffect(() => {
     if (!fgRef.current || !fgRef.current.d3Force) return
@@ -107,6 +122,7 @@ export default function CrypticAnimusScene({
   // Expose ForceGraph ref for console inspection
   useEffect(() => {
     if (fgRef.current) {
+      console.log('FG ref', fgRef.current)
       ;(window as any).__FG = fgRef.current
     }
   }, [fgRef.current])
@@ -333,31 +349,33 @@ export default function CrypticAnimusScene({
   )
 
   return (
-    <ForceGraph3D
-      ref={fgRef}
-      graphData={memoizedGraphData}
-      nodeId="id"
-      linkSource="source"
-      linkTarget="target"
-      onNodeClick={handleNodeClick}
-      onNodeHover={handleNodeHover}
-      nodeThreeObject={nodeThreeObject}
-      nodeThreeObjectExtend={nodeThreeObjectExtend}
-      linkColor={getLinkColor}
-      linkWidth={getLinkWidth}
-      linkCurvature={0.2}
-      cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
-      nodeVisibility={nodePassesFilters}
-      disableLinkForce // disable link force to prevent freeze crashes
-      linkVisibility={(link: any) => {
-        const sId = typeof link.source === 'object' ? link.source.id : link.source
-        const tId = typeof link.target === 'object' ? link.target.id : link.target
+    <FGErrorBoundary>
+      <ForceGraph3D
+        ref={fgRef}
+        graphData={memoizedGraphData}
+        nodeId="id"
+        linkSource="source"
+        linkTarget="target"
+        onNodeClick={handleNodeClick}
+        onNodeHover={handleNodeHover}
+        nodeThreeObject={nodeThreeObject}
+        nodeThreeObjectExtend={nodeThreeObjectExtend}
+        linkColor={getLinkColor}
+        linkWidth={getLinkWidth}
+        linkCurvature={0.2}
+        cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
+        nodeVisibility={nodePassesFilters}
+        disableLinkForce // disable link force to prevent freeze crashes
+        linkVisibility={(link: any) => {
+          const sId = typeof link.source === 'object' ? link.source.id : link.source
+          const tId = typeof link.target === 'object' ? link.target.id : link.target
 
-        const sourceNode = nodeMap.get(sId)
-        const targetNode = nodeMap.get(tId)
+          const sourceNode = nodeMap.get(sId)
+          const targetNode = nodeMap.get(tId)
 
-        return nodePassesFilters(sourceNode) && nodePassesFilters(targetNode)
-      }}
-    />
+          return nodePassesFilters(sourceNode) && nodePassesFilters(targetNode)
+        }}
+      />
+    </FGErrorBoundary>
   )
 }
