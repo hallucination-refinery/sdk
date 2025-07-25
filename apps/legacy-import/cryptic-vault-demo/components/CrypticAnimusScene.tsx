@@ -153,6 +153,47 @@ export default function CrypticAnimusScene({
       // Initial reheat
       fgRef.current.d3ReheatSimulation?.()
       
+      // Add position monitoring to verify simulation activity
+      let positionCheckCount = 0
+      const checkNodePositions = () => {
+        if (!(window as any).__FG || positionCheckCount >= 5) return
+        
+        try {
+          // Try different methods to get node data
+          const nodes = graphData?.nodes
+          if (nodes && nodes.length > 0) {
+            const sampleNodes = nodes.slice(0, 3) // Check first 3 nodes
+            console.log(`=== Position Check ${positionCheckCount + 1} ===`)
+            sampleNodes.forEach((node: any) => {
+              console.log(`Node ${node.id}: x=${node.x ?? 'undefined'}, y=${node.y ?? 'undefined'}, z=${node.z ?? 'undefined'}`)
+            })
+            
+            // Check if positions are changing
+            if (positionCheckCount > 0) {
+              const allUndefined = sampleNodes.every((n: any) => 
+                n.x === undefined && n.y === undefined && n.z === undefined
+              )
+              const allAtOrigin = sampleNodes.every((n: any) => 
+                n.x === 0 && n.y === 0 && n.z === 0
+              )
+              console.log('All positions undefined?', allUndefined)
+              console.log('All nodes at origin?', allAtOrigin)
+            }
+          }
+        } catch (e) {
+          console.log('Position check error:', e)
+        }
+        
+        positionCheckCount++
+      }
+      
+      // Check positions at intervals
+      setTimeout(checkNodePositions, 100)
+      setTimeout(checkNodePositions, 500)
+      setTimeout(checkNodePositions, 1000)
+      setTimeout(checkNodePositions, 2000)
+      setTimeout(checkNodePositions, 5000)
+      
       // PHASE 1: Deep inspection of window.__FG - wait 1s to ensure full initialization
       setTimeout(() => {
         console.log('=== PHASE 1: window.__FG Deep Inspection ===')

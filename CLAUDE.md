@@ -1,3 +1,5 @@
+**Do not ping the user until you are highly confident a manual smoke screen test will pass**
+
 # WARNING
 
 Every tool call, file view, and action is automatically logged and cross-checked against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.

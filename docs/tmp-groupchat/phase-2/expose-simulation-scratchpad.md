@@ -693,6 +693,73 @@ Based on what we discover:
    - 40ff00cd: Documented missing kapsule instance finding
    - e8e454ca: Added investigation logging
 
+## Investigation Results: r3f-forcegraph Source Analysis (2025-07-25)
+
+### Critical Finding: r3f-forcegraph Design Limitation
+
+**Analysis of r3f-forcegraph/dist/r3f-forcegraph.js reveals:**
+
+1. **Limited API by Design**:
+   ```javascript
+   var ForceGraphComp = fromThree(threeForcegraph, {
+     initPropNames: [],
+     methodNames: ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
+   });
+   ```
+   The wrapper explicitly limits exposed methods to only these 7.
+
+2. **Internal Simulation Access**:
+   - The actual d3 simulation exists at `state.d3ForceLayout` internally
+   - State is encapsulated within the kapsule pattern
+   - No direct access path is exposed through the wrapper
+
+3. **How fromThree Works**:
+   - Creates React component wrapping three-forcegraph
+   - Uses `useImperativeHandle` to expose only specified methods
+   - Completely hides internal state and kapsule instance
+
+### Evidence Gap Analysis:
+- **Expected**: Direct access to three-forcegraph's `__kapsuleInstance`
+- **Actual**: r3f-forcegraph intentionally abstracts away internal implementation
+- **Gap**: This is a fundamental architectural difference, not a bug
+
+### Implications:
+1. Cannot access `simulation.alpha()` through standard paths
+2. Cannot directly control simulation state
+3. Need alternative approaches to verify simulation activity
+
+## ForceGraphAdapter Analysis (2025-07-25)
+
+### Critical Findings:
+
+1. **Cooldown Settings Freeze Simulation**:
+   ```typescript
+   cooldownTime={Infinity}  /* time‑freeze guard  */
+   cooldownTicks={0}        /* tick‑freeze guard  */
+   d3AlphaDecay={0}         /* alpha‑freeze guard */
+   ```
+   These settings effectively prevent the simulation from running naturally:
+   - `cooldownTime={Infinity}`: Simulation never stops based on time
+   - `cooldownTicks={0}`: No ticks allowed before cooldown
+   - `d3AlphaDecay={0}`: Alpha never decreases (simulation doesn't cool)
+
+2. **Data Cloning Issue**:
+   ```typescript
+   const safeGraphData = useMemo(() => structuredClone(graphData), [dataVersion])
+   ```
+   Using `structuredClone` may strip methods/getters from node objects
+
+3. **Ref Forwarding**:
+   - Adapter forwards ref directly to ForceGraph3D
+   - No modification or wrapping of the ref
+   - Phase 4 logging should reveal what's actually in the ref
+
+### Hypothesis Update:
+The nodes remain clumped not because we can't access alpha, but because:
+1. The simulation is frozen by cooldown settings
+2. Initial positions may all be at origin
+3. Forces may not be strong enough to overcome the freeze
+
 ### Next Steps for Execution:
 
 1. **Run the investigation**:
