@@ -679,3 +679,60 @@ Based on what we discover:
 - If no simulation: Investigation why it's missing
 - If different property name: Update access path
 - If async creation: Add proper waiting logic
+
+## Investigation Status (2025-07-25)
+
+### Completed Actions:
+
+1. ✅ **Documented critical finding**: CrypticAnimusScene DOES render with data, but __kapsuleInstance is undefined
+2. ✅ **Created comprehensive investigation plan**: 5 phases to find the d3 simulation
+3. ✅ **Implemented all investigation logging**:
+   - CrypticAnimusScene.tsx: Added Phase 1-3 and 5 logging
+   - ForceGraphAdapter.tsx: Added Phase 4 ref forwarding logs
+4. ✅ **Made atomic commits**: 
+   - 40ff00cd: Documented missing kapsule instance finding
+   - e8e454ca: Added investigation logging
+
+### Next Steps for Execution:
+
+1. **Run the investigation**:
+   ```bash
+   rm -rf node_modules/.cache .turbo .next
+   pnpm dev --filter cryptic-vault-demo
+   ```
+
+2. **Collect results**:
+   - Open http://localhost:3000 in Chrome Incognito
+   - Keep console open
+   - Wait 5+ seconds for all phases to complete
+   - Copy ALL console output
+
+3. **Analyze findings**:
+   - Look for where simulation is actually stored
+   - Check if __kapsuleInstance appears over time
+   - Identify alternative property names
+   - Understand ref forwarding behavior
+
+4. **Document results** in this scratchpad under a new "Investigation Results" section
+
+5. **Implement fix** based on findings
+
+### What to Look For in Console:
+
+- **Phase 1**: All properties on window.__FG - especially anything with 'sim', 'force', 'engine'
+- **Phase 2**: Changes over time - does __kapsuleInstance appear later?
+- **Phase 3**: What d3Force() returns, if forces have alpha methods
+- **Phase 4**: How ForceGraphAdapter forwards the ref
+- **Phase 5**: Alternative access paths that might work
+
+### If Investigation Shows No Simulation:
+
+This would mean the r3f-forcegraph wrapper is fundamentally different than expected. Possible reasons:
+- The wrapper doesn't expose internal ThreeForceGraph instance
+- Simulation is managed differently in this version
+- We need a different approach entirely
+
+Remember: The goal is to find where alpha is stored so we can:
+1. Read current alpha value
+2. Set alpha and restart simulation
+3. Understand why nodes remain clumped
