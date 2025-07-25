@@ -201,3 +201,92 @@ The solution correctly exposes the d3 simulation's alpha value through the disco
    - Alpha values should start high (near 1) and gradually decrease
    - With current settings (d3AlphaDecay=0), alpha should remain constant after reheat
    - Nodes should be actively moving if alpha > 0
+
+## Critical Investigation: Baseline Test Discrepancies (2025-07-25)
+
+### New Evidence from baseline-smoke-screen-tests.md
+
+The baseline tests revealed **critical discrepancies** that invalidate previous assumptions:
+
+1. **window.__FG is undefined on initial load**
+   - Test 1 shows: `Cannot read properties of undefined (reading '__kapsuleInstance')`
+   - ForceGraph doesn't initialize until user interaction (hover/zoom)
+   
+2. **Alpha still returns 'n/a' despite kapsule fix**
+   - Test 2 shows persistent `[Diag alpha] n/a` logs
+   - This occurred AFTER commit ce3e5c8e that supposedly fixed the path
+
+3. **Lazy initialization pattern discovered**
+   - Physics configuration only happens after hover: `[CrypticAnimusScene] Configuring physics forces!`
+   - The ref assignment happens AFTER interaction, not on mount
+
+### Root Cause Analysis
+
+**CRITICAL BUG**: The useEffect dependencies were using `[fgRef.current]` which is incorrect:
+- `fgRef.current` doesn't trigger re-renders when it changes
+- The effects might never run or run at the wrong time
+- This explains why window.__FG is undefined until interaction
+
+### Fixes Applied (2025-07-25)
+
+1. **Fixed useEffect dependencies** (lines 131, 173):
+   - Changed from `[fgRef.current]` to `[]` (empty array)
+   - Added retry logic to handle when ref isn't ready
+   - Both effects now properly wait for the ref to be populated
+
+2. **Added build verification**:
+   - Line 101: `[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: {timestamp}`
+   - This ensures we're running the updated code
+
+3. **Enhanced diagnostics**:
+   - Added logging for retry attempts
+   - Added kapsule instance existence check
+   - Better error handling for lost refs
+
+### Implementation Details
+
+**Physics Configuration Fix**:
+```typescript
+useEffect(() => {
+  const checkAndConfigurePhysics = () => {
+    if (!fgRef.current || !fgRef.current.d3Force) {
+      console.log('[Physics config] Ref not ready, will retry...')
+      setTimeout(checkAndConfigurePhysics, 100)
+      return
+    }
+    // ... configure physics
+  }
+  checkAndConfigurePhysics()
+}, []) // Empty dependency array
+```
+
+**Window Assignment Fix**:
+```typescript
+useEffect(() => {
+  const setupWindowFG = () => {
+    if (!fgRef.current) {
+      console.log('[Window FG] Ref not ready, will retry...')
+      setTimeout(setupWindowFG, 100)
+      return
+    }
+    // ... assign to window and start diagnostics
+  }
+  setupWindowFG()
+}, []) // Empty dependency array
+```
+
+### Expected Behavior After Fix
+
+1. Build marker should appear immediately on page load
+2. Retry logs might appear briefly: `[Window FG] Ref not ready, will retry...`
+3. window.__FG should be assigned without requiring interaction
+4. Alpha diagnostics should show numeric values instead of 'n/a'
+
+### Verification Plan
+
+1. Clean build: `rm -rf node_modules/.cache .turbo .next`
+2. Start dev server: `pnpm dev --filter cryptic-vault-demo`
+3. Load page WITHOUT hovering
+4. Check console for build marker
+5. Test `window.__FG` immediately
+6. Verify alpha logs show numbers

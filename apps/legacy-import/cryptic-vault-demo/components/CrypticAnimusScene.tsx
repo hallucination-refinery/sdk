@@ -96,47 +96,81 @@ export default function CrypticAnimusScene({
 
   // Log before rendering ForceGraph3D to confirm component mounts
   console.log('[Animus] render ForceGraph3D')
+  
+  // Build verification marker
+  console.log('[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at:', new Date().toISOString())
 
   // Configure physics forces
   useEffect(() => {
-    if (!fgRef.current || !fgRef.current.d3Force) return
+    const checkAndConfigurePhysics = () => {
+      if (!fgRef.current || !fgRef.current.d3Force) {
+        console.log('[Physics config] Ref not ready, will retry...')
+        // Retry after a short delay if ref not ready
+        setTimeout(checkAndConfigurePhysics, 100)
+        return
+      }
 
-    console.log('[CrypticAnimusScene] Configuring physics forces!')
+      console.log('[CrypticAnimusScene] Configuring physics forces!')
 
-    // Configure physics for a very spread-out layout with rigid links
-    fgRef.current
-      .d3Force('link')
-      ?.distance(200) // Significantly increase the target link length
-      ?.strength(0.5) // Make links very stiff to enforce equal distance
+      // Configure physics for a very spread-out layout with rigid links
+      fgRef.current
+        .d3Force('link')
+        ?.distance(200) // Significantly increase the target link length
+        ?.strength(0.5) // Make links very stiff to enforce equal distance
 
-    fgRef.current
-      .d3Force('charge')
-      ?.strength(-200) // Increase repulsion to push nodes far apart
-      ?.distanceMax(600)
+      fgRef.current
+        .d3Force('charge')
+        ?.strength(-200) // Increase repulsion to push nodes far apart
+        ?.distanceMax(600)
 
-    fgRef.current.d3Force('center')?.strength(0.1)
-
+      fgRef.current.d3Force('center')?.strength(0.1)
+    }
+    
+    checkAndConfigurePhysics()
     // Let the simulation run continuously; we will let ForceGraph manage alpha decay
-  }, [fgRef.current]) // Run when ref changes from null to ForceGraph instance
+  }, []) // Run once on mount, retry internally if ref not ready
 
   // Expose ForceGraph ref for console inspection
   useEffect(() => {
-    if (fgRef.current) {
+    let intervalId: NodeJS.Timeout | null = null
+    
+    const setupWindowFG = () => {
+      if (!fgRef.current) {
+        console.log('[Window FG] Ref not ready, will retry...')
+        // Retry after a short delay if ref not ready
+        setTimeout(setupWindowFG, 100)
+        return
+      }
+      
       console.log('FG ref', fgRef.current)
       ;(window as any).__FG = fgRef.current
+      console.log('[Window FG] window.__FG assigned successfully')
+      
+      // Initial reheat
       fgRef.current.d3ReheatSimulation?.()
 
       // TEMP diagnostics: kick simulation each second and log alpha
-      const id = setInterval(() => {
-        fgRef.current?.d3ReheatSimulation?.()
+      intervalId = setInterval(() => {
+        if (!fgRef.current) {
+          console.log('[Diag alpha] Lost ref, stopping interval')
+          if (intervalId) clearInterval(intervalId)
+          return
+        }
+        
+        fgRef.current.d3ReheatSimulation?.()
         // Access alpha through the kapsule instance's d3ForceLayout
         const kapsuleInstance = (fgRef.current as any)?.__kapsuleInstance
         const alpha = kapsuleInstance?.d3ForceLayout?.alpha?.()
-        console.log('[Diag alpha]', alpha ?? 'n/a')
+        console.log('[Diag alpha]', alpha ?? 'n/a', 'kapsule:', !!kapsuleInstance)
       }, 1000)
-      return () => clearInterval(id)
     }
-  }, [fgRef.current])
+    
+    setupWindowFG()
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, []) // Run once on mount, retry internally if ref not ready
 
   // PERFORMANCE: Cleanup sprite cache on unmount
   useEffect(() => {
