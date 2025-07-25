@@ -788,6 +788,35 @@ With `cooldownTicks={0}`, the simulation stops after ONE tick because:
 ### Next Test:
 Run with position monitoring to see if forced ticks cause node movement
 
+## CRITICAL FIX IMPLEMENTED (2025-07-25)
+
+### Root Cause Identified:
+The ForceGraphAdapter was using freeze guards that prevented simulation:
+```typescript
+cooldownTime={Infinity}  // Never stops based on time
+cooldownTicks={0}        // Stops after 1 tick
+d3AlphaDecay={0}         // Alpha never decreases
+```
+
+### Fix Applied:
+**File**: `/workspace/packages/canvas-r3f/src/adapters/ForceGraphAdapter.tsx`
+**Change**: Removed all three freeze guard props
+
+This allows:
+1. Natural cooldown based on time (default: 5000ms)
+2. Multiple ticks before cooldown (default: 300)
+3. Alpha to decrease naturally (default: 0.0228)
+
+### Expected Result:
+- Simulation should run for ~300 ticks or 5 seconds
+- Nodes should spread out from initial positions
+- Alpha should decrease from 1 to near 0
+
+### Combined Approach:
+1. Freeze guards removed (natural simulation)
+2. Manual tickFrame calls (force initial movement)
+3. Periodic d3ReheatSimulation (keep active)
+
 ### Next Steps for Execution:
 
 1. **Run the investigation**:

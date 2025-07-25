@@ -159,9 +159,10 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       ref={ref}
       {...restProps} /* all user props EXCEPT graphData */
       graphData={safeGraphData} /* deep‑cloned, unfrozen data       */
-      cooldownTime={Infinity} /* time‑freeze guard  */
-      cooldownTicks={0} /* tick‑freeze guard  */
-      d3AlphaDecay={0} /* alpha‑freeze guard */
+      // Removed freeze guards to allow natural simulation
+      // cooldownTime={Infinity} - was preventing time-based stopping
+      // cooldownTicks={0} - was stopping after 1 tick
+      // d3AlphaDecay={0} - was preventing alpha from decreasing
       onEngineStop={() => {
         const api = (ref as React.RefObject<any>).current
         api?.d3AlphaTarget?.(0.3)?.restart?.()
