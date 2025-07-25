@@ -182,3 +182,22 @@ const alpha = kapsuleInstance?.d3ForceLayout?.alpha?.()
 ### Final Confidence: 95%
 
 The solution correctly exposes the d3 simulation's alpha value through the discovered kapsule instance path. The diagnostic code has been updated and should now show actual alpha values.
+
+## Testing Instructions
+
+1. **Start the dev server**:
+   ```bash
+   pnpm dev --filter cryptic-vault-demo
+   ```
+
+2. **Open browser** to http://localhost:3000
+
+3. **Open browser console** and verify:
+   - Look for `[Diag alpha]` logs every second - should show numeric values instead of 'n/a'
+   - Test manual access: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha()` should return a number
+   - Test alpha control: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha(0.8).restart()`
+
+4. **Expected Results**:
+   - Alpha values should start high (near 1) and gradually decrease
+   - With current settings (d3AlphaDecay=0), alpha should remain constant after reheat
+   - Nodes should be actively moving if alpha > 0

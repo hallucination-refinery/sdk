@@ -11,19 +11,25 @@ Success Metric:
 
 # Open Questions (Ranked)
 
-1. **Ref exposed.** `FG ref …` log confirms `fgRef.current` and assignment run.
-2. Ref methods list shows no `graphData` function and no `d3Alpha`; need alternative way to access simulation or ensure adapter passes full API.
-3. Browser is loading stale pre-built `@refinery/store` because webpack alias was lost during reset—new code isn’t reaching client.
+1. ~~**Ref exposed.** `FG ref …` log confirms `fgRef.current` and assignment run.~~ **RESOLVED**
+2. ~~Ref methods list shows no `graphData` function and no `d3Alpha`; need alternative way to access simulation or ensure adapter passes full API.~~ **RESOLVED**: Access via `__kapsuleInstance.d3ForceLayout`
+3. Browser is loading stale pre-built `@refinery/store` because webpack alias was lost during reset—new code isn't reaching client.
 
 # Immediate Next Actions
 
-Alias restored (`f56470f4`) but smoke-screen shows **no change**: nodes still clumped. Diagnostic alpha logs print only after hover and stay `n/a` → `d3Force()` returns undefined alpha.
+**UPDATE (2025-07-25)**: Alpha access path discovered and fixed! Diagnostic now correctly logs numeric alpha values.
 
-Immediate Next Actions
+~~Alias restored (`f56470f4`) but smoke-screen shows **no change**: nodes still clumped. Diagnostic alpha logs print only after hover and stay `n/a` → `d3Force()` returns undefined alpha.~~
 
-1. Read `node_modules/r3f-forcegraph/dist/*` to locate where simulation alpha is stored (likely `__simulation` or private var inside ThreeForceGraph instance).
-2. Expose that simulation via adapter: `ref.current.d3Force()` returns underlying ThreeForceGraph; we may need `ref.current._graphData` or `ref.current._fgSim`.
-3. Once alpha handle found, kick `simulation.alpha(0.8).restart()` programmatically and verify nodes move.
+**COMPLETED Actions**:
+1. ✅ Located internal d3-simulation handle at `__kapsuleInstance.d3ForceLayout`
+2. ✅ Fixed diagnostic code to use correct path: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha()`
+3. ✅ Verified programmatic control: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha(0.8).restart()`
+
+**New Immediate Actions**:
+1. Verify nodes actually spread apart when alpha is high (visual confirmation needed)
+2. Test if removing cooldown overrides (Infinity, 0) allows natural simulation settling
+3. Investigate why nodes remain clumped despite active simulation (alpha > 0)
 
 ## ULTRA-DEEP ANALYSIS (2025-07-24 18:10)
 
@@ -80,8 +86,8 @@ _Concrete, obstacle-free path from now → "W". Update whenever assumptions chan
 
 | ETA   | Milestone                         | 90 % CI | Owner          | Status         |
 | ----- | --------------------------------- | ------- | -------------- | -------------- |
-| 07-25 | Alpha handle located & logged     | ±0.5 d  | Assistant      | 🔄 in-progress |
-| 07-26 | Nodes de-clump in dev build       | ±1 d    | Assistant      | pending        |
+| 07-25 | Alpha handle located & logged     | ±0.5 d  | Assistant      | ✅ completed   |
+| 07-26 | Nodes de-clump in dev build       | ±1 d    | Assistant      | 🔄 in-progress |
 | 07-27 | Full smoke-screen green           | ±1 d    | User           | pending        |
 | 07-28 | Branch merged after manual verify | ±2 d    | Assistant/User | pending        |
 
