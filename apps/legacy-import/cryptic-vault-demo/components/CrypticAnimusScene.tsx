@@ -188,6 +188,40 @@ export default function CrypticAnimusScene({
         console.error('[Window FG] Stack trace:', (error as Error).stack)
       }
       
+      // Initial position check
+      setTimeout(() => {
+        try {
+          const simData = (window as any).__FG?.graphData?.()
+          if (simData?.nodes?.length > 0) {
+            console.log('[INITIAL POS] Checking initial node positions...')
+            const sampleSize = Math.min(5, simData.nodes.length)
+            let allAtOrigin = true
+            
+            for (let i = 0; i < sampleSize; i++) {
+              const node = simData.nodes[i]
+              const x = node.x ?? 0
+              const y = node.y ?? 0
+              const z = node.z ?? 0
+              
+              if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01 || Math.abs(z) > 0.01) {
+                allAtOrigin = false
+              }
+              
+              console.log(`[INITIAL POS] Node ${node.id}: (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`)
+            }
+            
+            if (allAtOrigin) {
+              console.error('[INITIAL POS] CRITICAL: All nodes start at origin (0,0,0)!')
+              console.log('[INITIAL POS] This explains the clumping - nodes need initial positions')
+            } else {
+              console.log('[INITIAL POS] Good: Nodes have initial positions')
+            }
+          }
+        } catch (e) {
+          console.error('[INITIAL POS] Error checking positions:', e)
+        }
+      }, 500) // Wait a bit for simulation to initialize
+      
       // Position monitoring commented out due to runtime error at line 167
       // TODO: Access simulation data correctly through ForceGraph API
       // Previous code was accessing input graphData instead of simulation data
@@ -546,12 +580,57 @@ export default function CrypticAnimusScene({
         // Instead, we'll monitor positions to verify simulation activity
         console.log('[Diag] Periodic reheat completed')
         
-        // Check if positions are changing
+        // Enhanced position monitoring to verify simulation activity
         try {
           const simData = (window as any).__FG?.graphData?.()
           if (simData?.nodes?.length > 0) {
-            const node0 = simData.nodes[0]
-            console.log(`[POS CHECK] Node ${node0.id}: x=${node0.x?.toFixed(2)}, y=${node0.y?.toFixed(2)}, z=${node0.z?.toFixed(2)}`)
+            // Check first 5 nodes for better sampling
+            const sampleSize = Math.min(5, simData.nodes.length)
+            const positions: string[] = []
+            let allAtOrigin = true
+            
+            for (let i = 0; i < sampleSize; i++) {
+              const node = simData.nodes[i]
+              const x = node.x ?? 0
+              const y = node.y ?? 0
+              const z = node.z ?? 0
+              
+              // Check if any node is not at origin
+              if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01 || Math.abs(z) > 0.01) {
+                allAtOrigin = false
+              }
+              
+              positions.push(`${node.id}:(${x.toFixed(1)},${y.toFixed(1)},${z.toFixed(1)})`)
+            }
+            
+            console.log(`[POS CHECK] Sample positions: ${positions.join(' | ')}`)
+            if (allAtOrigin) {
+              console.warn('[POS CHECK] WARNING: All sampled nodes still at origin!')
+            }
+            
+            // Store positions for movement detection
+            if (!(window as any).__lastPositions) {
+              (window as any).__lastPositions = {}
+            }
+            
+            let movement = 0
+            for (let i = 0; i < sampleSize; i++) {
+              const node = simData.nodes[i]
+              const lastPos = (window as any).__lastPositions[node.id]
+              if (lastPos) {
+                const dx = (node.x ?? 0) - lastPos.x
+                const dy = (node.y ?? 0) - lastPos.y
+                const dz = (node.z ?? 0) - lastPos.z
+                movement += Math.sqrt(dx*dx + dy*dy + dz*dz)
+              }
+              (window as any).__lastPositions[node.id] = { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 }
+            }
+            
+            if (movement > 0.01) {
+              console.log(`[POS CHECK] Movement detected: ${movement.toFixed(3)} units`)
+            } else {
+              console.warn('[POS CHECK] No significant movement detected')
+            }
           }
         } catch (e) {
           console.log('[POS CHECK] Error:', e)
