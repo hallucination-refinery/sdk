@@ -230,7 +230,8 @@ export default function CrypticAnimusScene({
         })
         
         console.log('6. Hidden/private properties:')
-        const hiddenProps = ['_engine', '_state', '_simulation', '__kapsuleInstance', '_graphForce', '__graphSimulation']
+        // Note: r3f-forcegraph doesn't expose internal state like __kapsuleInstance
+        const hiddenProps = ['_engine', '_state', '_simulation', '_graphForce', '__graphSimulation']
         hiddenProps.forEach(p => {
           console.log(`  ${p}:`, (window as any).__FG[p] !== undefined ? 'EXISTS' : 'undefined')
         })
@@ -244,12 +245,10 @@ export default function CrypticAnimusScene({
             return
           }
           
-          const hasKapsule = !!((window as any).__FG.__kapsuleInstance)
           const keys = Object.keys((window as any).__FG)
           const protoKeys = Object.keys(Object.getPrototypeOf((window as any).__FG) || {})
           
           console.log(`=== PHASE 2: Ref Evolution at ${label} ===`)
-          console.log('Has __kapsuleInstance:', hasKapsule)
           console.log('Direct keys count:', keys.length)
           console.log('Proto keys count:', protoKeys.length)
           
@@ -543,10 +542,9 @@ export default function CrypticAnimusScene({
         }
         console.log(`[TICKS] Periodic: ${periodicTickCount} ticks`)
         
-        // Access alpha through the kapsule instance's d3ForceLayout
-        const kapsuleInstance = (fgRef.current as any)?.__kapsuleInstance
-        const alpha = kapsuleInstance?.d3ForceLayout?.alpha?.()
-        console.log('[Diag alpha]', alpha ?? 'n/a', 'kapsule:', !!kapsuleInstance)
+        // Alpha access removed - r3f-forcegraph doesn't expose internal simulation
+        // Instead, we'll monitor positions to verify simulation activity
+        console.log('[Diag] Periodic reheat completed')
         
         // Check if positions are changing
         try {
