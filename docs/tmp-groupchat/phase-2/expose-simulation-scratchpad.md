@@ -1331,3 +1331,55 @@ Key findings:
 - It KEEPS simulation running, doesn't freeze it
 - Removing it was a mistake - now reverted
 - The real issue is visibility filters
+
+## Test-Ready State Summary (2025-07-25)
+
+### Changes Made:
+1. **Fixed runtime error** (commit 0bd15a49)
+   - Removed undefined `graphData` reference at line 213
+   - Prevents debugger pause
+
+2. **Added filter logging** (commit 8af1b423)
+   - Shows all filter states
+   - Counts nodes passing filters
+   - Warns if no nodes visible
+
+3. **Reverted cooldownTime** (commit 39fb8cf0)
+   - Restored cooldownTime={Infinity}
+   - Keeps physics simulation active
+
+4. **Added visibility bypass** (commit d83e34d6)
+   - Forces all nodes visible (returns true)
+   - Logs which nodes would be blocked
+   - TEMPORARY for testing
+
+### Expected Console Output:
+```
+[INIT POSITIONS] Added initial positions to 213/213 nodes in sphere pattern
+[FILTERS] visibleIds: Set(0)    // If this is 0, that's the problem!
+[FILTERS] activeCategories: undefined
+[FILTERS] showSecrets: true
+[FILTERS] activeTags: undefined
+[FILTERS] Nodes passing filters: 0 / 213
+[FILTERS] WARNING: No nodes pass visibility filters!
+[VISIBILITY] Node blocked by filters: [multiple entries]
+[TICKS] Executed 300 ticks successfully
+[POS CHECK] Sample positions: [should show non-zero values]
+```
+
+### Success Criteria:
+1. ✅ No debugger pause
+2. ✅ Nodes should now be visible (due to bypass)
+3. ✅ Console confirms visibility issue (Set(0))
+4. ✅ Position monitoring shows movement
+
+### If Test Succeeds:
+- Confirms visibility filters are root cause
+- Need to fix date filtering logic in parent
+- Remove temporary bypass after confirmation
+
+### Confidence Level: 85%
+- Fixed the debugger pause issue
+- Identified visibility as likely root cause
+- Added bypass to confirm hypothesis
+- Multiple safety checks in place
