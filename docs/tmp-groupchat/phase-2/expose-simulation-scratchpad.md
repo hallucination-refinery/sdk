@@ -1202,3 +1202,104 @@ Given that we cannot access alpha directly, the likely causes are:
 ### Confidence Level
 
 **95%** - The evidence is overwhelming that the __kapsuleInstance approach is fundamentally flawed and the investigation was based on incorrect assumptions about r3f-forcegraph's architecture.
+
+## ULTRATHINK MODE Analysis: Test Results (2025-07-25)
+
+### Test Context
+- Commit: 63c2454e 
+- Result: Browser debugger paused at line 214
+- Critical: Nodes NOT visible before pause
+
+### Expectations vs Reality
+
+**Expected:**
+1. ✅ Initial positions in sphere pattern → CONFIRMED (radius: 299)
+2. ❌ No debugger pause → FAILED (pauses at line 214)
+3. ❌ Position monitoring logs → NOT SEEN (due to early pause)
+4. ❌ Visible nodes spreading → FAILED (nodes don't appear at all)
+
+### Critical Evidence Gaps Discovered
+
+#### 1. Variable Reference Error (Root Cause of Pause)
+- **Evidence**: Line 213 tries to access `graphData` which is undefined
+- **Reality**: Variable should be `memoizedGraphData` or use `window.__FG.graphData()`
+- **Gap Scale**: Simple typo reveals no testing was done after adding debug code
+- **Impact**: Causes immediate exception and debugger pause
+
+#### 2. Nodes Completely Invisible
+- **Evidence**: Console shows 213 nodes loaded, forces active, 300 ticks executed
+- **Reality**: Zero visual rendering of nodes
+- **Gap Scale**: Much larger than expected - not just clumping but total invisibility
+- **Root Cause**: `nodeVisibility={nodePassesFilters}` filtering logic
+
+#### 3. Freeze Guard Still Active
+- **Evidence**: Line 917 shows `cooldownTime={Infinity}` 
+- **Reality**: Direct prop overrides ForceGraphAdapter changes
+- **Gap Scale**: Our "fix" only affected adapter, not direct usage
+- **Impact**: Simulation may still be frozen despite other changes
+
+#### 4. Filter Logic Analysis
+The `nodePassesFilters` function checks multiple conditions:
+```typescript
+if (visibleIds && !visibleIds.has(node.id)) return false
+if (!showSecrets && node.secret) return false  
+if (activeCategories && !activeCategories.has(node.type)) return false
+if (activeTags && !node.tags?.some(tag => activeTags.has(tag))) return false
+```
+
+If `visibleIds` is an empty Set, ALL nodes are hidden.
+
+### OODA Loop Analysis
+
+**Observe**:
+- Debugger pauses at line 214 (not 167)
+- Nodes don't render at all
+- Console shows successful initialization
+- graphData is undefined in scope
+
+**Orient**:
+- Multiple independent failures compound the problem
+- Our fixes were incomplete and untested
+- Visibility system is more complex than assumed
+- Evidence gaps are cascading
+
+**Decide**:
+- Must fix all issues systematically
+- Cannot claim success without visual confirmation
+- Need to understand parent component filters
+
+**Act**:
+- Fix variable reference first
+- Remove all freeze guards
+- Debug visibility filters
+- Test incrementally
+
+### Why Our Previous Plan Failed
+
+1. **Incomplete Analysis**: Fixed ForceGraphAdapter but missed direct props
+2. **No Testing**: Added debug code without running it
+3. **Ignored Complexity**: Didn't consider visibility filtering system
+4. **Overconfidence**: Claimed readiness without verification
+
+### Updated Resolution Plan
+
+#### Phase 1: Critical Fixes
+1. ✅ Fix line 213-218 variable reference error
+2. ✅ Remove `cooldownTime={Infinity}` from line 917
+3. Document all changes carefully
+
+#### Phase 2: Visibility Investigation  
+1. Add comprehensive filter logging
+2. Test with nodeVisibility bypass
+3. Trace visibleIds source
+
+#### Phase 3: Verification
+1. Ensure no console errors
+2. Confirm nodes render visually
+3. Verify position changes
+
+### Key Learning
+The gap between our expectations and reality was much larger than anticipated. We must:
+- Test every change before claiming success
+- Consider all systems (visibility, forces, rendering)
+- Never assume partial fixes solve the whole problem

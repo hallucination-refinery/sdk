@@ -209,13 +209,9 @@ export default function CrypticAnimusScene({
         const centerForce = fgRef.current.d3Force?.('center')
         console.log('[FORCES] link:', !!linkForce, 'charge:', !!chargeForce, 'center:', !!centerForce)
         
-        // Safe debugging to understand data structure
-        console.log('[Debug] graphData type:', typeof graphData)
-        console.log('[Debug] graphData keys:', graphData ? Object.keys(graphData) : 'null')
-        console.log('[Debug] nodes array?', Array.isArray(graphData?.nodes))
-        console.log('[Debug] nodes length:', graphData?.nodes?.length)
-        console.log('[Debug] first node keys:', graphData?.nodes?.[0] ? Object.keys(graphData.nodes[0]) : 'no nodes')
+        // Remove problematic debug code that references undefined graphData
         console.log('[Debug] window.__FG type:', typeof (window as any).__FG)
+        console.log('[Debug] window.__FG has graphData method:', typeof (window as any).__FG?.graphData === 'function')
       } catch (error) {
         console.error('[Window FG] Error during initial setup:', error)
         console.error('[Window FG] Stack trace:', (error as Error).stack)

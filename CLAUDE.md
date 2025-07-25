@@ -1,4 +1,4 @@
-**Do not ping the user until you are highly confident a manual smoke screen test will pass**
+**Remember that you cannot conduct manual or visual tests yourself and must be considerate about requesting one. Do not ping the user until you are highly confident a manual smoke screen test will pass**
 
 # WARNING
 
