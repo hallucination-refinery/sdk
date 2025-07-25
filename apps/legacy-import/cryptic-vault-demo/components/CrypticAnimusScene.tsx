@@ -924,7 +924,14 @@ export default function CrypticAnimusScene({
         linkWidth={getLinkWidth}
         linkCurvature={0.2}
         cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
-        nodeVisibility={nodePassesFilters}
+        nodeVisibility={(node) => {
+          const passes = nodePassesFilters(node)
+          if (!passes) {
+            console.log('[VISIBILITY] Node blocked by filters:', node.id, 'type:', node.type)
+          }
+          // TEMPORARY: Force all nodes visible to test if filters are the issue
+          return true // Override filters for testing
+        }}
         linkVisibility={(link: any) => {
           const sId = typeof link.source === 'object' ? link.source.id : link.source
           const tId = typeof link.target === 'object' ? link.target.id : link.target

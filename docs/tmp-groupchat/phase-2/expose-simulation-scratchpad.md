@@ -1304,3 +1304,30 @@ The gap between our expectations and reality was much larger than anticipated. W
 - Test every change before claiming success
 - Consider all systems (visibility, forces, rendering)
 - Never assume partial fixes solve the whole problem
+
+## Visibility Investigation Results (2025-07-25)
+
+### visibleIds Source Traced
+
+Found in CrypticVaultScene.tsx:
+```typescript
+const visibleIdSet: Set<string> = useMemo(() => {
+  return new Set<string>(
+    rawNodes
+      .filter((n: any) => new Date(n.firstDate) <= new Date(dates[timeIndex]))
+      .map((n: any) => n.id)
+  )
+}, [rawNodes, dates, timeIndex])
+```
+
+Key findings:
+1. `timeIndex` defaults to 0 (from app-slice.ts)
+2. Nodes are filtered by date: `firstDate <= dates[timeIndex]`
+3. If no nodes have early enough dates, visibleIdSet is empty
+4. Empty visibleIdSet → ALL nodes hidden by nodePassesFilters
+
+### Critical Realization: cooldownTime={Infinity}
+- I misunderstood this setting completely
+- It KEEPS simulation running, doesn't freeze it
+- Removing it was a mistake - now reverted
+- The real issue is visibility filters
