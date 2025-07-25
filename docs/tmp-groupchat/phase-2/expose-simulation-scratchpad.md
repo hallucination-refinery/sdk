@@ -817,13 +817,50 @@ This allows:
 2. Manual tickFrame calls (force initial movement)
 3. Periodic d3ReheatSimulation (keep active)
 
-### Next Steps for Execution:
+## Final Test Plan (2025-07-25)
 
-1. **Run the investigation**:
+### What We've Fixed:
+1. ✅ Removed freeze guards that were stopping simulation after 1 tick
+2. ✅ Added forced tickFrame calls to ensure initial movement
+3. ✅ Added position monitoring to verify nodes are moving
+4. ✅ Periodic d3ReheatSimulation to keep simulation active
+
+### Test Execution Steps:
+1. **Clean build**:
    ```bash
    rm -rf node_modules/.cache .turbo .next
+   ```
+
+2. **Start dev server**:
+   ```bash
    pnpm dev --filter cryptic-vault-demo
    ```
+
+3. **Test in browser**:
+   - Open Chrome Incognito: http://localhost:3000
+   - Open console before page loads
+   - DO NOT interact with viewport for 5+ seconds
+   - Watch position logs
+
+### Expected Console Output:
+1. **Build marker**: "CrypticAnimusScene v3"
+2. **Data debug**: "nodes: 213 links: 276"
+3. **Window FG**: "assigned successfully"
+4. **Position checks**: Should show x,y,z values changing over time
+5. **Alpha diagnostics**: Still shows "n/a" (r3f-forcegraph limitation)
+
+### Success Criteria:
+- ✅ Nodes should NOT all be at origin (0,0,0)
+- ✅ Positions should change between checks
+- ✅ Visual: Nodes should spread out, not remain clumped
+
+### If Still Clumped:
+1. Check if positions are undefined (initialization issue)
+2. Check if positions stay at origin (forces too weak)
+3. Check console for errors
+
+### Summary:
+The root cause was ForceGraphAdapter's freeze guards preventing simulation from running. With those removed and forced ticks added, nodes should finally spread out naturally.
 
 2. **Collect results**:
    - Open http://localhost:3000 in Chrome Incognito
