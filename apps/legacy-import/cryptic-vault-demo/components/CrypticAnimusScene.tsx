@@ -142,13 +142,6 @@ export default function CrypticAnimusScene({
   console.log('[FILTERS] activeCategories:', activeCategories ? `Set(${activeCategories.size})` : 'undefined')
   console.log('[FILTERS] showSecrets:', showSecrets)
   console.log('[FILTERS] activeTags:', activeTags ? `Set(${activeTags.size})` : 'undefined')
-  
-  // Sample check: are any nodes passing filters?
-  const passingNodes = memoizedNodes.filter(nodePassesFilters)
-  console.log('[FILTERS] Nodes passing filters:', passingNodes.length, '/', memoizedNodes.length)
-  if (passingNodes.length === 0) {
-    console.error('[FILTERS] WARNING: No nodes pass visibility filters!')
-  }
 
   // Configure physics forces
   useEffect(() => {
@@ -907,6 +900,13 @@ export default function CrypticAnimusScene({
     },
     [showSecrets, visibleIds, activeCategories, activeTags]
   )
+
+  // Sample check: are any nodes passing filters?
+  const passingNodes = memoizedNodes.filter(nodePassesFilters)
+  console.log('[FILTERS] Nodes passing filters:', passingNodes.length, '/', memoizedNodes.length)
+  if (passingNodes.length === 0) {
+    console.error('[FILTERS] WARNING: No nodes pass visibility filters!')
+  }
 
   return (
     <FGErrorBoundary>
