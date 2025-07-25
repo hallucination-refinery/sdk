@@ -945,3 +945,20 @@ Remember: The goal is to find where alpha is stored so we can:
 - Periodic tick count (should be 50)
 - Forces active (should all be true)
 - Position values changing over time
+
+### Phase 4 Implementation: Alternative Force Activation
+**Added Code** (runs at 4.5s):
+1. Clear x,y forces, strengthen charge force to -300
+2. Manual node spreading if all at origin
+3. Use refresh() method to force re-render
+
+**Key Strategies**:
+- Increase repulsion force strength
+- Manually position nodes in sphere pattern
+- Force 200-300 additional ticks
+- Try multiple activation methods
+
+**Expected Outcome**:
+- If nodes at origin, manual spreading should separate them
+- Stronger charge force should maintain separation
+- Visual confirmation of node spreading

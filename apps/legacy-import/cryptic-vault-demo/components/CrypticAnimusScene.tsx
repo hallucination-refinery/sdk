@@ -418,6 +418,101 @@ export default function CrypticAnimusScene({
       monitorPositions(3000, '3s')
       monitorPositions(4000, '4s')
       monitorPositions(5000, '5s')
+      
+      // PHASE 4: Force Simulation Activation
+      setTimeout(() => {
+        console.log('=== PHASE 4: Force Simulation Activation ===')
+        
+        if (!(window as any).__FG) {
+          console.log('ERROR: window.__FG is undefined')
+          return
+        }
+        
+        // Test 1: Add positional forces to spread nodes
+        console.log('1. Adding positional forces to spread nodes:')
+        try {
+          // Add weak x,y forces to prevent all nodes at center
+          const xForce = (window as any).__FG.d3Force?.('x', null)
+          const yForce = (window as any).__FG.d3Force?.('y', null)
+          console.log('  Cleared x,y forces')
+          
+          // Add collision force to push nodes apart
+          console.log('  Testing collision force...')
+          const hasCollide = (window as any).__FG.d3Force?.('collide')
+          console.log('  Current collide force:', !!hasCollide)
+          
+          // Strengthen charge force
+          const chargeForce = (window as any).__FG.d3Force?.('charge')
+          if (chargeForce && chargeForce.strength) {
+            chargeForce.strength(-300) // Increase repulsion
+            console.log('  Increased charge force strength to -300')
+          }
+          
+          // Reheat after force changes
+          console.log('%c[REHEAT] After force modifications', 'color: green; font-weight: bold')
+          ;(window as any).__FG.d3ReheatSimulation?.()
+          
+          // Force many ticks
+          for (let i = 0; i < 200; i++) {
+            (window as any).__FG.tickFrame?.()
+          }
+          console.log('  Forced 200 additional ticks')
+        } catch (e) {
+          console.log('  Force modification ERROR:', e)
+        }
+        
+        // Test 2: Manual node position spreading
+        console.log('2. Testing manual node spreading:')
+        try {
+          const simData = (window as any).__FG.graphData?.()
+          if (simData?.nodes?.length > 0) {
+            console.log('  Current first 3 nodes:')
+            simData.nodes.slice(0, 3).forEach((n: any) => {
+              console.log(`    ${n.id}: x=${n.x}, y=${n.y}, z=${n.z}`)
+            })
+            
+            // Check if all at origin
+            const allAtOrigin = simData.nodes.every((n: any) => 
+              n.x === 0 && n.y === 0 && n.z === 0
+            )
+            console.log('  All nodes at origin?', allAtOrigin)
+            
+            if (allAtOrigin) {
+              console.log('  Manually spreading nodes...')
+              // Spread nodes in a sphere
+              simData.nodes.forEach((node: any, i: number) => {
+                const angle1 = (i / simData.nodes.length) * Math.PI * 2
+                const angle2 = (i / simData.nodes.length) * Math.PI
+                const radius = 100
+                node.x = radius * Math.sin(angle2) * Math.cos(angle1)
+                node.y = radius * Math.sin(angle2) * Math.sin(angle1)
+                node.z = radius * Math.cos(angle2)
+              })
+              
+              // Update graph with new positions
+              ;(window as any).__FG.graphData?.(simData)
+              console.log('  Applied manual spreading')
+              
+              // Reheat and tick
+              ;(window as any).__FG.d3ReheatSimulation?.()
+              for (let i = 0; i < 100; i++) {
+                (window as any).__FG.tickFrame?.()
+              }
+            }
+          }
+        } catch (e) {
+          console.log('  Manual spreading ERROR:', e)
+        }
+        
+        // Test 3: Use refresh method
+        console.log('3. Testing refresh method:')
+        try {
+          ;(window as any).__FG.refresh?.()
+          console.log('  Called refresh()')
+        } catch (e) {
+          console.log('  refresh() ERROR:', e)
+        }
+      }, 4500) // Run after other phases complete
 
       // TEMP diagnostics: kick simulation each second and log alpha
       intervalId = setInterval(() => {
