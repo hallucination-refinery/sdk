@@ -381,3 +381,301 @@ Once we ensure the component mounts:
    - `window.__FG` should exist
    - `window.__FG.__kapsuleInstance.d3ForceLayout.alpha()` should return number
    - `window.__FG.__kapsuleInstance.d3ForceLayout.nodes()` should show node positions
+
+## CRITICAL UPDATE: Missing Kapsule Instance (2025-07-25)
+
+### New Evidence from Updated Baseline Test
+
+The baseline test with commit 320318c6 reveals **game-changing information**:
+
+1. **CrypticAnimusScene DOES render successfully**
+   - 213 nodes and 276 links are loaded
+   - Component mounts WITHOUT user interaction
+   - Our conditional rendering theory was WRONG
+
+2. **window.__FG IS assigned successfully**
+   - Line 50: `[Window FG] window.__FG assigned successfully`
+   - The ref assignment works correctly
+
+3. **But __kapsuleInstance is UNDEFINED**
+   - `[Diag alpha] n/a kapsule: false`
+   - Error: `Cannot read properties of undefined (reading 'd3ForceLayout')`
+   - This is the REAL problem
+
+### Evidence vs Expectation Gap
+
+**Expected**: Based on three-forcegraph source code analysis, `__kapsuleInstance` should exist on the ForceGraph object
+**Actual**: `__kapsuleInstance` is undefined despite successful window.__FG assignment
+
+**This gap is likely much larger than it seems.** Possible explanations:
+1. The r3f-forcegraph wrapper doesn't forward the kapsule instance
+2. The instance is created asynchronously after ref assignment  
+3. The property exists under a different name
+4. Something is stripping the property during the wrapping process
+5. The ForceGraph3D component works differently than expected
+
+## Comprehensive Investigation Plan: Missing Kapsule Instance
+
+### Overview
+Someone with no context should be able to execute this plan. The goal is to find where the d3 simulation is actually stored and access its alpha value.
+
+### Phase 1: Deep Property Inspection [PRIORITY: HIGH]
+
+**Purpose**: Discover what properties actually exist on window.__FG
+
+**Implementation**:
+Add the following code after line 151 in CrypticAnimusScene.tsx (after window.__FG assignment success):
+
+```typescript
+// Deep inspection of window.__FG - wait 1s to ensure full initialization
+setTimeout(() => {
+  console.log('=== PHASE 1: window.__FG Deep Inspection ===')
+  console.log('1. Basic info:')
+  console.log('  Type:', typeof window.__FG)
+  console.log('  Constructor:', window.__FG?.constructor?.name)
+  
+  console.log('2. Direct properties:')
+  console.log('  Object.keys:', Object.keys(window.__FG || {}))
+  console.log('  Object.getOwnPropertyNames:', Object.getOwnPropertyNames(window.__FG || {}))
+  
+  console.log('3. Prototype chain:')
+  let proto = Object.getPrototypeOf(window.__FG)
+  let level = 0
+  while (proto && level < 5) {
+    console.log(`  Level ${level}:`, Object.getOwnPropertyNames(proto))
+    proto = Object.getPrototypeOf(proto)
+    level++
+  }
+  
+  console.log('4. All enumerable properties:')
+  const allProps = []
+  for (let key in window.__FG) {
+    allProps.push({
+      key, 
+      type: typeof window.__FG[key],
+      value: typeof window.__FG[key] === 'function' ? '[Function]' : window.__FG[key]
+    })
+  }
+  console.table(allProps)
+  
+  console.log('5. Method availability:')
+  const methods = ['d3Force', 'd3ReheatSimulation', 'tickFrame', 'emitParticle', 'getGraphBbox', 'resetCountdown', 'refresh']
+  methods.forEach(m => {
+    console.log(`  ${m}:`, typeof window.__FG[m])
+  })
+  
+  console.log('6. Hidden/private properties:')
+  const hiddenProps = ['_engine', '_state', '_simulation', '__kapsuleInstance', '_graphForce', '__graphSimulation']
+  hiddenProps.forEach(p => {
+    console.log(`  ${p}:`, window.__FG[p] !== undefined ? 'EXISTS' : 'undefined')
+  })
+}, 1000)
+```
+
+**Expected Output**: List of all properties, methods, and prototype chain
+**Success Criteria**: Find where the simulation is stored
+
+### Phase 2: Monitor Ref Evolution [PRIORITY: HIGH]
+
+**Purpose**: Check if kapsule instance appears after initial assignment
+
+**Implementation**:
+Add after the Phase 1 code:
+
+```typescript
+// Monitor how ref evolves over time
+const checkRef = (delay, label) => {
+  setTimeout(() => {
+    if (!window.__FG) {
+      console.log(`[${label}] window.__FG is undefined`)
+      return
+    }
+    
+    const hasKapsule = !!(window.__FG.__kapsuleInstance)
+    const keys = Object.keys(window.__FG)
+    const protoKeys = Object.keys(Object.getPrototypeOf(window.__FG) || {})
+    
+    console.log(`=== PHASE 2: Ref Evolution at ${label} ===`)
+    console.log('Has __kapsuleInstance:', hasKapsule)
+    console.log('Direct keys count:', keys.length)
+    console.log('Proto keys count:', protoKeys.length)
+    
+    // Check for any new properties
+    const allCurrentProps = [...keys, ...protoKeys]
+    console.log('All properties:', allCurrentProps)
+    
+    // Try to find simulation
+    if (window.__FG.d3Force) {
+      const linkForce = window.__FG.d3Force('link')
+      console.log('d3Force("link") returns:', linkForce)
+      console.log('Has .alpha() method?', typeof linkForce?.alpha === 'function')
+    }
+  }, delay)
+}
+
+// Check at multiple intervals
+checkRef(100, '100ms')
+checkRef(500, '500ms')
+checkRef(1000, '1s')
+checkRef(2000, '2s')
+checkRef(5000, '5s')
+```
+
+**Expected Output**: Evolution of properties over time
+**Success Criteria**: Identify if/when kapsule instance appears
+
+### Phase 3: Force & Simulation Testing [PRIORITY: HIGH]
+
+**Purpose**: Test all force-related methods to find simulation
+
+**Implementation**:
+Add after Phase 2 code:
+
+```typescript
+// Test force configuration and simulation methods
+setTimeout(() => {
+  console.log('=== PHASE 3: Force & Simulation Testing ===')
+  
+  if (!window.__FG) {
+    console.log('ERROR: window.__FG is undefined')
+    return
+  }
+  
+  console.log('1. Testing d3Force method:')
+  const d3ForceMethod = window.__FG.d3Force
+  console.log('  d3Force type:', typeof d3ForceMethod)
+  console.log('  d3Force toString:', d3ForceMethod?.toString?.())
+  
+  console.log('2. Testing force retrieval:')
+  const forces = ['link', 'charge', 'center', 'x', 'y', 'z', 'collide']
+  forces.forEach(forceName => {
+    try {
+      const force = window.__FG.d3Force?.(forceName)
+      console.log(`  Force "${forceName}":`, force)
+      console.log(`    Type:`, typeof force)
+      console.log(`    Has strength?:`, typeof force?.strength === 'function')
+      console.log(`    Has alpha?:`, typeof force?.alpha === 'function')
+    } catch (e) {
+      console.log(`  Force "${forceName}": ERROR -`, e.message)
+    }
+  })
+  
+  console.log('3. Testing simulation control methods:')
+  try {
+    console.log('  d3ReheatSimulation result:', window.__FG.d3ReheatSimulation?.())
+    console.log('  tickFrame result:', window.__FG.tickFrame?.())
+    console.log('  resetCountdown result:', window.__FG.resetCountdown?.())
+  } catch (e) {
+    console.log('  Simulation control ERROR:', e.message)
+  }
+  
+  console.log('4. Looking for simulation via d3Force:')
+  // Sometimes d3Force() with no args returns the simulation
+  try {
+    const noArgResult = window.__FG.d3Force?.()
+    console.log('  d3Force() no args:', noArgResult)
+    console.log('  Has .alpha()?:', typeof noArgResult?.alpha === 'function')
+    console.log('  Has .nodes()?:', typeof noArgResult?.nodes === 'function')
+  } catch (e) {
+    console.log('  d3Force() no args ERROR:', e.message)
+  }
+}, 3000)
+```
+
+**Expected Output**: Details about force methods and potential simulation access
+**Success Criteria**: Find a way to access the simulation
+
+### Phase 4: ForceGraphAdapter Investigation [PRIORITY: MEDIUM]
+
+**Purpose**: Understand how ForceGraphAdapter forwards the ref
+
+**Implementation**:
+Add logging to ForceGraphAdapter.tsx after line 123:
+
+```typescript
+console.log('[FGAdapter] mounted')
+console.log('[FGAdapter] ref type:', ref)
+console.log('[FGAdapter] typeof ref:', typeof ref)
+
+// Add inside the component, before the return
+useEffect(() => {
+  console.log('[FGAdapter] ref after mount:', ref)
+  if (ref && typeof ref === 'object' && 'current' in ref) {
+    console.log('[FGAdapter] ref.current:', ref.current)
+    console.log('[FGAdapter] ref.current keys:', Object.keys(ref.current || {}))
+    
+    // Check what ForceGraph3D actually creates
+    setTimeout(() => {
+      console.log('[FGAdapter] ref.current after 1s:', ref.current)
+      if (ref.current) {
+        console.log('[FGAdapter] Has __kapsuleInstance?', '__kapsuleInstance' in ref.current)
+        console.log('[FGAdapter] Constructor:', ref.current.constructor?.name)
+      }
+    }, 1000)
+  }
+}, [ref])
+```
+
+**Expected Output**: Understanding of ref forwarding process
+**Success Criteria**: Identify if adapter modifies the ref
+
+### Phase 5: Alternative Access Paths [PRIORITY: LOW]
+
+**Purpose**: Try alternative ways to find the simulation
+
+**Implementation**:
+Add to Phase 3 testing:
+
+```typescript
+console.log('5. Alternative access attempts:')
+
+// Check THREE.Group properties (ThreeForceGraph extends Group)
+console.log('  Is THREE.Group?', window.__FG instanceof THREE.Group)
+console.log('  Children:', window.__FG.children?.length)
+
+// Look for graph data
+console.log('  graphData method?', typeof window.__FG.graphData)
+if (window.__FG.graphData) {
+  const data = window.__FG.graphData()
+  console.log('  Graph data:', { nodes: data?.nodes?.length, links: data?.links?.length })
+}
+
+// Check for any property containing 'sim', 'engine', 'force'
+const allKeys = []
+for (let key in window.__FG) {
+  allKeys.push(key)
+}
+const relevantKeys = allKeys.filter(k => 
+  k.toLowerCase().includes('sim') || 
+  k.toLowerCase().includes('engine') || 
+  k.toLowerCase().includes('force') ||
+  k.toLowerCase().includes('alpha')
+)
+console.log('  Relevant keys:', relevantKeys)
+```
+
+### Success Metrics
+
+1. **Find simulation location**: Identify where the d3 force simulation is stored
+2. **Access alpha value**: Successfully read simulation.alpha()
+3. **Control simulation**: Be able to set alpha and restart
+4. **Understand architecture**: Know why __kapsuleInstance is missing
+
+### Execution Instructions
+
+1. First, update scratchpad with findings
+2. Add all logging code to CrypticAnimusScene.tsx
+3. Add logging to ForceGraphAdapter.tsx
+4. Run clean build: `rm -rf node_modules/.cache .turbo .next`
+5. Start dev: `pnpm dev --filter cryptic-vault-demo`
+6. Load page, wait 5 seconds for all logs
+7. Document findings in scratchpad
+8. Make atomic commits after each phase
+
+### What To Do With Findings
+
+Based on what we discover:
+- If simulation found: Update alpha access code
+- If no simulation: Investigation why it's missing
+- If different property name: Update access path
+- If async creation: Add proper waiting logic
