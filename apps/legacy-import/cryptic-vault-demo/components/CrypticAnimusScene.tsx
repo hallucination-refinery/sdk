@@ -129,9 +129,10 @@ export default function CrypticAnimusScene({
       // TEMP diagnostics: kick simulation each second and log alpha
       const id = setInterval(() => {
         fgRef.current?.d3ReheatSimulation?.()
-        const force = fgRef.current?.d3Force?.()
-        const a = force?.alpha ? force.alpha() : 'n/a'
-        console.log('[Diag alpha]', a)
+        // Access alpha through the kapsule instance's d3ForceLayout
+        const kapsuleInstance = (fgRef.current as any)?.__kapsuleInstance
+        const alpha = kapsuleInstance?.d3ForceLayout?.alpha?.()
+        console.log('[Diag alpha]', alpha ?? 'n/a')
       }, 1000)
       return () => clearInterval(id)
     }
