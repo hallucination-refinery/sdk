@@ -191,6 +191,18 @@ export default function CrypticAnimusScene({
       
       // Wrap all operations in try-catch to prevent debugger pause
       try {
+        // === Phase 0 Instrumentation - BEFORE ===
+        const simData = (window as any).__FG?.graphData?.()
+        if (simData?.nodes?.length > 0) {
+          const beforePos = { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z }
+          console.log('[FREEZE-TEST before]', {
+            node0: simData.nodes[0],
+            hasVelocity: 'vx' in simData.nodes[0],
+            position: beforePos,
+            frozen: Object.isFrozen(simData.nodes[0]),
+          })
+          ;(window as any).__beforePos = beforePos
+        }
         // Initial reheat and force multiple ticks with counting
         console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
         if (fgRef.current.d3ReheatSimulation) {
@@ -207,6 +219,19 @@ export default function CrypticAnimusScene({
           }
         }
         console.log(`[TICKS] Executed ${tickCount} ticks successfully (target: 300)`)
+        
+        // === Phase 0 Instrumentation - AFTER ===
+        if (simData?.nodes?.length > 0 && (window as any).__beforePos) {
+          console.log('[FREEZE-TEST after ]', {
+            node0: simData.nodes[0],
+            hasVelocity: 'vx' in simData.nodes[0],
+            position: { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z },
+            positionChanged:
+              simData.nodes[0].x !== (window as any).__beforePos.x || 
+              simData.nodes[0].y !== (window as any).__beforePos.y || 
+              simData.nodes[0].z !== (window as any).__beforePos.z,
+          })
+        }
         
         // Verify simulation is active
         console.log('[SIMULATION] Testing if forces are applied...')

@@ -4,9 +4,8 @@ Maximum scrutiny and survelliance. Your work is now considered **guilty until pr
 
 # RULES
 
-1. You must critically review, evaluate and correct your work
-2. Meticulously retrace each step and substep **in order.**
-3. Adhere to the spirt of this document and of the task or face the **\$10 000 fine(s) and disciplinary action(s).**
+1. Meticulously investigate and verify **before** executing
+2. Adhere to the spirt of this document and of the task or face the **\$10 000 fine(s) and disciplinary action(s).**
 
 # WARNING
 
