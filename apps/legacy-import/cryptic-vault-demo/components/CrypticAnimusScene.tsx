@@ -923,6 +923,7 @@ export default function CrypticAnimusScene({
         linkColor={getLinkColor}
         linkWidth={getLinkWidth}
         linkCurvature={0.2}
+        cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
         nodeVisibility={nodePassesFilters}
         linkVisibility={(link: any) => {
           const sId = typeof link.source === 'object' ? link.source.id : link.source

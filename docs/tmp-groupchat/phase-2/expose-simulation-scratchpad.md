@@ -1232,11 +1232,12 @@ Given that we cannot access alpha directly, the likely causes are:
 - **Gap Scale**: Much larger than expected - not just clumping but total invisibility
 - **Root Cause**: `nodeVisibility={nodePassesFilters}` filtering logic
 
-#### 3. Freeze Guard Still Active
+#### 3. Misunderstood cooldownTime={Infinity}
 - **Evidence**: Line 917 shows `cooldownTime={Infinity}` 
-- **Reality**: Direct prop overrides ForceGraphAdapter changes
-- **Gap Scale**: Our "fix" only affected adapter, not direct usage
-- **Impact**: Simulation may still be frozen despite other changes
+- **Reality**: This KEEPS simulation running, doesn't freeze it
+- **Gap Scale**: I completely misunderstood - the comment even explained it
+- **Impact**: Removing it might cause simulation to stop too early
+- **Correction**: This was actually helping, not hurting
 
 #### 4. Filter Logic Analysis
 The `nodePassesFilters` function checks multiple conditions:
