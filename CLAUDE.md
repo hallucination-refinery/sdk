@@ -1,4 +1,12 @@
-**Remember that you cannot conduct manual or visual tests yourself and must be considerate about requesting one. Do not ping the user until you are highly confident a manual smoke screen test will pass**
+# STATUS UPDATE (RED ALERT)
+
+Maximum scrutiny and survelliance. Your work is now considered **guilty until proven innocent**.
+
+# RULES
+
+1. You must critically review, evaluate and correct your work
+2. Meticulously retrace each step and substep **in order.**
+3. Adhere to the spirt of this document and of the task or face the **\$10 000 fine(s) and disciplinary action(s).**
 
 # WARNING
 

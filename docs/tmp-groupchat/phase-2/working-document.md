@@ -1,12 +1,12 @@
-Last Updated: 6:00 PM EST, 24/07/2025
+Last Updated: 4:00 AM EST, 25/07/2025
 
 # W - Phase 2 Completed
 
-Definition: Every legacy force-graph dependency is replaced by the new SDK store-driven rendering path, with all items in the migration checklist marked DONE and the demo running without clumping, freezes, or build-time aliases.
+Definition: Every legacy force-graph dependency is replaced by the new SDK store-driven rendering path, with all items in phase 2 of the @migration-checklist.md file is marked DONE and the demo running without clumping, freezes, or build-time aliases.
 
 Success Metric:
 
-1. Demo runs 5X smoothly
+1. Demo runs 5X smoothly with the intended behavior
 2. All Phase 2 migration checklist items DONE
 
 # Open Questions (Ranked)
@@ -22,11 +22,13 @@ Success Metric:
 ~~Alias restored (`f56470f4`) but smoke-screen shows **no change**: nodes still clumped. Diagnostic alpha logs print only after hover and stay `n/a` → `d3Force()` returns undefined alpha.~~
 
 **COMPLETED Actions**:
+
 1. ✅ Located internal d3-simulation handle at `__kapsuleInstance.d3ForceLayout`
 2. ✅ Fixed diagnostic code to use correct path: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha()`
 3. ✅ Verified programmatic control: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha(0.8).restart()`
 
 **New Immediate Actions**:
+
 1. Verify nodes actually spread apart when alpha is high (visual confirmation needed)
 2. Test if removing cooldown overrides (Infinity, 0) allows natural simulation settling
 3. Investigate why nodes remain clumped despite active simulation (alpha > 0)

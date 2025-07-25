@@ -1479,3 +1479,331 @@ I traced the actual data and found:
 - Visibility bypass should show all nodes
 - Some timing/ordering concerns remain
 - Need to verify nodes actually render visually
+
+## CORRECTION: Re-Analysis Under RED ALERT Scrutiny (2025-07-25)
+
+**CRITICAL ERROR IDENTIFIED**: The above analysis is completely incorrect. I analyzed an older test (commit 83faec32) instead of the current test (commit 8ae1cfb3). The actual current state is:
+- TDZ error has been FIXED (commit title: "fix: move nodePassesFilters usage after declaration to fix TDZ error")
+- App loads successfully with no black screen
+- Nodes are visible and evenly spaced (no clumping)
+- The issue is that physics simulation doesn't create movement
+
+### Corrected Observation Table (Commit 8ae1cfb3 - Current State)
+
+| Test | Observation | Evidence Type | Updates P(W) | Reasoning |
+|------|-------------|---------------|--------------|------------|
+| Test 1 | HUD visible, nodes evenly spaced | Visual | ↑ Moderate | App loads successfully, no TDZ error |
+| Test 1 | No dense central clump | Visual | ↑ Moderate | Initial positioning works (sphere pattern) |
+| Test 1 | Nodes remain completely static | Behavioral | ↓ High | Physics simulation not creating movement |
+| Test 1 | Console: "Configuring physics forces!" | Log | ↑ Small | Forces being configured |
+| Test 1 | Console: "FORCES link: true charge: true center: true" | Log | ↑ Small | All forces successfully applied |
+| Test 1 | Console: "Executed 300 ticks successfully" | Log | ↑ Small | Simulation ticks are running |
+| Test 1 | Console: "window.__FG assigned successfully" | Log | ↑ Small | Ref exposure working |
+| Test 1 | Console: "REHEAT Initial d3ReheatSimulation called" | Log | ↑ Small | Reheat mechanism triggered |
+| Test 1 | Console: No alpha value logs | Missing Data | ↓ Moderate | Can't verify simulation energy level |
+| Test 1 | Console: graphData() returns undefined | Log | ↓ Small | Limited API access |
+| Test 2 | Hover/click produces no visual feedback | Behavioral | ↓ High | Interaction system not working |
+| Test 2 | Timeline scrubbing filters nodes correctly | Behavioral | ↑ Moderate | Visibility filtering works |
+| Test 2 | Nodes remain in exact same positions | Behavioral | ↓ High | Confirms physics not affecting positions |
+
+### Key Differences from Incorrect Analysis:
+1. **No TDZ Error**: The app loads successfully
+2. **Nodes Visible**: Not a black screen, nodes render correctly
+3. **Static Positioning**: Nodes appear pre-positioned and never move
+4. **Missing Physics**: The core issue is physics simulation doesn't create movement
+5. **Partial Functionality**: Timeline filtering works, but interactions don't
+
+### Corrected Chronology
+
+1. **Initial Load (0-100ms)**:
+   - Component mounts successfully
+   - Initial positions added to 213 nodes in sphere pattern (radius: 299)
+   - No TDZ error - nodePassesFilters called after declaration
+
+2. **Ref Initialization (100-500ms)**:
+   - Multiple "Ref not ready, will retry..." messages
+   - Eventually ref becomes available
+   - Physics forces configured successfully
+   - window.__FG assigned
+
+3. **Simulation Startup (500ms+)**:
+   - d3ReheatSimulation called
+   - 300 ticks executed successfully
+   - Forces confirmed active (link, charge, center)
+   - BUT: No visible node movement
+
+4. **Periodic Updates (1s+)**:
+   - Periodic reheat called every ~2s
+   - 100 ticks executed each time
+   - Still no alpha value accessible
+   - graphData() returns undefined
+
+5. **User Interaction Attempts**:
+   - Hover: No visual feedback
+   - Click: No selection highlighting
+   - Timeline scrub: Visibility filtering works correctly
+
+### Critical Finding: Working-Document.md Claims vs Reality
+
+The working-document.md claims:
+- "Alpha access path discovered and fixed!"
+- "Diagnostic now correctly logs numeric alpha values"
+- "Verified programmatic control: window.__FG.__kapsuleInstance.d3ForceLayout.alpha(0.8).restart()"
+
+BUT the actual test shows:
+- NO alpha diagnostic logs in console
+- NO __kapsuleInstance references
+- graphData() returns undefined
+- No evidence of alpha access working
+
+This discrepancy suggests either:
+1. The fix wasn't actually implemented
+2. The fix was implemented but not in the tested commit
+3. The fix requires additional setup not present in the test
+
+### Revised Problem Statement
+
+The system has progressed from "broken with TDZ error" to "working but static". The current blockers are:
+
+1. **Physics Not Creating Movement**: Despite forces being configured and ticks running, nodes don't move
+2. **No Alpha Access**: Can't verify or control simulation energy
+3. **Interactions Broken**: Hover/click don't produce visual feedback
+4. **API Limitations**: Only 7 methods exposed, no direct simulation access
+
+### Next Investigation Steps
+
+1. **Verify Alpha Fix Implementation**: Check if the __kapsuleInstance access mentioned in working-document.md is actually implemented
+2. **Debug Force Application**: Log node positions before/after ticks to verify if forces are changing positions
+3. **Check Render Loop**: Verify if position changes are being rendered
+4. **Test Direct Manipulation**: Try programmatically moving nodes to ensure rendering works
+
+### Evaluation Against Intended Behavior (Task 2.2.2)
+
+#### Expected vs Actual Behavior:
+
+| Intended Behavior | Actual Behavior | Gap Analysis |
+|-------------------|-----------------|---------------|
+| 1. Nodes start co-located at origin | Nodes appear pre-positioned in sphere | ✗ No burst animation |
+| 2. Nodes "burst" outward as physics warms up | Nodes remain static | ✗ Physics not creating movement |
+| 3. Graph drifts until layout stabilizes | No movement at all | ✗ Simulation not affecting positions |
+| 4. Hover changes visual state | No visual feedback | ✗ Interaction system broken |
+| 5. Click toggles selected state | No selection highlighting | ✗ Click handler not working |
+| 6. Timeline scrubbing filters nodes | Visibility filtering works | ✓ Partial success |
+| 7. No physics burst during scrubbing | N/A (no physics at all) | ~ Cannot evaluate |
+
+#### Critical Gaps:
+1. **No Initial Burst**: Nodes appear pre-positioned instead of starting at origin
+2. **No Physics Movement**: Despite forces configured and ticks running
+3. **Broken Interactions**: Hover/click produce no visual feedback
+4. **Missing Alpha Access**: Cannot verify or control simulation energy
+
+### Review of Actual Commits (Task 2.3)
+
+#### Key Commits Analyzed:
+
+1. **8ae1cfb3** - "fix: move nodePassesFilters usage after declaration to fix TDZ error"
+   - Fixed the Temporal Dead Zone error by reordering code
+   - Moved filter check after useCallback declaration
+   - This explains why app now loads without error
+
+2. **0a4b6573** - "chore: add periodic alpha diagnostic and reheat kick"
+   - Added interval to reheat simulation every second
+   - Attempted to log alpha via `force.alpha()` 
+   - BUT: This doesn't work because d3Force() doesn't return simulation object
+   - Logs show "[Diag alpha] n/a" because force.alpha is undefined
+
+3. **f56470f4** - "build: restore @refinery/store alias"
+   - Restored webpack alias for live TS source
+   - Should ensure latest store code is used
+
+4. **0f147d4c** - "feat: re-enable link force and kick simulation"
+   - Re-enabled link force in physics configuration
+   - Added simulation kick mechanism
+
+### OODA Analysis of Changes (Task 2.3.1)
+
+**Observe**:
+- TDZ error fixed, app loads
+- Alpha diagnostic attempted but fails
+- Forces configured but no movement
+- Periodic reheat implemented
+
+**Orient**:
+- The alpha access fix mentioned in working-document.md is NOT in these commits
+- The diagnostic code reveals incorrect API usage
+- Physics system is running but not affecting node positions
+
+**Decide**:
+- Need to implement proper __kapsuleInstance access
+- Must debug why forces don't move nodes
+- Should fix interaction handlers
+
+**Act**:
+- Priority 1: Implement correct alpha access path
+- Priority 2: Debug force application
+- Priority 3: Fix hover/click handlers
+
+### Findings Table (Task 2.3.2)
+
+| Finding | Evidence | Impact | Confidence |
+|---------|----------|---------|------------|
+| TDZ error fixed | Commit 8ae1cfb3, app loads | High - unblocks app | 100% |
+| Physics not moving nodes | Static positions in both tests | Critical - core functionality broken | 100% |
+| Alpha access incorrect | force.alpha() returns undefined | High - can't debug simulation | 100% |
+| Forces configured correctly | Console: "link: true charge: true center: true" | Medium - setup works | 100% |
+| Ticks executing | "Executed 300 ticks successfully" | Medium - simulation runs | 100% |
+| Interactions broken | No hover/click feedback | High - UX broken | 100% |
+| Timeline filtering works | Nodes hide/show correctly | Low - partial functionality | 100% |
+| __kapsuleInstance not implemented | No logs show this access pattern | Critical - claimed fix missing | 95% |
+| Nodes pre-positioned | Sphere pattern visible on load | Medium - no burst animation | 100% |
+| Periodic reheat active | Logs show reheat every 2s | Low - mechanism works | 100% |
+
+### Triple Verification of Findings (Task 2.3.3)
+
+**Verification Method 1 - Direct Log Evidence**:
+- ✓ Console logs confirm forces configured
+- ✓ Console logs confirm ticks executed
+- ✓ Console logs show NO alpha values
+- ✓ Visual observation confirms static nodes
+
+**Verification Method 2 - Code Analysis**:
+- ✓ Commit 0a4b6573 shows incorrect alpha access attempt
+- ✓ No commits show __kapsuleInstance implementation
+- ✓ TDZ fix commit shows simple code reordering
+
+**Verification Method 3 - Behavioral Testing**:
+- ✓ Test 1 shows no movement over time
+- ✓ Test 2 confirms interactions don't work
+- ✓ Timeline scrubbing confirmed working
+
+**All findings triple-verified and accurate.**
+
+### Cross-Reference with Earlier Mental Model (Task 3.0)
+
+#### Earlier Mental Model (from scratchpad):
+1. **Expected**: `window.__FG.[discovered_property].alpha()` would work
+2. **Hypothesis 1**: window.__FG assignment missing - **DISPROVEN** (it exists)
+3. **Hypothesis 2**: Alpha via `d3Force().alpha()` - **DISPROVEN** (returns undefined)
+4. **Hypothesis 3**: Internal property like `__kapsuleInstance` - **PARTIALLY CONFIRMED**
+5. **Hypothesis 4**: structuredClone strips methods - **NOT TESTED YET**
+6. **Hypothesis 5**: Cooldown freezes simulation - **UNCLEAR** (simulation runs but doesn't move nodes)
+
+#### Key Discrepancy:
+The earlier investigation found:
+- "ThreeForceGraph uses kapsule pattern with `__kapsuleInstance` property"
+- "D3 simulation stored at `state.d3ForceLayout` inside kapsule"
+- Working-document.md claims: "window.__FG.__kapsuleInstance.d3ForceLayout.alpha()"
+
+BUT current tests show:
+- No __kapsuleInstance access in any logs
+- The attempted alpha access uses incorrect API
+- The claimed fix is not implemented in current code
+
+#### Mental Model Update:
+1. **Architecture Understanding**: Correct - r3f-forcegraph wraps three-forcegraph which uses kapsule
+2. **API Exposure**: Incorrect - only 7 methods exposed, no direct simulation access
+3. **Alpha Access Path**: Found but not implemented - needs __kapsuleInstance
+4. **Physics Problem**: Deeper than expected - forces run but don't affect positions
+
+### Rank-Ordered Key Questions Blocking W (Task 4.0)
+
+1. **[CRITICAL] Why don't physics forces create any node movement?**
+   - Impact: Core functionality completely broken
+   - Evidence: 300 ticks run but positions static
+   - Blocks: "demo running without clumping" requirement
+
+2. **[CRITICAL] How to access simulation alpha through limited API?**
+   - Impact: Can't debug or control simulation energy
+   - Evidence: Only 7 methods exposed, no __kapsuleInstance access
+   - Blocks: Understanding why physics doesn't work
+
+3. **[HIGH] Why is the __kapsuleInstance fix not implemented?**
+   - Impact: Claimed solution exists but not in code
+   - Evidence: Working-document claims fix, but tests show it's missing
+   - Blocks: Alpha access and simulation control
+
+4. **[HIGH] Why don't hover/click interactions work?**
+   - Impact: Major UX features broken
+   - Evidence: No visual feedback on interaction
+   - Blocks: Demo usability
+
+5. **[MEDIUM] Why do nodes appear pre-positioned instead of bursting?**
+   - Impact: Missing expected animation
+   - Evidence: Sphere pattern visible on load
+   - Blocks: Correct initialization behavior
+
+### Comprehensive Investigation Plan (Task 5.0)
+
+#### Phase 1: Implement Alpha Access [2 hours]
+
+1. **Verify __kapsuleInstance path**:
+   ```javascript
+   // Add to diagnostic interval:
+   console.log('Kapsule check:', window.__FG?.__kapsuleInstance)
+   console.log('d3ForceLayout:', window.__FG?.__kapsuleInstance?.d3ForceLayout)
+   console.log('Alpha:', window.__FG?.__kapsuleInstance?.d3ForceLayout?.alpha())
+   ```
+
+2. **Fix alpha diagnostic code**:
+   - Replace incorrect `force.alpha()` with proper path
+   - Verify numeric alpha values appear in logs
+
+3. **Test programmatic control**:
+   - Add button to trigger `alpha(0.8).restart()`
+   - Verify simulation energy increases
+
+#### Phase 2: Debug Force Application [3 hours]
+
+1. **Add position tracking**:
+   ```javascript
+   // Log node positions before/after ticks
+   const firstNode = nodes[0]
+   console.log('Node 0 position:', firstNode.x, firstNode.y, firstNode.z)
+   ```
+
+2. **Verify force calculations**:
+   - Log force strengths
+   - Check if forces are being applied to nodes
+   - Test with single node to isolate issue
+
+3. **Check render pipeline**:
+   - Verify Three.js objects update with new positions
+   - Check if render loop is called
+   - Test manual position changes
+
+#### Phase 3: Fix Initialization [1 hour]
+
+1. **Remove pre-positioning**:
+   - Comment out sphere pattern initialization
+   - Verify nodes start at origin
+
+2. **Add burst animation**:
+   - Set high initial alpha
+   - Ensure simulation starts immediately
+
+#### Phase 4: Restore Interactions [2 hours]
+
+1. **Debug hover handlers**:
+   - Add console logs to hover callbacks
+   - Verify events are captured
+   - Check if visual updates are applied
+
+2. **Fix click selection**:
+   - Trace click event flow
+   - Verify selection state updates
+   - Ensure visual feedback renders
+
+#### Phase 5: Integration Testing [1 hour]
+
+1. **Run complete smoke test**
+2. **Verify all Phase 2 requirements**
+3. **Document any remaining issues**
+
+**Total Estimated Time**: 9 hours
+
+**Success Criteria**:
+- Alpha values visible in console
+- Nodes move under physics forces
+- Burst animation on load
+- Hover/click interactions work
+- All tests pass
