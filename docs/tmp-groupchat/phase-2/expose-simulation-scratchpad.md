@@ -920,3 +920,15 @@ Remember: The goal is to find where alpha is stored so we can:
 **Assumption**: graphData contains node positions (x,y,z)
 **Reality**: graphData is INPUT data; positions are added by simulation
 **Gap**: Fundamental misunderstanding of data flow in ForceGraph
+
+### Phase 2 Implementation: Simulation Data Access
+**Added Code**:
+1. Test graphData() method to get simulation-enriched data
+2. Explore THREE.js scene graph structure
+3. Test getGraphBbox() for node bounds
+4. Monitor positions over time (3s, 4s, 5s)
+
+**Expected Findings**:
+- graphData() should return nodes WITH x,y,z positions
+- Positions should change if simulation is running
+- THREE.js scene should contain node objects

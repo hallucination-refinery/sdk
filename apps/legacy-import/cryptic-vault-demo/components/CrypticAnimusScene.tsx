@@ -325,6 +325,86 @@ export default function CrypticAnimusScene({
         )
         console.log('  Relevant keys:', relevantKeys)
       }, 3000)
+      
+      // PHASE 2B: Access Simulation Data Correctly
+      setTimeout(() => {
+        console.log('=== PHASE 2B: Accessing Simulation Data ===')
+        
+        if (!(window as any).__FG) {
+          console.log('ERROR: window.__FG is undefined')
+          return
+        }
+        
+        // Test 1: graphData() method
+        console.log('1. Testing graphData() method:')
+        try {
+          const simData = (window as any).__FG.graphData?.()
+          console.log('  graphData() returned:', typeof simData)
+          console.log('  Has nodes?', Array.isArray(simData?.nodes))
+          console.log('  Node count:', simData?.nodes?.length)
+          if (simData?.nodes?.length > 0) {
+            console.log('  First node:', simData.nodes[0])
+            console.log('  Node has x,y,z?', 'x' in simData.nodes[0], 'y' in simData.nodes[0], 'z' in simData.nodes[0])
+            
+            // Check first 3 nodes for positions
+            const sample = simData.nodes.slice(0, 3)
+            sample.forEach((node: any, i: number) => {
+              console.log(`  Node ${i}: id=${node.id}, x=${node.x}, y=${node.y}, z=${node.z}`)
+            })
+          }
+        } catch (e) {
+          console.log('  graphData() ERROR:', e)
+        }
+        
+        // Test 2: THREE.js scene graph
+        console.log('2. Exploring THREE.js scene:')
+        try {
+          const fg = (window as any).__FG
+          console.log('  FG is THREE.Object3D?', fg?.isObject3D)
+          console.log('  FG type:', fg?.type)
+          console.log('  Children count:', fg?.children?.length)
+          if (fg?.children?.length > 0) {
+            console.log('  First child type:', fg.children[0]?.type)
+            console.log('  First child name:', fg.children[0]?.name)
+          }
+        } catch (e) {
+          console.log('  THREE.js exploration ERROR:', e)
+        }
+        
+        // Test 3: getGraphBbox for bounds
+        console.log('3. Testing getGraphBbox:')
+        try {
+          const bbox = (window as any).__FG.getGraphBbox?.()
+          console.log('  Bounding box:', bbox)
+        } catch (e) {
+          console.log('  getGraphBbox ERROR:', e)
+        }
+      }, 2000)
+      
+      // Monitor positions over time
+      const monitorPositions = (delay: number, label: string) => {
+        setTimeout(() => {
+          if (!(window as any).__FG) return
+          
+          try {
+            const simData = (window as any).__FG.graphData?.()
+            if (simData?.nodes?.length > 0) {
+              const sample = simData.nodes.slice(0, 3)
+              console.log(`=== Position Monitor at ${label} ===`)
+              sample.forEach((node: any) => {
+                console.log(`Node ${node.id}: x=${node.x?.toFixed(2)}, y=${node.y?.toFixed(2)}, z=${node.z?.toFixed(2)}`)
+              })
+            }
+          } catch (e) {
+            console.log(`Position monitor error at ${label}:`, e)
+          }
+        }, delay)
+      }
+      
+      // Monitor at different times
+      monitorPositions(3000, '3s')
+      monitorPositions(4000, '4s')
+      monitorPositions(5000, '5s')
 
       // TEMP diagnostics: kick simulation each second and log alpha
       intervalId = setInterval(() => {
