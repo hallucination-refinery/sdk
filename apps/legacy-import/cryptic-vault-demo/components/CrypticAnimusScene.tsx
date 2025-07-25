@@ -152,6 +152,163 @@ export default function CrypticAnimusScene({
       
       // Initial reheat
       fgRef.current.d3ReheatSimulation?.()
+      
+      // PHASE 1: Deep inspection of window.__FG - wait 1s to ensure full initialization
+      setTimeout(() => {
+        console.log('=== PHASE 1: window.__FG Deep Inspection ===')
+        console.log('1. Basic info:')
+        console.log('  Type:', typeof (window as any).__FG)
+        console.log('  Constructor:', (window as any).__FG?.constructor?.name)
+        
+        console.log('2. Direct properties:')
+        console.log('  Object.keys:', Object.keys((window as any).__FG || {}))
+        console.log('  Object.getOwnPropertyNames:', Object.getOwnPropertyNames((window as any).__FG || {}))
+        
+        console.log('3. Prototype chain:')
+        let proto = Object.getPrototypeOf((window as any).__FG)
+        let level = 0
+        while (proto && level < 5) {
+          console.log(`  Level ${level}:`, Object.getOwnPropertyNames(proto))
+          proto = Object.getPrototypeOf(proto)
+          level++
+        }
+        
+        console.log('4. All enumerable properties:')
+        const allProps: any[] = []
+        for (let key in (window as any).__FG) {
+          allProps.push({
+            key, 
+            type: typeof (window as any).__FG[key],
+            value: typeof (window as any).__FG[key] === 'function' ? '[Function]' : (window as any).__FG[key]
+          })
+        }
+        console.table(allProps)
+        
+        console.log('5. Method availability:')
+        const methods = ['d3Force', 'd3ReheatSimulation', 'tickFrame', 'emitParticle', 'getGraphBbox', 'resetCountdown', 'refresh']
+        methods.forEach(m => {
+          console.log(`  ${m}:`, typeof (window as any).__FG[m])
+        })
+        
+        console.log('6. Hidden/private properties:')
+        const hiddenProps = ['_engine', '_state', '_simulation', '__kapsuleInstance', '_graphForce', '__graphSimulation']
+        hiddenProps.forEach(p => {
+          console.log(`  ${p}:`, (window as any).__FG[p] !== undefined ? 'EXISTS' : 'undefined')
+        })
+      }, 1000)
+      
+      // PHASE 2: Monitor how ref evolves over time
+      const checkRef = (delay: number, label: string) => {
+        setTimeout(() => {
+          if (!(window as any).__FG) {
+            console.log(`[${label}] window.__FG is undefined`)
+            return
+          }
+          
+          const hasKapsule = !!((window as any).__FG.__kapsuleInstance)
+          const keys = Object.keys((window as any).__FG)
+          const protoKeys = Object.keys(Object.getPrototypeOf((window as any).__FG) || {})
+          
+          console.log(`=== PHASE 2: Ref Evolution at ${label} ===`)
+          console.log('Has __kapsuleInstance:', hasKapsule)
+          console.log('Direct keys count:', keys.length)
+          console.log('Proto keys count:', protoKeys.length)
+          
+          // Check for any new properties
+          const allCurrentProps = [...keys, ...protoKeys]
+          console.log('All properties:', allCurrentProps)
+          
+          // Try to find simulation
+          if ((window as any).__FG.d3Force) {
+            const linkForce = (window as any).__FG.d3Force('link')
+            console.log('d3Force("link") returns:', linkForce)
+            console.log('Has .alpha() method?', typeof linkForce?.alpha === 'function')
+          }
+        }, delay)
+      }
+
+      // Check at multiple intervals
+      checkRef(100, '100ms')
+      checkRef(500, '500ms')
+      checkRef(1000, '1s')
+      checkRef(2000, '2s')
+      checkRef(5000, '5s')
+      
+      // PHASE 3: Test force configuration and simulation methods
+      setTimeout(() => {
+        console.log('=== PHASE 3: Force & Simulation Testing ===')
+        
+        if (!(window as any).__FG) {
+          console.log('ERROR: window.__FG is undefined')
+          return
+        }
+        
+        console.log('1. Testing d3Force method:')
+        const d3ForceMethod = (window as any).__FG.d3Force
+        console.log('  d3Force type:', typeof d3ForceMethod)
+        console.log('  d3Force toString:', d3ForceMethod?.toString?.())
+        
+        console.log('2. Testing force retrieval:')
+        const forces = ['link', 'charge', 'center', 'x', 'y', 'z', 'collide']
+        forces.forEach(forceName => {
+          try {
+            const force = (window as any).__FG.d3Force?.(forceName)
+            console.log(`  Force "${forceName}":`, force)
+            console.log(`    Type:`, typeof force)
+            console.log(`    Has strength?:`, typeof force?.strength === 'function')
+            console.log(`    Has alpha?:`, typeof force?.alpha === 'function')
+          } catch (e) {
+            console.log(`  Force "${forceName}": ERROR -`, (e as Error).message)
+          }
+        })
+        
+        console.log('3. Testing simulation control methods:')
+        try {
+          console.log('  d3ReheatSimulation result:', (window as any).__FG.d3ReheatSimulation?.())
+          console.log('  tickFrame result:', (window as any).__FG.tickFrame?.())
+          console.log('  resetCountdown result:', (window as any).__FG.resetCountdown?.())
+        } catch (e) {
+          console.log('  Simulation control ERROR:', (e as Error).message)
+        }
+        
+        console.log('4. Looking for simulation via d3Force:')
+        // Sometimes d3Force() with no args returns the simulation
+        try {
+          const noArgResult = (window as any).__FG.d3Force?.()
+          console.log('  d3Force() no args:', noArgResult)
+          console.log('  Has .alpha()?:', typeof noArgResult?.alpha === 'function')
+          console.log('  Has .nodes()?:', typeof noArgResult?.nodes === 'function')
+        } catch (e) {
+          console.log('  d3Force() no args ERROR:', (e as Error).message)
+        }
+        
+        // PHASE 5: Alternative access attempts
+        console.log('5. Alternative access attempts:')
+        
+        // Check THREE.Group properties (ThreeForceGraph extends Group)
+        console.log('  Is THREE.Group?', (window as any).__FG instanceof (window as any).THREE?.Group)
+        console.log('  Children:', (window as any).__FG.children?.length)
+        
+        // Look for graph data
+        console.log('  graphData method?', typeof (window as any).__FG.graphData)
+        if ((window as any).__FG.graphData) {
+          const data = (window as any).__FG.graphData()
+          console.log('  Graph data:', { nodes: data?.nodes?.length, links: data?.links?.length })
+        }
+        
+        // Check for any property containing 'sim', 'engine', 'force'
+        const allKeys: string[] = []
+        for (let key in (window as any).__FG) {
+          allKeys.push(key)
+        }
+        const relevantKeys = allKeys.filter(k => 
+          k.toLowerCase().includes('sim') || 
+          k.toLowerCase().includes('engine') || 
+          k.toLowerCase().includes('force') ||
+          k.toLowerCase().includes('alpha')
+        )
+        console.log('  Relevant keys:', relevantKeys)
+      }, 3000)
 
       // TEMP diagnostics: kick simulation each second and log alpha
       intervalId = setInterval(() => {

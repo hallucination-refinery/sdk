@@ -121,6 +121,9 @@ export interface ForceGraphAdapterRef {
  */
 const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProps>((props, ref) => {
   console.log('[FGAdapter] mounted')
+  console.log('[FGAdapter] ref type:', ref)
+  console.log('[FGAdapter] typeof ref:', typeof ref)
+  
   const { graphData, dataVersion = 0, disableLinkForce, ...restProps } = props
   const safeGraphData = useMemo(() => structuredClone(graphData), [dataVersion])
   // --- freeze-crash guard ----------------------------------------------
@@ -130,6 +133,25 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     }
   }, [disableLinkForce, ref])
   // ----------------------------------------------------------------------
+  
+  // PHASE 4: Monitor ref forwarding
+  useEffect(() => {
+    console.log('[FGAdapter] ref after mount:', ref)
+    if (ref && typeof ref === 'object' && 'current' in ref) {
+      console.log('[FGAdapter] ref.current:', ref.current)
+      console.log('[FGAdapter] ref.current keys:', Object.keys(ref.current || {}))
+      
+      // Check what ForceGraph3D actually creates
+      setTimeout(() => {
+        console.log('[FGAdapter] ref.current after 1s:', ref.current)
+        if (ref.current) {
+          console.log('[FGAdapter] Has __kapsuleInstance?', '__kapsuleInstance' in ref.current)
+          console.log('[FGAdapter] Constructor:', ref.current.constructor?.name)
+          console.log('[FGAdapter] All properties:', Object.getOwnPropertyNames(ref.current))
+        }
+      }, 1000)
+    }
+  }, [ref])
 
   return (
     // @ts-expect-error - ForceGraph3D has its own ref type that we're wrapping
