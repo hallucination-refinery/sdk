@@ -99,6 +99,10 @@ export default function CrypticAnimusScene({
   
   // Build verification marker
   console.log('[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at:', new Date().toISOString())
+  
+  // Debug data availability
+  console.log('[Data debug] nodes:', memoizedGraphData.nodes.length, 'links:', memoizedGraphData.links.length)
+  console.log('[Data debug] ForceGraph3D component loaded:', !!ForceGraph3D)
 
   // Configure physics forces
   useEffect(() => {

@@ -290,3 +290,42 @@ useEffect(() => {
 4. Check console for build marker
 5. Test `window.__FG` immediately
 6. Verify alpha logs show numbers
+
+### CRITICAL FINDING: Conditional Rendering Root Cause (2025-07-25)
+
+After deeper investigation, discovered the **actual root cause** of why ForceGraph doesn't initialize:
+
+**CrypticAnimusScene is conditionally rendered based on data availability!**
+
+In CrypticVaultScene.tsx line 191:
+```typescript
+{viewMode === 'nodes' && transformedData.nodes.length > 0 && (
+  <CrypticAnimusScene ... />
+)}
+```
+
+The component only renders when:
+1. `viewMode === 'nodes'` (this is always true - hardcoded)
+2. **`transformedData.nodes.length > 0`** (THIS IS THE ISSUE!)
+
+**Why transformedData is empty initially:**
+- `transformedData` is filtered by `visibleIds` (line 151)
+- `visibleIds` comes from `visibleIdSet` based on time filtering (line 302-308)
+- The time filter uses `timeIndex` to show nodes with `firstDate <= dates[timeIndex]`
+- If the initial `timeIndex` filters out all nodes, `transformedData.nodes.length` is 0
+- Therefore, CrypticAnimusScene doesn't render at all!
+
+**This explains everything:**
+1. window.__FG is undefined because CrypticAnimusScene never mounts
+2. No physics configuration happens because the component doesn't exist
+3. Hovering might trigger a timeIndex change or data reload that makes nodes visible
+4. Only then does the component mount and everything initializes
+
+**The useEffect dependency fixes won't help if the component doesn't render!**
+
+### Next Investigation Steps
+
+1. Check initial timeIndex value
+2. Verify if any nodes pass the initial time filter
+3. Consider if hover interaction changes timeIndex or reloads data
+4. May need to fix the time filtering logic or initial state
