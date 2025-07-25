@@ -150,33 +150,43 @@ export default function CrypticAnimusScene({
       ;(window as any).__FG = fgRef.current
       console.log('[Window FG] window.__FG assigned successfully')
       
-      // Initial reheat and force multiple ticks with counting
-      console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
-      fgRef.current.d3ReheatSimulation?.()
-      
-      // Force multiple ticks to overcome cooldownTicks=0 with counting
-      let tickCount = 0
-      console.log('[TICKS] Starting forced tick execution...')
-      for (let i = 0; i < 100; i++) {
-        const result = fgRef.current.tickFrame?.()
-        if (result !== undefined) tickCount++
+      // Wrap all operations in try-catch to prevent debugger pause
+      try {
+        // Initial reheat and force multiple ticks with counting
+        console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
+        if (fgRef.current.d3ReheatSimulation) {
+          fgRef.current.d3ReheatSimulation()
+        }
+        
+        // Force multiple ticks to overcome cooldownTicks=0 with counting
+        let tickCount = 0
+        console.log('[TICKS] Starting forced tick execution...')
+        for (let i = 0; i < 100; i++) {
+          if (fgRef.current.tickFrame) {
+            const result = fgRef.current.tickFrame()
+            if (result !== undefined) tickCount++
+          }
+        }
+        console.log(`[TICKS] Executed ${tickCount} ticks successfully`)
+        
+        // Verify simulation is active
+        console.log('[SIMULATION] Testing if forces are applied...')
+        const linkForce = fgRef.current.d3Force?.('link')
+        const chargeForce = fgRef.current.d3Force?.('charge')
+        const centerForce = fgRef.current.d3Force?.('center')
+        console.log('[FORCES] link:', !!linkForce, 'charge:', !!chargeForce, 'center:', !!centerForce)
+        
+        // Safe debugging to understand data structure
+        console.log('[Debug] graphData type:', typeof graphData)
+        console.log('[Debug] graphData keys:', graphData ? Object.keys(graphData) : 'null')
+        console.log('[Debug] nodes array?', Array.isArray(graphData?.nodes))
+        console.log('[Debug] nodes length:', graphData?.nodes?.length)
+        console.log('[Debug] first node keys:', graphData?.nodes?.[0] ? Object.keys(graphData.nodes[0]) : 'no nodes')
+        console.log('[Debug] window.__FG type:', typeof (window as any).__FG)
+      } catch (error) {
+        console.error('[Window FG] Error during initial setup:', error)
+        console.error('[Window FG] Stack trace:', (error as Error).stack)
       }
-      console.log(`[TICKS] Executed ${tickCount} ticks successfully`)
-      
-      // Verify simulation is active
-      console.log('[SIMULATION] Testing if forces are applied...')
-      const linkForce = fgRef.current.d3Force?.('link')
-      const chargeForce = fgRef.current.d3Force?.('charge')
-      const centerForce = fgRef.current.d3Force?.('center')
-      console.log('[FORCES] link:', !!linkForce, 'charge:', !!chargeForce, 'center:', !!centerForce)
-      
-      // Safe debugging to understand data structure
-      console.log('[Debug] graphData type:', typeof graphData)
-      console.log('[Debug] graphData keys:', graphData ? Object.keys(graphData) : 'null')
-      console.log('[Debug] nodes array?', Array.isArray(graphData?.nodes))
-      console.log('[Debug] nodes length:', graphData?.nodes?.length)
-      console.log('[Debug] first node keys:', graphData?.nodes?.[0] ? Object.keys(graphData.nodes[0]) : 'no nodes')
-      console.log('[Debug] window.__FG type:', typeof (window as any).__FG)
       
       // Position monitoring commented out due to runtime error at line 167
       // TODO: Access simulation data correctly through ForceGraph API

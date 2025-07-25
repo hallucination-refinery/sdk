@@ -1014,6 +1014,48 @@ The comprehensive investigation is complete with multiple phases of debugging an
 
 ## ULTRATHINK MODE Verification Results (2025-07-25)
 
+## New Investigation: Runtime Error at Line 167 (2025-07-25)
+
+### OODA Loop Analysis
+
+**Observe**:
+- Baseline test shows debugger pauses at line 167
+- Last log before pause: "[Window FG] window.__FG assigned successfully" 
+- Expected logs between line 151 and 167 don't appear:
+  - Red REHEAT log (line 154)
+  - TICKS logs (lines 159, 164)
+  - SIMULATION log (line 167)
+- Browser shows requestAnimationFrame violation (80ms)
+
+**Orient**:
+- Evidence gap is MUCH larger than expected
+- Code should execute many console.logs before reaching line 167
+- The pause happens immediately after window.__FG assignment
+- This suggests an exception or error occurs before line 154
+
+**Decide**:
+- The debugger pause is likely from "Pause on exceptions" being enabled
+- Need to find what causes the exception between lines 151-154
+- Focus on line 155: `fgRef.current.d3ReheatSimulation?.()`
+
+**Act**:
+1. Add try-catch around the reheat and tick execution
+2. Remove complex logging that might cause issues
+3. Ensure all operations are safe
+
+### Root Cause Hypothesis
+
+The most likely cause is that `fgRef.current` exists but `d3ReheatSimulation` throws an error when called. This could happen if:
+1. The method exists but expects parameters
+2. The simulation isn't ready yet
+3. The ForceGraph is in an invalid state
+
+### Implementation Plan
+
+1. Wrap all potentially failing operations in try-catch
+2. Add minimal, safe logging
+3. Ensure graceful degradation
+
 ### Critical Findings & Discrepancies
 
 After exhaustive cross-verification of all claims in this scratchpad:
