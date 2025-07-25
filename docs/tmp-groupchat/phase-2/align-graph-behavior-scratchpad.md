@@ -1,4 +1,4 @@
-Last Updated: 3:00 PM EST, 25/07/2025
+Last Updated: 4:10 PM EST, 25/07/2025
 
 # Force Graph Behavior Alignment - Phase 2 Sprint
 
@@ -46,16 +46,24 @@ Last Updated: 3:00 PM EST, 25/07/2025
 
 ### What's Broken
 
-| Issue                   | Evidence                                       | Impact                                |
-| ----------------------- | ---------------------------------------------- | ------------------------------------- |
-| **No physics movement** | Nodes static after 300+ ticks                  | Critical - core feature broken        |
-| **No alpha access**     | Only 7 methods exposed, no `__kapsuleInstance` | High - can't debug/control simulation |
-| **Interactions dead**   | No hover/click visual feedback                 | High - UX broken                      |
-| **No burst animation**  | Nodes pre-positioned in sphere                 | Medium - missing intended behavior    |
+| Issue                      | Evidence                                       | Impact                                |
+| -------------------------- | ---------------------------------------------- | ------------------------------------- |
+| **~~No physics movement~~** | **FALSE** - Nodes DO move (Test 1 observation) | ~~Critical - core feature broken~~     |
+| **Extremely low FPS**      | 1-2 FPS observed in Test 1                     | Critical - unusable performance       |
+| **Nodes don't settle**     | Continuous movement, no stabilization          | High - violates intended UX           |
+| **No data access**         | No `graphData()` method on window.__FG         | Critical - can't inspect simulation   |
+| **No alpha access**        | Only 7 methods exposed, no `__kapsuleInstance` | High - can't debug/control simulation |
+| **Interactions dead**      | No hover/click visual feedback                 | High - UX broken                      |
+| **No burst animation**     | Nodes pre-positioned in sphere                 | Medium - missing intended behavior    |
 
-### Key Discovery
+### Key Discoveries
 
-The `r3f-forcegraph` wrapper intentionally limits API to 7 methods. Direct simulation access via `__kapsuleInstance` is architecturally impossible. Claims in `working-document.md` about alpha access being "fixed" are false.
+1. **Physics IS Working**: Nodes move, contradicting our primary hypothesis
+2. **Performance Crisis**: 1-2 FPS makes the app unusable
+3. **No Data Access**: The `r3f-forcegraph` wrapper provides NO `graphData()` method
+4. **API Limitations**: Only 7 methods exposed: ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
+5. **Continuous Movement**: Nodes never settle, suggesting alpha decay issues
+6. **Instrumentation Approach Failed**: Cannot inspect simulation internals as assumed
 
 ---
 
@@ -74,32 +82,50 @@ Per `working-document.md`:
 - [ ] All Phase 2 checklist items complete
 - [ ] 60fps on M1 Chrome
 
-### Current Gap Analysis
+### Current Gap Analysis (REVISED)
 
-- ❌ Physics simulation doesn't move nodes
+- ✅ ~~Physics simulation doesn't move nodes~~ → **FALSE**: Nodes DO move
+- ❌ **NEW**: Extremely poor performance (1-2 FPS)
+- ❌ **NEW**: Nodes never settle/stabilize
+- ❌ **NEW**: Cannot inspect simulation state
 - ❌ Interactions non-functional
+- ❌ No burst animation (pre-positioned in sphere)
 - ❌ Webpack alias still present
 - ❌ Most checklist items incomplete
 - ✅ No freezes/crashes
-- ✅ No clumping (but only due to pre-positioning workaround)
+- ⚠️  No clumping (but only due to pre-positioning workaround)
 
 ---
 
-## 🔬 Root Cause Analysis
+## 🔬 Root Cause Analysis (REVISED)
 
-### Primary Hypothesis: Frozen Node Objects
+### ~~Primary Hypothesis: Frozen Node Objects~~ ❌ DISPROVEN
 
-- **Evidence Gap**: We've never logged `vx/vy/vz` properties
-- **Why Critical**: D3-force requires mutable velocity properties to calculate movement
-- **Status**: **UNTESTED – awaiting Phase 0 data**
-- **Test**: Log `nodes[0]` before/after ticks to check for velocity fields
+- **Evidence**: Nodes ARE moving (Test 1 observation)
+- **Status**: **FALSE** - Physics simulation is running
+- **New Problem**: Cannot access node data to verify velocity properties
 
-### Secondary Hypotheses
+### New Primary Hypothesis: Performance & Stabilization Issues
 
-1. **Fixed positions (`fx/fy/fz`)**: Nodes might be pinned
-2. **Render disconnect**: Positions update but THREE.js objects don't
-3. **Force strength zero**: Despite configuration logs
-4. **structuredClone damage**: Strips getters/setters needed by simulation
+1. **Extremely Low FPS (1-2 FPS)**
+   - Possible causes: Excessive tick execution, render bottleneck, Docker container overhead
+   - Impact: Makes movement appear broken when it's actually running
+
+2. **Nodes Don't Settle**
+   - Evidence: Continuous movement without stabilization
+   - Possible cause: Alpha never decays to stop threshold
+   - Missing: Cannot verify alpha value due to API limitations
+
+3. **No Data Access**
+   - `window.__FG` has no `graphData()` method
+   - Cannot inspect node positions, velocities, or frozen state
+   - Makes debugging nearly impossible
+
+### Secondary Hypotheses (Still Valid)
+
+1. **No burst animation**: Due to sphere pre-positioning
+2. **Interactions dead**: Separate issue from physics
+3. **Force configuration**: May need tuning for stabilization
 
 ---
 
@@ -232,14 +258,15 @@ setInterval(() => {
 
 ## 📊 Progress Tracking
 
-| Phase              | Status        | Owner     | Notes                                                    |
-| ------------------ | ------------- | --------- | -------------------------------------------------------- |
-| 0. Instrumentation | 🚀 In Progress | Assistant | Started 3:45 PM EST 25/07/2025 - Adding FREEZE-TEST logs |
-| 1. Unfreeze        | ⏸️ Blocked    | -         | Depends on Phase 0                                       |
-| 2. Energy          | ⏸️ Blocked    | -         | -                                                        |
-| 3. Burst           | ⏸️ Blocked    | -         | -                                                        |
-| 4. Interactions    | ⏸️ Blocked    | -         | -                                                        |
-| 5. Cleanup         | ⏸️ Blocked    | -         | -                                                        |
+| Phase              | Status       | Owner     | Notes                                                                              |
+| ------------------ | ------------ | --------- | ---------------------------------------------------------------------------------- |
+| 0. Instrumentation | ❌ Failed    | Assistant | Instrumentation failed - no graphData() method. Fundamental approach was flawed    |
+| 1. Performance     | 🔄 New       | -         | Address 1-2 FPS issue - critical blocker                                           |
+| 2. Stabilization   | 🔄 New       | -         | Fix nodes not settling - requires alpha control                                    |
+| 3. Data Access     | 🔄 New       | -         | Find alternative way to inspect simulation state                                   |
+| 4. Burst           | ⏸️ Blocked   | -         | Remove sphere positioning after fixing above                                       |
+| 5. Interactions    | ⏸️ Blocked   | -         | -                                                                                  |
+| 6. Cleanup         | ⏸️ Blocked   | -         | -                                                                                  |
 
 ### Phase 0 Execution Log
 
@@ -247,17 +274,20 @@ setInterval(() => {
 **Executor**: Assistant (ULTRATHINK MODE)
 
 #### OODA Loop - Step 1: Verify Placement Locations
+
 - **Observe**: Need to add instrumentation at lines ~190 and ~209
 - **Orient**: These lines are within the `setupWindowFG` function inside the useEffect
 - **Decide**: Must verify exact line numbers before editing
 - **Act**: Re-examining CrypticAnimusScene.tsx for precise placement
 
 **Result**: Verified exact placement locations:
+
 - Line 190: After `console.log('[Window FG] window.__FG assigned successfully')`
 - Line 209: After `console.log(\`[TICKS] Executed ${tickCount} ticks successfully (target: 300)\`)`
 
 #### OODA Loop - Step 2: Add FREEZE-TEST Before Instrumentation
-- **Observe**: Line 190 logs successful window.__FG assignment
+
+- **Observe**: Line 190 logs successful window.\_\_FG assignment
 - **Orient**: Need to capture node state immediately after FG is ready
 - **Decide**: Add instrumentation that safely checks for simData existence
 - **Act**: Adding FREEZE-TEST before code block
@@ -265,6 +295,7 @@ setInterval(() => {
 **Result**: Successfully added BEFORE instrumentation after line 190
 
 #### OODA Loop - Step 3: Add FREEZE-TEST After Instrumentation
+
 - **Observe**: Line 221 logs tick execution completion
 - **Orient**: Need to capture node state after 300 ticks have been executed
 - **Decide**: Add instrumentation that compares with before state
@@ -273,12 +304,113 @@ setInterval(() => {
 **Result**: Successfully added AFTER instrumentation after line 221
 
 #### OODA Loop - Step 4: Verify No Syntax Errors
+
 - **Observe**: Need to ensure TypeScript compilation succeeds
 - **Orient**: Run type-check to catch any syntax/type errors
 - **Decide**: Execute pnpm type-check
 - **Act**: Running type check
 
 **Result**: Type check reveals pre-existing errors in ForceGraphAdapter.tsx (unrelated to our changes). No errors in CrypticAnimusScene.tsx - instrumentation is syntactically correct
+
+#### OODA Loop - Step 5: Commit Changes
+
+- **Observe**: All instrumentation added successfully, no syntax errors
+- **Orient**: Need to commit changes with clear message
+- **Decide**: Create atomic commit with descriptive message
+- **Act**: Execute git commit
+
+**Result**: Successfully committed as c4a43682 with message "feat: add Phase 0 FREEZE-TEST instrumentation to diagnose node movement"
+
+### Phase 0 Completion Summary
+
+**End Time**: 3:52 PM EST, 25/07/2025  
+**Status**: ✅ COMPLETED  
+**Commit**: c4a43682
+
+**Changes Made**:
+
+1. Added BEFORE instrumentation after window.\_\_FG assignment (now line 194-205)
+2. Added AFTER instrumentation after tick execution (now line 223-234)
+
+**Next Steps**:
+
+- Run `pnpm dev --filter cryptic-vault-demo`
+- Open browser console
+- Look for `[FREEZE-TEST before]` and `[FREEZE-TEST after ]` logs
+- Based on results:
+  - If `hasVelocity: false` → Implement Phase 1A (unfreeze objects)
+  - If `positionChanged: false` despite velocity → Implement Phase 1B (fix render pipeline)
+  - If movement detected → Skip to Phase 3 (burst animation)
+
+### Phase 0 Test Results - CRITICAL FINDINGS
+
+**Test Time**: 3:50 PM EST, 25/07/2025  
+**Test Type**: Test 1 - Do Nothing  
+**Status**: ⚠️ INSTRUMENTATION FAILED
+
+#### OODA Loop - Analyze Test Results
+
+**Observe**:
+1. **NO FREEZE-TEST logs appeared** in console despite code being present
+2. Console shows: `[Debug] window.__FG has graphData method: false`
+3. ForceGraphAdapter exposes only 7 methods: ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
+4. **Nodes ARE visibly moving** (contradicts "no physics movement" hypothesis)
+5. Extremely low framerate (1-2 FPS)
+6. Nodes don't settle after movement
+
+**Orient**:
+- Our instrumentation failed because `window.__FG.graphData()` doesn't exist
+- The assumption that nodes don't move was **FALSE** - they DO move
+- The r3f-forcegraph wrapper provides NO access to node data
+- The physics simulation IS running but we can't inspect it
+
+**Decide**:
+- Phase 0 instrumentation approach was fundamentally flawed
+- Need alternative method to access node data
+- Must revise root cause analysis based on new evidence
+
+**Act**:
+- Document critical findings
+- Revise approach for accessing simulation data
+
+### Revised Next Steps
+
+**Immediate Actions Required**:
+
+1. **Find Alternative Data Access Method**
+   - Investigate memoizedNodes array in component
+   - Check if THREE.js objects store position data
+   - Look for other ways to access simulation state
+
+2. **Address Performance Issues**
+   - Remove periodic reheat/tick execution (line 596-673)
+   - Investigate why FPS is so low
+   - Consider cooldownTime setting impact
+
+3. **Fix Stabilization**
+   - Adjust force strengths for proper settling
+   - Investigate cooldownTime: Infinity setting
+   - May need to implement manual alpha decay
+
+**Evidence-Expectation Gap Analysis**:
+- Expected: Static nodes due to broken physics
+- Actual: Moving nodes with terrible performance
+- Gap Size: Fundamental misunderstanding of the issue
+- Action: Complete re-evaluation of approach needed
+
+### Critical Reflection (ULTRATHINK)
+
+**What Went Wrong**:
+1. Assumed nodes weren't moving based on previous observations
+2. Assumed `graphData()` method would exist on window.__FG
+3. Didn't verify API surface before designing instrumentation
+4. Focused on wrong problem (movement vs. performance/stabilization)
+
+**Lessons Learned**:
+1. Always verify API methods exist before using them
+2. Visual observations can be misleading with low FPS
+3. The gap between evidence and expectation was indeed larger than anticipated
+4. Need to challenge fundamental assumptions more rigorously
 
 ---
 
