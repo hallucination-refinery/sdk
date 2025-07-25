@@ -157,8 +157,8 @@ export default function CrypticAnimusScene({
 
       fgRef.current
         .d3Force('charge')
-        ?.strength(-200) // Increase repulsion to push nodes far apart
-        ?.distanceMax(600)
+        ?.strength(-500) // Much stronger repulsion to ensure node separation
+        ?.distanceMax(800) // Increase max distance for charge effect
 
       fgRef.current.d3Force('center')?.strength(0.1)
     }
@@ -191,16 +191,16 @@ export default function CrypticAnimusScene({
           fgRef.current.d3ReheatSimulation()
         }
         
-        // Force multiple ticks to overcome cooldownTicks=0 with counting
+        // Force many ticks to ensure initial separation
         let tickCount = 0
         console.log('[TICKS] Starting forced tick execution...')
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 300; i++) {
           if (fgRef.current.tickFrame) {
             const result = fgRef.current.tickFrame()
             if (result !== undefined) tickCount++
           }
         }
-        console.log(`[TICKS] Executed ${tickCount} ticks successfully`)
+        console.log(`[TICKS] Executed ${tickCount} ticks successfully (target: 300)`)
         
         // Verify simulation is active
         console.log('[SIMULATION] Testing if forces are applied...')
@@ -517,11 +517,11 @@ export default function CrypticAnimusScene({
           const hasCollide = (window as any).__FG.d3Force?.('collide')
           console.log('  Current collide force:', !!hasCollide)
           
-          // Strengthen charge force
+          // Strengthen charge force even more
           const chargeForce = (window as any).__FG.d3Force?.('charge')
           if (chargeForce && chargeForce.strength) {
-            chargeForce.strength(-300) // Increase repulsion
-            console.log('  Increased charge force strength to -300')
+            chargeForce.strength(-800) // Very strong repulsion
+            console.log('  Increased charge force strength to -800')
           }
           
           // Reheat after force changes
@@ -601,13 +601,13 @@ export default function CrypticAnimusScene({
         console.log('%c[REHEAT] Periodic d3ReheatSimulation', 'color: orange; font-weight: bold')
         fgRef.current.d3ReheatSimulation?.()
         
-        // Force multiple ticks to overcome cooldownTicks=0
+        // Force multiple ticks to keep simulation active
         let periodicTickCount = 0
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 100; i++) {
           const result = fgRef.current.tickFrame?.()
           if (result !== undefined) periodicTickCount++
         }
-        console.log(`[TICKS] Periodic: ${periodicTickCount} ticks`)
+        console.log(`[TICKS] Periodic: ${periodicTickCount} ticks (target: 100)`)
         
         // Alpha access removed - r3f-forcegraph doesn't expose internal simulation
         // Instead, we'll monitor positions to verify simulation activity
