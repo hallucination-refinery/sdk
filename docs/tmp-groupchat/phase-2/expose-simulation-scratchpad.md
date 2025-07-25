@@ -325,7 +325,59 @@ The component only renders when:
 
 ### Next Investigation Steps
 
-1. Check initial timeIndex value
+1. Check initial timeIndex value (DONE: it's 0 from app-slice.ts)
 2. Verify if any nodes pass the initial time filter
 3. Consider if hover interaction changes timeIndex or reloads data
 4. May need to fix the time filtering logic or initial state
+
+## Summary of Investigation (2025-07-25)
+
+### What We've Accomplished:
+1. ✅ Fixed alpha diagnostic path to use `__kapsuleInstance.d3ForceLayout.alpha()`
+2. ✅ Fixed useEffect dependencies from `[fgRef.current]` to `[]`
+3. ✅ Added retry logic for when ForceGraph ref isn't ready
+4. ✅ Discovered the root cause: conditional rendering based on time filter
+
+### The Real Problem Chain:
+1. **Initial state**: timeIndex=0 filters out all nodes
+2. **No nodes visible**: transformedData.nodes.length === 0
+3. **Component not rendered**: CrypticAnimusScene doesn't mount
+4. **No ForceGraph**: window.__FG remains undefined
+5. **No simulation**: Alpha diagnostics can't run
+
+### Why Nodes Remain Clumped:
+Even when the component eventually mounts (after hover changes data visibility):
+1. The simulation might not be running (alpha could be 0)
+2. The cooldown overrides might prevent natural spreading
+3. Initial node positions might all be at origin (0,0,0)
+4. Forces might not be strong enough to overcome clumping
+
+### Recommended Fix Strategy:
+
+#### Option 1: Fix Time Filter (Recommended)
+- Ensure initial timeIndex shows some nodes
+- Or remove the conditional rendering check
+- This ensures ForceGraph always mounts
+
+#### Option 2: Force Component Mount
+- Change condition to: `viewMode === 'nodes' && (transformedData.nodes.length > 0 || true)`
+- This bypasses the data check but might cause other issues
+
+#### Option 3: Debug After Mount
+Once we ensure the component mounts:
+1. Verify alpha values are > 0
+2. Check node initial positions
+3. Test stronger force values
+4. Remove cooldown overrides temporarily
+
+### Testing the Fixes:
+1. Run dev server with clean build
+2. Check console for:
+   - Build marker
+   - Data debug logs showing node/link counts
+   - Window FG assignment logs
+   - Alpha diagnostic values
+3. Manually test in browser console:
+   - `window.__FG` should exist
+   - `window.__FG.__kapsuleInstance.d3ForceLayout.alpha()` should return number
+   - `window.__FG.__kapsuleInstance.d3ForceLayout.nodes()` should show node positions
