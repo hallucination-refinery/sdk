@@ -136,6 +136,19 @@ export default function CrypticAnimusScene({
   // Debug data availability
   console.log('[Data debug] nodes:', memoizedGraphData.nodes.length, 'links:', memoizedGraphData.links.length)
   console.log('[Data debug] ForceGraph3D component loaded:', !!ForceGraph3D)
+  
+  // Debug filter states that control node visibility
+  console.log('[FILTERS] visibleIds:', visibleIds ? `Set(${visibleIds.size})` : 'undefined')
+  console.log('[FILTERS] activeCategories:', activeCategories ? `Set(${activeCategories.size})` : 'undefined')
+  console.log('[FILTERS] showSecrets:', showSecrets)
+  console.log('[FILTERS] activeTags:', activeTags ? `Set(${activeTags.size})` : 'undefined')
+  
+  // Sample check: are any nodes passing filters?
+  const passingNodes = memoizedNodes.filter(nodePassesFilters)
+  console.log('[FILTERS] Nodes passing filters:', passingNodes.length, '/', memoizedNodes.length)
+  if (passingNodes.length === 0) {
+    console.error('[FILTERS] WARNING: No nodes pass visibility filters!')
+  }
 
   // Configure physics forces
   useEffect(() => {
