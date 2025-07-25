@@ -926,8 +926,13 @@ export default function CrypticAnimusScene({
         cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
         nodeVisibility={(node) => {
           const passes = nodePassesFilters(node)
-          if (!passes) {
+          // Log only first few blocked nodes to avoid console spam
+          if (!passes && (window as any).__blockedCount === undefined) {
+            (window as any).__blockedCount = 0
+          }
+          if (!passes && (window as any).__blockedCount < 5) {
             console.log('[VISIBILITY] Node blocked by filters:', node.id, 'type:', node.type)
+            ;(window as any).__blockedCount++
           }
           // TEMPORARY: Force all nodes visible to test if filters are the issue
           return true // Override filters for testing

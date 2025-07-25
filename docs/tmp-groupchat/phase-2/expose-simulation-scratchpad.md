@@ -1383,3 +1383,99 @@ Key findings:
 - Identified visibility as likely root cause
 - Added bypass to confirm hypothesis
 - Multiple safety checks in place
+
+## Critical Data Flow Verification (2025-07-25)
+
+### Date Filter Analysis
+
+I traced the actual data and found:
+1. Timeline starts at `"6/18/2025, 11:41:56 PM"`
+2. Only 4 nodes have `firstDate` matching this exact timestamp
+3. Most nodes have later dates (e.g., `"6/21/2025, 1:07:52 PM"`)
+4. At `timeIndex=0`, `visibleIdSet` will contain only 4 node IDs
+
+### This means:
+- The console should show `[FILTERS] visibleIds: Set(4)` not `Set(0)`
+- 4 nodes should pass filters, not 0
+- 209 nodes will be blocked by the date filter
+- The visibility bypass will show all 213 nodes
+
+### Verification of My Claims:
+
+1. **Runtime error fix**: ✅ Confirmed - removed undefined `graphData` reference
+2. **ForceGraphAdapter usage**: ✅ Confirmed - imported from `@refinery/canvas-r3f`
+3. **Initial positions**: ✅ Code adds positions if `x/y/z` undefined
+4. **Filter logic**: ⚠️ Partially wrong - 4 nodes visible, not 0
+5. **cooldownTime**: ✅ Correctly reverted - keeps simulation active
+
+### Remaining Uncertainties:
+
+1. Are those 4 nodes enough to see something render?
+2. Do the initial positions actually get applied?
+3. Are the console.log statements in the right order?
+4. Does the visibility bypass actually work?
+
+## Exhaustive Verification of All Changes (2025-07-25)
+
+### 1. Runtime Error Fix (Line 213)
+**Before**: `console.log('[Debug] graphData type:', typeof graphData)`
+**After**: `console.log('[Debug] window.__FG type:', typeof (window as any).__FG)`
+**Verification**: ✅ `graphData` was not in scope, would cause ReferenceError
+**Confidence**: 100%
+
+### 2. ForceGraphAdapter Import
+**Code**: `import('@refinery/canvas-r3f').then((mod) => mod.ForceGraphAdapter)`
+**Verification**: ✅ Using ForceGraphAdapter which has freeze guards commented out
+**Note**: But CrypticAnimusScene passes `cooldownTime={Infinity}` directly, overriding adapter
+**Confidence**: 100%
+
+### 3. Initial Positions Logic
+**Code**: Adds x,y,z positions using golden ratio sphere distribution
+**Test**: Verified algorithm produces valid spread positions
+**Issue**: Only applies if nodes don't already have x,y,z
+**Confidence**: 95% - works but need to verify nodes don't already have positions
+
+### 4. Filter Logging
+**Added**: Logs for visibleIds, activeCategories, showSecrets, activeTags
+**Also**: Counts nodes passing filters
+**Confidence**: 100% - will show filter states
+
+### 5. Visibility Bypass
+**Code**: `return true // Override filters for testing`
+**Issue**: Fixed to limit console spam (only log first 5 blocked)
+**Confidence**: 95% - should force all nodes visible
+
+### 6. Data Flow Verification
+- `data` prop → structuredClone → add positions → memoizedGraphData
+- `visibleIds` from parent filters by date (timeIndex=0 → 4 nodes visible)
+- `nodePassesFilters` checks multiple conditions
+- Bypass returns true regardless of filters
+
+### Console Output Predictions:
+```
+[INIT POSITIONS] Added initial positions to 213/213 nodes...
+[Animus] render ForceGraph3D
+[Build marker] CrypticAnimusScene v3...
+[Data debug] nodes: 213 links: 276
+[FILTERS] visibleIds: Set(4)
+[FILTERS] Nodes passing filters: 4 / 213
+[VISIBILITY] Node blocked by filters: [5 entries max]
+[Physics config] Ref not ready, will retry...
+[Window FG] window.__FG assigned successfully
+[TICKS] Executed 300 ticks successfully
+[INITIAL POS] Checking initial node positions...
+[POS CHECK] Sample positions: [should show values]
+```
+
+### Critical Issues Found:
+
+1. **Only 4 nodes normally visible** - date filter is very restrictive
+2. **cooldownTime={Infinity} is correct** - keeps simulation running
+3. **Position monitoring might run before ForceGraph loads** - 500ms delay
+4. **Debug phases add noise** - should be cleaned up
+
+### Final Confidence: 75%
+- Fixed definite error (graphData reference)
+- Visibility bypass should show all nodes
+- Some timing/ordering concerns remain
+- Need to verify nodes actually render visually
