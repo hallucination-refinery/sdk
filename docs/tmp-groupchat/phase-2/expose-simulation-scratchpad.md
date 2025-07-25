@@ -1011,3 +1011,77 @@ The comprehensive investigation is complete with multiple phases of debugging an
 - Console shows position values
 - Positions change over time
 - Nodes visually separate (not clumped)
+
+## ULTRATHINK MODE Verification Results (2025-07-25)
+
+### Critical Findings & Discrepancies
+
+After exhaustive cross-verification of all claims in this scratchpad:
+
+1. **window.__FG Assignment Discrepancy**
+   - **Claim**: Missing assignment discovered by window-fg-scratchpad.md investigation
+   - **Reality**: Assignment was ALREADY present (added in commit 692b3c7f on 2025-07-24)
+   - **Evidence Gap**: window-fg-scratchpad.md was outdated or incorrect
+   - **Verification**: git show 692b3c7f confirms the assignment at line ~110 (now line 150)
+
+2. **Fatal Flaw in Alpha Access Approach**
+   - **Claim**: Access alpha via `window.__FG.__kapsuleInstance.d3ForceLayout.alpha()`
+   - **Reality**: r3f-forcegraph DOES NOT expose __kapsuleInstance
+   - **Evidence**: r3f-forcegraph source (line 191) only exposes 7 methods via forwardRef
+   - **Current Code**: Still trying to access undefined __kapsuleInstance (line ~555)
+   - **Result**: Alpha diagnostic always returns 'n/a' with 'kapsule: false'
+
+3. **Freeze Guards Correctly Removed**
+   - **Claim**: ForceGraphAdapter had freeze guards preventing simulation
+   - **Reality**: VERIFIED - freeze guards are commented out (lines 162-165)
+   - **Evidence**: cooldownTime, cooldownTicks, d3AlphaDecay props removed
+
+4. **Conditional Rendering Hypothesis Debunked**
+   - **Claim**: CrypticAnimusScene doesn't render due to empty transformedData
+   - **Reality**: Component DOES render with 213 nodes and 276 links
+   - **Evidence**: Baseline test shows successful mount and data loading
+
+5. **Runtime Error Fix Verified**
+   - **Claim**: Position monitoring caused debugger pause at line 167
+   - **Reality**: Position monitoring code commented out (lines 181-183)
+   - **Root Cause**: Accessing graphData.nodes (input) instead of simulation data
+
+### Fundamental Architecture Misunderstanding
+
+The entire investigation was based on the false premise that we could access ThreeForceGraph's internal kapsule instance through r3f-forcegraph. In reality:
+
+1. r3f-forcegraph uses `fromThree` wrapper that creates a React component
+2. Only exposes: ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
+3. No access to internal state, __kapsuleInstance, or d3ForceLayout
+4. The alpha diagnostic "fix" (commit ce3e5c8e) will NEVER work
+
+### Why Nodes Remain Clumped
+
+Given that we cannot access alpha directly, the likely causes are:
+
+1. **Simulation Not Running**: Without alpha visibility, we can't confirm if simulation is active
+2. **Initial Positions**: All nodes may start at origin (0,0,0)
+3. **Force Configuration**: Despite freeze guard removal, forces may be insufficient
+4. **Data Issues**: structuredClone or other transformations may affect node properties
+
+### Recommended Next Steps
+
+1. **Abandon __kapsuleInstance Approach**: It's architecturally impossible
+2. **Use Available Methods**: Focus on d3Force(), d3ReheatSimulation(), tickFrame()
+3. **Alternative Verification**: 
+   - Use graphData() to check node positions over time
+   - Monitor visual movement rather than alpha values
+   - Test force strength adjustments
+4. **Consider Different Libraries**: r3f-forcegraph's limitations may require replacement
+
+### Verification Methodology
+
+- Cross-referenced git commits: 692b3c7f, ce3e5c8e, 9cadf57d
+- Read source files: CrypticAnimusScene.tsx, ForceGraphAdapter.tsx
+- Analyzed r3f-forcegraph source at line 191
+- Compared baseline test results with claims
+- Verified all code changes mentioned in scratchpad
+
+### Confidence Level
+
+**95%** - The evidence is overwhelming that the __kapsuleInstance approach is fundamentally flawed and the investigation was based on incorrect assumptions about r3f-forcegraph's architecture.
