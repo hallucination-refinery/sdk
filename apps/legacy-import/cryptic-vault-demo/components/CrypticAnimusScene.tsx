@@ -150,12 +150,25 @@ export default function CrypticAnimusScene({
       ;(window as any).__FG = fgRef.current
       console.log('[Window FG] window.__FG assigned successfully')
       
-      // Initial reheat and force multiple ticks
+      // Initial reheat and force multiple ticks with counting
+      console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
       fgRef.current.d3ReheatSimulation?.()
-      // Force multiple ticks to overcome cooldownTicks=0
+      
+      // Force multiple ticks to overcome cooldownTicks=0 with counting
+      let tickCount = 0
+      console.log('[TICKS] Starting forced tick execution...')
       for (let i = 0; i < 100; i++) {
-        fgRef.current.tickFrame?.()
+        const result = fgRef.current.tickFrame?.()
+        if (result !== undefined) tickCount++
       }
+      console.log(`[TICKS] Executed ${tickCount} ticks successfully`)
+      
+      // Verify simulation is active
+      console.log('[SIMULATION] Testing if forces are applied...')
+      const linkForce = fgRef.current.d3Force?.('link')
+      const chargeForce = fgRef.current.d3Force?.('charge')
+      const centerForce = fgRef.current.d3Force?.('center')
+      console.log('[FORCES] link:', !!linkForce, 'charge:', !!chargeForce, 'center:', !!centerForce)
       
       // Safe debugging to understand data structure
       console.log('[Debug] graphData type:', typeof graphData)
@@ -414,15 +427,32 @@ export default function CrypticAnimusScene({
           return
         }
         
+        console.log('%c[REHEAT] Periodic d3ReheatSimulation', 'color: orange; font-weight: bold')
         fgRef.current.d3ReheatSimulation?.()
+        
         // Force multiple ticks to overcome cooldownTicks=0
+        let periodicTickCount = 0
         for (let i = 0; i < 50; i++) {
-          fgRef.current.tickFrame?.()
+          const result = fgRef.current.tickFrame?.()
+          if (result !== undefined) periodicTickCount++
         }
+        console.log(`[TICKS] Periodic: ${periodicTickCount} ticks`)
+        
         // Access alpha through the kapsule instance's d3ForceLayout
         const kapsuleInstance = (fgRef.current as any)?.__kapsuleInstance
         const alpha = kapsuleInstance?.d3ForceLayout?.alpha?.()
         console.log('[Diag alpha]', alpha ?? 'n/a', 'kapsule:', !!kapsuleInstance)
+        
+        // Check if positions are changing
+        try {
+          const simData = (window as any).__FG?.graphData?.()
+          if (simData?.nodes?.length > 0) {
+            const node0 = simData.nodes[0]
+            console.log(`[POS CHECK] Node ${node0.id}: x=${node0.x?.toFixed(2)}, y=${node0.y?.toFixed(2)}, z=${node0.z?.toFixed(2)}`)
+          }
+        } catch (e) {
+          console.log('[POS CHECK] Error:', e)
+        }
       }, 1000)
     }
     
