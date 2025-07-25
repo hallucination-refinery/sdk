@@ -897,3 +897,26 @@ Remember: The goal is to find where alpha is stored so we can:
 1. Read current alpha value
 2. Set alpha and restart simulation
 3. Understand why nodes remain clumped
+
+## Critical Baseline Test Analysis (2025-07-25 12:30 AM)
+
+### Runtime Error Discovery
+**Evidence**: Browser debugger paused at line 167 of CrypticAnimusScene.tsx
+**Root Cause**: Position monitoring code was accessing `graphData.nodes` from React props, not simulation data
+**Key Insight**: The gap was MUCH larger - we had a runtime error preventing all investigation
+
+### OODA Analysis - Phase 1 Execution
+- **Observe**: Debugger pause prevented position logs from appearing
+- **Orient**: We were accessing input data, not simulation output  
+- **Decide**: Remove error-prone code, add safe debugging
+- **Act**: Replaced position monitoring with safe data structure logging
+
+**Fix Applied**:
+- Commented out lines 156-195 (position monitoring)
+- Added safe debugging to understand data structure
+- No more runtime errors expected
+
+### Key Learning
+**Assumption**: graphData contains node positions (x,y,z)
+**Reality**: graphData is INPUT data; positions are added by simulation
+**Gap**: Fundamental misunderstanding of data flow in ForceGraph
