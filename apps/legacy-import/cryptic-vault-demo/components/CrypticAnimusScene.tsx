@@ -150,8 +150,12 @@ export default function CrypticAnimusScene({
       ;(window as any).__FG = fgRef.current
       console.log('[Window FG] window.__FG assigned successfully')
       
-      // Initial reheat
+      // Initial reheat and force multiple ticks
       fgRef.current.d3ReheatSimulation?.()
+      // Force multiple ticks to overcome cooldownTicks=0
+      for (let i = 0; i < 100; i++) {
+        fgRef.current.tickFrame?.()
+      }
       
       // Add position monitoring to verify simulation activity
       let positionCheckCount = 0
@@ -360,6 +364,10 @@ export default function CrypticAnimusScene({
         }
         
         fgRef.current.d3ReheatSimulation?.()
+        // Force multiple ticks to overcome cooldownTicks=0
+        for (let i = 0; i < 50; i++) {
+          fgRef.current.tickFrame?.()
+        }
         // Access alpha through the kapsule instance's d3ForceLayout
         const kapsuleInstance = (fgRef.current as any)?.__kapsuleInstance
         const alpha = kapsuleInstance?.d3ForceLayout?.alpha?.()

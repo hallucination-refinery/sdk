@@ -760,6 +760,34 @@ The nodes remain clumped not because we can't access alpha, but because:
 2. Initial positions may all be at origin
 3. Forces may not be strong enough to overcome the freeze
 
+## Simulation Behavior Analysis (2025-07-25)
+
+### tickFrame Logic Discovery:
+From r3f-forcegraph source analysis:
+```javascript
+if (++state.cntTicks > state.cooldownTicks || ...) {
+    state.engineRunning = false; // Stop ticking graph
+}
+```
+
+With `cooldownTicks={0}`, the simulation stops after ONE tick because:
+- `++state.cntTicks` (1) > `state.cooldownTicks` (0) is true immediately
+
+### Attempted Solution:
+1. **Manual tickFrame calls**: Force multiple ticks after d3ReheatSimulation
+   ```typescript
+   fgRef.current.d3ReheatSimulation?.()
+   for (let i = 0; i < 100; i++) {
+     fgRef.current.tickFrame?.()
+   }
+   ```
+   This should force the simulation to run 100 ticks despite cooldown settings.
+
+2. **Position Monitoring**: Added checks to verify if nodes move from origin
+
+### Next Test:
+Run with position monitoring to see if forced ticks cause node movement
+
 ### Next Steps for Execution:
 
 1. **Run the investigation**:
