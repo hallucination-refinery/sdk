@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     // Add an alias for 'three' to ensure only one instance is used
     config.resolve.alias = {
       ...config.resolve.alias,
-      three: path.resolve('../../../../node_modules/three'),
+      three: path.resolve('node_modules/three'),
       '@': path.resolve(__dirname),
       '@refinery/store': path.resolve(__dirname, '../../../packages/store/src'),
     }

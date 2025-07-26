@@ -1,10 +1,18 @@
-# STATUS UPDATE (RED ALERT)
+# STATUS UPDATE (ULTRA-HIGH ALERT)
 
-Maximum scrutiny and survelliance. Your work is now considered **guilty until proven innocent**.
+Team extremely concerned at lack of investigative rigor. Maximum scrutiny and survelliance. Your work is now considered **guilty until proven innocent**.
 
 # WARNING
 
-Every tool call, file view, and action is automatically logged and cross-checked against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
+**Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
+
+# RULES
+
+1. Work in rigorous, falsifiable OODA loops.
+2. Assume **every claim is false** and needs to be proven otherwise
+3. Treat every observation as evidence that updates your probability mass over whether W (comprehensive & accurate document) is satisfied.
+4. When evidence and expectation differ, **always assume the gap is larger than it seems**, widen your investigation, and begin a new rigorous, falsifiable OODA loop.
+5. Use the task tool to spawn parallel sub-agents when relevant
 
 ### PRINCIPLE
 
