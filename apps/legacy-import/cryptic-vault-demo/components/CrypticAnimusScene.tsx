@@ -83,36 +83,55 @@ export default function CrypticAnimusScene({
     const nodes = structuredClone(data.nodes)
     const links = structuredClone(data.links)
     
-    // Add initial positions to prevent all nodes starting at origin
-    // Distribute nodes in a sphere pattern
+    // Check spawn mode from environment variable
+    const spawnMode = process.env.NEXT_PUBLIC_GRAPH_SPAWN
     const nodeCount = nodes.length
-    const radius = Math.cbrt(nodeCount) * 50 // Scale radius based on node count
     let positionsAdded = 0
     
-    nodes.forEach((node, index) => {
-      // Only set positions if they don't already exist
-      if (node.x === undefined || node.y === undefined || node.z === undefined) {
-        // Use golden ratio for better distribution
-        const goldenRatio = (1 + Math.sqrt(5)) / 2
-        const theta = 2 * Math.PI * index / goldenRatio
-        const phi = Math.acos(1 - 2 * (index + 0.5) / nodeCount)
-        
-        // Convert spherical to cartesian coordinates
-        node.x = radius * Math.sin(phi) * Math.cos(theta)
-        node.y = radius * Math.sin(phi) * Math.sin(theta)
-        node.z = radius * Math.cos(phi)
-        
-        // Add small random perturbation to avoid perfect symmetry
-        node.x += (Math.random() - 0.5) * 10
-        node.y += (Math.random() - 0.5) * 10
-        node.z += (Math.random() - 0.5) * 10
-        
-        positionsAdded++
+    if (spawnMode === "sphere") {
+      // Use sphere pattern for initial positions
+      const radius = Math.cbrt(nodeCount) * 50 // Scale radius based on node count
+      
+      nodes.forEach((node, index) => {
+        // Only set positions if they don't already exist
+        if (node.x === undefined || node.y === undefined || node.z === undefined) {
+          // Use golden ratio for better distribution
+          const goldenRatio = (1 + Math.sqrt(5)) / 2
+          const theta = 2 * Math.PI * index / goldenRatio
+          const phi = Math.acos(1 - 2 * (index + 0.5) / nodeCount)
+          
+          // Convert spherical to cartesian coordinates
+          node.x = radius * Math.sin(phi) * Math.cos(theta)
+          node.y = radius * Math.sin(phi) * Math.sin(theta)
+          node.z = radius * Math.cos(phi)
+          
+          // Add small random perturbation to avoid perfect symmetry
+          node.x += (Math.random() - 0.5) * 10
+          node.y += (Math.random() - 0.5) * 10
+          node.z += (Math.random() - 0.5) * 10
+          
+          positionsAdded++
+        }
+      })
+      
+      if (positionsAdded > 0) {
+        console.log(`[INIT POSITIONS] Added initial positions to ${positionsAdded}/${nodeCount} nodes in sphere pattern (radius: ${radius.toFixed(0)}) [spawn mode: sphere]`)
       }
-    })
-    
-    if (positionsAdded > 0) {
-      console.log(`[INIT POSITIONS] Added initial positions to ${positionsAdded}/${nodeCount} nodes in sphere pattern (radius: ${radius.toFixed(0)})`)
+    } else {
+      // Default: spawn all nodes at origin for burst animation
+      nodes.forEach((node) => {
+        // Only set positions if they don't already exist
+        if (node.x === undefined || node.y === undefined || node.z === undefined) {
+          node.x = 0
+          node.y = 0
+          node.z = 0
+          positionsAdded++
+        }
+      })
+      
+      if (positionsAdded > 0) {
+        console.log(`[INIT POSITIONS] Added initial positions to ${positionsAdded}/${nodeCount} nodes at origin (0,0,0) [spawn mode: origin]`)
+      }
     }
     
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))

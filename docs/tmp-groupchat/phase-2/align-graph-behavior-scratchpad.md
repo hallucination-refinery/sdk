@@ -17,53 +17,38 @@ Last Updated: 4:10 PM EST, 25/07/2025
 
 ---
 
-## 📍 Current State Summary
+## 📍 Current State Summary  (Commit `4dd3c2b` — 26 Jul 2025)
 
-### What Works
+### What Works ✅
 
-| Component                | Evidence                                        | Confidence |
-| ------------------------ | ----------------------------------------------- | ---------- |
-| App loads (no TDZ error) | Fixed in commit 8ae1cfb3                        | 100%       |
-| Nodes render visibly     | 213 nodes in sphere pattern                     | 100%       |
-| Timeline filtering       | Nodes hide/show on scrub                        | 100%       |
-| Forces configured        | Console: "link: true charge: true center: true" | 100%       |
-| Simulation ticks execute | "Executed 300 ticks successfully"               | 100%       |
+| Component                          | Evidence (console / visual)                          | Confidence |
+| ---------------------------------- | ---------------------------------------------------- | ---------- |
+| App boots w/out TDZ error          | fixed in `8ae1cfb3`; zero red‑box on load            | 100 %      |
+| Nodes render & **move**            | `[TICKS] Executed 20 …` + visible drift              | 100 %      |
+| No dense centre‑clump              | sphere init @ r 299; visual confirms dispersed start | 100 %      |
+| Timeline filter toggles visibility | `[VISIBILITY]` logs match node counts                | 100 %      |
+| Forced‑tick warm‑up (20) executes  | `[REHEAT]` + single 20‑tick batch                    | 100 %      |
+| Host FPS ≈ 40‑70 (stable)          | RAF ≤ 16 ms after warm‑up                            | 80 %       |
 
-#### Console Excerpt (baseline – first 10 lines)
+### What’s Broken ❌ / ⚠️
 
-```text
-[INIT POSITIONS] Added initial positions to 213/213 nodes ...
-[Animus] render ForceGraph3D
-[Build marker] CrypticAnimusScene v3 ...
-[Data debug] nodes: 213 links: 276
-[Physics config] Ref not ready, will retry...
-[Window FG] Ref not ready, will retry...
-[CrypticAnimusScene] Configuring physics forces!
-[Window FG] window.__FG assigned successfully
-[REHEAT] Initial d3ReheatSimulation called
-[TICKS] Executed 300 ticks successfully (target: 300)
-```
+| Issue                               | Evidence & notes                                         | Impact                      |
+| ----------------------------------- | -------------------------------------------------------- | --------------------------- |
+| **Sphere spawn, not origin burst**  | `[INIT POSITIONS] … sphere pattern (radius 299)`         | Medium                      |
+| **Periodic component remount loop** | repeated `[INIT POSITIONS]` with shrinking node counts   | High — causes GC & FPS hits |
+| **Low FPS in Docker (1‑2 FPS)**     | RAF ≫ 100 ms only inside container                       | High                        |
+| **Hover / click visuals dead**      | events logged? = false; no highlight                     | High                        |
+| **Nodes never fully settle**        | no further auto‑ticks, energy stays >0                   | Medium                      |
+| **No data / alpha access**          | `window.__FG` exposes only 7 methods                     | Medium                      |
+| **Retry‑spam in console**           | `Ref not ready, will retry…` repeats until ref available | Low                         |
 
-### What's Broken
+### Key Discoveries 🕵️
 
-| Issue                      | Evidence                                       | Impact                                |
-| -------------------------- | ---------------------------------------------- | ------------------------------------- |
-| **~~No physics movement~~** | **FALSE** - Nodes DO move (Test 1 observation) | ~~Critical - core feature broken~~     |
-| **Extremely low FPS**      | 1-2 FPS observed in Test 1                     | Critical - unusable performance       |
-| **Nodes don't settle**     | Continuous movement, no stabilization          | High - violates intended UX           |
-| **No data access**         | No `graphData()` method on window.__FG         | Critical - can't inspect simulation   |
-| **No alpha access**        | Only 7 methods exposed, no `__kapsuleInstance` | High - can't debug/control simulation |
-| **Interactions dead**      | No hover/click visual feedback                 | High - UX broken                      |
-| **No burst animation**     | Nodes pre-positioned in sphere                 | Medium - missing intended behavior    |
-
-### Key Discoveries
-
-1. **Physics IS Working**: Nodes move, contradicting our primary hypothesis
-2. **Performance Crisis**: 1-2 FPS makes the app unusable
-3. **No Data Access**: The `r3f-forcegraph` wrapper provides NO `graphData()` method
-4. **API Limitations**: Only 7 methods exposed: ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-5. **Continuous Movement**: Nodes never settle, suggesting alpha decay issues
-6. **Instrumentation Approach Failed**: Cannot inspect simulation internals as assumed
+1. Physics **is** active; freeze hypothesis disproven (again).
+2. Spawn still uses **sphere workaround** – violates burst‑from‑origin UX.
+3. **Remount loop** (likely prop‑equality issue) re‑adds sphere positions & hurts FPS.
+4. Wrapper API unchanged — no `graphData()` or `alpha()`, masking internal state.
+5. Hover logic not wired to material updates → interaction gap remains.
 
 ---
 
@@ -93,324 +78,66 @@ Per `working-document.md`:
 - ❌ Webpack alias still present
 - ❌ Most checklist items incomplete
 - ✅ No freezes/crashes
-- ⚠️  No clumping (but only due to pre-positioning workaround)
+- ⚠️ No clumping (but only due to pre-positioning workaround)
 
 ---
 
-## 🔬 Root Cause Analysis (REVISED)
+## 🔬 Root Cause Analysis (updated)
 
-### ~~Primary Hypothesis: Frozen Node Objects~~ ❌ DISPROVEN
+We map each open issue to its cluster code from _local‑taxonomy v0 .3_.
 
-- **Evidence**: Nodes ARE moving (Test 1 observation)
-- **Status**: **FALSE** - Physics simulation is running
-- **New Problem**: Cannot access node data to verify velocity properties
+| Cluster | Symptom                           | Immediate cause (evidence)                     | Underlying factor                     |
+| ------- | --------------------------------- | ---------------------------------------------- | ------------------------------------- |
+| **CFG** | Burst starts on 299‑radius sphere | legacy sphere‑init util                        | workaround never removed              |
+| **PHY** | Docker FPS ≈ 1‑2; host OK         | remount loop + console spam                    | repeated `<ForceGraphAdapter>` mounts |
+| **INT** | Hover / click show no highlight   | events not dispatched or material not reactive | interaction slice incomplete          |
+| **API** | No alpha / graphData access       | r3f wrapper hard‑caps to 7 public methods      | library limitation                    |
 
-### New Primary Hypothesis: Performance & Stabilization Issues
+### Causal chain
 
-1. **Extremely Low FPS (1-2 FPS)**
-   - Possible causes: Excessive tick execution, render bottleneck, Docker container overhead
-   - Impact: Makes movement appear broken when it's actually running
+`CFG (sphere init)` → still hides clumping bug but violates UX  
+`PHY (remount)` ↔ increases CPU → lowers FPS → can mask INT bugs  
+`API` limits introspection, slowing diagnosis of **PHY** & **INT**.
 
-2. **Nodes Don't Settle**
-   - Evidence: Continuous movement without stabilization
-   - Possible cause: Alpha never decays to stop threshold
-   - Missing: Cannot verify alpha value due to API limitations
+### falsifiable checkpoints
 
-3. **No Data Access**
-   - `window.__FG` has no `graphData()` method
-   - Cannot inspect node positions, velocities, or frozen state
-   - Makes debugging nearly impossible
-
-### Secondary Hypotheses (Still Valid)
-
-1. **No burst animation**: Due to sphere pre-positioning
-2. **Interactions dead**: Separate issue from physics
-3. **Force configuration**: May need tuning for stabilization
+- If we spawn at origin **and** remount loop persists, we should see clump or low‑FPS re‑appear – proving masking relation.
+- Guarding against remounts should lift host FPS > 60 and Docker > 20.
 
 ---
 
-## 🛠️ Recovery Plan
+## 🛠️ Recovery Plan (v2)
 
-### Phase 0: Instrumentation (30 min)
+| Step                     | Goal                               | Actions                                                                                                             | Owner   |
+| ------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------- |
+| **1 Stop Remount Loop**  | Remove duplicate mounts, raise FPS | ‑ Memoise `graphArrays` on `graphVersion` only<br>‑ Keep `visibleIds` filtering inside FG render layer, not as prop |  @dev‑A |
+| **2 Origin Burst**       | Meet UX spec & expose latent clump | ‑ Delete sphere randomiser<br>‑ Init `x=y=z=0` for all nodes<br>‑ `d3ReheatSimulation()` after first mount          |  @dev‑B |
+| **3 Silence Retry Spam** | Clean console, minor perf win      | ‑ Add early‑return if `fgRef.current` truthy before logging                                                         |  @dev‑A |
+| **4 Hover Visuals**      | Restore interaction UX             | ‑ `onNodeHover` dispatch selection → state<br>‑ Update material colour via react‑three‑fiber `useFrame`             |  @dev‑C |
+| **5 Energy Sampler**     | Alpha proxy for tuning             | ‑ Log Σ‖Δpos‖² every 1 s; expose `window.__ENERGY`                                                                  |  @dev‑D |
 
-**Goal**: Definitively answer why nodes don't move
-
-```javascript
-// === Phase 0 Instrumentation – paste below imports, above existing useEffect ===
-const beforePos = { x: nodes[0].x, y: nodes[0].y, z: nodes[0].z }
-console.log('[FREEZE-TEST before]', {
-  node0: nodes[0],
-  hasVelocity: 'vx' in nodes[0],
-  position: beforePos,
-  frozen: Object.isFrozen(nodes[0]),
-})
-
-// After tickFrame loop (line ~160)
-console.log('[FREEZE-TEST after ]', {
-  node0: nodes[0],
-  hasVelocity: 'vx' in nodes[0],
-  position: { x: nodes[0].x, y: nodes[0].y, z: nodes[0].z },
-  positionChanged:
-    nodes[0].x !== beforePos.x || nodes[0].y !== beforePos.y || nodes[0].z !== beforePos.z,
-})
-```
-
-**Success Criteria**:
-
-- If `hasVelocity: false` → Branch A (frozen objects)
-- If `positionChanged: false` despite velocity → Branch B (render issue)
-
-### Phase 1A: Unfreeze Objects (1 hr)
-
-**Trigger**: No velocity properties found
-
-1. Remove `structuredClone` from data pipeline
-2. Ensure nodes are plain mutable objects
-3. Pre-add velocity properties if needed:
-   ```javascript
-   nodes.forEach((n) => {
-     n.vx = n.vx || 0
-     n.vy = n.vy || 0
-     n.vz = n.vz || 0
-   })
-   ```
-
-### Phase 1B: Fix Render Pipeline (1 hr)
-
-**Trigger**: Positions change but nodes don't move visually
-
-1. Add `window.__FG.refresh()` after tick batches
-2. Verify THREE.js object positions update:
-   ```javascript
-   const meshes = window.__FG.children[0].children
-   console.log(
-     'Mesh positions:',
-     meshes.map((m) => m.position)
-   )
-   ```
-3. Check if camera follows nodes (causing illusion of no movement)
-
-### Phase 2: Energy Diagnostics (1 hr)
-
-**Goal**: Create alpha proxy without direct access
-
-```javascript
-let lastPositions = nodes.map((n) => ({ x: n.x, y: n.y, z: n.z }))
-
-setInterval(() => {
-  const kinetic = nodes.reduce((sum, n, i) => {
-    const dx = n.x - lastPositions[i].x
-    const dy = n.y - lastPositions[i].y
-    const dz = n.z - lastPositions[i].z
-    return sum + (dx * dx + dy * dy + dz * dz)
-  }, 0)
-
-  console.log('[ENERGY]', kinetic.toFixed(4))
-  lastPositions = nodes.map((n) => ({ x: n.x, y: n.y, z: n.z }))
-}, 1000)
-```
-
-### Phase 3: Burst Animation (1 hr)
-
-1. Remove sphere pre-positioning
-2. Initialize all nodes at origin
-3. Set charge strength to -800
-4. Call `d3ReheatSimulation()`
-
-### Phase 4: Restore Interactions (1.5 hr)
-
-1. Add logging to `onNodeHover` and `onNodeClick` props
-2. If events don't fire → raycaster/layer issue
-3. If events fire but no visual → check material uniforms
-
-### Phase 5: Cleanup & Migration (2 hr)
-
-1. Remove webpack alias from `next.config.ts`
-2. Complete migration checklist items
-3. Remove temporary workarounds
-4. Final smoke test
+_All steps independently testable in smoke screen._
 
 ---
 
-## 📋 Immediate Next Steps
+## 📋 Immediate Next Steps (24 h sprint)
 
-1. **For Contributors**:
-
-   ```bash
-   git checkout replace-interaction-with-store
-   git pull
-   # Apply Phase 0 instrumentation
-   pnpm dev --filter cryptic-vault-demo
-   # Post [FREEZE-TEST] results in #phase-2
-   ```
-
-2. **Decision Tree**:
-   - If `hasVelocity: false` → Implement Phase 1A
-   - If `hasVelocity: true` but no movement → Implement Phase 1B
-   - If movement detected → Skip to Phase 3
-
-3. **Communication**:
-   - Post findings with screenshots
-   - Tag @assistant with results
-   - Update this doc after each phase
+1. **Branch** `fix/remount-loop` – implement Step 1, push PR.
+2. **Smoke test** host & Docker – expect: no `[INIT POSITIONS]` repeats, FPS host ≥ 60.
+3. **If green**, checkout `fix/origin-burst` – implement Step 2, smoke: nodes explode then settle; watch for re‑emergent clump.
+4. Post results (console + gif) in #phase‑2; update progress table below.
 
 ---
 
 ## 📊 Progress Tracking
 
-| Phase              | Status       | Owner     | Notes                                                                              |
-| ------------------ | ------------ | --------- | ---------------------------------------------------------------------------------- |
-| 0. Instrumentation | ❌ Failed    | Assistant | Instrumentation failed - no graphData() method. Fundamental approach was flawed    |
-| 1. Performance     | 🔄 New       | -         | Address 1-2 FPS issue - critical blocker                                           |
-| 2. Stabilization   | 🔄 New       | -         | Fix nodes not settling - requires alpha control                                    |
-| 3. Data Access     | 🔄 New       | -         | Find alternative way to inspect simulation state                                   |
-| 4. Burst           | ⏸️ Blocked   | -         | Remove sphere positioning after fixing above                                       |
-| 5. Interactions    | ⏸️ Blocked   | -         | -                                                                                  |
-| 6. Cleanup         | ⏸️ Blocked   | -         | -                                                                                  |
-
-### Phase 0 Execution Log
-
-**Start Time**: 3:45 PM EST, 25/07/2025  
-**Executor**: Assistant (ULTRATHINK MODE)
-
-#### OODA Loop - Step 1: Verify Placement Locations
-
-- **Observe**: Need to add instrumentation at lines ~190 and ~209
-- **Orient**: These lines are within the `setupWindowFG` function inside the useEffect
-- **Decide**: Must verify exact line numbers before editing
-- **Act**: Re-examining CrypticAnimusScene.tsx for precise placement
-
-**Result**: Verified exact placement locations:
-
-- Line 190: After `console.log('[Window FG] window.__FG assigned successfully')`
-- Line 209: After `console.log(\`[TICKS] Executed ${tickCount} ticks successfully (target: 300)\`)`
-
-#### OODA Loop - Step 2: Add FREEZE-TEST Before Instrumentation
-
-- **Observe**: Line 190 logs successful window.\_\_FG assignment
-- **Orient**: Need to capture node state immediately after FG is ready
-- **Decide**: Add instrumentation that safely checks for simData existence
-- **Act**: Adding FREEZE-TEST before code block
-
-**Result**: Successfully added BEFORE instrumentation after line 190
-
-#### OODA Loop - Step 3: Add FREEZE-TEST After Instrumentation
-
-- **Observe**: Line 221 logs tick execution completion
-- **Orient**: Need to capture node state after 300 ticks have been executed
-- **Decide**: Add instrumentation that compares with before state
-- **Act**: Adding FREEZE-TEST after code block
-
-**Result**: Successfully added AFTER instrumentation after line 221
-
-#### OODA Loop - Step 4: Verify No Syntax Errors
-
-- **Observe**: Need to ensure TypeScript compilation succeeds
-- **Orient**: Run type-check to catch any syntax/type errors
-- **Decide**: Execute pnpm type-check
-- **Act**: Running type check
-
-**Result**: Type check reveals pre-existing errors in ForceGraphAdapter.tsx (unrelated to our changes). No errors in CrypticAnimusScene.tsx - instrumentation is syntactically correct
-
-#### OODA Loop - Step 5: Commit Changes
-
-- **Observe**: All instrumentation added successfully, no syntax errors
-- **Orient**: Need to commit changes with clear message
-- **Decide**: Create atomic commit with descriptive message
-- **Act**: Execute git commit
-
-**Result**: Successfully committed as c4a43682 with message "feat: add Phase 0 FREEZE-TEST instrumentation to diagnose node movement"
-
-### Phase 0 Completion Summary
-
-**End Time**: 3:52 PM EST, 25/07/2025  
-**Status**: ✅ COMPLETED  
-**Commit**: c4a43682
-
-**Changes Made**:
-
-1. Added BEFORE instrumentation after window.\_\_FG assignment (now line 194-205)
-2. Added AFTER instrumentation after tick execution (now line 223-234)
-
-**Next Steps**:
-
-- Run `pnpm dev --filter cryptic-vault-demo`
-- Open browser console
-- Look for `[FREEZE-TEST before]` and `[FREEZE-TEST after ]` logs
-- Based on results:
-  - If `hasVelocity: false` → Implement Phase 1A (unfreeze objects)
-  - If `positionChanged: false` despite velocity → Implement Phase 1B (fix render pipeline)
-  - If movement detected → Skip to Phase 3 (burst animation)
-
-### Phase 0 Test Results - CRITICAL FINDINGS
-
-**Test Time**: 3:50 PM EST, 25/07/2025  
-**Test Type**: Test 1 - Do Nothing  
-**Status**: ⚠️ INSTRUMENTATION FAILED
-
-#### OODA Loop - Analyze Test Results
-
-**Observe**:
-1. **NO FREEZE-TEST logs appeared** in console despite code being present
-2. Console shows: `[Debug] window.__FG has graphData method: false`
-3. ForceGraphAdapter exposes only 7 methods: ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-4. **Nodes ARE visibly moving** (contradicts "no physics movement" hypothesis)
-5. Extremely low framerate (1-2 FPS)
-6. Nodes don't settle after movement
-
-**Orient**:
-- Our instrumentation failed because `window.__FG.graphData()` doesn't exist
-- The assumption that nodes don't move was **FALSE** - they DO move
-- The r3f-forcegraph wrapper provides NO access to node data
-- The physics simulation IS running but we can't inspect it
-
-**Decide**:
-- Phase 0 instrumentation approach was fundamentally flawed
-- Need alternative method to access node data
-- Must revise root cause analysis based on new evidence
-
-**Act**:
-- Document critical findings
-- Revise approach for accessing simulation data
-
-### Revised Next Steps
-
-**Immediate Actions Required**:
-
-1. **Find Alternative Data Access Method**
-   - Investigate memoizedNodes array in component
-   - Check if THREE.js objects store position data
-   - Look for other ways to access simulation state
-
-2. **Address Performance Issues**
-   - Remove periodic reheat/tick execution (line 596-673)
-   - Investigate why FPS is so low
-   - Consider cooldownTime setting impact
-
-3. **Fix Stabilization**
-   - Adjust force strengths for proper settling
-   - Investigate cooldownTime: Infinity setting
-   - May need to implement manual alpha decay
-
-**Evidence-Expectation Gap Analysis**:
-- Expected: Static nodes due to broken physics
-- Actual: Moving nodes with terrible performance
-- Gap Size: Fundamental misunderstanding of the issue
-- Action: Complete re-evaluation of approach needed
-
-### Critical Reflection (ULTRATHINK)
-
-**What Went Wrong**:
-1. Assumed nodes weren't moving based on previous observations
-2. Assumed `graphData()` method would exist on window.__FG
-3. Didn't verify API surface before designing instrumentation
-4. Focused on wrong problem (movement vs. performance/stabilization)
-
-**Lessons Learned**:
-1. Always verify API methods exist before using them
-2. Visual observations can be misleading with low FPS
-3. The gap between evidence and expectation was indeed larger than anticipated
-4. Need to challenge fundamental assumptions more rigorously
+| Phase / Step        | Status         | Owner | Notes           |
+| ------------------- | -------------- | ----- | --------------- |
+| 1. Remount loop fix | 🔄 In progress | dev‑A | PR open         |
+| 2. Origin burst     | ⏸️ Blocked     | dev‑B | wait for step 1 |
+| 3. Retry‑spam clean | ⏸️ Blocked     | dev‑A | after step 1    |
+| 4. Hover visuals    | ⏸️ Blocked     | dev‑C | after step 2    |
+| 5. Energy sampler   | ⏸️ Blocked     | dev‑D | parallel OK     |
 
 ---
 
@@ -438,3 +165,90 @@ setInterval(() => {
 ---
 
 _Maintainer note: Keep this doc updated after each finding. When in doubt, add more instrumentation rather than guessing._
+
+---
+
+## 🔵 Sphere-Gate Patch Plan (v1)
+
+### Context & Rationale
+
+Currently, CrypticAnimusScene.tsx pre-positions nodes in a sphere pattern (radius ~299) to avoid the clumping issue. This is a workaround that violates the UX requirement for nodes to burst from origin. We need to gate this behavior behind an environment flag to allow testing both approaches without breaking existing functionality.
+
+### Implementation Analysis
+
+**Current State (lines 86-116):**
+- Nodes are distributed in a sphere using golden ratio for even distribution
+- Radius calculated as `Math.cbrt(nodeCount) * 50`
+- Small random perturbation added to avoid perfect symmetry
+- Console log: `[INIT POSITIONS] Added initial positions to ${positionsAdded}/${nodeCount} nodes in sphere pattern (radius: ${radius.toFixed(0)})`
+
+**Environment Variable Design:**
+- Name: `NEXT_PUBLIC_GRAPH_SPAWN`
+- Values:
+  - `"sphere"` - Use current sphere pre-positioning logic
+  - `undefined` or any other value - Default to origin spawn (0,0,0)
+- Must use `NEXT_PUBLIC_` prefix for Next.js client-side access
+
+### Technical Considerations
+
+1. **TypeScript:** File already has `// @ts-nocheck` so no type errors expected
+2. **Linting:** Code follows existing patterns, no new linting issues anticipated
+3. **Runtime:** Environment check is a simple string comparison, negligible performance impact
+4. **Backwards Compatibility:** Default behavior changes to origin spawn (as per UX spec)
+
+### Step-by-Step Implementation Plan
+
+1. **Update .env.example (lines to add after line 13):**
+   ```
+   # Graph Visualization Configuration
+   NEXT_PUBLIC_GRAPH_SPAWN="origin"                      # Optional: "sphere" for pre-positioned nodes, "origin" (default) for burst animation
+   ```
+
+2. **Modify CrypticAnimusScene.tsx (replace lines 86-116):**
+   - Add environment check at start of node positioning block
+   - If `process.env.NEXT_PUBLIC_GRAPH_SPAWN === "sphere"`, use existing logic
+   - Otherwise, set all nodes to `x: 0, y: 0, z: 0`
+   - Update console log to indicate which spawn mode is active
+
+3. **Specific code changes:**
+   - Line 88: Add `const spawnMode = process.env.NEXT_PUBLIC_GRAPH_SPAWN`
+   - Line 89: Add conditional `if (spawnMode === "sphere") { /* existing logic */ } else { /* origin logic */ }`
+   - Ensure console log reflects the spawn mode used
+
+### Verification Steps
+
+1. Run `npm run typecheck` - should pass (file has @ts-nocheck)
+2. Run `npm run lint` - should have no new errors
+3. Test with no env var set - nodes should spawn at origin
+4. Test with `NEXT_PUBLIC_GRAPH_SPAWN=sphere` - nodes should use sphere pattern
+5. Check console for appropriate `[INIT POSITIONS]` log message
+
+### Risk Assessment
+
+- **Low Risk:** Simple conditional logic with clear fallback
+- **No Breaking Changes:** Existing deployments without the env var will get new default behavior
+- **Reversible:** Can easily switch back to sphere mode via env var
+
+### Final Implementation Checklist
+
+- [x] Update .env.example with new NEXT_PUBLIC_GRAPH_SPAWN variable
+- [x] Modify CrypticAnimusScene.tsx node positioning logic
+- [x] Ensure console logs reflect spawn mode
+- [x] Verify no TypeScript errors
+- [x] Verify no new linting errors
+- [ ] Test both spawn modes work correctly
+- [ ] Commit with descriptive message mentioning env flag
+
+### Implementation Progress
+
+**Completed Steps:**
+1. ✅ Added `NEXT_PUBLIC_GRAPH_SPAWN` to .env.example (line 16)
+2. ✅ Modified CrypticAnimusScene.tsx (lines 86-135) with conditional spawn logic
+3. ✅ Console logs now indicate spawn mode: `[spawn mode: sphere]` or `[spawn mode: origin]`
+4. ✅ No new TypeScript errors (existing errors in ForceGraphAdapter are unrelated)
+5. ✅ No new linting errors in cryptic-vault-demo
+
+**Changes Made:**
+- Environment variable defaults to origin spawn when undefined
+- Sphere mode explicitly requires `NEXT_PUBLIC_GRAPH_SPAWN="sphere"`
+- All position initialization logic preserved, just wrapped in conditional
