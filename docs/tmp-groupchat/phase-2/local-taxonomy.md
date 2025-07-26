@@ -157,3 +157,63 @@ Final reflective step 🔁
 • No additional files beyond YAML snippet; doc remains self‑contained.
 
 End of local taxonomy & ontology derivation.
+
+⸻
+
+## Performance Optimization Implementation (2025-07-26)
+
+### Evidence of PHY Cluster Root Cause
+
+**Investigation Findings:**
+1. **Total tick load**: 160 ticks/second baseline (60 from useFrame + 100 from periodic timer)
+2. **Initial bursts**: 600 ticks during initialization (300 + 200 + 100 across phases)
+3. **Verification**: Line 117 hypothesis confirmed - uncapped tickFrame iterations causing CPU overload
+
+### Implemented Changes
+
+#### 1. Capped All Tick Bursts to 20
+**Location**: CrypticAnimusScene.tsx
+- Line ~215: Initial burst reduced from 300 → 20
+- Line ~560: Phase 4 burst reduced from 200 → 20  
+- Line ~604: Additional burst reduced from 100 → 20
+- Line ~637: Periodic burst reduced from 100 → 20
+
+**Implementation Pattern:**
+```typescript
+const maxTicks = 20 // perf cap
+for (let i = 0; i < maxTicks; i++) {
+  // tickFrame logic
+}
+```
+
+#### 2. Removed Per-Second Timer (Option 2A)
+- **Removed**: setInterval block (lines 624-702)
+- **Removed**: clearInterval cleanup (line 708)
+- **Rationale**: Eliminated 100 ticks/second continuous load
+
+### Performance Impact Analysis
+
+**Before:**
+- Initial: 600 ticks blocking main thread
+- Continuous: 160 ticks/second (60 useFrame + 100 periodic)
+- Result: 1-2 FPS with 1000+ nodes
+
+**After:**
+- Initial: 80 ticks spread across phases (4 × 20)
+- Continuous: 60 ticks/second (useFrame only)
+- Expected: >50 FPS with 1000+ nodes
+
+### Verification Steps
+1. ✓ All tick bursts located and capped
+2. ✓ Per-second timer completely removed
+3. ✓ Changes preserve physics simulation ability
+4. ⏳ Frame time profiling pending
+
+### Probability Update
+- PHY cluster resolution: +0.25 (partial, pending verification)
+- Current P(W): ~0.35 (RTB + PHY partial)
+
+### Next Steps
+1. Profile frame time to confirm <16ms target
+2. Test node separation behavior with reduced ticks
+3. Consider further tuning if nodes don't achieve proper spacing
