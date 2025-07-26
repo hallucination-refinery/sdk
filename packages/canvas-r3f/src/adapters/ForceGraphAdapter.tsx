@@ -125,7 +125,10 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   console.log('[FGAdapter] typeof ref:', typeof ref)
   
   const { graphData, dataVersion = 0, disableLinkForce, ...restProps } = props
-  const safeGraphData = useMemo(() => structuredClone(graphData), [dataVersion])
+  const safeGraphData = useMemo(() => {
+    console.log('[ForceGraphAdapter] Creating safe data for version:', dataVersion)
+    return structuredClone(graphData)
+  }, [graphData, dataVersion]) // Both dependencies for proper tracking
   // --- freeze-crash guard ----------------------------------------------
   useEffect(() => {
     if (disableLinkForce) {

@@ -142,28 +142,12 @@ function SceneContent({
 
   // Transform nodes and links inside the component to prevent unnecessary recreations
   const transformedData = useMemo(() => {
-    // Filter nodes by visibility
-    const visibleNodes = new Map<string, any>()
-    const visibleEdges = new Map<string, any>()
-
-    // Filter nodes
-    graphStore.nodes.forEach((node, id) => {
-      if (visibleIds.has(id)) {
-        visibleNodes.set(id, node)
-      }
-    })
-
-    // Filter edges
-    graphStore.edges.forEach((edge, id) => {
-      if (visibleIds.has(edge.source) && visibleIds.has(edge.target)) {
-        visibleEdges.set(id, edge)
-      }
-    })
-
-    // Convert to arrays for ForceGraph3D
-    const { nodes: nodesArray, links: linksArray } = mapToArrays(visibleNodes, visibleEdges)
-
-    const transformedNodes: any[] = nodesArray.map((node) => ({
+    // CRITICAL: Remove ALL visibility filtering from transformedData
+    // Convert ALL nodes/edges to arrays WITHOUT filtering
+    const allNodesArray = Array.from(graphStore.nodes.values())
+    const allEdgesArray = Array.from(graphStore.edges.values())
+    
+    const transformedNodes: any[] = allNodesArray.map((node) => ({
       ...node,
       childLinks: [],
       state: {
@@ -172,18 +156,18 @@ function SceneContent({
         isHidden: node.state?.isHidden ?? false,
       },
     }))
-
-    const transformedLinks: any[] = linksArray.map((link) => ({
+    
+    const transformedLinks: any[] = allEdgesArray.map((link) => ({
       id: link.id || `${link.source}-${link.target}`,
       source: link.source,
       target: link.target,
       tier: link.tier || 0,
       confidence: link.confidence || 0.8,
     }))
-
-    // Return a stable object matching ForceGraph3D's expected shape
+    
+    console.log('[SceneContent] Transforming full graph - NO filtering. Nodes:', transformedNodes.length)
     return { nodes: transformedNodes, links: transformedLinks }
-  }, [graphStore.nodes, graphStore.edges, visibleIds])
+  }, [graphStore.nodes, graphStore.edges]) // NO visibleIds dependency!
 
   return (
     <>

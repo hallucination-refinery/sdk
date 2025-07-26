@@ -55,6 +55,7 @@ interface CrypticAnimusSceneProps {
   visibleIds?: Set<string>
   showSecrets?: boolean
   activeTags?: Set<string>
+  graphVersion?: number
 }
 
 export default function CrypticAnimusScene({
@@ -73,12 +74,36 @@ export default function CrypticAnimusScene({
   activeTags,
 }: CrypticAnimusSceneProps) {
   const fgRef = useRef<any>(null)
+  
+  // Add state-based graphVersion tracking with clean separation
+  const [graphVersion, setGraphVersion] = useState(0)
+  const prevDataStatsRef = useRef<{ nodeCount: number; linkCount: number }>({ nodeCount: 0, linkCount: 0 })
+  
+  // Track RAW structure changes only
+  useEffect(() => {
+    const nodeCount = data.nodes.length
+    const linkCount = data.links.length
+    
+    if (prevDataStatsRef.current.nodeCount !== nodeCount || 
+        prevDataStatsRef.current.linkCount !== linkCount) {
+      console.log('[GRAPH VERSION] Raw structure changed - incrementing version. Nodes:', nodeCount, 'Links:', linkCount)
+      setGraphVersion(v => v + 1)
+      prevDataStatsRef.current = { nodeCount, linkCount }
+    }
+  }, [data.nodes.length, data.links.length]) // Track ONLY structural changes
+  
+  // Validation logging (separate useEffect)
+  useEffect(() => {
+    console.log('[REMOUNT CHECK] graphVersion:', graphVersion, 'visibleIds:', visibleIds?.size)
+  }, [graphVersion, visibleIds?.size])
 
   const {
     nodes: memoizedNodes,
     links: memoizedLinks,
     nodeMap,
   } = useMemo(() => {
+    console.log('[CrypticAnimusScene] Memoizing graph data for version:', graphVersion)
+    
     // Use structuredClone to ensure fresh objects, replacing shallow spreads
     const nodes = structuredClone(data.nodes)
     const links = structuredClone(data.links)
@@ -136,7 +161,7 @@ export default function CrypticAnimusScene({
     
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     return { nodes, links, nodeMap }
-  }, [data])
+  }, [data, graphVersion]) // Clean dependencies - data for content, graphVersion for tracking
 
   const memoizedGraphData = useMemo(
     () => ({
@@ -885,6 +910,7 @@ export default function CrypticAnimusScene({
       <ForceGraph3D
         ref={fgRef}
         graphData={memoizedGraphData}
+        dataVersion={graphVersion}  // Pass version state
         nodeId="id"
         linkSource="source"
         linkTarget="target"
@@ -906,8 +932,8 @@ export default function CrypticAnimusScene({
             console.log('[VISIBILITY] Node blocked by filters:', node.id, 'type:', node.type)
             ;(window as any).__blockedCount++
           }
-          // TEMPORARY: Force all nodes visible to test if filters are the issue
-          return true // Override filters for testing
+          // NO override - this does the visibility filtering!
+          return passes
         }}
         linkVisibility={(link: any) => {
           const sId = typeof link.source === 'object' ? link.source.id : link.source
