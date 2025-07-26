@@ -211,14 +211,15 @@ export default function CrypticAnimusScene({
         
         // Force many ticks to ensure initial separation
         let tickCount = 0
+        const maxTicks = 20 // perf cap
         console.log('[TICKS] Starting forced tick execution...')
-        for (let i = 0; i < 300; i++) {
+        for (let i = 0; i < maxTicks; i++) {
           if (fgRef.current.tickFrame) {
             const result = fgRef.current.tickFrame()
             if (result !== undefined) tickCount++
           }
         }
-        console.log(`[TICKS] Executed ${tickCount} ticks successfully (target: 300)`)
+        console.log(`[TICKS] Executed ${tickCount} ticks successfully (target: ${maxTicks})`)
         
         // === Phase 0 Instrumentation - AFTER ===
         if (simData?.nodes?.length > 0 && (window as any).__beforePos) {
@@ -556,10 +557,11 @@ export default function CrypticAnimusScene({
           ;(window as any).__FG.d3ReheatSimulation?.()
           
           // Force many ticks
-          for (let i = 0; i < 200; i++) {
+          const maxTicks = 20 // perf cap
+          for (let i = 0; i < maxTicks; i++) {
             (window as any).__FG.tickFrame?.()
           }
-          console.log('  Forced 200 additional ticks')
+          console.log(`  Forced ${maxTicks} additional ticks`)
         } catch (e) {
           console.log('  Force modification ERROR:', e)
         }
@@ -598,7 +600,8 @@ export default function CrypticAnimusScene({
               
               // Reheat and tick
               ;(window as any).__FG.d3ReheatSimulation?.()
-              for (let i = 0; i < 100; i++) {
+              const maxTicks = 20 // perf cap
+              for (let i = 0; i < maxTicks; i++) {
                 (window as any).__FG.tickFrame?.()
               }
             }
@@ -618,90 +621,15 @@ export default function CrypticAnimusScene({
       }, 4500) // Run after other phases complete
 
       // TEMP diagnostics: kick simulation each second and log alpha
-      intervalId = setInterval(() => {
-        if (!fgRef.current) {
-          console.log('[Diag alpha] Lost ref, stopping interval')
-          if (intervalId) clearInterval(intervalId)
-          return
-        }
-        
-        console.log('%c[REHEAT] Periodic d3ReheatSimulation', 'color: orange; font-weight: bold')
-        fgRef.current.d3ReheatSimulation?.()
-        
-        // Force multiple ticks to keep simulation active
-        let periodicTickCount = 0
-        for (let i = 0; i < 100; i++) {
-          const result = fgRef.current.tickFrame?.()
-          if (result !== undefined) periodicTickCount++
-        }
-        console.log(`[TICKS] Periodic: ${periodicTickCount} ticks (target: 100)`)
-        
-        // Alpha access removed - r3f-forcegraph doesn't expose internal simulation
-        // Instead, we'll monitor positions to verify simulation activity
-        console.log('[Diag] Periodic reheat completed')
-        
-        // Enhanced position monitoring to verify simulation activity
-        try {
-          const simData = (window as any).__FG?.graphData?.()
-          if (simData?.nodes?.length > 0) {
-            // Check first 5 nodes for better sampling
-            const sampleSize = Math.min(5, simData.nodes.length)
-            const positions: string[] = []
-            let allAtOrigin = true
-            
-            for (let i = 0; i < sampleSize; i++) {
-              const node = simData.nodes[i]
-              const x = node.x ?? 0
-              const y = node.y ?? 0
-              const z = node.z ?? 0
-              
-              // Check if any node is not at origin
-              if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01 || Math.abs(z) > 0.01) {
-                allAtOrigin = false
-              }
-              
-              positions.push(`${node.id}:(${x.toFixed(1)},${y.toFixed(1)},${z.toFixed(1)})`)
-            }
-            
-            console.log(`[POS CHECK] Sample positions: ${positions.join(' | ')}`)
-            if (allAtOrigin) {
-              console.warn('[POS CHECK] WARNING: All sampled nodes still at origin!')
-            }
-            
-            // Store positions for movement detection
-            if (!(window as any).__lastPositions) {
-              (window as any).__lastPositions = {}
-            }
-            
-            let movement = 0
-            for (let i = 0; i < sampleSize; i++) {
-              const node = simData.nodes[i]
-              const lastPos = (window as any).__lastPositions[node.id]
-              if (lastPos) {
-                const dx = (node.x ?? 0) - lastPos.x
-                const dy = (node.y ?? 0) - lastPos.y
-                const dz = (node.z ?? 0) - lastPos.z
-                movement += Math.sqrt(dx*dx + dy*dy + dz*dz)
-              }
-              (window as any).__lastPositions[node.id] = { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 }
-            }
-            
-            if (movement > 0.01) {
-              console.log(`[POS CHECK] Movement detected: ${movement.toFixed(3)} units`)
-            } else {
-              console.warn('[POS CHECK] No significant movement detected')
-            }
-          }
-        } catch (e) {
-          console.log('[POS CHECK] Error:', e)
-        }
-      }, 1000)
+      // REMOVED: Per-second timer to improve performance
+      // intervalId = setInterval(() => { ... }, 1000)
     }
     
     setupWindowFG()
     
     return () => {
-      if (intervalId) clearInterval(intervalId)
+      // Cleanup removed since intervalId timer was disabled
+      // if (intervalId) clearInterval(intervalId)
     }
   }, []) // Run once on mount, retry internally if ref not ready
 
