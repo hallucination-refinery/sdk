@@ -1,23 +1,14 @@
 # Baseline Smoke Screen Tests
 
-Last Updated: 6:30 PM EST, 26/07/2025
+Last Updated: 6:30 PM EST, 27/07/2025
 
 ## Context
 
 - Branch: `replace-interaction-with-store`
-- Commit: 1e56e5db
+- Commit: afc96f74
 - Browser: Chrome Incognito 138.0.7204.169 (arm64)
-- Key Changes: commit message -
-  "feat: implement v5 plan to prevent ForceGraph3D remounts during timeline scrub
-
-- Remove ALL visibility filtering from transformedData in CrypticVaultScene
-- Add graphVersion state tracking in CrypticAnimusScene (useState, not useRef)
-- Update ForceGraphAdapter dependencies to include both graphData and dataVersion
-- Maintain correct visibility filtering through nodeVisibility prop
-- Prevent unnecessary component remounts while preserving UX functionality
-
-This addresses the core issue where timeline scrubbing caused ForceGraph3D to remount
-due to dependency changes, while ensuring proper data version tracking for updates."
+- Key Changes: v6 "ForceGraph3D Remount Fix" implemented
+- commit message - "fix: prevent ForceGraph3D remounts during visibility-only updates"
 
 ## Clarification on Intended Behavior (User Experience Perspective)
 
@@ -53,256 +44,110 @@ I have decided to clearly and concisely describe the intended behavior **from a 
 
 ### Test 1: Chronological Account
 
-1. On initial load: the HUD is visible and the empty scene is visible. **Frame rate is around 60-80 FPS throughout the whole test**
-2. Less than 1-2 secs later I see a small blue cube appear and disappear. The blue cube appears slightly off-center, a little down and to the left of viewport center. I experienced this as a brief flash.
-3. Immidietely after, I see thin black lines (links) springing into the viewport. While it is hard to tell, I suspect they were emmenating outward from where the blue cube was (i.e the origin point)
-4. A yellow node (with visible links) labeled "conflicts" hovers/slides gently into the viewport from the top-left.
-5. As the yellow node settles/slows down, a green node (with visible links) labelled "reassurance" hovers/slides gently from the top-left. This green node is smaller than the yellow node, it appears to be in the distance to the top left of the yellow node.
-6. Both the yellow "conflicts" node and the green "reassurance" node seem to settle in the top-left of the viewport for 1-2 secs.
-7. Then, the physics seems to kick again as the yellow "conflicts" node and the green "reassurance" node are abruptly jolted downwards. Concurrently, a number of colored nodes (primarily purple and green) and links jolt/burst down from the top left into the viewport.
-8. These nodes seem to slightly jiggle/jolt a few more times before finally settling down. They primarily occupy the left half of the viewport.
-9. While it doesn't seem to impact what I see in the viewport. Next.js has thrown the following runtime error: `TypeError: Right-hand side of 'instanceof' is not an object
-at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:475:74)`
-10. I also notice that the Next.js webpack is stale, unsure if this is particularly relevent though.
+1. On initial load: the HUD is visible, then, maybe 0.05 secs later (it's hard to say precisely), I see a cluster of colorful nodes and links **seeming** to explode out from an origin point.
+2. Immidietely after, the viewport is **Paused in debugger**:
+   2.1 Viewport is crammed with a cluster of oversized, colorful nodes and links.
+   2.2 The DevTools window points to **line 295 of @CrypticAnimusScene.tsx**:
+   ` if (simData?.nodes?.length > 0 && (window as any).__beforePos) {`
+3. I click the blue "fast forward" button in the "Paused in debugger" tooltip. The crammed with a cluster of oversized, colorful nodes and links in the scene **immidietely** jolt out and settle down.
+4. The scene shows sparsely spaced colored nodes thin grey edges, a **77 FPS** counter top-left, and the HUD.
+5. There is a red next.js tooltip in the lower left corner flagging 2 console errors:
+   5.1
+   `ReferenceError: simData is not defined
+at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:274:25)`
+   5.2
+   `Error: [Window FG] Stack trace: "ReferenceError: simData is not defined\n    at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:274:25)"
+at createConsoleError (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/errors/console-error.js:27:71)
+at handleConsoleError (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/errors/use-error-handler.js:47:54)
+at console.error (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/globals/intercept-console-error.js:47:57)
+at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:297:33)   `
 
 ### Test 1: Full Console Log
 
 ```
 Navigated to http://localhost:3000/
-main-app.js?v=1753569700885:2314 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+main-app.js?v=1753657102986:2314 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
 CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
 CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 0
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 0
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:41:42.303Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:41:42.305Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:89 [GRAPH VERSION] Raw structure changed - incrementing version. Nodes: 213 Links: 276
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 0 visibleIds: 213
-CrypticAnimusScene.tsx:194 [Physics config] Ref not ready, will retry...
-CrypticAnimusScene.tsx:226 [Window FG] Ref not ready, will retry...
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 1
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 1
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:41:42.320Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:41:42.321Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 213
-CrypticAnimusScene.tsx:194 [Physics config] Ref not ready, will retry...
-CrypticAnimusScene.tsx:226 [Window FG] Ref not ready, will retry...
+CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data for version: 0
+CrypticAnimusScene.tsx:159 [INIT POSITIONS] Spawned 213 nodes - mode: origin
+CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data for version: 0
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T22:58:24.369Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T22:58:24.369Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:98 [GRAPH VERSION] Raw structure changed - incrementing version. Nodes: 213 Links: 276
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphVersion: 0 visibleIds: 213
+CrypticAnimusScene.tsx:204 [Physics config] Retry 1...
+CrypticAnimusScene.tsx:245 [Window FG] Retry 1...
+CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data for version: 1
+CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data for version: 1
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T22:58:24.384Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T22:58:24.385Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphVersion: 1 visibleIds: 213
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: null}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: null}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:194 [Physics config] Ref not ready, will retry...
-CrypticAnimusScene.tsx:226 [Window FG] Ref not ready, will retry...
 ForceGraphAdapter.tsx:139 [FGAdapter] ref after mount: {current: {…}}
 ForceGraphAdapter.tsx:141 [FGAdapter] ref.current: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
 ForceGraphAdapter.tsx:142 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
 ForceGraphAdapter.tsx:139 [FGAdapter] ref after mount: {current: {…}}
 ForceGraphAdapter.tsx:141 [FGAdapter] ref.current: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
 ForceGraphAdapter.tsx:142 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:200 [CrypticAnimusScene] Configuring physics forces!
-CrypticAnimusScene.tsx:232 FG ref {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-CrypticAnimusScene.tsx:234 [Window FG] window.__FG assigned successfully
-CrypticAnimusScene.tsx:251 [REHEAT] Initial d3ReheatSimulation called
-CrypticAnimusScene.tsx:259 [TICKS] Starting forced tick execution...
-CrypticAnimusScene.tsx:266 [TICKS] Executed 20 ticks successfully (target: 20)
-CrypticAnimusScene.tsx:282 [SIMULATION] Testing if forces are applied...
-CrypticAnimusScene.tsx:286 [FORCES] link: true charge: true center: true
-CrypticAnimusScene.tsx:289 [Debug] window.__FG type: object
-CrypticAnimusScene.tsx:290 [Debug] window.__FG has graphData method: false
-CrypticAnimusScene.tsx:224 [Violation] 'setTimeout' handler took 241ms
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 100ms ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-    for (var k = 0, n = links.length; k < iterations; ++k) {
-      for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-        link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 500ms ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-    for (var k = 0, n = links.length; k < iterations; ++k) {
-      for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-        link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-ForceGraphAdapter.tsx:146 [FGAdapter] ref.current after 1s: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:148 [FGAdapter] Has __kapsuleInstance? false
-ForceGraphAdapter.tsx:149 [FGAdapter] Constructor: Object
-ForceGraphAdapter.tsx:150 [FGAdapter] All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-ForceGraphAdapter.tsx:146 [FGAdapter] ref.current after 1s: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:148 [FGAdapter] Has __kapsuleInstance? false
-ForceGraphAdapter.tsx:149 [FGAdapter] Constructor: Object
-ForceGraphAdapter.tsx:150 [FGAdapter] All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:336 === PHASE 1: window.__FG Deep Inspection ===
-CrypticAnimusScene.tsx:337 1. Basic info:
-CrypticAnimusScene.tsx:338   Type: object
-CrypticAnimusScene.tsx:339   Constructor: Object
-CrypticAnimusScene.tsx:341 2. Direct properties:
-CrypticAnimusScene.tsx:342   Object.keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:343   Object.getOwnPropertyNames: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:345 3. Prototype chain:
-CrypticAnimusScene.tsx:349   Level 0: (12) ['constructor', '__defineGetter__', '__defineSetter__', 'hasOwnProperty', '__lookupGetter__', '__lookupSetter__', 'isPrototypeOf', 'propertyIsEnumerable', 'toString', 'valueOf', '__proto__', 'toLocaleString']
-CrypticAnimusScene.tsx:354 4. All enumerable properties:
-CrypticAnimusScene.tsx:363 (index)keytypevalue(index)keytypevalue0'emitParticle''function''[Function]'1'getGraphBbox''function''[Function]'2'd3ReheatSimulation''function''[Function]'3'd3Force''function''[Function]'4'resetCountdown''function''[Function]'5'tickFrame''function''[Function]'6'refresh''function''[Function]'Array(7)
-CrypticAnimusScene.tsx:365 5. Method availability:
-CrypticAnimusScene.tsx:368   d3Force: function
-CrypticAnimusScene.tsx:368   d3ReheatSimulation: function
-CrypticAnimusScene.tsx:368   tickFrame: function
-CrypticAnimusScene.tsx:368   emitParticle: function
-CrypticAnimusScene.tsx:368   getGraphBbox: function
-CrypticAnimusScene.tsx:368   resetCountdown: function
-CrypticAnimusScene.tsx:368   refresh: function
-CrypticAnimusScene.tsx:371 6. Hidden/private properties:
-CrypticAnimusScene.tsx:375   _engine: undefined
-CrypticAnimusScene.tsx:375   _state: undefined
-CrypticAnimusScene.tsx:375   _simulation: undefined
-CrypticAnimusScene.tsx:375   _graphForce: undefined
-CrypticAnimusScene.tsx:375   __graphSimulation: undefined
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 1s ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-    for (var k = 0, n = links.length; k < iterations; ++k) {
-      for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-        link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 2s ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-    for (var k = 0, n = links.length; k < iterations; ++k) {
-      for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-        link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-CrypticAnimusScene.tsx:492 === PHASE 2B: Accessing Simulation Data ===
-CrypticAnimusScene.tsx:500 1. Testing graphData() method:
-CrypticAnimusScene.tsx:503   graphData() returned: undefined
-CrypticAnimusScene.tsx:504   Has nodes? false
-CrypticAnimusScene.tsx:505   Node count: undefined
-CrypticAnimusScene.tsx:521 2. Exploring THREE.js scene:
-CrypticAnimusScene.tsx:524   FG is THREE.Object3D? undefined
-CrypticAnimusScene.tsx:525   FG type: undefined
-CrypticAnimusScene.tsx:526   Children count: undefined
-CrypticAnimusScene.tsx:536 3. Testing getGraphBbox:
-CrypticAnimusScene.tsx:539   Bounding box: {x: Array(2), y: Array(2), z: Array(2)}
-CrypticAnimusScene.tsx:416 === PHASE 3: Force & Simulation Testing ===
-CrypticAnimusScene.tsx:423 1. Testing d3Force method:
-CrypticAnimusScene.tsx:425   d3Force type: function
-CrypticAnimusScene.tsx:426   d3Force toString: function () {
-          for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-            args[_key2] = arguments[_key2];
-          }
-          return _call.apply(void 0, [method].concat(args));
-        }
-CrypticAnimusScene.tsx:428 2. Testing force retrieval:
-CrypticAnimusScene.tsx:433   Force "link": ƒ force(alpha) {
-    for (var k = 0, n = links.length; k < iterations; ++k) {
-      for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-        link = links[i], source = link…
-CrypticAnimusScene.tsx:434     Type: function
-CrypticAnimusScene.tsx:435     Has strength?: true
-CrypticAnimusScene.tsx:436     Has alpha?: false
-CrypticAnimusScene.tsx:433   Force "charge": ƒ force(_) {
-    var i,
-        n = nodes.length,
-        tree =
-            (nDim === 1 ? (0,d3_binarytree__WEBPACK_IMPORTED_MODULE_1__["default"])(nodes, _simulation_js__WEBPACK_IMPORTED_MODULE_2__.x…
-CrypticAnimusScene.tsx:434     Type: function
-CrypticAnimusScene.tsx:435     Has strength?: true
-CrypticAnimusScene.tsx:436     Has alpha?: false
-CrypticAnimusScene.tsx:433   Force "center": ƒ force() {
-    var i,
-        n = nodes.length,
-        node,
-        sx = 0,
-        sy = 0,
-        sz = 0;
-
-    for (i = 0; i < n; ++i) {
-      node = nodes[i], sx += node.x || 0, sy += node.y || 0…
-CrypticAnimusScene.tsx:434     Type: function
-CrypticAnimusScene.tsx:435     Has strength?: true
-CrypticAnimusScene.tsx:436     Has alpha?: false
-CrypticAnimusScene.tsx:433   Force "x": undefined
-CrypticAnimusScene.tsx:434     Type: undefined
-CrypticAnimusScene.tsx:435     Has strength?: false
-CrypticAnimusScene.tsx:436     Has alpha?: false
-CrypticAnimusScene.tsx:433   Force "y": undefined
-CrypticAnimusScene.tsx:434     Type: undefined
-CrypticAnimusScene.tsx:435     Has strength?: false
-CrypticAnimusScene.tsx:436     Has alpha?: false
-CrypticAnimusScene.tsx:433   Force "z": undefined
-CrypticAnimusScene.tsx:434     Type: undefined
-CrypticAnimusScene.tsx:435     Has strength?: false
-CrypticAnimusScene.tsx:436     Has alpha?: false
-CrypticAnimusScene.tsx:433   Force "collide": undefined
-CrypticAnimusScene.tsx:434     Type: undefined
-CrypticAnimusScene.tsx:435     Has strength?: false
-CrypticAnimusScene.tsx:436     Has alpha?: false
-CrypticAnimusScene.tsx:442 3. Testing simulation control methods:
-CrypticAnimusScene.tsx:444   d3ReheatSimulation result: ForceGraph {isObject3D: true, uuid: '652296a8-5df0-4947-af9a-6b9730e1d348', name: '', type: 'Group', parent: Scene, …}
-CrypticAnimusScene.tsx:445   tickFrame result: ForceGraph {isObject3D: true, uuid: '652296a8-5df0-4947-af9a-6b9730e1d348', name: '', type: 'Group', parent: Scene, …}
-CrypticAnimusScene.tsx:446   resetCountdown result: ForceGraph {isObject3D: true, uuid: '652296a8-5df0-4947-af9a-6b9730e1d348', name: '', type: 'Group', parent: Scene, …}
-CrypticAnimusScene.tsx:451 4. Looking for simulation via d3Force:
-CrypticAnimusScene.tsx:455   d3Force() no args: undefined
-CrypticAnimusScene.tsx:456   Has .alpha()?: false
-CrypticAnimusScene.tsx:457   Has .nodes()?: false
-CrypticAnimusScene.tsx:463 5. Alternative access attempts:
-CrypticAnimusScene.tsx:466 Uncaught TypeError: Right-hand side of 'instanceof' is not an object
-    at CrypticAnimusScene.useEffect.setupWindowFG (CrypticAnimusScene.tsx:466:62)
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:466
+[Violation] 'requestAnimationFrame' handler took <N>ms
+[Violation] 'requestAnimationFrame' handler took <N>ms
+[Violation] 'requestAnimationFrame' handler took <N>ms
+[Violation] 'requestAnimationFrame' handler took <N>ms
+[Violation] 'requestAnimationFrame' handler took <N>ms
+CrypticAnimusScene.tsx:210 [Physics config] Initialized successfully
+CrypticAnimusScene.tsx:213 [CrypticAnimusScene] Configuring physics forces!
+CrypticAnimusScene.tsx:277 [REHEAT] Initial d3ReheatSimulation called
+CrypticAnimusScene.tsx:285 [TICKS] Starting forced tick execution...
+CrypticAnimusScene.tsx:292 [TICKS] Executed 20 ticks successfully (target: 20)
+CrypticAnimusScene.tsx:318 [Window FG] Error during initial setup: ReferenceError: simData is not defined
+    at CrypticAnimusScene.useEffect.setupWindowFG (CrypticAnimusScene.tsx:295:9)
+error @ intercept-console-error.js:50
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:318
 setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:415
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:247
 setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:228
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:247
 setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:228
-setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:228
-CrypticAnimusScene.useEffect @ CrypticAnimusScene.tsx:672
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:247
+CrypticAnimusScene.useEffect @ CrypticAnimusScene.tsx:702
 react-stack-bottom-frame @ react-reconciler.development.js:7241
 runWithFiberInDEV @ react-reconciler.development.js:399
 commitHookEffectListMount @ react-reconciler.development.js:4782
@@ -385,30 +230,111 @@ commitRootWhenReady @ react-reconciler.development.js:6082
 performWorkOnRoot @ react-reconciler.development.js:6062
 performWorkOnRootViaSchedulerTask @ react-reconciler.development.js:1356
 performWorkUntilDeadline @ scheduler.development.js:44
-CrypticAnimusScene.tsx:572 === PHASE 4: Force Simulation Activation ===
-CrypticAnimusScene.tsx:580 1. Adding positional forces to spread nodes:
-CrypticAnimusScene.tsx:585   Cleared x,y forces
-CrypticAnimusScene.tsx:588   Testing collision force...
-CrypticAnimusScene.tsx:590   Current collide force: false
-CrypticAnimusScene.tsx:596   Increased charge force strength to -800
-CrypticAnimusScene.tsx:600 [REHEAT] After force modifications
-CrypticAnimusScene.tsx:608   Forced 20 additional ticks
-CrypticAnimusScene.tsx:614 2. Testing manual node spreading:
-CrypticAnimusScene.tsx:658 3. Testing refresh method:
-CrypticAnimusScene.tsx:661   Called refresh()
-CrypticAnimusScene.tsx:571 [Violation] 'setTimeout' handler took 227ms
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 5s ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-    for (var k = 0, n = links.length; k < iterations; ++k) {
-      for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-        link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
+CrypticAnimusScene.tsx:319 [Window FG] Stack trace: ReferenceError: simData is not defined
+    at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:274:25)
+error @ intercept-console-error.js:50
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:319
+setTimeout
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:247
+setTimeout
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:247
+setTimeout
+CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:247
+CrypticAnimusScene.useEffect @ CrypticAnimusScene.tsx:702
+react-stack-bottom-frame @ react-reconciler.development.js:7241
+runWithFiberInDEV @ react-reconciler.development.js:399
+commitHookEffectListMount @ react-reconciler.development.js:4782
+commitHookPassiveMountEffects @ react-reconciler.development.js:4817
+reconnectPassiveEffects @ react-reconciler.development.js:5670
+recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
+reconnectPassiveEffects @ react-reconciler.development.js:5669
+recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
+reconnectPassiveEffects @ react-reconciler.development.js:5676
+recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
+reconnectPassiveEffects @ react-reconciler.development.js:5684
+recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
+commitPassiveMountOnFiber @ react-reconciler.development.js:5648
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5627
+flushPassiveEffects @ react-reconciler.development.js:6567
+performSyncWorkOnRoot @ react-reconciler.development.js:1361
+flushSyncWorkAcrossRoots_impl @ react-reconciler.development.js:1288
+commitRootImpl @ react-reconciler.development.js:6525
+commitRoot @ react-reconciler.development.js:6480
+commitRootWhenReady @ react-reconciler.development.js:6082
+performWorkOnRoot @ react-reconciler.development.js:6062
+performWorkOnRootViaSchedulerTask @ react-reconciler.development.js:1356
+performWorkUntilDeadline @ scheduler.development.js:44
+CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 574397ms
+ForceGraphAdapter.tsx:146 [FGAdapter] ref.current after 1s: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
+ForceGraphAdapter.tsx:148 [FGAdapter] Has __kapsuleInstance? false
+ForceGraphAdapter.tsx:149 [FGAdapter] Constructor: Object
+ForceGraphAdapter.tsx:150 [FGAdapter] All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
+ForceGraphAdapter.tsx:146 [FGAdapter] ref.current after 1s: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
+ForceGraphAdapter.tsx:148 [FGAdapter] Has __kapsuleInstance? false
+ForceGraphAdapter.tsx:149 [FGAdapter] Constructor: Object
+ForceGraphAdapter.tsx:150 [FGAdapter] All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
 ```
 
-## Test 2 - Hover on node & click + Scrub Timeline Scrubber + Toggle Categories + Toggle Lens Switcher
+## Test 2 - Hover on node
 
 ### Test 2: Process
 
@@ -418,1543 +344,8923 @@ CrypticAnimusScene.tsx:402 Has .alpha() method? false
 4. Keep cursor out of viewport and do **nothing** for 5 s.
 5. Click on browser window and move cursor into viewport
 6. Hover over a single node & click (try to hover on only **one** node)
-7. Mover cursor to timeline scrubber and slide (click + drag) to the earliest date (try not to hover over any nodes in the process)
-8. Copying the whole console log
-9. Clearly document a chronological account
+7. Copying the whole console log
+8. Clearly document a chronological account
 
 ### Test 2: Chronological Account
 
-1. On initial load: the HUD is visible and the empty scene is visible. **Frame rate is around 60-80 FPS throughout the whole test** 2. Less than 1-2 secs later I see a small blue cube appear and disappear. The blue cube appears slightly off-center, a little down and to the left of viewport center. I experienced this as a brief flash. 3. Immidietely after, I see thin black lines (links) springing into the viewport. While it is hard to tell, I suspect they were emmenating outward from where the blue cube was (i.e the origin point) 4. A yellow node (with visible links) labeled "conflicts" hovers/slides gently into the viewport from the top-left. 5. As the yellow node settles/slows down, a green node (with visible links) labelled "reassurance" hovers/slides gently from the top-left. This green node is smaller than the yellow node, it appears to be in the distance to the top left of the yellow node. 6. Both the yellow "conflicts" node and the green "reassurance" node seem to settle in the top-left of the viewport for 1-2 secs. 7. Then, the physics seems to kick again as the yellow "conflicts" node and the green "reassurance" node are abruptly jolted downwards. Concurrently, a number of colored nodes (primarily purple and green) and links jolt/burst down from the top left into the viewport. 8. These nodes seem to slightly jiggle/jolt a few more times before finally settling down. They primarily occupy the left half of the viewport. 9. I click on the top of the browser window and then carefully move my cursor and hover over to a green node labeled "sense of correctness". I am **confident** I did not hover over any other nodes. As soon as I hover over that node the following logs fired:
+1. On initial load: the HUD is visible but I **do not** see any nodes or links, only the background of the scene.
+2. Immidietely after, the viewport is **Paused in debugger**. The DevTools window points to **line 295 of @CrypticAnimusScene.tsx**:
+   ` if (simData?.nodes?.length > 0 && (window as any).__beforePos) {`
+3. I click the blue "fast forward" button in the "Paused in debugger" tooltip. Colorful nodes and links **suddenly appear** sparsely spaced in the scene, moving a bit before settling down.
+4. The scene shows sparsely spaced colored nodes thin grey edges, a **77 FPS** counter top-left, and the HUD.
+5. I move my cursor into the viewport, carefully trying to avoid nodes, and **hover over** a green node labeled "cope with anxiety". Immidietely after, the viewport is **Paused in debugger**. The DevTools window points to **@ForceGraphAdapter.tsx**. However the contents of the file are empty, there is only the following 1-line:
+   `Could not load content for webpack-internal:///workspace/apps/src/adapters/ForceGraphAdapter.tsx (Fetch through target failed: Unsupported URL scheme; Fallback: HTTP error: status code 404, net::ERR_UNKNOWN_URL_SCHEME)`
+6. I click the blue "fast forward" button in the "Paused in debugger" tooltip. The viewport **remains paused** as the DevTools window now points to **line 277 in react-reconciler.development.js**.
+7. I click the blue "fast forward" button in the "Paused in debugger" tooltip. The viewport **remains paused** as the DevTools window now points to **line 62 in @CrypticAnimusScene.tsx**.
+8. I click the blue "fast forward" button in the "Paused in debugger" tooltip. The viewport **remains paused** as the DevTools window now points to **line 62 in @CrypticAnimusScene.tsx**.
+9. I click the blue "fast forward" button in the "Paused in debugger" tooltip. The viewport **remains paused** as the DevTools window now points to **line 117 in @CrypticVaultScene.tsx**.
+10. I click the blue "fast forward" button in the "Paused in debugger" tooltip. The viewport **unpauses**, the nodes and links look **exactly the same** as before (see 4.)
+11. I decide to **end the test here** and copy the whole console log, I see that the DevTools window has unexpectly closed itself.
+12. I reopen the window and copy the **entire console log**, it is extrodinarily long (see below). Then, the DevTool window freezes (presumably because of the console log firing) and unexpectly closes again.
 
-`[Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:48:30.861Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:48:30.862Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object`
-
-10. There was **no visible change** in the node I hovered over and **no movement** in any of the nodes.
-11. Then, while **still hovering over the exact same green node**, I clicked it. The following logs fired:
-
-`CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:50:41.030Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:50:41.031Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+13. The last thing I notice is that there is the same red next.js tooltip in the lower left corner flagging **3 errors**, not 2 like before:
+    13.1
+    `ReferenceError: simData is not defined
+at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:274:25)`
+    13.2
+    `Error: [Window FG] Stack trace: "ReferenceError: simData is not defined\n    at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:274:25)"
+at createConsoleError (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/errors/console-error.js:27:71)
+at handleConsoleError (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/errors/use-error-handler.js:47:54)
+at console.error (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/globals/intercept-console-error.js:47:57)
+at CrypticAnimusScene.useEffect.setupWindowFG (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:297:33)   `
+    13.3
+    `
+Error: Cannot update a component (`SceneContent`) while rendering a different component (`ForwardRef`). To locate the bad setState() call inside `ForwardRef`, follow the stack trace as described in https://react.dev/link/setstate-in-render
+    at createConsoleError (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/errors/console-error.js:27:71)
+    at handleConsoleError (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/errors/use-error-handler.js:47:54)
+    at console.error (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/client/components/globals/intercept-console-error.js:47:57)
+    at scheduleUpdateOnFiber (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/react-reconciler@0.31.0_react@19.1.0/node_modules/react-reconciler/cjs/react-reconciler.development.js:5974:201)
+    at forceStoreRerender (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/react-reconciler@0.31.0_react@19.1.0/node_modules/react-reconciler/cjs/react-reconciler.development.js:2621:26)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/react-reconciler@0.31.0_react@19.1.0/node_modules/react-reconciler/cjs/react-reconciler.development.js:2606:45)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/zustand@5.0.6_@types+react@19.1.8_immer@10.1.1_react@19.1.0_use-sync-external-store@1.5.0_react@19.1.0_/node_modules/zustand/esm/vanilla.mjs:13:39)
+    at Set.forEach (<anonymous>)
+    at setState (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/zustand@5.0.6_@types+react@19.1.8_immer@10.1.1_react@19.1.0_use-sync-external-store@1.5.0_react@19.1.0_/node_modules/zustand/esm/vanilla.mjs:13:17)
+    at store.setState (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/zustand@5.0.6_@types+react@19.1.8_immer@10.1.1_react@19.1.0_use-sync-external-store@1.5.0_react@19.1.0_/node_modules/zustand/esm/middleware/immer.mjs:11:12)
+    at selectNodes (webpack-internal:///(app-pages-browser)/../../../packages/store/src/slices/ui-slice.ts:37:13)
+    at Object.eval [as selectNodes] (webpack-internal:///(app-pages-browser)/../../../packages/store/src/store.ts:58:25)
+    at CrypticVaultSceneContent.useCallback[handleBackgroundClick] [as onBackgroundClick] (webpack-internal:///(app-pages-browser)/./components/CrypticVaultScene.tsx:394:21)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/r3f-forcegraph@1.1.1_react@19.1.0_three@0.176.0/node_modules/r3f-forcegraph/dist/r3f-forcegraph.mjs:160:70)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/r3f-forcegraph@1.1.1_react@19.1.0_three@0.176.0/node_modules/r3f-forcegraph/dist/r3f-forcegraph.mjs:174:14)
+    at Array.forEach (<anonymous>)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/r3f-forcegraph@1.1.1_react@19.1.0_three@0.176.0/node_modules/r3f-forcegraph/dist/r3f-forcegraph.mjs:173:8)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/r3f-forcegraph@1.1.1_react@19.1.0_three@0.176.0/node_modules/r3f-forcegraph/dist/r3f-forcegraph.mjs:143:66)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/r3f-forcegraph@1.1.1_react@19.1.0_three@0.176.0/node_modules/r3f-forcegraph/dist/r3f-forcegraph.mjs:217:27)
+    at ForceGraphAdapter (webpack-internal:///(app-pages-browser)/../../../packages/canvas-r3f/dist/adapters/ForceGraphAdapter.js:44:13)
+    at BailoutToCSR (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/next@15.3.2_@opentelemetry+api@1.9.0_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/shared/lib/lazy-dynamic/dynamic-bailout-to-csr.js:13:11)
+    at Suspense (<anonymous>)
+    at LoadableComponent (<anonymous>)
+    at FGErrorBoundary (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:22:1)
+    at CrypticAnimusScene (webpack-internal:///(app-pages-browser)/./components/CrypticAnimusScene.tsx:44:11)
+    at SceneContent (webpack-internal:///(app-pages-browser)/./components/CrypticVaultScene.tsx:92:11)
+    at Suspense (<anonymous>)
+    at Suspense (<anonymous>)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/@react-three+fiber@9.1.4_@types+react@19.1.8_immer@10.1.1_react-dom@19.1.0_react@19.1.0__react@19.1.0_three@0.176.0/node_modules/@react-three/fiber/dist/events-f681e724.esm.js:129:5)
+    at m (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/its-fine@2.0.0_@types+react@19.1.8_react@19.1.0/node_modules/its-fine/dist/index.js:51:1)
+    at eval (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/@react-three+fiber@9.1.4_@types+react@19.1.8_immer@10.1.1_react-dom@19.1.0_react@19.1.0__react@19.1.0_three@0.176.0/node_modules/@react-three/fiber/dist/events-f681e724.esm.js:105:5)
+    at Provider (webpack-internal:///(app-pages-browser)/../../../node_modules/.pnpm/@react-three+fiber@9.1.4_@types+react@19.1.8_immer@10.1.1_react-dom@19.1.0_react@19.1.0__react@19.1.0_three@0.176.0/node_modules/@react-three/fiber/dist/events-f681e724.esm.js:2045:3)
 `
-
-12. Once again, there was **no visible change** in the node I hovered over and **no movement** in any of the nodes.
-13. I then proceeded to move my cursor off the green node down to the Timeline Scrubber Slider. I am **confident** I did not hover over any nodes while doing this.
-14. I clicked and dragged the slider to the earlies date. The log very clearly fired on each increment of the Timeline Scrubber:
-    `[Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.262Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(206)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 206 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.263Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(206)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 206 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 206
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.293Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(202)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 202 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.294Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(202)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 202 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 202
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: c5c5cb290 type: value
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cfbf127ae type: outcome
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cf2bbf5ec type: catalyst
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cdf8bdcca type: catalyst
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cdd55b905 type: goal
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.335Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(195)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 195 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.336Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(195)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 195 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 195
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.362Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(179)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 179 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.363Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(179)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 179 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 179
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.389Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(151)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 151 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.390Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(151)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 151 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 151
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.423Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(116)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 116 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.424Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(116)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 116 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 116
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.448Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(113)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 113 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.449Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(113)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 113 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 113
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.524Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(104)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 104 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.524Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(104)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 104 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 104
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.553Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(87)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 87 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.553Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(87)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 87 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 87
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.576Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(54)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 54 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.576Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(54)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 54 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 54
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.593Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(42)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 42 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.594Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(42)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 42 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 42
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.614Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(19)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 19 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.615Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(19)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 19 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 19
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.646Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T22:51:26.647Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 4`
-
-15. The **visibility seems to be toggling as intended**. I could see as nodes gradually disappeared as I incremented the slider. The physics also seems to **not have been triggered**, this is as intended.
-16. I zoomed out and dragged/panned around and saw **3 visible nodes**, I was expecting 4 but may be mistaken. Overall the **timeline scrubber seems to be working as intended**.
-17. I tried toggling a few categories and **category tags also seem to be toggling visibility and working as intended**. This is good.
-18. I tried switching the lens switcher and it **does not seem to be working as intended**, the nodes do not move and the links don't seem to update.
+14. The very last thing I do, just to confirm if the whole viewport/scene is frozen, is scroll to zoom in and out. The scene was **not frozen** and zooming in and out was pretty smooth (~45-60 FPS).
 
 ### Test 2 Entire Console Log
 
-``
-Navigated to http://localhost:3000/
-main-app.js?v=1753570908810:2314 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
-CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 0
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 0
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:01:50.230Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:01:50.231Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:89 [GRAPH VERSION] Raw structure changed - incrementing version. Nodes: 213 Links: 276
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 0 visibleIds: 213
-CrypticAnimusScene.tsx:194 [Physics config] Ref not ready, will retry...
-CrypticAnimusScene.tsx:226 [Window FG] Ref not ready, will retry...
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 1
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:105 [CrypticAnimusScene] Memoizing graph data for version: 1
-CrypticAnimusScene.tsx:158 [INIT POSITIONS] Added initial positions to 213/213 nodes at origin (0,0,0) [spawn mode: origin]
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:01:50.266Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:01:50.266Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 213
-CrypticAnimusScene.tsx:194 [Physics config] Ref not ready, will retry...
-CrypticAnimusScene.tsx:226 [Window FG] Ref not ready, will retry...
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: null}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: null}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:194 [Physics config] Ref not ready, will retry...
-CrypticAnimusScene.tsx:226 [Window FG] Ref not ready, will retry...
-ForceGraphAdapter.tsx:139 [FGAdapter] ref after mount: {current: {…}}
-ForceGraphAdapter.tsx:141 [FGAdapter] ref.current: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:142 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-ForceGraphAdapter.tsx:139 [FGAdapter] ref after mount: {current: {…}}
-ForceGraphAdapter.tsx:141 [FGAdapter] ref.current: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:142 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:200 [CrypticAnimusScene] Configuring physics forces!
-CrypticAnimusScene.tsx:232 FG ref {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-CrypticAnimusScene.tsx:234 [Window FG] window.**FG assigned successfully
-CrypticAnimusScene.tsx:251 [REHEAT] Initial d3ReheatSimulation called
-CrypticAnimusScene.tsx:259 [TICKS] Starting forced tick execution...
-CrypticAnimusScene.tsx:266 [TICKS] Executed 20 ticks successfully (target: 20)
-CrypticAnimusScene.tsx:282 [SIMULATION] Testing if forces are applied...
-CrypticAnimusScene.tsx:286 [FORCES] link: true charge: true center: true
-CrypticAnimusScene.tsx:289 [Debug] window.**FG type: object
-CrypticAnimusScene.tsx:290 [Debug] window.**FG has graphData method: false
-CrypticAnimusScene.tsx:224 [Violation] 'setTimeout' handler took 234ms
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 100ms ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-for (var k = 0, n = links.length; k < iterations; ++k) {
-for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 500ms ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-for (var k = 0, n = links.length; k < iterations; ++k) {
-for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-ForceGraphAdapter.tsx:146 [FGAdapter] ref.current after 1s: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:148 [FGAdapter] Has **kapsuleInstance? false
-ForceGraphAdapter.tsx:149 [FGAdapter] Constructor: Object
-ForceGraphAdapter.tsx:150 [FGAdapter] All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-ForceGraphAdapter.tsx:146 [FGAdapter] ref.current after 1s: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:148 [FGAdapter] Has **kapsuleInstance? false
-ForceGraphAdapter.tsx:149 [FGAdapter] Constructor: Object
-ForceGraphAdapter.tsx:150 [FGAdapter] All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:336 === PHASE 1: window.**FG Deep Inspection ===
-CrypticAnimusScene.tsx:337 1. Basic info:
-CrypticAnimusScene.tsx:338 Type: object
-CrypticAnimusScene.tsx:339 Constructor: Object
-CrypticAnimusScene.tsx:341 2. Direct properties:
-CrypticAnimusScene.tsx:342 Object.keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:343 Object.getOwnPropertyNames: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:345 3. Prototype chain:
-CrypticAnimusScene.tsx:349 Level 0: (12) ['constructor', '__defineGetter__', '__defineSetter__', 'hasOwnProperty', '__lookupGetter__', '__lookupSetter__', 'isPrototypeOf', 'propertyIsEnumerable', 'toString', 'valueOf', '__proto__', 'toLocaleString']
-CrypticAnimusScene.tsx:354 4. All enumerable properties:
-CrypticAnimusScene.tsx:363 (index)keytypevalue(index)keytypevalue0'emitParticle''function''[Function]'1'getGraphBbox''function''[Function]'2'd3ReheatSimulation''function''[Function]'3'd3Force''function''[Function]'4'resetCountdown''function''[Function]'5'tickFrame''function''[Function]'6'refresh''function''[Function]'Array(7)
-CrypticAnimusScene.tsx:365 5. Method availability:
-CrypticAnimusScene.tsx:368 d3Force: function
-CrypticAnimusScene.tsx:368 d3ReheatSimulation: function
-CrypticAnimusScene.tsx:368 tickFrame: function
-CrypticAnimusScene.tsx:368 emitParticle: function
-CrypticAnimusScene.tsx:368 getGraphBbox: function
-CrypticAnimusScene.tsx:368 resetCountdown: function
-CrypticAnimusScene.tsx:368 refresh: function
-CrypticAnimusScene.tsx:371 6. Hidden/private properties:
-CrypticAnimusScene.tsx:375 _engine: undefined
-CrypticAnimusScene.tsx:375 \_state: undefined
-CrypticAnimusScene.tsx:375 \_simulation: undefined
-CrypticAnimusScene.tsx:375 \_graphForce: undefined
-CrypticAnimusScene.tsx:375 \_\_graphSimulation: undefined
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 1s ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-for (var k = 0, n = links.length; k < iterations; ++k) {
-for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 2s ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-for (var k = 0, n = links.length; k < iterations; ++k) {
-for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-CrypticAnimusScene.tsx:492 === PHASE 2B: Accessing Simulation Data ===
-CrypticAnimusScene.tsx:500 1. Testing graphData() method:
-CrypticAnimusScene.tsx:503 graphData() returned: undefined
-CrypticAnimusScene.tsx:504 Has nodes? false
-CrypticAnimusScene.tsx:505 Node count: undefined
-CrypticAnimusScene.tsx:521 2. Exploring THREE.js scene:
-CrypticAnimusScene.tsx:524 FG is THREE.Object3D? undefined
-CrypticAnimusScene.tsx:525 FG type: undefined
-CrypticAnimusScene.tsx:526 Children count: undefined
-CrypticAnimusScene.tsx:536 3. Testing getGraphBbox:
-CrypticAnimusScene.tsx:539 Bounding box: {x: Array(2), y: Array(2), z: Array(2)}
-CrypticAnimusScene.tsx:416 === PHASE 3: Force & Simulation Testing ===
-CrypticAnimusScene.tsx:423 1. Testing d3Force method:
-CrypticAnimusScene.tsx:425 d3Force type: function
-CrypticAnimusScene.tsx:426 d3Force toString: function () {
-for (var \_len2 = arguments.length, args = new Array(\_len2), \_key2 = 0; \_key2 < \_len2; \_key2++) {
-args[_key2] = arguments[_key2];
-}
-return \_call.apply(void 0, [method].concat(args));
-}
-CrypticAnimusScene.tsx:428 2. Testing force retrieval:
-CrypticAnimusScene.tsx:433 Force "link": ƒ force(alpha) {
-for (var k = 0, n = links.length; k < iterations; ++k) {
-for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-link = links[i], source = link…
-CrypticAnimusScene.tsx:434 Type: function
-CrypticAnimusScene.tsx:435 Has strength?: true
-CrypticAnimusScene.tsx:436 Has alpha?: false
-CrypticAnimusScene.tsx:433 Force "charge": ƒ force(_) {
-var i,
-n = nodes.length,
-tree =
-(nDim === 1 ? (0,d3_binarytree**WEBPACK_IMPORTED_MODULE_1**["default"])(nodes, \_simulation_js**WEBPACK_IMPORTED_MODULE_2**.x…
-CrypticAnimusScene.tsx:434 Type: function
-CrypticAnimusScene.tsx:435 Has strength?: true
-CrypticAnimusScene.tsx:436 Has alpha?: false
-CrypticAnimusScene.tsx:433 Force "center": ƒ force() {
-var i,
-n = nodes.length,
-node,
-sx = 0,
-sy = 0,
-sz = 0;
-
-    for (i = 0; i < n; ++i) {
-      node = nodes[i], sx += node.x || 0, sy += node.y || 0…
-
-CrypticAnimusScene.tsx:434 Type: function
-CrypticAnimusScene.tsx:435 Has strength?: true
-CrypticAnimusScene.tsx:436 Has alpha?: false
-CrypticAnimusScene.tsx:433 Force "x": undefined
-CrypticAnimusScene.tsx:434 Type: undefined
-CrypticAnimusScene.tsx:435 Has strength?: false
-CrypticAnimusScene.tsx:436 Has alpha?: false
-CrypticAnimusScene.tsx:433 Force "y": undefined
-CrypticAnimusScene.tsx:434 Type: undefined
-CrypticAnimusScene.tsx:435 Has strength?: false
-CrypticAnimusScene.tsx:436 Has alpha?: false
-CrypticAnimusScene.tsx:433 Force "z": undefined
-CrypticAnimusScene.tsx:434 Type: undefined
-CrypticAnimusScene.tsx:435 Has strength?: false
-CrypticAnimusScene.tsx:436 Has alpha?: false
-CrypticAnimusScene.tsx:433 Force "collide": undefined
-CrypticAnimusScene.tsx:434 Type: undefined
-CrypticAnimusScene.tsx:435 Has strength?: false
-CrypticAnimusScene.tsx:436 Has alpha?: false
-CrypticAnimusScene.tsx:442 3. Testing simulation control methods:
-CrypticAnimusScene.tsx:444 d3ReheatSimulation result: ForceGraph {isObject3D: true, uuid: '2101002f-ab43-4561-a652-e33d79542a61', name: '', type: 'Group', parent: Scene, …}
-CrypticAnimusScene.tsx:445 tickFrame result: ForceGraph {isObject3D: true, uuid: '2101002f-ab43-4561-a652-e33d79542a61', name: '', type: 'Group', parent: Scene, …}
-CrypticAnimusScene.tsx:446 resetCountdown result: ForceGraph {isObject3D: true, uuid: '2101002f-ab43-4561-a652-e33d79542a61', name: '', type: 'Group', parent: Scene, …}
-CrypticAnimusScene.tsx:451 4. Looking for simulation via d3Force:
-CrypticAnimusScene.tsx:455 d3Force() no args: undefined
-CrypticAnimusScene.tsx:456 Has .alpha()?: false
-CrypticAnimusScene.tsx:457 Has .nodes()?: false
-CrypticAnimusScene.tsx:463 5. Alternative access attempts:
-CrypticAnimusScene.tsx:466 Uncaught TypeError: Right-hand side of 'instanceof' is not an object
-at CrypticAnimusScene.useEffect.setupWindowFG (CrypticAnimusScene.tsx:466:62)
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:466
-setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:415
-setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:228
-setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:228
-setTimeout
-CrypticAnimusScene.useEffect.setupWindowFG @ CrypticAnimusScene.tsx:228
-CrypticAnimusScene.useEffect @ CrypticAnimusScene.tsx:672
-react-stack-bottom-frame @ react-reconciler.development.js:7241
-runWithFiberInDEV @ react-reconciler.development.js:399
-commitHookEffectListMount @ react-reconciler.development.js:4782
-commitHookPassiveMountEffects @ react-reconciler.development.js:4817
-reconnectPassiveEffects @ react-reconciler.development.js:5670
-recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
-reconnectPassiveEffects @ react-reconciler.development.js:5669
-recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
-reconnectPassiveEffects @ react-reconciler.development.js:5676
-recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
-reconnectPassiveEffects @ react-reconciler.development.js:5684
-recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
-commitPassiveMountOnFiber @ react-reconciler.development.js:5648
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5656
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5622
-recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
-commitPassiveMountOnFiber @ react-reconciler.development.js:5627
-flushPassiveEffects @ react-reconciler.development.js:6567
-performSyncWorkOnRoot @ react-reconciler.development.js:1361
-flushSyncWorkAcrossRoots_impl @ react-reconciler.development.js:1288
-commitRootImpl @ react-reconciler.development.js:6525
-commitRoot @ react-reconciler.development.js:6480
-commitRootWhenReady @ react-reconciler.development.js:6082
-performWorkOnRoot @ react-reconciler.development.js:6062
-performWorkOnRootViaSchedulerTask @ react-reconciler.development.js:1356
-performWorkUntilDeadline @ scheduler.development.js:44
-CrypticAnimusScene.tsx:572 === PHASE 4: Force Simulation Activation ===
-CrypticAnimusScene.tsx:580 1. Adding positional forces to spread nodes:
-CrypticAnimusScene.tsx:585 Cleared x,y forces
-CrypticAnimusScene.tsx:588 Testing collision force...
-CrypticAnimusScene.tsx:590 Current collide force: false
-CrypticAnimusScene.tsx:596 Increased charge force strength to -800
-CrypticAnimusScene.tsx:600 [REHEAT] After force modifications
-CrypticAnimusScene.tsx:608 Forced 20 additional ticks
-CrypticAnimusScene.tsx:614 2. Testing manual node spreading:
-CrypticAnimusScene.tsx:658 3. Testing refresh method:
-CrypticAnimusScene.tsx:661 Called refresh()
-CrypticAnimusScene.tsx:571 [Violation] 'setTimeout' handler took 216ms
-CrypticAnimusScene.tsx:390 === PHASE 2: Ref Evolution at 5s ===
-CrypticAnimusScene.tsx:391 Direct keys count: 7
-CrypticAnimusScene.tsx:392 Proto keys count: 0
-CrypticAnimusScene.tsx:396 All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
-CrypticAnimusScene.tsx:401 d3Force("link") returns: ƒ force(alpha) {
-for (var k = 0, n = links.length; k < iterations; ++k) {
-for (var i = 0, link, source, target, x = 0, y = 0, z = 0, l, b; i < n; ++i) {
-link = links[i], source = link…
-CrypticAnimusScene.tsx:402 Has .alpha() method? false
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:05.157Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:05.158Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:07.436Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:07.436Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.366Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(211)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 211 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.366Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(211)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 211 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 211
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.399Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(195)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 195 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.399Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(195)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 195 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 195
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: c5c5cb290 type: value
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cfbf127ae type: outcome
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cf2bbf5ec type: catalyst
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cdf8bdcca type: catalyst
-CrypticAnimusScene.tsx:932 [VISIBILITY] Node blocked by filters: cdd55b905 type: goal
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.426Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(179)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 179 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.426Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(179)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 179 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 179
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.472Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(151)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 151 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.473Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(151)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 151 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 151
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.495Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(142)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 142 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.496Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(142)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 142 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 142
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.514Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(138)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 138 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.514Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(138)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 138 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 138
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.532Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(132)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 132 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.533Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(132)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 132 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 132
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.549Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(127)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 127 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.549Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(127)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 127 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 127
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.571Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(116)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 116 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.571Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(116)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 116 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 116
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.587Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(113)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 113 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.588Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(113)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 113 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 113
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.612Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(104)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 104 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.613Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(104)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 104 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 104
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.633Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(96)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 96 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.633Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(96)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 96 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 96
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.661Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(73)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 73 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.661Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(73)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 73 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 73
-[Animus] render ForceGraph3D
-[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.684Z
-[Data debug] nodes: 213 links: 276
-[Data debug] ForceGraph3D component loaded: true
-[FILTERS] visibleIds: Set(62)
-[FILTERS] activeCategories: Set(6)
-[FILTERS] showSecrets: true
-[FILTERS] activeTags: undefined
-[FILTERS] Nodes passing filters: 62 / 213
-[Animus] render ForceGraph3D
-[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.685Z
-[Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(62)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 62 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 62
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.709Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(54)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 54 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.710Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(54)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 54 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 54
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.724Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(51)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 51 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.724Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(51)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 51 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 51
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.743Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(42)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 42 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.744Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(42)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 42 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 42
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.762Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(38)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 38 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.762Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(38)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 38 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 38
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.783Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(30)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 30 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.784Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(30)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 30 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 30
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.805Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(23)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 23 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.806Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(23)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 23 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 23
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.822Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(19)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 19 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.823Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(19)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 19 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 19
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.847Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(7)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 7 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.848Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(7)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 7 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 7
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.861Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:13.862Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:97 [REMOUNT CHECK] graphVersion: 1 visibleIds: 4
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:31.339Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(5)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 3 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:31.340Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(5)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 3 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:32.348Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(4)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 2 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:32.349Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(4)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 2 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:35.498Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(5)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 3 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:35.498Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(5)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 3 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:37.256Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:37.257Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:41.456Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:41.457Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:46.081Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:46.082Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:48.181Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-CrypticAnimusScene.tsx:175 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:178 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-26T23:02:48.182Z
-CrypticAnimusScene.tsx:181 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:182 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:185 [FILTERS] visibleIds: Set(4)
-CrypticAnimusScene.tsx:186 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:187 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:188 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:903 [FILTERS] Nodes passing filters: 4 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-``
+```
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.935Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.935Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.935Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.956Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.956Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.957Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.957Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.973Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.973Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.974Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.974Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.995Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.995Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.996Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:29.996Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.012Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.012Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.013Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.013Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.033Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.033Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.034Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.034Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.051Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.051Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.052Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.052Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.075Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.075Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.076Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.076Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.095Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.096Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.097Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.097Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.122Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.122Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.123Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.123Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.143Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.143Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.144Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.144Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.168Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.168Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.170Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.170Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.186Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.187Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.187Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.187Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.208Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.209Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.209Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.210Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.225Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.226Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.227Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.227Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.247Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.247Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.248Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.248Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.264Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.264Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.265Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.265Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.286Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.286Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.287Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.287Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.304Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.305Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: Object
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.306Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.306Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.326Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.327Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.327Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.327Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.344Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.344Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.345Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.345Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: Object
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.435Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.435Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.437Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.438Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.460Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.460Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.462Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.463Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.490Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.490Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.492Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.493Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.524Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.525Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.527Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.528Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.554Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.555Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.557Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.558Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.580Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.580Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.582Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.583Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.610Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.610Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.612Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.613Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.639Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.640Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.643Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.644Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.675Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.676Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.678Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.679Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.701Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.701Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.703Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.704Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.740Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.741Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.742Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.743Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.765Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.765Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.767Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.768Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.794Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.795Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.797Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.798Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.820Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.820Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.822Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.823Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.852Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.853Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.855Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.855Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.877Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.877Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.879Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.880Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.905Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.906Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.908Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.908Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.931Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.931Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.933Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.934Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.959Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.960Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.962Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.963Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.985Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.986Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.988Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:30.989Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.016Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.016Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.018Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.019Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.041Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.041Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.043Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.044Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.070Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.071Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.073Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.074Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.096Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.096Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.099Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.099Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.127Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.127Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.130Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.130Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.154Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.155Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.157Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.158Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.183Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.184Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.186Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.187Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.208Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.209Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.211Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.211Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.246Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.247Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.249Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.250Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.272Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.272Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.274Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.275Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.301Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.302Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.304Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.305Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.327Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.327Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.329Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.330Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.357Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.358Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.360Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.360Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.384Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.384Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.386Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.387Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.413Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.414Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.416Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.416Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.438Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.438Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.440Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.441Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.468Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.469Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.471Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.472Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.493Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+CrypticAnimusScene.tsx:941 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
+CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.494Z
+CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
+CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
+CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
+CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
+CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
+CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.496Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.497Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.524Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.525Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.527Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.528Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.560Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.561Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.563Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.563Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.594Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.594Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.596Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.597Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.620Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.621Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.622Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.623Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.649Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.649Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.651Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.652Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.673Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.673Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.675Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.676Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.701Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.702Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.704Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.705Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.725Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.726Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.728Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.728Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.753Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.754Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.756Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.757Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.777Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.778Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.780Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.780Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.805Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.805Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.807Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.808Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.829Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.829Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.831Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.832Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.857Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.858Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.860Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.860Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.881Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.881Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.883Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.884Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.909Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.910Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.912Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.912Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.933Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.933Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.935Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.936Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.960Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.961Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.963Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.964Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.984Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.985Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.987Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:31.988Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.019Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.019Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.022Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.022Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.044Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.045Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.047Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.047Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.073Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.073Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.087Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.088Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.108Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.108Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.110Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.111Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.137Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.137Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.139Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.140Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.159Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.160Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.162Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.162Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.187Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.187Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.189Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.190Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.210Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.211Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.213Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.213Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.237Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.238Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.240Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.240Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.260Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.261Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.262Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.263Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.287Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.288Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.289Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.290Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.310Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.310Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.312Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.313Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.338Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.339Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.341Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.341Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.363Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.363Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.365Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.366Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.390Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.390Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.392Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.392Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.412Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.413Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.415Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.416Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.440Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.441Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.443Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.444Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.464Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.464Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.466Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.467Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.491Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.492Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.494Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.494Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.515Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.516Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.518Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.518Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.543Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.543Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.545Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.546Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.566Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.566Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.568Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.569Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.593Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.594Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.598Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.598Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.618Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.618Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.620Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.621Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.645Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.645Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.647Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.648Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.676Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.676Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.678Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.679Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.707Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.708Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.710Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.710Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.731Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.731Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.733Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.734Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.758Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.759Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.760Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.761Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.781Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.781Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.783Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.784Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.811Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.811Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.813Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.814Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.834Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.834Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.836Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.837Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.861Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.861Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.863Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.864Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.884Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.884Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.886Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.887Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.911Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.912Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.914Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.915Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.934Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.935Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.937Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.938Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.963Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.964Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.965Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.966Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.986Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.986Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.988Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:32.989Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.013Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.014Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.016Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.016Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.036Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.037Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.039Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.039Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.064Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.065Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.067Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.067Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.088Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.089Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.090Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.091Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.118Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.119Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.121Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.121Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.141Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.141Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.143Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.143Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.169Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.169Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.171Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.172Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.192Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.192Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.194Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.195Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.219Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.220Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.221Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.222Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.242Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.242Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.244Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.245Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.269Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.270Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.272Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.272Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.292Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.293Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.295Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.295Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.320Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.320Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.322Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.323Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.343Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.343Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.345Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.346Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.370Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.370Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.372Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.373Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.396Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.397Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.403Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.403Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.433Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.433Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.435Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.436Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.456Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.457Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.459Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.459Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.484Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.484Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.486Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.487Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.507Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.507Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.509Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.510Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.538Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.538Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.540Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.541Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.561Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.562Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.564Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.564Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.589Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.590Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.592Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.592Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.613Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.613Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.615Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.616Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.641Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.642Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.643Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.644Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.663Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.664Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.666Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.666Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.691Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.692Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.694Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.694Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.714Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.715Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.717Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.717Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.742Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.742Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.744Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.745Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.765Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.765Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.767Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.768Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.792Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.792Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.794Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.795Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.815Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.815Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.817Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.818Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.844Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.844Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.846Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.847Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.866Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.867Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.868Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.869Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.893Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.894Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.896Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.896Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.916Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.917Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.919Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.919Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.944Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.945Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.947Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.947Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.968Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.968Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.970Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.971Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.996Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.997Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.999Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:33.999Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.019Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.020Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.022Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.022Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.047Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.048Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.050Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.050Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.070Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.071Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.072Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.073Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.105Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.105Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.107Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.108Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.129Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.129Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.131Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.132Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.158Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.158Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.160Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.161Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.180Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.180Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.182Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.183Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.208Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.208Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.210Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.210Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.232Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.232Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.234Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.235Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.259Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.259Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.261Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.261Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.281Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.282Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.284Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.284Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.309Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.310Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.312Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.312Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.334Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.334Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.336Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.337Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.361Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.361Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.363Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.364Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.383Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.384Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.386Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.386Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.411Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.412Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.414Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.414Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.435Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.435Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.437Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.438Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.462Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.463Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.465Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.466Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.487Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.488Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.490Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.490Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.515Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.516Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.518Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.518Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.538Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.539Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.541Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.541Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.566Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.567Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.568Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.569Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.589Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.590Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.592Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.593Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.619Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.620Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.622Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.623Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.646Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.646Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.648Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.649Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.677Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.677Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.679Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.680Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.700Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.701Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.703Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.703Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.727Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.728Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.729Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.730Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.750Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.750Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.752Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.753Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.777Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.778Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.780Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.780Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.804Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [Animus] render ForceGraph3D
+ [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-07-27T23:32:34.804Z
+ [Data debug] nodes: 213 links: 276
+ [Data debug] ForceGraph3D component loaded: true
+ [FILTERS] visibleIds: Set(213)
+ [FILTERS] activeCategories: Set(6)
+ [FILTERS] showSecrets: true
+ [FILTERS] activeTags: undefined
+ [FILTERS] Nodes passing filters: 213 / 213
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+ [FGAdapter] mounted
+ [FGAdapter] ref type: {current: {…}}
+ [FGAdapter] typeof ref: object
+```
