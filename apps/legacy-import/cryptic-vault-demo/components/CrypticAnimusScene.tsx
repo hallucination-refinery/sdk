@@ -78,6 +78,15 @@ export default function CrypticAnimusScene({
   // Add state-based graphVersion tracking with clean separation
   const [graphVersion, setGraphVersion] = useState(0)
   const prevDataStatsRef = useRef<{ nodeCount: number; linkCount: number }>({ nodeCount: 0, linkCount: 0 })
+  const hasSpawnedRef = useRef(false)
+  
+  // Debug mode flag
+  const isDebugMode = process.env.NODE_ENV === 'development' && 
+                     process.env.NEXT_PUBLIC_DEBUG_GRAPH === 'true'
+  
+  // Retry counters
+  const physicsRetryCount = useRef(0)
+  const windowFGRetryCount = useRef(0)
   
   // Track RAW structure changes only
   useEffect(() => {
@@ -108,18 +117,17 @@ export default function CrypticAnimusScene({
     const nodes = structuredClone(data.nodes)
     const links = structuredClone(data.links)
     
-    // Check spawn mode from environment variable
-    const spawnMode = process.env.NEXT_PUBLIC_GRAPH_SPAWN
-    const nodeCount = nodes.length
-    let positionsAdded = 0
-    
-    if (spawnMode === "sphere") {
-      // Use sphere pattern for initial positions
-      const radius = Math.cbrt(nodeCount) * 50 // Scale radius based on node count
+    // Gate spawn logic with hasSpawnedRef
+    if (!hasSpawnedRef.current && nodes.length > 0) {
+      const spawnMode = process.env.NEXT_PUBLIC_GRAPH_SPAWN
+      const nodeCount = nodes.length
+      let positionsAdded = 0
       
-      nodes.forEach((node, index) => {
-        // Only set positions if they don't already exist
-        if (node.x === undefined || node.y === undefined || node.z === undefined) {
+      if (spawnMode === "sphere") {
+        // Use sphere pattern for initial positions
+        const radius = Math.cbrt(nodeCount) * 50 // Scale radius based on node count
+        
+        nodes.forEach((node, index) => {
           // Use golden ratio for better distribution
           const goldenRatio = (1 + Math.sqrt(5)) / 2
           const theta = 2 * Math.PI * index / goldenRatio
@@ -136,32 +144,27 @@ export default function CrypticAnimusScene({
           node.z += (Math.random() - 0.5) * 10
           
           positionsAdded++
-        }
-      })
-      
-      if (positionsAdded > 0) {
-        console.log(`[INIT POSITIONS] Added initial positions to ${positionsAdded}/${nodeCount} nodes in sphere pattern (radius: ${radius.toFixed(0)}) [spawn mode: sphere]`)
-      }
-    } else {
-      // Default: spawn all nodes at origin for burst animation
-      nodes.forEach((node) => {
-        // Only set positions if they don't already exist
-        if (node.x === undefined || node.y === undefined || node.z === undefined) {
+        })
+        
+        console.log(`[INIT POSITIONS] Spawned ${positionsAdded} nodes - mode: sphere (radius: ${radius.toFixed(0)})`)
+      } else {
+        // Default: spawn all nodes at origin for burst animation
+        nodes.forEach((node) => {
           node.x = 0
           node.y = 0
           node.z = 0
           positionsAdded++
-        }
-      })
-      
-      if (positionsAdded > 0) {
-        console.log(`[INIT POSITIONS] Added initial positions to ${positionsAdded}/${nodeCount} nodes at origin (0,0,0) [spawn mode: origin]`)
+        })
+        
+        console.log(`[INIT POSITIONS] Spawned ${positionsAdded} nodes - mode: origin`)
       }
+      
+      hasSpawnedRef.current = true
     }
     
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     return { nodes, links, nodeMap }
-  }, [data, graphVersion]) // Clean dependencies - data for content, graphVersion for tracking
+  }, [graphVersion]) // ONLY graphVersion dependency
 
   const memoizedGraphData = useMemo(
     () => ({
@@ -191,11 +194,21 @@ export default function CrypticAnimusScene({
   useEffect(() => {
     const checkAndConfigurePhysics = () => {
       if (!fgRef.current || !fgRef.current.d3Force) {
-        console.log('[Physics config] Ref not ready, will retry...')
-        // Retry after a short delay if ref not ready
+        physicsRetryCount.current++
+        if (physicsRetryCount.current > 50) { // Max 5 seconds
+          console.error('[Physics config] Failed to initialize after 50 retries')
+          return
+        }
+        // Only log first retry and every 10th
+        if (physicsRetryCount.current === 1 || physicsRetryCount.current % 10 === 0) {
+          console.log(`[Physics config] Retry ${physicsRetryCount.current}...`)
+        }
         setTimeout(checkAndConfigurePhysics, 100)
         return
       }
+      
+      console.log('[Physics config] Initialized successfully')
+      physicsRetryCount.current = 0
 
       console.log('[CrypticAnimusScene] Configuring physics forces!')
 
@@ -223,29 +236,42 @@ export default function CrypticAnimusScene({
     
     const setupWindowFG = () => {
       if (!fgRef.current) {
-        console.log('[Window FG] Ref not ready, will retry...')
-        // Retry after a short delay if ref not ready
+        windowFGRetryCount.current++
+        if (windowFGRetryCount.current > 50) {
+          console.error('[Window FG] Failed to setup after 50 retries')
+          return
+        }
+        if (windowFGRetryCount.current === 1 || windowFGRetryCount.current % 10 === 0) {
+          console.log(`[Window FG] Retry ${windowFGRetryCount.current}...`)
+        }
         setTimeout(setupWindowFG, 100)
         return
       }
       
-      console.log('FG ref', fgRef.current)
+      windowFGRetryCount.current = 0
+      
       ;(window as any).__FG = fgRef.current
-      console.log('[Window FG] window.__FG assigned successfully')
+      
+      if (isDebugMode) {
+        console.log('FG ref', fgRef.current)
+        console.log('[Window FG] window.__FG assigned successfully')
+      }
       
       // Wrap all operations in try-catch to prevent debugger pause
       try {
-        // === Phase 0 Instrumentation - BEFORE ===
-        const simData = (window as any).__FG?.graphData?.()
-        if (simData?.nodes?.length > 0) {
-          const beforePos = { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z }
-          console.log('[FREEZE-TEST before]', {
-            node0: simData.nodes[0],
-            hasVelocity: 'vx' in simData.nodes[0],
-            position: beforePos,
-            frozen: Object.isFrozen(simData.nodes[0]),
-          })
-          ;(window as any).__beforePos = beforePos
+        if (isDebugMode) {
+          // === Phase 0 Instrumentation - BEFORE ===
+          const simData = (window as any).__FG?.graphData?.()
+          if (simData?.nodes?.length > 0) {
+            const beforePos = { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z }
+            console.log('[FREEZE-TEST before]', {
+              node0: simData.nodes[0],
+              hasVelocity: 'vx' in simData.nodes[0],
+              position: beforePos,
+              frozen: Object.isFrozen(simData.nodes[0]),
+            })
+            ;(window as any).__beforePos = beforePos
+          }
         }
         // Initial reheat and force multiple ticks with counting
         console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
@@ -294,7 +320,8 @@ export default function CrypticAnimusScene({
       }
       
       // Initial position check
-      setTimeout(() => {
+      if (isDebugMode) {
+        setTimeout(() => {
         try {
           const simData = (window as any).__FG?.graphData?.()
           if (simData?.nodes?.length > 0) {
@@ -326,13 +353,15 @@ export default function CrypticAnimusScene({
           console.error('[INITIAL POS] Error checking positions:', e)
         }
       }, 500) // Wait a bit for simulation to initialize
+      }
       
       // Position monitoring commented out due to runtime error at line 167
       // TODO: Access simulation data correctly through ForceGraph API
       // Previous code was accessing input graphData instead of simulation data
       
       // PHASE 1: Deep inspection of window.__FG - wait 1s to ensure full initialization
-      setTimeout(() => {
+      if (isDebugMode) {
+        setTimeout(() => {
         console.log('=== PHASE 1: window.__FG Deep Inspection ===')
         console.log('1. Basic info:')
         console.log('  Type:', typeof (window as any).__FG)
@@ -663,6 +692,7 @@ export default function CrypticAnimusScene({
           console.log('  refresh() ERROR:', e)
         }
       }, 4500) // Run after other phases complete
+      }
 
       // TEMP diagnostics: kick simulation each second and log alpha
       // REMOVED: Per-second timer to improve performance
@@ -717,7 +747,7 @@ export default function CrypticAnimusScene({
 
       return sprite
     },
-    [currentInteractionMode, mouseSelectedNodeId, gesturedNodeId, searchResultOutlineIds]
+    [] // Remove all dependencies - sprites are cached globally
   )
 
   // Ensure sprites start visible - set initial opacity
@@ -758,8 +788,8 @@ export default function CrypticAnimusScene({
       const targetId = typeof link.target === 'object' ? link.target.id : link.target
 
       // Check if both source and target nodes are active
-      const sourceNode = memoizedGraphData.nodes.find((n: any) => n.id === sourceId)
-      const targetNode = memoizedGraphData.nodes.find((n: any) => n.id === targetId)
+      const sourceNode = nodeMap.get(sourceId)
+      const targetNode = nodeMap.get(targetId)
 
       const sourceCluster = sourceNode?.metadata?.cluster || sourceNode?.cluster
       const targetCluster = targetNode?.metadata?.cluster || targetNode?.cluster
@@ -785,7 +815,7 @@ export default function CrypticAnimusScene({
         ? OPACITY_VALUES.linkDefault
         : OPACITY_VALUES.dimmed
     },
-    [memoizedGraphData.nodes, activeCategories, highlightState, visibleIds]
+    [activeCategories, highlightState, visibleIds, nodeMap] // Include actual deps
   )
 
   // --- Runtime sprite material updates each frame ---
@@ -898,6 +928,14 @@ export default function CrypticAnimusScene({
     [showSecrets, visibleIds, activeCategories, activeTags]
   )
 
+  // Add memoized nodeVisibility callback
+  const nodeVisibility = useCallback(
+    (node: any) => {
+      return nodePassesFilters(node)
+    },
+    [nodePassesFilters]
+  )
+
   // Sample check: are any nodes passing filters?
   const passingNodes = memoizedNodes.filter(nodePassesFilters)
   console.log('[FILTERS] Nodes passing filters:', passingNodes.length, '/', memoizedNodes.length)
@@ -921,20 +959,8 @@ export default function CrypticAnimusScene({
         linkColor={getLinkColor}
         linkWidth={getLinkWidth}
         linkCurvature={0.2}
-        cooldownTime={Infinity} // keep simulation running; ForceGraph handles decay
-        nodeVisibility={(node) => {
-          const passes = nodePassesFilters(node)
-          // Log only first few blocked nodes to avoid console spam
-          if (!passes && (window as any).__blockedCount === undefined) {
-            (window as any).__blockedCount = 0
-          }
-          if (!passes && (window as any).__blockedCount < 5) {
-            console.log('[VISIBILITY] Node blocked by filters:', node.id, 'type:', node.type)
-            ;(window as any).__blockedCount++
-          }
-          // NO override - this does the visibility filtering!
-          return passes
-        }}
+        cooldownTime={Infinity}
+        nodeVisibility={nodeVisibility} // Use memoized callback
         linkVisibility={(link: any) => {
           const sId = typeof link.source === 'object' ? link.source.id : link.source
           const tId = typeof link.target === 'object' ? link.target.id : link.target
@@ -944,6 +970,8 @@ export default function CrypticAnimusScene({
 
           return nodePassesFilters(sourceNode) && nodePassesFilters(targetNode)
         }}
+        linkOpacity={getLinkOpacity}
+        onBackgroundClick={onBackgroundClickRequest}
       />
     </FGErrorBoundary>
   )
