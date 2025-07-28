@@ -10,27 +10,6 @@ Last Updated: 6:30 PM EST, 27/07/2025
 - Key Changes: v6 "ForceGraph3D Remount Fix" implemented
 - commit message - "fix: prevent ForceGraph3D remounts during visibility-only updates"
 
-## Clarification on Intended Behavior (User Experience Perspective)
-
-I have decided to clearly and concisely describe the intended behavior **from a user experience perspective.** Please carefully update your mental model before you continue to Test 1 and Test 2:
-
-1. On initial load: The HUD UI appears and all nodes start ​co-located at the scene origin, then “burst” outward as the physics engine warms up. They drift until the layout stabilises; after this first settle the graph should not spontaneously explode again unless the user performs an action that explicitly re-heats the simulation (see #6).
-2. On Hover: As the cursor passes over a node its visual state changes (e.g. glow, opacity, tooltip) to indicate focus; neighbouring links may be subtly emphasised. No new physics burst is triggered. Positions remain stable; only visual styles update. When the cursor leaves, styles revert.
-3. Node Click / Selection: Clicking a node toggles it into a “selected” state:
-   3.1 The node and all directly-connected edges highlight.
-   3.2 A two-hop outline or context halo may appear to show related nodes.
-   3.3 Clicking a different node transfers the highlight; clicking empty space clears it.
-   3.4 Physics stays calm—the graph should not re-explode or significantly re-shuffle as a result of selection.
-4. Timeline Scrubbing: Moving the time-slider hides or reveals nodes/links according to their timestamp.
-   4.1 Visible items fade in/out smoothly; existing node positions are preserved where possible.
-   4.2 No central burst or full simulation restart occurs during normal scrubbing.
-5. Category / Filter Toggles: Toggling category check-boxes (or tag filters) shows/hides subsets of nodes.
-   5.1 The remaining nodes maintain their current positions; hidden nodes are simply removed from rendering.
-   5.2 Again, no physics reset or burst from centre is expected.
-6. Lens Change (Causal ▸ Affinity ▸ Temporal): Switching the active “lens” swaps in an entirely different edge set and possibly node subset.
-   6.1 A fresh physics run is intentional here: nodes collapse to the centre and burst outward to re-settle under the new force configuration.
-   6.2 After this single, deliberate re-explosion the graph behaves as in cases #2-#5 until the user switches lenses again.
-
 ## Test 1 - Do Nothing
 
 ### Test 1: Process

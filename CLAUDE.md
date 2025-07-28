@@ -1,7 +1,14 @@
+DEBATE STATUS: NULL & VOID -> MUST RESTART
+
 # Helpful Resources
 
-1. @baseline-smokescreen-tests.md - includes a detailed description of the intended behavior from a user experience perspective + observations and full browser console log from the two latest smoke screen test
-2. @docs/tmp-groupchat/phase-2/align-graph-behavior-scratchpad.md - refer to lines 876-1111 to understand the most recent changes made
+Carefully read and absorb the following resources:
+
+1. @baseline-smokescreen-tests.md - this document includes:
+   1.1 Detailed description of the intended behavior from a user experience perspective
+   1.2 Overviews of the two lastest smoke screen tests as of the following **commit afc96f74** (i.e commit/change, process, chronological account, full console logs)
+2. @docs/tmp-groupchat/phase-2/align-graph-behavior-scratchpad.md - refer **only** to lines 1518-1741, **treat each claim is false until proven otherwise**
+3. **Tip**: locate every commit that modifies baseline-smokescreen-tests.md. For each interval between those commits, chronologically list every file changed and show line-by-line diffs of any edits relevant to your task.
 
 # WARNING
 
@@ -13,7 +20,7 @@ You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below. **Every
 2. **Plan** - Recursively break the task down into subtasks.
 3. **Probe** – For each subtask, examine multiple perspectives (even unlikely ones). Try to format each subtask as falsifiable OODA loop.
 4. **Sequence** - Work backwards from the desired end state, group related subtasks, and map out the exact sequence to execute. Make note of key dependencies.
-5. **Parallelize by default** - Use your Task/Agent tool to subtasks to sub-agents.
+5. **Parallelize by default** - Use your Task/Agent tool to delegate tasks to sub-agents.
 6. **Verify ×3** – Triple-check every step; note uncertainties and opposing views.
 7. **Cross-check** – Use at least twice your usual verification methods (math, web searches, logic tools, authoritative sources, etc.).
 8. **Stress-test** – When confident, actively search for hidden gaps or assumptions and document how you resolved them.

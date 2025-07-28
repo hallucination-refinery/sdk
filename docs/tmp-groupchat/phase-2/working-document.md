@@ -1,131 +1,65 @@
-Last Updated: 4:00 AM EST, 25/07/2025
+# Executive Summary
 
-# W - Phase 2 Completed
+The Phase‑2 branch compiles, but three acute issues make the demo untestable:
 
-Definition: Every legacy force-graph dependency is replaced by the new SDK store-driven rendering path, with all items in phase 2 of the @migration-checklist.md file is marked DONE and the demo running without clumping, freezes, or build-time aliases.
+- a leftover breakpoint/`debugger` call at **CrypticAnimusScene.tsx l295** pauses every load,
+- an undefined global `simData` in `setupWindowFG` throws on mount,
+- and a render‑phase zustand `setState` causes hundreds of **ForceGraph3D** remounts plus the React “setState in render” error.  
+  Until a single, uninterrupted mount is guaranteed, physics, UX, and performance work are noise.
 
-Success Metric:
+Our fastest route is to focus on a **Stable Scene Lifecycle** sub‑goal: make the graph mount exactly once and stay mounted. Removing the breakpoint, fixing `simData`, and deferring the rogue `setState` will unblock profiling, simplify console output, and let us verify the remaining UX criteria in hours instead of days.
 
-1. Demo runs 5X smoothly with the intended behavior
-2. All Phase 2 migration checklist items DONE
+# W: Phase 2 Completed
 
-# Open Questions (Ranked)
+All legacy `@refinery/interaction` code is replaced by `@refinery/store`, the repo is free of unused files, and the demo passes **five consecutive smoke‑screen runs** that satisfy the Intended Behaviour checklist without console errors or ForceGraph remounts.
 
-1. ~~**Ref exposed.** `FG ref …` log confirms `fgRef.current` and assignment run.~~ **RESOLVED**
-2. ~~Ref methods list shows no `graphData` function and no `d3Alpha`; need alternative way to access simulation or ensure adapter passes full API.~~ **RESOLVED**: Access via `__kapsuleInstance.d3ForceLayout`
-3. Browser is loading stale pre-built `@refinery/store` because webpack alias was lost during reset—new code isn't reaching client.
+## Sub‑W: Stable Scene Lifecycle
 
-# Immediate Next Actions
+Deliver a scene that **mounts once per page‑load and never remounts on idle, hover, filter, or timeline changes**. This removes the major blocker to validating every UX requirement.
 
-**UPDATE (2025-07-25)**: Alpha access path discovered and fixed! Diagnostic now correctly logs numeric alpha values.
+### Sub‑W Checklist
 
-~~Alias restored (`f56470f4`) but smoke-screen shows **no change**: nodes still clumped. Diagnostic alpha logs print only after hover and stay `n/a` → `d3Force()` returns undefined alpha.~~
+- [ ] Delete or guard the breakpoint / `debugger` at CrypticAnimusScene.tsx l295
+- [ ] Remove or properly initialise the `simData` reference in `setupWindowFG`
+- [ ] Refactor hover / click handlers to avoid zustand `setState` during render
+- [ ] Confirm exactly **one** `[FGAdapter] mounted` log after 10 s idle
+- [ ] Console shows **zero** red errors on load and first hover
 
-**COMPLETED Actions**:
+## ROADMAP
 
-1. ✅ Located internal d3-simulation handle at `__kapsuleInstance.d3ForceLayout`
-2. ✅ Fixed diagnostic code to use correct path: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha()`
-3. ✅ Verified programmatic control: `window.__FG.__kapsuleInstance.d3ForceLayout.alpha(0.8).restart()`
+| Phase | Action                                                                                                            | 90 %‑CI Effort | P(success) | Notes                              |
+| ----- | ----------------------------------------------------------------------------------------------------------------- | -------------- | ---------- | ---------------------------------- |
+| 0     | **Kill hard pauses** – search & remove `debugger`; fix `simData`                                                  | 0.5‑1 h        | 0.9        | Simple code edits, high payoff     |
+| 1     | **Stop render‑phase updates** – move `selectNodes` etc. into event callbacks; wrap in `startTransition` if needed | 2‑4 h          | 0.75       | Expect at most two offending calls |
+| 2     | **Verify single mount** – use React Profiler flame‑chart + console guard                                          | 1‑2 h          | 0.7        | Add temp `mountCount` assert       |
+| 3     | **Silence dev‑only spam** – implement `isDebugMode`, cap retries, strip logs                                      | 1 h            | 0.95       | Improves future smoke tests        |
+| 4     | **Run mini‑UX battery** – load, hover, click, scrub, filter                                                       | 1‑2 h          | 0.6        | Likely reveals minor prop issues   |
+| 5     | **Clean Phase‑2 leftovers** – delete `packages/interaction`, dedupe helpers                                       | 2‑3 h          | 0.85       | Straightforward once stable        |
+| 6     | **Five automated smoke runs & merge**                                                                             | 1 h            | 0.9        | Use clean cache between runs       |
 
-**New Immediate Actions**:
+**Median timeline:** 1 full working day; **90 % bound:** ≤3 days.
 
-1. Verify nodes actually spread apart when alpha is high (visual confirmation needed)
-2. Test if removing cooldown overrides (Infinity, 0) allows natural simulation settling
-3. Investigate why nodes remain clumped despite active simulation (alpha > 0)
+# RUNNING NOTES
 
-## ULTRA-DEEP ANALYSIS (2025-07-24 18:10)
+1. Unknown prop/key still forcing remounts—trace in Profiler after Phase 1.
+2. Immer middleware may copy large graphs; watch memory once lifecycle is stable.
+3. Need quick headless smoke script to assert “exactly one mount, zero errors” in CI.
+4. Risk: library incompatibility with React 19.1; if mounts persist after fixes, isolate in sandbox.
 
-Objective: locate why simulation alpha remains inaccessible (d3Alpha undefined) despite ref exposure and force configuration.
+# RETROSPECTIVES
 
-Sub-tasks & verification strategy
+_What went well_
 
-1. Locate internal d3-simulation handle
-   a. Read r3f-forcegraph source (`threeForceGraph.js`) → search for `.alpha(`.
-   b. Cross-verify with TypeScript defs to confirm method names.
-   c. Hypothesis: property `_engine` or `__forceSim` exists; test via `Object.keys(window.__FG)` in browser.
-   d. Falsification: if no such property, wrapper strips alpha API. Counter-check by importing ThreeForceGraph directly in a test file.
+- Detailed smoke‑screen logs surfaced precise failure points.
+- Store slice architecture appears sound; physics engine performs ≥60 FPS when not paused.
 
-2. Confirm forces actually running
-   a. Insert `console.log(node.x)` for first node every tick (use `tickFrame()` in interval).
-   b. Independent check: in CLI test, diff node positions JSON before/after 2s → expect Δ > 0.
+_What we could improve_
 
-3. Re-evaluate cooldown overrides
-   a. With alpha still n/a, cooldown suppression may freeze simulation; remove `cooldownTime`, `cooldownTicks`, `d3AlphaDecay` overrides and retest.
-   b. Verify via browser network diff that new bundle lacks those props (grep in .next static chunk).
+- Shipped v6 “fix” without first reproducing root‑cause in Profiler.
+- Breakpoints and verbose logs were committed, blocking tests.
 
-4. Double-clone side-effects
-   a. StructuredClone may strip getters (alpha). Test by logging a cloned graph object and checking for `alpha` field.
-   b. Create synthetic nodes without clone in sandbox; mount ForceGraph directly to confirm alpha accessible.
+_High‑impact action items_
 
-Triple-verification tools
-
-- Grep / rg search across node_modules
-- Node REPL to require r3f-forcegraph and inspect prototype
-- Playwright script to capture node positions and compare
-- Git diff of .next bundle for cooldown props
-- `console.dir` with depth to list hidden fields
-
-Known uncertainties / pitfalls
-
-- Different r3f-forcegraph version in view-three may shadow correct one → check import graph via `npm ls | grep r3f-forcegraph`.
-- Our Object.freeze monkey-patch could inadvertently remove simulation getters; test with patch removed.
-
-Final reflective pass
-After executing steps above, reassess: did any assumption about alpha API prove false? Did force config or clone overshadow simulation energy? Document contradictions and adjust probability of each cause accordingly.
-
-## Detailed Plan for Victory
-
-_Concrete, obstacle-free path from now → "W". Update whenever assumptions change._
-
-1. 🔍 **Simulation Alpha Access** — expose internal d3-simulation handle and verify alpha mutability.
-2. 🪄 **Force Kick Works** — programmatically `alpha(0.8).restart()` spreads nodes in local test.
-3. ⚙️ **Remove Freeze Guards Iteratively** — re-enable natural cooling parameters and confirm no regressions.
-4. 🧹 **Prune Redundant structuredClone** — eliminate double-clone to cut 30 ms overhead.
-5. 🛠 **Smoke-screen Test Passes** — baseline script shows nodes separate within 3 s, alpha → < 0.005 after 15 s.
-6. 🗂 **Merge `replace-interaction-with-store` → `main`** — after user confirmation & checklist green.
-
-## Roadmap & Milestones (living)
-
-| ETA   | Milestone                         | 90 % CI | Owner          | Status         |
-| ----- | --------------------------------- | ------- | -------------- | -------------- |
-| 07-25 | Alpha handle located & logged     | ±0.5 d  | Assistant      | ✅ completed   |
-| 07-26 | Nodes de-clump in dev build       | ±1 d    | Assistant      | 🔄 in-progress |
-| 07-27 | Full smoke-screen green           | ±1 d    | User           | pending        |
-| 07-28 | Branch merged after manual verify | ±2 d    | Assistant/User | pending        |
-
-> 📏 _Update confidence bands aggressively; “missing milestone” = escalate._
-
-## Roles & Ownership (DRI table)
-
-| Area                            | Directly Responsible Individual | Notes                             |
-| ------------------------------- | ------------------------------- | --------------------------------- |
-| Force-graph internals & physics | Assistant                       | Investigation / code patches      |
-| Manual smoke-screen validation  | User                            | Final “yes”/“no” gate             |
-| Branch hygiene / CI green       | Assistant                       | Ensure no regressions             |
-| Architectural sign-off          | User                            | Approves removal of freeze guards |
-
-## Fast OODA Loop Ritual
-
-Daily (or more frequent while blocked):
-
-1. **Observe** — Run diagnose script, capture alpha & node positions.
-2. **Orient** — Update _Open Questions_ & this doc.
-3. **Decide** — Pick highest-impact next action (top of Immediate Next Actions).
-4. **Act** — Implement; push patch; post update in project channel.
-
-⏰ _Target < 4 h turnaround between observing a new fact and updating plan._
-
-## Weekly Broadcast Update (template)
-
-```
-**Phase-2 status – YYYY-MM-DD**
-Vibe: 🔥 / 🙂 / 😐 / 😰
-Changes:
-• …
-Coming up:
-• …
-Blocking:
-• …
-```
-
-_Post in #phase-2 channel & link to latest working doc._
+1. **Profiler‑first rule:** capture a flame‑chart before any future lifecycle fix.
+2. **CI lint** for `debugger` / unguarded `console.log` in non‑test code.
+3. Add automated mount‑and‑error smoke test to prevent regressions.
