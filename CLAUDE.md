@@ -1,23 +1,15 @@
-# Helpful Resources
+# WARNING
 
-Carefully read and absorb the following resources. Note that **skepticism** is required:
+You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below. **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
+
+# REGARDING DOCUMENTATION
+
+Note that **skepticism** is required:
 
 1. **Never** accept any statement made in any .md file at face value.
 2. Note and cross-reference each file's "Last Updated" line.
 3. Confirm accuracy by inspecting the relevant git commits and diffs
 4. Even these documents/excerpts I've cited below—though likely accurate—**must** still be verified and treated with caution.
-
-List:
-
-1. @docs/tmp-groupchat/phase-2/working-document.md
-2. @baseline-smokescreen-tests.md - this document includes:
-   1.1 Detailed description of the intended behavior from a user experience perspective
-   1.2 Overviews of the two lastest smoke screen tests as of the following **commit afc96f74** (i.e commit/change, process, chronological account, full console logs)
-3. @docs/tmp-groupchat/phase-2/align-graph-behavior-scratchpad.md - refer **only** to lines 1518-1741
-
-# WARNING
-
-You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below. **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
 
 ## ULTRATHINK MODE
 

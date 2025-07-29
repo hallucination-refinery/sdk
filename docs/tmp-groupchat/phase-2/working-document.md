@@ -1,69 +1,54 @@
+### Last Updated: 07:52 PM, 29/07/2025
+
 # Executive Summary
 
-The Phase-2 branch compiles and the **50-line repro-sandbox (`/app/debug/fg-repro`) now loads without R3F errors**, giving us a deterministic target for profiling.  
-Fresh evidence from the React Profiler and console logs shows **two separate issues**:
+The latest smoke‑screen confirms that our refresh() patch wired through correctly (the method exists and is callable), yet the canvas stays blank because layoutTick dereferences layout.tick on an undefined layout object, triggering a fatal 'reading tick' error inside three‑forcegraph. All 213 nodes / 300 links are present, the adapter mounts exactly twice (StrictMode), and window.\_\_FG exposes the expected seven methods, so data plumbing and lifecycle are sound. The blocker is our own early physics bootstrap (tickFrame, forced ticks, and d3ReheatSimulation) which fire before the internal D3‑force engine is initialised, leaving layout undefined. In parallel, the TypeScript build now fails (unused @ts‑expect‑error, ref‑typing mismatch), so CI is red.
 
-1. **Remount loop** – triggered by an internal state change inside `CrypticAnimusScene.tsx`, _not_ by zustand logic.
-2. **`setState`-in-render** – caused by zustand updates in hover / click handlers in the main app.
+**Immediate path**: remove/guard premature physics calls and wait for the engine to exist, then prove visible nodes. Once the runtime is green we can clean the lingering TS type issues.
 
-There is **no live `debugger;` statement** at line 295—the earlier pause came from a manual breakpoint in Chrome DevTools. Our fastest path is therefore:
+# W: Phase 2 Completed
 
-- patch the trivial `simData` `ReferenceError`,
-- stabilise the sandbox so `ForceGraphAdapter` mounts exactly once (proving the lifecycle fix),
-- then refactor the zustand handlers in the full app.
+A Phase‑2 repo where the ForceGraph scene mounts once per page‑load, never remounts spuriously, renders the full graph on first paint, and runs without React, R3F, or console errors in dev & CI builds.
 
-# W: Phase 2 Completed
+## Sub‑W: “Engine‑Safe First Frame”
 
-All legacy `@refinery/interaction` code is replaced by `@refinery/store`; the repo is cleaned of unused files; the demo passes **five consecutive smoke-screen runs** that satisfy the Intended Behaviour checklist without console errors or ForceGraph remounts.
+Bring the graph to life by ensuring the first physics tick only runs after the Kapsule layout engine is ready.
 
-## Sub-W: Stable Scene Lifecycle
+### Sub‑W Checklist
 
-Deliver a scene that **mounts once per page-load and never remounts on idle, hover, filter, or timeline changes**, both in the sandbox and the full demo.
-
-### Sub-W Checklist
-
-- [ ] **Fix `simData`**: properly initialise or remove the global in `setupWindowFG`.
-- [ ] Analyse `repro-sandbox-profile.json` flame chart; identify why `graphVersion` state change discards `ForceGraphAdapter`.
-- [ ] Implement lifecycle fix (stable `key`, memoisation, or lifted state) so `[FGAdapter] mounted` logs once (twice in React StrictMode).
-- [ ] Sandbox console shows **zero** red errors.
-- [ ] Refactor hover / click handlers to avoid zustand `setState` during render.
-- [ ] Confirm single mount and clean console in the full demo.
+    •	Detect engine readiness (if (ref.current?.tickFrame && ref.current?.__kapsuleInstance?.layout))
+    •	Gate d3ReheatSimulation, tickFrame, and forced‐tick loop behind that check
+    •	Verify no layoutTick errors in console
+    •	Confirm nodes/links visible without manual refresh
+    •	Re‑run smoke screen: expect 2 mounts, 0 errors, visible graph
 
 ## ROADMAP
 
-| Phase | Action                                                                                         | 90 %-CI Effort | P(success) | Notes                                                |
-| ----- | ---------------------------------------------------------------------------------------------- | -------------- | ---------- | ---------------------------------------------------- |
-| 0-c   | **Trivial fixes** – patch `simData`; ensure DevTools breakpoints cleared                       | 0.5 h          | 0.95       | No debugger in code; just clear DevTools breakpoints |
-| 1     | **Sandbox remount fix** – use profiler data to stabilise lifecycle                             | 1-3 h          | 0.85       | Flame chart already captured                         |
-| 2     | **Zustand render-phase fix** – move updates out of render, wrap in `startTransition` if needed | 2-4 h          | 0.75       | Separate from remount bug                            |
-| 3     | **Mini-UX battery** – hover, click, scrub, filter in full demo                                 | 1-2 h          | 0.7        | Expect minor prop issues                             |
-| 4     | **Repo clean-up** – delete `packages/interaction`, dedupe helpers                              | 2-3 h          | 0.9        | Standard hygiene                                     |
-| 5     | **Automated smoke runs & merge**                                                               | 1 h            | 0.9        | Five clean runs with fresh cache                     |
+Step Action 90 %‑CI Effort P(success) Notes
+ 0‑d Hot‑fix runtime – wrap physics bootstrap in engine‑ready guard 0.5 h 0.9 Pure JS tweak
+ 1 Remove deprecated forced‑tick loop and rely on built‑in cool‑down 1‑2 h 0.8 May adjust UX timing
+ 2 TS type clean‑up – fix @ts‑expect‑error, align ref typing with r3f‑forcegraph generics 1‑2 h 0.85 Unblocks CI
+ 3 Regression smoke: 5 clean runs, artefact snapshot 0.5 h 0.9
+ 4 Merge Phase‑2 to main 0.2 h 0.95
 
-**Median timeline:** 1.5 working days; **90 % bound:** ≤3 days.
+_Overall_: I’m 70 % confident the guard alone restores rendering; 20 % chance further refactor (e.g. removing manual tickFrame) is required; 10 % chance an upstream three‑forcegraph bug forces a library patch.
 
 # RUNNING NOTES
 
-1. Profiler shows `graphVersion` state bump forces unmount; fix should target that diff.
-2. Immer copies of large graphs may hit perf; revisit after lifecycle stabilises.
-3. Need headless CI smoke test to assert “one mount, zero errors”.
-4. Canvas wrapper fix removed R3F context error; current blockers are `simData` throw and remount loop.
-5. Manual Chrome breakpoints (not code) caused earlier pauses—ensure DevTools “Pause on exceptions” is off during tests.
+    1.	Unknown engine init timing – we haven’t waited for the Kapsule onEngineTick/onEngineStop events; need empirical delay or callback.
+    2.	Possible double physics start – both our forced loop and the library’s own simulation may run if we don’t prune correctly.
+    3.	TypeScript red build masks runtime fixes in CI – fix quickly to avoid signal dilution.
+    4.	StrictMode double‑invoke confirmed benign; ignore unless new side‑effects appear.
+    5.	If guard works but graph still blank, inspect camera position & opacity uniforms.
 
 # RETROSPECTIVES
 
-_What went well_
+What went well
+• Refresh() wiring proved correct; data flow & mount lifecycle stable.
+• Logging granularity let us pin the exact failing call stack.
 
-- Repro-sandbox isolated lifecycle bug, eliminating noise from zustand and UI.
-- Profiler capture (`repro-sandbox-profile.json`) gives concrete evidence for fix.
+What we could improve
+• We triggered physics too early—assumed layout ready without verification.
+• Type safety debt (quick @ts‑expect‑errors) now blocks builds.
 
-_What we could improve_
-
-- Earlier “v6 fix” shipped without profiler confirmation.
-- Manual breakpoints slipped into commits; slow to notice.
-
-_High-impact action items_
-
-1. **Profiler-first rule**: capture a flame chart before any lifecycle/perf fix.
-2. **CI lint**: reject commits with raw `console.log` or `debugger`.
-3. **Automated mount test**: fail CI if remount count > 1 or console has errors.
+High‑impact action items 1. Adopt “engine‑ready check” pattern for all imperative Kapsule calls. 2. Integrate a CI rule: fail if console.error logs during smoke test. 3. Do not merge patches that introduce temporary @ts‑expect‑error without follow‑up ticket.

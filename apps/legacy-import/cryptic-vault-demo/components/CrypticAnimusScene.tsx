@@ -75,8 +75,8 @@ export default function CrypticAnimusScene({
 }: CrypticAnimusSceneProps) {
   const fgRef = useRef<any>(null)
   
-  // Add state-based graphVersion tracking with clean separation
-  const [graphVersion, setGraphVersion] = useState(0)
+  // Replace graphVersion with ref-based tracking to prevent remounts
+  const graphDataRef = useRef(data)
   const prevDataStatsRef = useRef<{ nodeCount: number; linkCount: number }>({ nodeCount: 0, linkCount: 0 })
   const hasSpawnedRef = useRef(false)
   
@@ -88,30 +88,30 @@ export default function CrypticAnimusScene({
   const physicsRetryCount = useRef(0)
   const windowFGRetryCount = useRef(0)
   
-  // Track RAW structure changes only
+  // Track RAW structure changes and update ref without remounts
   useEffect(() => {
     const nodeCount = data.nodes.length
     const linkCount = data.links.length
     
     if (prevDataStatsRef.current.nodeCount !== nodeCount || 
         prevDataStatsRef.current.linkCount !== linkCount) {
-      console.log('[GRAPH VERSION] Raw structure changed - incrementing version. Nodes:', nodeCount, 'Links:', linkCount)
-      setGraphVersion(v => v + 1)
+      console.log('[GRAPH VERSION] Raw structure changed - updating ref. Nodes:', nodeCount, 'Links:', linkCount)
+      graphDataRef.current = data
       prevDataStatsRef.current = { nodeCount, linkCount }
     }
-  }, [data.nodes.length, data.links.length]) // Track ONLY structural changes
+  }, [data]) // Track data changes
   
   // Validation logging (separate useEffect)
   useEffect(() => {
-    console.log('[REMOUNT CHECK] graphVersion:', graphVersion, 'visibleIds:', visibleIds?.size)
-  }, [graphVersion, visibleIds?.size])
+    console.log('[REMOUNT CHECK] graphDataRef updated, visibleIds:', visibleIds?.size)
+  }, [visibleIds?.size])
 
   const {
     nodes: memoizedNodes,
     links: memoizedLinks,
     nodeMap,
   } = useMemo(() => {
-    console.log('[CrypticAnimusScene] Memoizing graph data for version:', graphVersion)
+    console.log('[CrypticAnimusScene] Memoizing graph data')
     
     // Use structuredClone to ensure fresh objects, replacing shallow spreads
     const nodes = structuredClone(data.nodes)
@@ -164,7 +164,7 @@ export default function CrypticAnimusScene({
     
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     return { nodes, links, nodeMap }
-  }, [graphVersion]) // ONLY graphVersion dependency
+  }, [data]) // Use data dependency
 
   const memoizedGraphData = useMemo(
     () => ({
@@ -955,7 +955,7 @@ export default function CrypticAnimusScene({
       <ForceGraph3D
         ref={fgRef}
         graphData={memoizedGraphData}
-        dataVersion={graphVersion}  // Pass version state
+        // dataVersion removed to prevent remounts
         nodeId="id"
         linkSource="source"
         linkTarget="target"

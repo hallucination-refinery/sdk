@@ -137,24 +137,53 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   }, [disableLinkForce, ref])
   // ----------------------------------------------------------------------
   
-  // PHASE 4: Monitor ref forwarding
+  // Expose ref.current to window.__FG unconditionally after mount
   useEffect(() => {
     console.log('[FGAdapter] ref after mount:', ref)
-    if (ref && typeof ref === 'object' && 'current' in ref) {
+    if (ref && typeof ref === 'object' && 'current' in ref && ref.current) {
       console.log('[FGAdapter] ref.current:', ref.current)
       console.log('[FGAdapter] ref.current keys:', Object.keys(ref.current || {}))
-      
-      // Check what ForceGraph3D actually creates
-      setTimeout(() => {
-        console.log('[FGAdapter] ref.current after 1s:', ref.current)
-        if (ref.current) {
-          console.log('[FGAdapter] Has __kapsuleInstance?', '__kapsuleInstance' in ref.current)
-          console.log('[FGAdapter] Constructor:', ref.current.constructor?.name)
-          console.log('[FGAdapter] All properties:', Object.getOwnPropertyNames(ref.current))
-        }
-      }, 1000)
+      console.log('[FGAdapter] Assigning window.__FG = ref.current')
+      ;(window as any).__FG = ref.current
+      console.log('[FGAdapter] window.__FG assigned successfully')
+      console.log('[CLAUDE] ready-for-smoke-screen')
     }
   }, [ref])
+
+  // Critical: Call refresh() when data changes to trigger re-render
+  useEffect(() => {
+    if (ref && typeof ref === 'object' && 'current' in ref && ref.current) {
+      // Edge case: Check if data exists and has nodes before calling refresh
+      if (!safeGraphData || !safeGraphData.nodes || safeGraphData.nodes.length === 0) {
+        console.log('[FGAdapter] Skipping refresh - no data or empty nodes array')
+        return
+      }
+      
+      console.log('[FGAdapter] Data changed, calling refresh()', {
+        nodeCount: safeGraphData.nodes.length,
+        linkCount: safeGraphData.links?.length || 0
+      })
+      
+      // Check if refresh method exists (it should according to r3f-forcegraph API)
+      if (typeof (ref.current as any).refresh === 'function') {
+        try {
+          (ref.current as any).refresh()
+          console.log('[FGAdapter] Called ref.current.refresh() successfully')
+          
+          // Also update window.__FG reference in case it changed
+          if ((window as any).__FG !== ref.current) {
+            (window as any).__FG = ref.current
+            console.log('[FGAdapter] Updated window.__FG with latest ref.current')
+          }
+        } catch (error) {
+          console.error('[FGAdapter] Error calling refresh():', error)
+        }
+      } else {
+        console.warn('[FGAdapter] refresh() method not found on ref.current')
+        console.log('[FGAdapter] Available methods:', Object.keys(ref.current || {}))
+      }
+    }
+  }, [safeGraphData, ref])
 
   return (
     // @ts-expect-error - ForceGraph3D has its own ref type that we're wrapping

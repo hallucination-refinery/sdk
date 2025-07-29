@@ -1058,3 +1058,137 @@ ForceGraphAdapter.tsx:146 [FGAdapter] ref.current after 1s: {emitParticle: ƒ, g
 ForceGraphAdapter.tsx:148 [FGAdapter] Has **kapsuleInstance? false
 ForceGraphAdapter.tsx:149 [FGAdapter] Constructor: Object
 ForceGraphAdapter.tsx:150 [FGAdapter] All properties: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']`
+
+---
+
+## Phase 2: Remove Dynamic Keys & Expose Kapsule (INVESTIGATION COMPLETE)
+
+**Goal**: Stable ForceGraph3D mounting via (a) stable keys, (b) proper `window.__FG` exposure.
+
+**Investigation Results (29 Jul 2025)**:
+
+- **Task 1**: Search for `key={graphVersion}` props on ForceGraphAdapter/ForceGraph3D elements
+  - **Result**: NONE FOUND. No dynamic keys exist on any ForceGraph3D components.
+  - **Evidence**: grep search returned 0 matches for `key\s*=\s*\{graphVersion`
+  - **Verification**: Checked ForceGraph3D component at line 955 - no key prop present
+- **Task 2**: Change `window.__FG = fgRef` to `window.__FG = fgRef.current`
+  - **Result**: ALREADY CORRECT. Line 253 already has `;(window as any).__FG = fgRef.current`
+  - **Evidence**: Direct inspection of CrypticAnimusScene.tsx line 253
+  - **No change needed**: The code is already using the correct pattern
+
+**TypeScript Build Status**:
+
+- Pre-existing errors in ForceGraphAdapter.tsx (lines 160, 162) unrelated to these tasks
+- No new TypeScript errors introduced
+
+**Success Criteria**:
+
+- [x] Zero occurrences of `key={graphVersion}` after `grep` - VERIFIED
+- [ ] Browser console shows exactly 2 `[FGAdapter] mounted` logs (Strict Mode) with **no** errors - REQUIRES TESTING
+- [ ] `typeof window.__FG.graphData === "function"` returns `true` - REQUIRES TESTING
+- [x] scratchpad updated with change log and verification - DONE
+
+**Conclusion**: Both requested fixes are already implemented correctly in the codebase. No code changes were necessary.
+
+## Where we **currently** stand — step-by-step
+
+| #   | Observation from latest sandbox run                                                                               | Certainty                            | What it means                                                                                                                                                                  |
+| --- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | **Four** `[FGAdapter] mounted` lines appear (two pairs)                                                           | **High** – directly visible in log   | We still trigger a _real_ unmount/remount cycle after the Strict-Mode double-mount. The scene is **not** yet lifecycle-stable.                                                 |
+| 2   | `window.__FG` is an **object** but `graphData` is **missing** after 1 s (`false`)                                 | **High** – verified by console eval  | The ref we expose is _not_ the underlying Kapsule instance. (`emitParticle`, `d3Force`, … exist, but `graphData` does not.)                                                    |
+| 3   | `[GRAPH VERSION] Raw structure changed – incrementing version` fires, followed by a second pair of `mounted` logs | **High**                             | The `graphVersion` state is **still** being incremented inside _CrypticAnimusScene_, causing React to construct a fresh `<ForceGraphAdapter>` despite the key prop being gone. |
+| 4   | `forceGraphRef.current` still prints **Has \_\_kapsuleInstance? false**                                           | **High**                             | Confirms point 2: we’re holding the React wrapper, not the Kapsule.                                                                                                            |
+| 5   | No red TypeScript errors introduced; retry logic (`Retry 1…`) still executes                                      | **Medium** – inferred from code-path | The safety retries mask failures but do not contribute to the remount.                                                                                                         |
+
+### Interim verdict
+
+- **Assertion A fails** – more than the expected 2 mount logs.
+- **Assertion B fails** – Kapsule instance still not exposed.
+
+We therefore remain **blocked** on the “Stable Scene Lifecycle” sub-goal, with **high certainty** that:
+
+1. `graphVersion` updates are the direct cause of the extra mount cycle.
+2. Our `window.__FG` assignment happens **before** the ref points at the real Kapsule object.
+
+---
+
+## Immediate next steps (in order)
+
+1. **Neutralise `graphVersion` as a remount trigger**  
+   _a._ In _CrypticAnimusScene.tsx_, remove the `<ForceGraphAdapter key={graphVersion}>` pattern **if still present** (grep again).  
+   _b._ Replace the `graphVersion` state update with an _in-place_ `useRef` copy of graphData that is patched via `useEffect`, so the parent component never unmounts the adapter.
+
+2. **Expose the true Kapsule instance**  
+   Inside **ForceGraphAdapter.tsx**, after `fgRef.current` is populated **and** `fgRef.current.__kapsuleInstance` exists, run:
+   ```ts
+   if ((window as any).__FG !== fgRef.current.__kapsuleInstance) {
+     ;(window as any).__FG = fgRef.current.__kapsuleInstance
+   }
+   ```
+
+Wrap this in the existing retry loop so it waits until the field is available. 3. Add an explicit console.log('[FGAdapter] unmounted') in useEffect cleanup to double-check there are no hidden unmounts. 4. Re-run the smoke screen (StrictMode still on).
+✔ Expect exactly two [FGAdapter] mounted and zero [FGAdapter] unmounted.
+✔ typeof window.\_\_FG.graphData === 'function' must return true within 1 s. 5. Only if it still remounts: profile with React DevTools again and capture the component tree diff to pinpoint the parent that is replacing the adapter.
+
+These steps are sufficient to satisfy the Stable Scene Lifecycle checklist and unblock the broader Phase-2 work.
+
+---
+
+# Where we **currently** stand ‑ step‑by‑step
+
+| Step | What we expected                                                                         | What we observed                                                                                              | Certainty                        | Implication                                                                                                                                     |
+| ---- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | **Stable mount count** – two `[FGAdapter] mounted` lines (React StrictMode double‑mount) | ✅ Exactly two `mounted` lines appear                                                                         | **High** (explicit log lines)    | The `key={graphVersion}` remount trigger is genuinely gone.                                                                                     |
+| 2    | **Graph rendered on canvas** after physics warm‑up                                       | ❌ _Nothing_ visible (blank scene) even though physics logs show forces applied                               | **High** (visual + log evidence) | Removing the `graphVersion` state removed the path that was previously calling `.graphData(...)`, so the adapter never receives data to render. |
+| 3    | `window.__FG` should point to a Kapsule instance whose API includes `.graphData`         | ❌ `typeof window.__FG.graphData === "function"` → **false**; adapter log says `Has __kapsuleInstance? false` | **High** (direct console check)  | The new exposure logic never finds `__kapsuleInstance` and therefore assigns the wrong object (or nothing) to `window.__FG`.                    |
+| 4    | No new runtime errors introduced                                                         | ✅ No new red errors; still see the pre‑existing `tickFrame` TypeError mentioned earlier                      | **Medium**                       | The blank scene is a _logic gap_, not an additional crash.                                                                                      |
+
+### What the latest profile (`repro-sandbox-profile‑5.json`) confirms
+
+- 0 → 1 React commit where `ForceGraphAdapter` mounts, but no subsequent commits update its props with non‑empty `graphData`.
+- No unmounts/remounts triggered by state—consistent with the log.
+
+Certainty: **High** that the adapter is mounted only once; **High** that it never receives live data.
+
+---
+
+# Immediate next steps (minimal, ordered)
+
+1. **Pipe data through a stable prop**  
+   _Restore a `graphData` prop on `<ForceGraphAdapter>` that points to `graphDataRef.current`.  
+   Because the ref is stable, React won’t remount, but the adapter will re‑render when the object identity changes._
+
+2. **Inside `ForceGraphAdapter`**
+   ```ts
+   useEffect(() => {
+     if (ref.current && props.graphData) {
+       ref.current.graphData(props.graphData) // <-- call Kapsule setter
+     }
+   }, [props.graphData])
+   ```
+
+This mirrors the original behaviour without touching mount lifecycle. 3. Expose the correct object to window.\_\_FG
+During the same useEffect, after ref.current is verified to have a graphData function, assign:
+
+if (typeof (ref.current as any).graphData === 'function') {
+(window as any).\_\_FG = ref.current;
+}
+
+Empirically matches the API surface we see (emitParticle, refresh, …) since \_\_kapsuleInstance never appears.
+
+    4.	Re‑run the smoke‑screen
+
+Assertions:
+• Two mounted logs only.
+• Nodes/links visible.
+• typeof window.\_\_FG.graphData === "function" → true. 5. If still blank
+• Log ref.current.graphData() to make sure data actually reached Kapsule.
+• Check camera position / three.js scene fog.
+
+⸻
+
+Confidence levels
+• Fix will very likely restore visuals (≈80 %) because logs show data is prepared; only the handshake to Kapsule is missing.
+• Mount stability is already achieved (≈95 %) – risk of regression low as long as we avoid new key props.
+• The lingering tickFrame TypeError remains (≈100 %) separate; tackle once basic rendering is back.'
+⸻
