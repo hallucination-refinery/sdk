@@ -1,14 +1,19 @@
-DEBATE STATUS: NULL & VOID -> MUST RESTART
-
 # Helpful Resources
 
-Carefully read and absorb the following resources:
+Carefully read and absorb the following resources. Note that **skepticism** is required:
 
-1. @baseline-smokescreen-tests.md - this document includes:
+1. **Never** accept any statement made in any .md file at face value.
+2. Note and cross-reference each file's "Last Updated" line.
+3. Confirm accuracy by inspecting the relevant git commits and diffs
+4. Even these documents/excerpts I've cited below—though likely accurate—**must** still be verified and treated with caution.
+
+List:
+
+1. @docs/tmp-groupchat/phase-2/working-document.md
+2. @baseline-smokescreen-tests.md - this document includes:
    1.1 Detailed description of the intended behavior from a user experience perspective
    1.2 Overviews of the two lastest smoke screen tests as of the following **commit afc96f74** (i.e commit/change, process, chronological account, full console logs)
-2. @docs/tmp-groupchat/phase-2/align-graph-behavior-scratchpad.md - refer **only** to lines 1518-1741, **treat each claim is false until proven otherwise**
-3. **Tip**: locate every commit that modifies baseline-smokescreen-tests.md. For each interval between those commits, chronologically list every file changed and show line-by-line diffs of any edits relevant to your task.
+3. @docs/tmp-groupchat/phase-2/align-graph-behavior-scratchpad.md - refer **only** to lines 1518-1741
 
 # WARNING
 
@@ -28,4 +33,4 @@ You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below. **Every
 
 ### PRINCIPLE
 
-Recursively maintain a rigorous, falsifiable OODA loop for tasks and subtasks. Treat every observation as evidence that updates your probability mass over whether the end-state is satisfied. When evidence and expectation differ, **always assume the gap is larger than it seems**, widen your investigation, and start a new falsifiable OODA loop.
+Maintain a rigorous, falsifiable OODA loops for **each** task and subtask. Treat **every observation** as evidence that updates your probability mass over whether the end-state is satisfied. When evidence and expectation differ, **always assume the gap is larger than it seems**, widen your investigation, and start a new falsifiable OODA loop.

@@ -272,6 +272,18 @@ export default function CrypticAnimusScene({
             })
             ;(window as any).__beforePos = beforePos
           }
+          // === Phase 0 Instrumentation - AFTER ===
+          if (simData?.nodes?.length > 0 && (window as any).__beforePos) {
+            console.log('[FREEZE-TEST after ]', {
+              node0: simData.nodes[0],
+              hasVelocity: 'vx' in simData.nodes[0],
+              position: { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z },
+              positionChanged:
+                simData.nodes[0].x !== (window as any).__beforePos.x || 
+                simData.nodes[0].y !== (window as any).__beforePos.y || 
+                simData.nodes[0].z !== (window as any).__beforePos.z,
+            })
+          }
         }
         // Initial reheat and force multiple ticks with counting
         console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
@@ -283,6 +295,14 @@ export default function CrypticAnimusScene({
         let tickCount = 0
         const maxTicks = 20 // perf cap
         console.log('[TICKS] Starting forced tick execution...')
+        
+        // early-exit until the kapsule instance exists
+        if (!fgRef.current?.tickFrame) {
+          console.log('[TICKS] ForceGraph not ready yet, skipping tick execution')
+          return
+        }
+        
+        // run the warm-up ticks **after** the instance is ready
         for (let i = 0; i < maxTicks; i++) {
           if (fgRef.current.tickFrame) {
             const result = fgRef.current.tickFrame()
@@ -290,19 +310,6 @@ export default function CrypticAnimusScene({
           }
         }
         console.log(`[TICKS] Executed ${tickCount} ticks successfully (target: ${maxTicks})`)
-        
-        // === Phase 0 Instrumentation - AFTER ===
-        if (simData?.nodes?.length > 0 && (window as any).__beforePos) {
-          console.log('[FREEZE-TEST after ]', {
-            node0: simData.nodes[0],
-            hasVelocity: 'vx' in simData.nodes[0],
-            position: { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z },
-            positionChanged:
-              simData.nodes[0].x !== (window as any).__beforePos.x || 
-              simData.nodes[0].y !== (window as any).__beforePos.y || 
-              simData.nodes[0].z !== (window as any).__beforePos.z,
-          })
-        }
         
         // Verify simulation is active
         console.log('[SIMULATION] Testing if forces are applied...')
