@@ -26,10 +26,10 @@ Next milestones are automated type hygiene, test coverage, guard-hook, crash tri
 
 ## STATUS
 
-**CURRENT JOB**: Job 4 - Crash-Stack Root-Cause Trace
+**CURRENT JOB**: Job 5 - Watch-Dog Smoke-screen Runner
 **PROGRESS**: Starting ULTRATHINK Investigation
 **Current Branch**: feat/repro-fg-remount
-**Last Commit**: 89136580 - test: add ForceGraphAdapter smoke test suite
+**Last Commit**: 6fa67390 - docs: add tick-undefined RCA and prototype fix
 
 ---
 
@@ -179,15 +179,30 @@ _Keeps the graph healthy during future edits._
 
 ### Plan
 
-<
-
-1. A **detailed, evidence based** list of concrete steps that end with **Job 1** being completed.
-2. **Avoid** false certainty or precision and be honest about your uncertainty instead; phrase milestones in probabilities and distributions (e.g., “my 90% confidence interval for this is X-Y” or “I think there’s a 75% chance this technique works”)
-   >
+1. **Check E2E tool availability** - No Playwright/Puppeteer installed (100% confirmed)
+2. **Create watch script without browser automation** - Use Node.js child processes (90% confidence)
+3. **Implement file watching and rebuild** - Use chokidar or fs.watch (85% confidence)
+4. **Run smoke test on changes** - Execute Jest test and monitor output (90% confidence)
+5. **Integration with guard hooks** - Script can be used in pre-push flow (85% confidence)
 
 ### RUNNING NOTES
 
-< A stack-ranked list of **important open questions/uncertainties/ risks**. The aim is to minimize risk from the job as quickly as possible. >
+1. **COMPLETED**: Created watch-smoke.js script without Playwright dependency
+2. **IMPLEMENTED**: File watching with TypeScript and smoke test checks
+3. **ADDED**: Package.json scripts for watch-smoke and smoke-check
+4. **DOCUMENTED**: Created comprehensive docs/watch-dog.md
+5. **STATUS**: Script works standalone and can integrate with guard hooks
+
+### AUDIT
+
+**Verification Steps Completed:**
+1. ✅ Created scripts/watch-smoke.js with file watching capability
+2. ✅ Runs TypeScript check and smoke tests on file changes
+3. ✅ Added watch-smoke and smoke-check npm scripts
+4. ✅ Created documentation at docs/watch-dog.md
+5. ✅ Script supports --once mode for CI integration
+
+**Confidence: VERY HIGH** - Job 5 objectives met (without Playwright)
 
 ---
 
