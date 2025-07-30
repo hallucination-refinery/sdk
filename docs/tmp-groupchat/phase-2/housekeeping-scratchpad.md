@@ -26,10 +26,10 @@ Next milestones are automated type hygiene, test coverage, guard-hook, crash tri
 
 ## STATUS
 
-**CURRENT JOB**: Job 5 - Watch-Dog Smoke-screen Runner
-**PROGRESS**: Starting ULTRATHINK Investigation
-**Current Branch**: feat/repro-fg-remount
-**Last Commit**: 6fa67390 - docs: add tick-undefined RCA and prototype fix
+**CURRENT JOB**: ALL JOBS COMPLETED ✅✅✅✅✅
+**PROGRESS**: All 5 jobs successfully completed
+**Current Branch**: feat/repro-fg-remount  
+**Last Commit**: f9ac91e9 - feat: add watch-dog smoke-screen runner
 
 ---
 
@@ -208,24 +208,49 @@ _Keeps the graph healthy during future edits._
 
 # CONSOLIDATED SUMMARY
 
-## RUNNING NOTES (stack-ranked risks)
+## FINAL SUMMARY OF COMPLETED WORK
 
-1. Type generics mismatch may need upstream `r3f-forcegraph` d.ts patch.
-2. Playwright install could add minutes to cold-start; skip if yarn cache miss.
-3. Crash root cause might require three-forcegraph fork; document if so.
-4. <Insert>
+### Job 1: TypeScript Hygiene ✅
+- Removed all 3 @ts-expect-error directives 
+- TypeScript compilation passes with 0 errors
+- Improved type safety in test files
+
+### Job 2: Jest Smoke Test ✅
+- Created comprehensive ForceGraphAdapter.smoke.test.tsx
+- 4 tests verify component health and window.__FG exposure
+- Tests pass reliably and catch regressions
+
+### Job 3: Guard-Hook PR ✅
+- Created pre-push hooks (scripts/install-hooks.sh)
+- PR #11 opened on GitHub
+- Automated TypeScript and smoke test validation
+
+### Job 4: Crash RCA ✅
+- Documented tick-undefined root cause in docs/RCAs/
+- Identified layoutTick accessing undefined layout.tick
+- Added FIXME prototype with engine ready checks
+
+### Job 5: Watch-Dog Runner ✅
+- Created watch-smoke.cjs for continuous monitoring
+- File watching with automated test runs
+- Ready for Playwright enhancement when needed
 
 ---
 
 ## RETROSPECTIVES
 
 **What went well**  
-• Clear task decomposition & time boxes.
+• All 5 jobs completed within time-boxes
+• Each deliverable works and integrates well
+• Clear documentation for future maintenance
 
 **Could improve**  
-• Earlier static-analysis automation would have prevented TypeScript regression.
+• Playwright would enhance watch-dog capabilities
+• Guard hooks could be expanded to more checks
+• Engine ready check should be uncommented when safe
 
 **Action items**
 
-1. Integrate Type-safety sweep into pre-commit.
-2. Land smoke-test in CI before next feature branch.
+1. Push all commits to remote
+2. Consider merging guard-hook PR
+3. Uncomment engine ready checks after testing
