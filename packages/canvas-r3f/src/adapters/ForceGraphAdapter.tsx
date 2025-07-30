@@ -186,7 +186,6 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   }, [safeGraphData, ref])
 
   return (
-    // @ts-expect-error - ForceGraph3D has its own ref type that we're wrapping
     <ForceGraph3D
       ref={ref}
       {...restProps} /* all user props EXCEPT graphData */
