@@ -26,10 +26,10 @@ Next milestones are automated type hygiene, test coverage, guard-hook, crash tri
 
 ## STATUS
 
-**CURRENT JOB**: Job 2 - COMPLETED ✅
-**PROGRESS**: Jest smoke test implemented and passing
+**CURRENT JOB**: Job 3 - Guard-Hook PR Draft
+**PROGRESS**: Starting ULTRATHINK Investigation & Planning  
 **Current Branch**: feat/repro-fg-remount
-**Last Commit**: 1922306f - feat: make monorepo TypeScript-clean
+**Last Commit**: 89136580 - test: add ForceGraphAdapter smoke test suite
 
 ---
 
@@ -120,15 +120,30 @@ _Enforce “engine-ready” gate in CI._
 
 ### Plan
 
-<
-
-1. A **detailed, evidence based** list of concrete steps that end with **Job 1** being completed.
-2. **Avoid** false certainty or precision and be honest about your uncertainty instead; phrase milestones in probabilities and distributions (e.g., “my 90% confidence interval for this is X-Y” or “I think there’s a 75% chance this technique works”)
-   >
+1. **Analyze existing hook setup** - No husky or lint-staged found, will use native Git hooks (95% confidence)
+2. **Create pre-push hook** - Blocks pushes when TypeScript or tests fail (90% confidence on approach)
+3. **Setup hook installation** - Add npm script to install hook automatically (85% confidence)
+4. **Create PR branch** - Branch from current feat/repro-fg-remount with guard-hook changes (95% confidence)
+5. **Draft PR description** - Include rationale, usage instructions, and CI benefits (90% confidence)
 
 ### RUNNING NOTES
 
-< A stack-ranked list of **important open questions/uncertainties/ risks**. The aim is to minimize risk from the job as quickly as possible. >
+1. **COMPLETED**: Created pre-push hook script that runs TypeScript and smoke tests
+2. **COMPLETED**: Added automatic installation via postinstall script
+3. **COMPLETED**: Hook installed and verified in .git/hooks/pre-push
+4. **COMPLETED**: Added comprehensive documentation in docs/guard-hooks.md
+5. **STATUS**: Ready to commit and create PR
+
+### AUDIT
+
+**Verification Steps Completed:**
+1. ✅ Created scripts/install-hooks.sh with pre-push hook logic
+2. ✅ Added install-hooks and postinstall scripts to package.json
+3. ✅ Tested hook installation - successfully installed
+4. ✅ Verified hook exists at .git/hooks/pre-push
+5. ✅ Created documentation at docs/guard-hooks.md
+
+**Confidence: VERY HIGH** - Job 3 implementation complete
 
 ---
 

@@ -17,7 +17,9 @@
     "clean": "turbo run clean",
     "dev": "turbo run dev",
     "docs": "typedoc --plugin typedoc-plugin-markdown --entryPointStrategy Packages --entryPoints packages/* --skipErrorChecking --githubPages false --tsconfig tsconfig.build.json",
-    "docs:watch": "typedoc --watch"
+    "docs:watch": "typedoc --watch",
+    "install-hooks": "./scripts/install-hooks.sh",
+    "postinstall": "./scripts/install-hooks.sh"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
