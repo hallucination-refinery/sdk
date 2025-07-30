@@ -288,6 +288,11 @@ export default function CrypticAnimusScene({
         // Initial reheat and force multiple ticks with counting
         console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
         if (fgRef.current.d3ReheatSimulation) {
+          // FIXME: Also check engine ready before d3ReheatSimulation
+          // if (!(fgRef.current as any).__kapsuleInstance?.layout) {
+          //   console.log('[REHEAT] Force layout engine not ready, skipping reheat')
+          //   return
+          // }
           fgRef.current.d3ReheatSimulation()
         }
         
@@ -301,6 +306,17 @@ export default function CrypticAnimusScene({
           console.log('[TICKS] ForceGraph not ready yet, skipping tick execution')
           return
         }
+        
+        // FIXME: Add engine ready check to prevent tick crash
+        // The crash "Cannot read properties of undefined (reading 'tick')" occurs when
+        // tickFrame() is called before the D3 force layout engine is initialized.
+        // Uncomment the following guard to prevent the crash:
+        /*
+        if (!(fgRef.current as any).__kapsuleInstance?.layout) {
+          console.log('[TICKS] Force layout engine not initialized yet, skipping tick execution')
+          return
+        }
+        */
         
         // run the warm-up ticks **after** the instance is ready
         for (let i = 0; i < maxTicks; i++) {
