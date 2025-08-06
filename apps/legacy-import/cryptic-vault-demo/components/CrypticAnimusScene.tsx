@@ -740,6 +740,17 @@ export default function CrypticAnimusScene({
   // Custom node rendering - memoized to prevent recreating the callback
   const nodeThreeObject = useCallback(
     (node: any): any => {
+      // DEV PROBE: Log node creation timing
+      if (process.env.NODE_ENV === 'development') {
+        console.time(`[PROBE] nodeThreeObject-${node.id}`)
+        console.log(`[PROBE] Creating sprite for node ${node.id}`, {
+          hasThreeObj: !!node.__threeObj,
+          threeObjType: node.__threeObj?.constructor?.name,
+          materialType: node.__threeObj?.material?.constructor?.name,
+          timestamp: Date.now()
+        })
+      }
+
       // Calculate selection states
       const isSelected = currentInteractionMode === 'mouse' && node.id === mouseSelectedNodeId
       const isGestureSelected = currentInteractionMode === 'gesture' && node.id === gesturedNodeId
@@ -767,6 +778,21 @@ export default function CrypticAnimusScene({
         isSecret,
         selectionColor
       )
+
+      // DEV PROBE: Log sprite creation result
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[PROBE] Created sprite for node ${node.id}`, {
+          spriteType: sprite?.constructor?.name,
+          materialType: sprite?.material?.constructor?.name,
+          materialColor: sprite?.material?.color?.getHexString?.(),
+          materialProps: {
+            map: !!sprite?.material?.map,
+            transparent: sprite?.material?.transparent,
+            opacity: sprite?.material?.opacity
+          }
+        })
+        console.timeEnd(`[PROBE] nodeThreeObject-${node.id}`)
+      }
 
       return sprite
     },
