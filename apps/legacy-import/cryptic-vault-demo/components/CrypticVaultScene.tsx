@@ -165,10 +165,10 @@ function SceneContent({
       confidence: link.confidence || 0.8,
     }))
 
-    console.log(
-      '[SceneContent] Transforming full graph - NO filtering. Nodes:',
-      transformedNodes.length
-    )
+    // console.log(
+    //   '[SceneContent] Transforming full graph - NO filtering. Nodes:',
+    //   transformedNodes.length
+    // )  // COMMENTED OUT: Render-phase console.log in useMemo
     return { nodes: transformedNodes, links: transformedLinks }
   }, [graphStore.nodes, graphStore.edges]) // NO visibleIds dependency!
 

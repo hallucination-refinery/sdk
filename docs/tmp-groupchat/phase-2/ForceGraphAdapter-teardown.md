@@ -91,3 +91,20 @@ These console.log statements during render could be triggering the "Cannot updat
 - Commented out console.log at line 129 (in useMemo)
 
 ### Step 5: Commit changes
+
+Committed changes with hash: 81f3e3e7
+
+### Step 6: Search for remaining state writes
+
+Looking for other potential causes of remounts beyond console.log statements.
+
+Found potential issues and fixed them:
+
+**CrypticAnimusScene.tsx:**
+- Line 987-995: inline function for `linkVisibility` prop - **Fixed by creating memoized callback**
+- Lines 978, 980: console.log/error in render phase - **Commented out**
+
+**CrypticVaultScene.tsx:**
+- Line 168-171: console.log in useMemo - **Commented out**
+
+### Step 7: Commit additional fixes

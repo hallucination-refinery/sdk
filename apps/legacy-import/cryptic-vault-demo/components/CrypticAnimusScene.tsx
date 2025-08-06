@@ -959,11 +959,25 @@ export default function CrypticAnimusScene({
     [nodePassesFilters]
   )
 
+  // Add memoized linkVisibility callback to prevent prop changes
+  const linkVisibility = useCallback(
+    (link: any) => {
+      const sId = typeof link.source === 'object' ? link.source.id : link.source
+      const tId = typeof link.target === 'object' ? link.target.id : link.target
+
+      const sourceNode = nodeMap.get(sId)
+      const targetNode = nodeMap.get(tId)
+
+      return nodePassesFilters(sourceNode) && nodePassesFilters(targetNode)
+    },
+    [nodeMap, nodePassesFilters]
+  )
+
   // Sample check: are any nodes passing filters?
   const passingNodes = memoizedNodes.filter(nodePassesFilters)
-  console.log('[FILTERS] Nodes passing filters:', passingNodes.length, '/', memoizedNodes.length)
+  // console.log('[FILTERS] Nodes passing filters:', passingNodes.length, '/', memoizedNodes.length)  // COMMENTED OUT: Render-phase console.log
   if (passingNodes.length === 0) {
-    console.error('[FILTERS] WARNING: No nodes pass visibility filters!')
+    // console.error('[FILTERS] WARNING: No nodes pass visibility filters!')  // COMMENTED OUT: Render-phase console.log
   }
 
   return (
@@ -984,15 +998,7 @@ export default function CrypticAnimusScene({
         linkCurvature={0.2}
         cooldownTime={Infinity}
         nodeVisibility={nodeVisibility} // Use memoized callback
-        linkVisibility={(link: any) => {
-          const sId = typeof link.source === 'object' ? link.source.id : link.source
-          const tId = typeof link.target === 'object' ? link.target.id : link.target
-
-          const sourceNode = nodeMap.get(sId)
-          const targetNode = nodeMap.get(tId)
-
-          return nodePassesFilters(sourceNode) && nodePassesFilters(targetNode)
-        }}
+        linkVisibility={linkVisibility} // Use memoized callback
         linkOpacity={getLinkOpacity}
         onBackgroundClick={onBackgroundClickRequest}
       />
