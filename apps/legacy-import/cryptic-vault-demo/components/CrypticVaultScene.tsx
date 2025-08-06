@@ -353,17 +353,18 @@ function CrypticVaultSceneContent() {
 
   const handleNodeClick = useCallback(
     (clickedNode: any) => {
-      const nodeId = clickedNode.id as string
-      // uiStore.selectNodes([nodeId], 'replace')  // COMMENTED OUT: Testing for render-phase state write
+      // NO-OP: Temporarily disabled for remount testing
+      // const nodeId = clickedNode.id as string
+      // // uiStore.selectNodes([nodeId], 'replace')  // COMMENTED OUT: Testing for render-phase state write
 
-      // Perform two-hop traversal using currently visible subset
-      const traversalResult = performTwoHopTraversal(
-        nodeId,
-        visibleNodesCurrent as any,
-        visibleEdgesCurrent as any
-      )
-      setHighlightState(traversalResult)
-      setHighlightActiveTime(Date.now())
+      // // Perform two-hop traversal using currently visible subset
+      // const traversalResult = performTwoHopTraversal(
+      //   nodeId,
+      //   visibleNodesCurrent as any,
+      //   visibleEdgesCurrent as any
+      // )
+      // setHighlightState(traversalResult)
+      // setHighlightActiveTime(Date.now())
     },
     [uiStore, visibleNodesCurrent, visibleEdgesCurrent]
   )
@@ -376,19 +377,21 @@ function CrypticVaultSceneContent() {
   )
 
   const handleBackgroundClick = useCallback(() => {
-    uiStore.selectNodes([], 'replace')
-    setHighlightState(null)
-    setHighlightActiveTime(0)
+    // NO-OP: Temporarily disabled for remount testing
+    // uiStore.selectNodes([], 'replace')
+    // setHighlightState(null)
+    // setHighlightActiveTime(0)
   }, [uiStore])
 
   // Handle keyboard events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setHighlightState(null)
-        setHighlightActiveTime(0)
-        uiStore.selectNodes([], 'replace')
-      }
+      // NO-OP: Temporarily disabled for remount testing
+      // if (e.key === 'Escape') {
+      //   setHighlightState(null)
+      //   setHighlightActiveTime(0)
+      //   uiStore.selectNodes([], 'replace')
+      // }
     }
 
     window.addEventListener('keydown', handleKeyDown)

@@ -108,3 +108,107 @@ Found potential issues and fixed them:
 - Line 168-171: console.log in useMemo - **Commented out**
 
 ### Step 7: Commit additional fixes
+
+Committed changes with hash: 6f45dd80
+
+## Summary
+
+**Task:** Locate and stub all render-phase state writes or prop churn that remount ForceGraphAdapter
+
+**Changes Made:**
+
+1. **Commented out render-phase console.log statements:**
+   - CrypticAnimusScene.tsx: 7 console.log statements
+   - ForceGraphAdapter.tsx: 3 console.log statements
+   - CrypticVaultScene.tsx: 1 console.log statement
+
+2. **Fixed prop churn:**
+   - Memoized linkVisibility callback to prevent creating new function on every render
+
+3. **Previously commented state writes (already done):**
+   - uiStore.selectNodes in handleNodeClick
+   - uiStore.setHoverNode in handleNodeHover
+
+**Expected Result:**
+- ForceGraphAdapter should mount ≤ 2 times (StrictMode only)
+- No "Cannot update component while rendering" errors
+- Clean console during 30-second rapid-hover smoke test
+
+**Next Steps:**
+- Run smoke test to verify success criteria
+- Monitor for any remaining remount issues
+
+---
+
+## NEW TASK - Click Handler Teardown
+
+### Task Verbatim
+"ULTRATHINK MODE: Temporarily replace **every** `onNodeClick`/background-click/keyboard-click handler with a no-op and comment-out any `uiStore.selectNodes(...)` inside them. **Do not** alter hover logic, introduce new console output, or break type-checks. **Success criteria:** project compiles → Claude pings when smoke-test can run and `[FGAdapter] mounted` logs stay ≤ 2. Document plan → actions → results in <@docs/tmp-groupchat/phase-2/ForceGraphAdapter-teardown.md scratchpad> and commit frequently. Context: <@docs/tmp-groupchat/phase-2/working-document.md click-remount notes>."
+
+### INVESTIGATE & PLAN
+
+#### 1. DECOMPOSE
+**Core premise:** Click handlers may be causing ForceGraphAdapter remounts
+**Claims:**
+- Click handlers with uiStore.selectNodes calls trigger state updates
+- These state updates may cause unnecessary remounts
+- Need to isolate click behavior from hover behavior
+
+**Implicit assumptions:**
+- Click handlers exist in multiple components
+- Some uiStore.selectNodes calls are already commented out
+- Hover logic must remain intact
+
+#### 2. PLAN - Subtasks
+1. Search for all onNodeClick handlers
+2. Search for all background-click handlers  
+3. Search for all keyboard-click handlers
+4. Replace each handler with no-op function
+5. Comment out any uiStore.selectNodes calls
+6. Verify type-checks pass
+7. Commit changes incrementally
+
+#### 3. PROBE - Perspectives per Subtask
+**Subtask 1-3 (Search handlers):**
+- OODA: Observe handler patterns → Orient on click types → Decide which to replace → Act to list targets
+
+**Subtask 4-5 (Replace/Comment):**
+- OODA: Observe handler implementation → Orient on no-op replacement → Decide safe approach → Act to modify
+
+**Subtask 6 (Type-check):**
+- OODA: Observe type errors → Orient on fixes → Decide minimal changes → Act to resolve
+
+#### 4. SEQUENCE  
+1. Search for all click handlers across codebase
+2. Replace handlers with no-ops preserving types
+3. Comment out uiStore.selectNodes calls
+4. Verify compilation
+5. Document and commit
+
+### EXECUTE
+
+#### Step 1: Search for Click Handlers
+
+Found the following click handlers:
+
+**CrypticVaultScene.tsx:**
+- Line 354: `handleNodeClick` - contains commented out `uiStore.selectNodes([nodeId], 'replace')`
+- Line 378: `handleBackgroundClick` - contains active `uiStore.selectNodes([], 'replace')`
+- Line 386-390: keyboard handler in useEffect - contains active `uiStore.selectNodes([], 'replace')`
+
+**CrypticAnimusScene.tsx:**
+- Line 789: `handleNodeClick` - delegates to `onNodeClick` prop, no direct state writes
+
+#### Step 2: Replace Handlers with No-ops
+
+**CrypticVaultScene.tsx changes:**
+- Replaced `handleNodeClick` body with NO-OP comment
+- Replaced `handleBackgroundClick` body with NO-OP comment  
+- Replaced keyboard handler body with NO-OP comment
+
+**CrypticAnimusScene.tsx changes:**
+- Replaced `handleNodeClick` body with NO-OP comment
+
+All uiStore.selectNodes calls have been commented out.
+
+#### Step 3: Verify Compilation

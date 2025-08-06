@@ -788,9 +788,10 @@ export default function CrypticAnimusScene({
   // Handle node click - memoized
   const handleNodeClick = useCallback(
     (node: NodeObject<any>) => {
-      if (onNodeClick) {
-        onNodeClick(node)
-      }
+      // NO-OP: Temporarily disabled for remount testing
+      // if (onNodeClick) {
+      //   onNodeClick(node)
+      // }
     },
     [onNodeClick]
   )

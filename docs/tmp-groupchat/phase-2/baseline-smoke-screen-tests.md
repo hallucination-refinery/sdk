@@ -1,28 +1,22 @@
 # Baseline Smoke Screen Tests
 
-Last Updated: 10:06 AM EST, 06/08/2025
+Last Updated: 12:05 PM EST, 06/08/2025
 
 ## Context
 
 - Branch: `repro-fg-remount`
-- Commit: 24eb5624
+- Commit: 6f45dd80
 - Browser: Chrome Incognito 138.0.7204.169 (arm64)
-- Message: "fix: defer ui-slice state updates to prevent React render errors"
-- Files changed: 2 (ui-slice.ts, ui-slice-refactor-scratchpad.md)
+- Purpose: Locate and stub all render-phase state writes or prop churn that remount ForceGraphAdapter
 
 ## General Observations
 
 _Not_ part of any smoke-screen test and unverifiable against console logs, these are the key observations:
 
 1. All nodes and links _are visible_ if you zoom out and/or panning.
-2. Timeline scrubber and category filters toggle visibility correctly, using them triggers a console error at @packages/store/src/slices/ui-slice.ts line 72:
-
-```
-   Cannot update a component (`SceneContent`) while rendering a different component (`ForwardRef`). To locate the bad setState() call inside `ForwardRef`, follow the stack trace as described in https://react.dev/link/setstate-in-render
-```
-
-3. Switching lenses _does nothing_—graph stays static; physics never re-runs.
-4. Hovering or clicking a node produces _no visual change_.
+2. Timeline scrubber and category filters toggle visibility correctly. **However this now seems to trigger a console log spam**.
+3. Switching lenses _does nothing_—graph stays static; physics never re-runs. **This also seems to trigger a console log spam**
+4. Hovering or clicking a node produces _no visual change_. **While hovering does not, clicking does trigger the console log spam**.
 
 ## Test 1 - Do Nothing
 
@@ -38,39 +32,179 @@ _Not_ part of any smoke-screen test and unverifiable against console logs, these
 ### Test 1: Chronological Account
 
 1. On initial load: the HUD is visible, then, maybe 0.05 secs later (it's hard to say precisely), I see a yellow and green node, labeled "conflict" and "reassurance" respectively, drift into frame and settle down.
-2. The scene is running at **~73 FPS** counter top-left, and the HUD.
+2. The scene is running at **~71 FPS** counter top-left, and the HUD.
 
 ### Test 1: Full Console Log
 
 ```
 Navigated to http://localhost:3000/
-CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
-CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
-CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data
 CrypticAnimusScene.tsx:159 [INIT POSITIONS] Spawned 213 nodes - mode: origin
-CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:08:02.889Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:08:02.890Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
 CrypticAnimusScene.tsx:98 [GRAPH VERSION] Raw structure changed - updating ref. Nodes: 213 Links: 276
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 213
 CrypticAnimusScene.tsx:204 [Physics config] Retry 1...
 CrypticAnimusScene.tsx:245 [Window FG] Retry 1...
+OrbitControls.js:311 [Violation] Added non-passive event listener to a scroll-blocking 'wheel' event. Consider marking event handler as 'passive' to make the page more responsive. See https://www.chromestatus.com/feature/5745543795965952
+OrbitControls.connect @ OrbitControls.js:311
+eval @ OrbitControls.js:45
+react-stack-bottom-frame @ react-reconciler.development.js:7241
+runWithFiberInDEV @ react-reconciler.development.js:399
+commitHookEffectListMount @ react-reconciler.development.js:4782
+commitHookPassiveMountEffects @ react-reconciler.development.js:4817
+reconnectPassiveEffects @ react-reconciler.development.js:5670
+recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
+commitPassiveMountOnFiber @ react-reconciler.development.js:5648
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5627
+flushPassiveEffects @ react-reconciler.development.js:6567
+performSyncWorkOnRoot @ react-reconciler.development.js:1361
+flushSyncWorkAcrossRoots_impl @ react-reconciler.development.js:1288
+commitRootImpl @ react-reconciler.development.js:6525
+commitRoot @ react-reconciler.development.js:6480
+commitRootWhenReady @ react-reconciler.development.js:6082
+performWorkOnRoot @ react-reconciler.development.js:6062
+performWorkOnRootViaSchedulerTask @ react-reconciler.development.js:1356
+performWorkUntilDeadline @ scheduler.development.js:44
+OrbitControls.js:311 [Violation] Added non-passive event listener to a scroll-blocking 'wheel' event. Consider marking event handler as 'passive' to make the page more responsive. See https://www.chromestatus.com/feature/5745543795965952
+OrbitControls.connect @ OrbitControls.js:311
+eval @ OrbitControls.js:45
+react-stack-bottom-frame @ react-reconciler.development.js:7241
+runWithFiberInDEV @ react-reconciler.development.js:399
+commitHookEffectListMount @ react-reconciler.development.js:4782
+commitHookPassiveMountEffects @ react-reconciler.development.js:4817
+commitPassiveMountOnFiber @ react-reconciler.development.js:5623
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5648
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5627
+flushPassiveEffects @ react-reconciler.development.js:6567
+commitRootImpl @ react-reconciler.development.js:6522
+commitRoot @ react-reconciler.development.js:6480
+commitRootWhenReady @ react-reconciler.development.js:6082
+performWorkOnRoot @ react-reconciler.development.js:6062
+performSyncWorkOnRoot @ react-reconciler.development.js:1364
+flushSyncWorkAcrossRoots_impl @ react-reconciler.development.js:1288
+commitRootImpl @ react-reconciler.development.js:6525
+commitRoot @ react-reconciler.development.js:6480
+commitRootWhenReady @ react-reconciler.development.js:6082
+performWorkOnRoot @ react-reconciler.development.js:6062
+performWorkOnRootViaSchedulerTask @ react-reconciler.development.js:1356
+performWorkUntilDeadline @ scheduler.development.js:44
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: null}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
@@ -104,10 +238,13 @@ CrypticAnimusScene.tsx:331 [SIMULATION] Testing if forces are applied...
 CrypticAnimusScene.tsx:335 [FORCES] link: true charge: true center: true
 CrypticAnimusScene.tsx:338 [Debug] window.__FG type: object
 CrypticAnimusScene.tsx:339 [Debug] window.__FG has graphData method: false
-CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 247ms
+CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 231ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 61ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 67ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 59ms
 ```
 
-## Test 2 - Hover on Node
+## Test 2 - Hover & Click on Node
 
 ### Test 2: Process
 
@@ -115,7 +252,7 @@ CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 247ms
 2. `NEXT_PUBLIC_DEBUG_GRAPH=false pnpm dev --filter cryptic-vault-demo` ➜ wait for “Ready in 1910ms”.
 3. Incognito tab ➜ load `http://localhost:3000`.
 4. Keep cursor out of viewport and do **nothing** for 5 s.
-5. Move cursor into frame and then hover on/off one.
+5. Move cursor into frame and then hover on/off one and then click
 6. Copying a **representative console log excerpt** at that time
 7. Clearly document a chronological account
 
@@ -123,39 +260,179 @@ CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 247ms
 
 1. On initial load: the HUD is visible, then, maybe 0.05 secs later (it's hard to say precisely), I see a yellow and green node, labeled "conflict" and "reassurance" respectively, drift into frame and settle down.
 2. The scene is running at **~73 FPS** counter top-left, and the HUD.
-3. I moved my cursor into the viewport and hovered on/off only the yellow node labelled "conflicts" quickly, **the console log started firing like crazy and the dev tools window froze and then crashed**.
+3. I moved my cursor into the viewport and hovered on/off only the yellow node labelled "conflicts" quickly, **the console log did not fire**
+4. I clicked on the node and the console log began to spam begining with: `[FGAdapter] mounted`
 
 ### Test 2: Console Log Excerpt
 
-```
-Navigated to http://localhost:3000/
-CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
-CrypticVaultScene.tsx:168 [SceneContent] Transforming full graph - NO filtering. Nodes: 213
-CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data
+`Navigated to http://localhost:3000/
 CrypticAnimusScene.tsx:159 [INIT POSITIONS] Spawned 213 nodes - mode: origin
-CrypticAnimusScene.tsx:114 [CrypticAnimusScene] Memoizing graph data
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:08:02.889Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:08:02.890Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
 CrypticAnimusScene.tsx:98 [GRAPH VERSION] Raw structure changed - updating ref. Nodes: 213 Links: 276
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 213
 CrypticAnimusScene.tsx:204 [Physics config] Retry 1...
 CrypticAnimusScene.tsx:245 [Window FG] Retry 1...
+OrbitControls.js:311 [Violation] Added non-passive event listener to a scroll-blocking 'wheel' event. Consider marking event handler as 'passive' to make the page more responsive. See https://www.chromestatus.com/feature/5745543795965952
+OrbitControls.connect @ OrbitControls.js:311
+eval @ OrbitControls.js:45
+react-stack-bottom-frame @ react-reconciler.development.js:7241
+runWithFiberInDEV @ react-reconciler.development.js:399
+commitHookEffectListMount @ react-reconciler.development.js:4782
+commitHookPassiveMountEffects @ react-reconciler.development.js:4817
+reconnectPassiveEffects @ react-reconciler.development.js:5670
+recursivelyTraverseReconnectPassiveEffects @ react-reconciler.development.js:5661
+commitPassiveMountOnFiber @ react-reconciler.development.js:5648
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5627
+flushPassiveEffects @ react-reconciler.development.js:6567
+performSyncWorkOnRoot @ react-reconciler.development.js:1361
+flushSyncWorkAcrossRoots_impl @ react-reconciler.development.js:1288
+commitRootImpl @ react-reconciler.development.js:6525
+commitRoot @ react-reconciler.development.js:6480
+commitRootWhenReady @ react-reconciler.development.js:6082
+performWorkOnRoot @ react-reconciler.development.js:6062
+performWorkOnRootViaSchedulerTask @ react-reconciler.development.js:1356
+performWorkUntilDeadline @ scheduler.development.js:44
+OrbitControls.js:311 [Violation] Added non-passive event listener to a scroll-blocking 'wheel' event. Consider marking event handler as 'passive' to make the page more responsive. See https://www.chromestatus.com/feature/5745543795965952
+OrbitControls.connect @ OrbitControls.js:311
+eval @ OrbitControls.js:45
+react-stack-bottom-frame @ react-reconciler.development.js:7241
+runWithFiberInDEV @ react-reconciler.development.js:399
+commitHookEffectListMount @ react-reconciler.development.js:4782
+commitHookPassiveMountEffects @ react-reconciler.development.js:4817
+commitPassiveMountOnFiber @ react-reconciler.development.js:5623
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5648
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5656
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5622
+recursivelyTraversePassiveMountEffects @ react-reconciler.development.js:5614
+commitPassiveMountOnFiber @ react-reconciler.development.js:5627
+flushPassiveEffects @ react-reconciler.development.js:6567
+commitRootImpl @ react-reconciler.development.js:6522
+commitRoot @ react-reconciler.development.js:6480
+commitRootWhenReady @ react-reconciler.development.js:6082
+performWorkOnRoot @ react-reconciler.development.js:6062
+performSyncWorkOnRoot @ react-reconciler.development.js:1364
+flushSyncWorkAcrossRoots_impl @ react-reconciler.development.js:1288
+commitRootImpl @ react-reconciler.development.js:6525
+commitRoot @ react-reconciler.development.js:6480
+commitRootWhenReady @ react-reconciler.development.js:6082
+performWorkOnRoot @ react-reconciler.development.js:6062
+performWorkOnRootViaSchedulerTask @ react-reconciler.development.js:1356
+performWorkUntilDeadline @ scheduler.development.js:44
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: null}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
@@ -174,7 +451,7 @@ ForceGraphAdapter.tsx:162 [FGAdapter] Data changed, calling refresh() {nodeCount
 ForceGraphAdapter.tsx:171 [FGAdapter] Called ref.current.refresh() successfully
 ForceGraphAdapter.tsx:142 [FGAdapter] ref after mount: {current: {…}}
 ForceGraphAdapter.tsx:144 [FGAdapter] ref.current: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:145 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']0: "emitParticle"1: "getGraphBbox"2: "d3ReheatSimulation"3: "d3Force"4: "resetCountdown"5: "tickFrame"6: "refresh"length: 7[[Prototype]]: Array(0)
+ForceGraphAdapter.tsx:145 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
 ForceGraphAdapter.tsx:146 [FGAdapter] Assigning window.**FG = ref.current
 ForceGraphAdapter.tsx:148 [FGAdapter] window.**FG assigned successfully
 ForceGraphAdapter.tsx:149 [CLAUDE] ready-for-smoke-screen
@@ -189,409 +466,47 @@ CrypticAnimusScene.tsx:331 [SIMULATION] Testing if forces are applied...
 CrypticAnimusScene.tsx:335 [FORCES] link: true charge: true center: true
 CrypticAnimusScene.tsx:338 [Debug] window.**FG type: object
 CrypticAnimusScene.tsx:339 [Debug] window.**FG has graphData method: false
-CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 247ms
-events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 61ms
-events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 56ms
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.391Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.391Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
+CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 241ms
+[FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
+ForceGraphAdapter.tsx:123 [FGAdapter] mounted
+ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
+ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.417Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.417Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.451Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.452Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.476Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.477Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.503Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.504Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.526Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.527Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
 ForceGraphAdapter.tsx:123 [FGAdapter] mounted
 ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
 ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.554Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.555Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.577Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.578Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.604Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.605Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.627Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.627Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.653Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.654Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.677Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.678Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.704Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.705Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.726Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.726Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.751Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.752Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.772Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.773Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-ForceGraphAdapter.tsx:123 [FGAdapter] mounted
-ForceGraphAdapter.tsx:124 [FGAdapter] ref type: {current: {…}}
-ForceGraphAdapter.tsx:125 [FGAdapter] typeof ref: object
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.799Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-CrypticAnimusScene.tsx:964 [FILTERS] Nodes passing filters: 213 / 213
-CrypticAnimusScene.tsx:178 [Animus] render ForceGraph3D
-CrypticAnimusScene.tsx:181 [Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at: 2025-08-06T14:09:11.799Z
-CrypticAnimusScene.tsx:184 [Data debug] nodes: 213 links: 276
-CrypticAnimusScene.tsx:185 [Data debug] ForceGraph3D component loaded: true
-CrypticAnimusScene.tsx:188 [FILTERS] visibleIds: Set(213)
-CrypticAnimusScene.tsx:189 [FILTERS] activeCategories: Set(6)
-CrypticAnimusScene.tsx:190 [FILTERS] showSecrets: true
-CrypticAnimusScene.tsx:191 [FILTERS] activeTags: undefined
-
-```
+``
