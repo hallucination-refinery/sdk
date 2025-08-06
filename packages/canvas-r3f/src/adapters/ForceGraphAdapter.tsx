@@ -128,6 +128,16 @@ export interface ForceGraphAdapterRef {
  *
  * @deprecated Will be removed once Cryptiq Mindmap migrates to SDK renderer
  */
+// Helper to tint sprite material with proper color mutation
+const tintSprite = (material: any, hex: number) => {
+  if (!material || !material.color) {
+    console.error('[tintSprite] Invalid material:', material)
+    return
+  }
+  material.color.setHex(hex)
+  material.needsUpdate = true
+}
+
 const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProps>((props, ref) => {
   // console.log('[FGAdapter] mounted')  // COMMENTED OUT: Render-phase console.log
   // console.log('[FGAdapter] ref type:', ref)  // COMMENTED OUT: Render-phase console.log
@@ -152,26 +162,119 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   }, [disableLinkForce])
   // ----------------------------------------------------------------------
   
-  // Imperative visual feedback methods - simplified to just update state
+  // Imperative visual feedback methods with material mutations
   const highlightNode = React.useCallback((nodeId: string | null) => {
+    const graphData = internalRef.current?.graphData?.()
+    if (!graphData || !graphData.nodes) return
+    
+    // Reset previous highlight
+    if (highlightedNodeRef.current) {
+      const prevNode = graphData.nodes.find((n: any) => n.id === highlightedNodeRef.current)
+      if (prevNode?.__threeObj?.material) {
+        const origColor = originalColorsRef.current.get(highlightedNodeRef.current)
+        if (origColor !== undefined) {
+          // Check if still selected before resetting
+          if (!selectedNodesRef.current.has(highlightedNodeRef.current)) {
+            tintSprite(prevNode.__threeObj.material, origColor)
+          } else {
+            // Keep orange if selected
+            tintSprite(prevNode.__threeObj.material, 0xffa500)
+          }
+        }
+      }
+    }
+    
+    // Apply new highlight
     highlightedNodeRef.current = nodeId
-    // Force re-render to update nodeColor
-    if (internalRef.current && internalRef.current.refresh) {
+    if (nodeId) {
+      const node = graphData.nodes.find((n: any) => n.id === nodeId)
+      if (node?.__threeObj?.material) {
+        // Store original color if not stored
+        if (!originalColorsRef.current.has(nodeId)) {
+          const currentColor = node.__threeObj.material.color.getHex()
+          originalColorsRef.current.set(nodeId, currentColor)
+        }
+        // Apply yellow highlight
+        tintSprite(node.__threeObj.material, 0xffff00)
+        
+        // DEV-ONLY PROBE
+        if (process.env.NODE_ENV !== 'production') {
+          const material = node.__threeObj.material
+          console.assert(
+            material instanceof THREE.SpriteMaterial,
+            '[highlightNode] Expected SpriteMaterial, got:', material?.constructor?.name
+          )
+          console.log('[PROBE] highlightNode:', {
+            nodeId,
+            materialType: material?.constructor?.name,
+            colorAfter: material?.color?.getHexString?.()
+          })
+          if (material?.color?.getHex?.() !== 0xffff00) {
+            throw new Error(`[highlightNode] Color mutation failed! Expected 0xffff00, got ${material?.color?.getHex?.()}`)
+          }
+        }
+      }
+    }
+    
+    // Force refresh
+    if (internalRef.current?.refresh) {
       internalRef.current.refresh()
     }
   }, [])
 
   const selectNode = React.useCallback((nodeId: string, toggle: boolean = true) => {
+    const graphData = internalRef.current?.graphData?.()
+    if (!graphData || !graphData.nodes) return
+    
+    const node = graphData.nodes.find((n: any) => n.id === nodeId)
+    if (!node?.__threeObj?.material) return
+    
     const wasSelected = selectedNodesRef.current.has(nodeId)
     
+    // Toggle selection state
     if (toggle && wasSelected) {
       selectedNodesRef.current.delete(nodeId)
+      // Restore original color (unless highlighted)
+      const origColor = originalColorsRef.current.get(nodeId)
+      if (origColor !== undefined && highlightedNodeRef.current !== nodeId) {
+        tintSprite(node.__threeObj.material, origColor)
+      } else if (highlightedNodeRef.current === nodeId) {
+        // Keep yellow if highlighted
+        tintSprite(node.__threeObj.material, 0xffff00)
+      }
     } else if (!wasSelected) {
       selectedNodesRef.current.add(nodeId)
+      // Store original color if not stored
+      if (!originalColorsRef.current.has(nodeId)) {
+        const currentColor = node.__threeObj.material.color.getHex()
+        originalColorsRef.current.set(nodeId, currentColor)
+      }
+      // Apply orange selection
+      tintSprite(node.__threeObj.material, 0xffa500)
     }
     
-    // Force re-render to update nodeColor
-    if (internalRef.current && internalRef.current.refresh) {
+    // DEV-ONLY PROBE
+    if (process.env.NODE_ENV !== 'production') {
+      const material = node.__threeObj.material
+      const isNowSelected = selectedNodesRef.current.has(nodeId)
+      console.assert(
+        material instanceof THREE.SpriteMaterial,
+        '[selectNode] Expected SpriteMaterial, got:', material?.constructor?.name
+      )
+      console.log('[PROBE] selectNode:', {
+        nodeId,
+        wasSelected,
+        isNowSelected,
+        materialType: material?.constructor?.name,
+        colorAfter: material?.color?.getHexString?.()
+      })
+      if (isNowSelected && material?.color?.getHex?.() !== 0xffa500) {
+        throw new Error(`[selectNode] Color mutation failed! Expected 0xffa500 for selected, got ${material?.color?.getHex?.()}`)
+      }
+    }
+    
+    // Force refresh
+    if (internalRef.current?.refresh) {
       internalRef.current.refresh()
     }
   }, [])
@@ -234,7 +337,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     }
   }, [safeGraphData])
 
-  // One-shot reheat on lens change
+  // One-shot reheat on lens change with hasBurstRef gate
   useEffect(() => {
     if (!internalRef.current) return
     
@@ -243,44 +346,46 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     const tagsChanged = activeTags !== prevLensRef.current.tags
     
     if ((categoriesChanged || tagsChanged) && !hasReheatedRef.current) {
-      // Trigger reheat - TEMPORARILY DISABLED to prevent layoutTick crash
-      // if (internalRef.current.d3ReheatSimulation) {
-      //   try {
-      //     internalRef.current.d3ReheatSimulation()
-      //     hasReheatedRef.current = true
-      //     
-      //     // Reset flag after a delay to allow future reheats
-      //     setTimeout(() => {
-      //       hasReheatedRef.current = false
-      //     }, 2000) // 2 second cooldown
-      //   } catch (error) {
-      //     console.error('[FGAdapter] Error calling d3ReheatSimulation:', error)
-      //   }
-      // }
+      // Trigger reheat with proper gating
+      if (internalRef.current.d3ReheatSimulation) {
+        try {
+          // Ensure graph data exists before reheating
+          const graphData = internalRef.current.graphData?.()
+          if (graphData && graphData.nodes && graphData.nodes.length > 0) {
+            internalRef.current.d3ReheatSimulation()
+            hasReheatedRef.current = true
+            
+            // DEV-ONLY PROBE
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('[PROBE] Lens change triggered d3ReheatSimulation:', {
+                categoriesChanged,
+                tagsChanged,
+                nodeCount: graphData.nodes.length
+              })
+            }
+            
+            // Reset flag after a delay to allow future reheats
+            setTimeout(() => {
+              hasReheatedRef.current = false
+            }, 2000) // 2 second cooldown
+          }
+        } catch (error) {
+          console.error('[FGAdapter] Error calling d3ReheatSimulation:', error)
+        }
+      }
       
       // Update prev refs
       prevLensRef.current = { categories: activeCategories, tags: activeTags }
     }
   }, [activeCategories, activeTags])
 
-  // Add nodeColor prop to handle visual feedback declaratively
-  const nodeColor = React.useCallback((node: any) => {
-    if (highlightedNodeRef.current === node.id) {
-      return '#ffff00' // Yellow for hover
-    }
-    if (selectedNodesRef.current.has(node.id)) {
-      return '#ffa500' // Orange for selected
-    }
-    // Return undefined to use default color from nodeThreeObject
-    return undefined
-  }, [])
+  // Remove nodeColor prop - we're using imperative mutations instead
 
   return (
     <ForceGraph3D
       ref={internalRef}
       {...restProps} /* all user props EXCEPT graphData */
       graphData={safeGraphData} /* deep‑cloned, unfrozen data       */
-      nodeColor={nodeColor}
       // Removed freeze guards to allow natural simulation
       // cooldownTime={Infinity} - was preventing time-based stopping
       // cooldownTicks={0} - was stopping after 1 tick

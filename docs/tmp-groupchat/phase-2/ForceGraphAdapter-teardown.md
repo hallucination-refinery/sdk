@@ -771,3 +771,40 @@ The issue with SpriteMaterial.color mutations not showing may be due to:
 3. May need to switch to declarative nodeColor prop for full reliability
 
 **Next:** Ready for 30-second smoke test to verify visual feedback works!
+
+---
+
+## FINAL FIX - Use Declarative nodeColor Prop
+
+### Implementation
+Switched from imperative material mutations to r3f-forcegraph's built-in `nodeColor` prop:
+
+```javascript
+const nodeColor = React.useCallback((node: any) => {
+  if (highlightedNodeRef.current === node.id) {
+    return '#ffff00' // Yellow for hover
+  }
+  if (selectedNodesRef.current.has(node.id)) {
+    return '#ffa500' // Orange for selected
+  }
+  return undefined // Use default from nodeThreeObject
+}, [])
+```
+
+### Changes Made:
+1. Added `nodeColor` prop to ForceGraph3D
+2. Simplified `highlightNode` to just update state + refresh()
+3. Simplified `selectNode` to just update state + refresh()
+4. Removed ALL material mutation code
+5. Removed setTimeout deferrals
+6. Removed originalColorsRef
+
+### Why This Works:
+- Uses library's intended API
+- No timing issues
+- No material access problems
+- Clean and simple
+
+**Commit:** ff447416
+
+**Ready for smoke test!**

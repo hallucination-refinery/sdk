@@ -4,7 +4,7 @@ Act as the **main execution thread**: keep the _desired end-state_ front-of-mind
 
 ---
 
-**Scratchpad:** @docs/tmp-groupchat/phase-2/ForceGraphAdapter-teardown.md
+**Scratchpad:** @docs/tmp-groupchat/phase-2/final-stretch-scratchpad.md
 
 # WARNING
 

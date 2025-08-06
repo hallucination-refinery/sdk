@@ -768,18 +768,46 @@ export default function CrypticAnimusScene({
         selectionColor
       )
 
+      // DEV-ONLY PROBE
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[PROBE] nodeThreeObject:', {
+          nodeId: node.id,
+          hasExistingThreeObj: !!node.__threeObj,
+          spriteType: sprite?.constructor?.name,
+          materialType: sprite?.material?.constructor?.name,
+          materialColor: sprite?.material?.color?.getHexString?.()
+        })
+        if (sprite?.material) {
+          console.assert(
+            sprite.material.constructor.name === 'SpriteMaterial',
+            '[nodeThreeObject] Expected SpriteMaterial, got:', sprite.material.constructor.name
+          )
+        }
+      }
+
       return sprite
     },
     [] // Remove all dependencies - sprites are cached globally
   )
 
   // Ensure sprites start visible - set initial opacity
-  const nodeThreeObjectExtend = useCallback((obj: any) => {
+  const nodeThreeObjectExtend = useCallback((obj: any, node: any) => {
     if (obj?.material) {
       // Set initial opacity to 1 (fully visible) if it's not already set
       if (obj.material.opacity === undefined || obj.material.opacity === 0) {
         obj.material.opacity = 1
         obj.material.needsUpdate = true
+      }
+      
+      // DEV-ONLY PROBE
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[PROBE] nodeThreeObjectExtend:', {
+          nodeId: node?.id,
+          objType: obj?.constructor?.name,
+          materialType: obj?.material?.constructor?.name,
+          materialColorBefore: obj?.material?.color?.getHexString?.(),
+          hasThreeObj: !!node?.__threeObj
+        })
       }
     }
     return false // Return false to not stop propagation
