@@ -154,37 +154,14 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   
   // Imperative visual feedback methods
   const highlightNode = React.useCallback((nodeId: string | null) => {
-    // DEV PROBE: Log highlight call
-    if (process.env.NODE_ENV === 'development') {
-      console.time(`[PROBE] highlightNode-${nodeId}`)
-      console.log(`[PROBE] highlightNode called`, {
-        nodeId,
-        prevHighlighted: highlightedNodeRef.current,
-        hasInternalRef: !!internalRef.current,
-        timestamp: Date.now()
-      })
-    }
-
     const prevHighlighted = highlightedNodeRef.current
     highlightedNodeRef.current = nodeId
     
-    if (!internalRef.current) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[PROBE] highlightNode - NO internalRef!`)
-        console.timeEnd(`[PROBE] highlightNode-${nodeId}`)
-      }
-      return
-    }
+    if (!internalRef.current) return
     
     try {
       const graphData = internalRef.current.graphData()
-      if (!graphData || !graphData.nodes) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[PROBE] highlightNode - NO graphData or nodes!`)
-          console.timeEnd(`[PROBE] highlightNode-${nodeId}`)
-        }
-        return
-      }
+      if (!graphData || !graphData.nodes) return
       
       // Reset previous highlighted node
       if (prevHighlighted) {
@@ -215,19 +192,6 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
         setTimeout(() => {
           const node = graphData.nodes.find((n: any) => n.id === nodeId)
           
-          // DEV PROBE: Log node state before mutation
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[PROBE] Found node for highlight (deferred)`, {
-              nodeId,
-              hasNode: !!node,
-              hasThreeObj: !!node?.__threeObj,
-              threeObjType: node?.__threeObj?.constructor?.name,
-              hasMaterial: !!node?.__threeObj?.material,
-              materialType: node?.__threeObj?.material?.constructor?.name,
-              materialColor: node?.__threeObj?.material?.color?.getHexString?.()
-            })
-          }
-          
           if (node && node.__threeObj && node.__threeObj.material) {
             const sprite = node.__threeObj
             const material = sprite.material
@@ -240,37 +204,16 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
             // Set yellow color for hover
             material.color = new THREE.Color(0xffff00) // Yellow
             material.needsUpdate = true
-            
-            // DEV PROBE: Log after mutation
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`[PROBE] Applied yellow highlight`, {
-                nodeId,
-                newColor: material.color.getHexString(),
-                needsUpdate: material.needsUpdate
-              })
-            }
-          } else if (process.env.NODE_ENV === 'development') {
-            console.log(`[PROBE] FAILED to highlight - missing node/threeObj/material`)
           }
         }, 0)
       }
       
       // Trigger refresh to update visuals
       if (internalRef.current.refresh) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[PROBE] Calling refresh()`)
-        }
         internalRef.current.refresh()
-      }
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.timeEnd(`[PROBE] highlightNode-${nodeId}`)
       }
     } catch (error) {
       console.error('[FGAdapter] Error in highlightNode:', error)
-      if (process.env.NODE_ENV === 'development') {
-        console.timeEnd(`[PROBE] highlightNode-${nodeId}`)
-      }
     }
   }, [])
 
@@ -399,8 +342,6 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     const tagsChanged = activeTags !== prevLensRef.current.tags
     
     if ((categoriesChanged || tagsChanged) && !hasReheatedRef.current) {
-      console.log('[FGAdapter] Lens changed, triggering one-shot reheat')
-      
       // Trigger reheat - TEMPORARILY DISABLED to prevent layoutTick crash
       // if (internalRef.current.d3ReheatSimulation) {
       //   try {
