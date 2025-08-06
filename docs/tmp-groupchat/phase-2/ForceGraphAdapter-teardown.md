@@ -682,3 +682,57 @@ Based on the error "undefined.tick", it seems the force simulation is trying to 
 1. **Defer Visual Updates**: Use requestAnimationFrame or setTimeout to ensure __threeObj exists
 2. **Guard Force Operations**: Check node state before d3ReheatSimulation
 3. **Alternative Approach**: Hook into nodeThreeObjectExtend for immediate access
+
+### Implementation Plan:
+
+#### Option 1: Deferred Updates (Quick Fix)
+```javascript
+// In highlightNode/selectNode
+setTimeout(() => {
+  const node = graphData.nodes.find(n => n.id === nodeId)
+  if (node?.__threeObj?.material) {
+    // Apply color changes
+  }
+}, 0)
+```
+
+#### Option 2: nodeThreeObjectExtend Hook (Better)
+Pass highlight/selection state to CrypticAnimusScene and handle in nodeThreeObjectExtend:
+```javascript
+// In nodeThreeObjectExtend
+const isHighlighted = highlightedNodeId === node.id
+const isSelected = selectedNodeIds.has(node.id)
+if (isHighlighted) {
+  obj.material.color = new THREE.Color(0xffff00)
+} else if (isSelected) {
+  obj.material.color = new THREE.Color(0xffa500)
+}
+```
+
+#### Option 3: Direct Force-Graph API (Best)
+Use r3f-forcegraph's nodeColor prop instead of imperative mutations:
+```javascript
+nodeColor={(node) => {
+  if (highlightedNodeId === node.id) return '#ffff00'
+  if (selectedNodeIds.has(node.id)) return '#ffa500'
+  return originalColors.get(node.id) || '#ffffff'
+}}
+```
+
+**Recommended**: Option 3 - Use declarative nodeColor prop to avoid timing issues entirely.
+
+### Implemented Fix:
+
+#### Step 1: Deferred Material Mutations
+Applied setTimeout(0) to all material mutations in highlightNode and selectNode:
+- Ensures __threeObj is attached before access
+- Prevents "missing node/threeObj/material" errors
+- Maintains imperative API while fixing timing issue
+
+#### Step 2: Material Color Fix
+The issue with SpriteMaterial.color mutations not showing may be due to:
+1. The sprite uses a texture map which overrides color
+2. The material.color property is multiplied with the texture
+3. Need to ensure material.map allows color tinting
+
+**Next**: Remove probes and test the deferred mutation fix.

@@ -188,65 +188,71 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       
       // Reset previous highlighted node
       if (prevHighlighted) {
-        const prevNode = graphData.nodes.find((n: any) => n.id === prevHighlighted)
-        if (prevNode && prevNode.__threeObj && prevNode.__threeObj.material) {
-          const sprite = prevNode.__threeObj
-          const material = sprite.material
-          
-          // Reset to original color or orange if selected
-          if (selectedNodesRef.current.has(prevHighlighted)) {
-            material.color = new THREE.Color(0xffa500) // Orange for selected
-          } else {
-            const originalColor = originalColorsRef.current.get(prevHighlighted)
-            if (originalColor !== undefined) {
-              material.color = new THREE.Color(originalColor)
+        // Defer material mutation to ensure __threeObj exists
+        setTimeout(() => {
+          const prevNode = graphData.nodes.find((n: any) => n.id === prevHighlighted)
+          if (prevNode && prevNode.__threeObj && prevNode.__threeObj.material) {
+            const sprite = prevNode.__threeObj
+            const material = sprite.material
+            
+            // Reset to original color or orange if selected
+            if (selectedNodesRef.current.has(prevHighlighted)) {
+              material.color = new THREE.Color(0xffa500) // Orange for selected
+            } else {
+              const originalColor = originalColorsRef.current.get(prevHighlighted)
+              if (originalColor !== undefined) {
+                material.color = new THREE.Color(originalColor)
+              }
             }
+            material.needsUpdate = true
           }
-          material.needsUpdate = true
-        }
+        }, 0)
       }
       
       // Highlight new node with yellow
       if (nodeId) {
-        const node = graphData.nodes.find((n: any) => n.id === nodeId)
-        
-        // DEV PROBE: Log node state before mutation
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[PROBE] Found node for highlight`, {
-            nodeId,
-            hasNode: !!node,
-            hasThreeObj: !!node?.__threeObj,
-            threeObjType: node?.__threeObj?.constructor?.name,
-            hasMaterial: !!node?.__threeObj?.material,
-            materialType: node?.__threeObj?.material?.constructor?.name,
-            materialColor: node?.__threeObj?.material?.color?.getHexString?.()
-          })
-        }
-        
-        if (node && node.__threeObj && node.__threeObj.material) {
-          const sprite = node.__threeObj
-          const material = sprite.material
+        // Defer material mutation to ensure __threeObj exists
+        setTimeout(() => {
+          const node = graphData.nodes.find((n: any) => n.id === nodeId)
           
-          // Store original color if not already stored
-          if (!originalColorsRef.current.has(nodeId) && material.color) {
-            originalColorsRef.current.set(nodeId, material.color.getHex())
-          }
-          
-          // Set yellow color for hover
-          material.color = new THREE.Color(0xffff00) // Yellow
-          material.needsUpdate = true
-          
-          // DEV PROBE: Log after mutation
+          // DEV PROBE: Log node state before mutation
           if (process.env.NODE_ENV === 'development') {
-            console.log(`[PROBE] Applied yellow highlight`, {
+            console.log(`[PROBE] Found node for highlight (deferred)`, {
               nodeId,
-              newColor: material.color.getHexString(),
-              needsUpdate: material.needsUpdate
+              hasNode: !!node,
+              hasThreeObj: !!node?.__threeObj,
+              threeObjType: node?.__threeObj?.constructor?.name,
+              hasMaterial: !!node?.__threeObj?.material,
+              materialType: node?.__threeObj?.material?.constructor?.name,
+              materialColor: node?.__threeObj?.material?.color?.getHexString?.()
             })
           }
-        } else if (process.env.NODE_ENV === 'development') {
-          console.log(`[PROBE] FAILED to highlight - missing node/threeObj/material`)
-        }
+          
+          if (node && node.__threeObj && node.__threeObj.material) {
+            const sprite = node.__threeObj
+            const material = sprite.material
+            
+            // Store original color if not already stored
+            if (!originalColorsRef.current.has(nodeId) && material.color) {
+              originalColorsRef.current.set(nodeId, material.color.getHex())
+            }
+            
+            // Set yellow color for hover
+            material.color = new THREE.Color(0xffff00) // Yellow
+            material.needsUpdate = true
+            
+            // DEV PROBE: Log after mutation
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`[PROBE] Applied yellow highlight`, {
+                nodeId,
+                newColor: material.color.getHexString(),
+                needsUpdate: material.needsUpdate
+              })
+            }
+          } else if (process.env.NODE_ENV === 'development') {
+            console.log(`[PROBE] FAILED to highlight - missing node/threeObj/material`)
+          }
+        }, 0)
       }
       
       // Trigger refresh to update visuals
@@ -283,36 +289,39 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       const graphData = internalRef.current.graphData()
       if (!graphData || !graphData.nodes) return
       
-      const node = graphData.nodes.find((n: any) => n.id === nodeId)
-      if (node && node.__threeObj && node.__threeObj.material) {
-        const sprite = node.__threeObj
-        const material = sprite.material
-        
-        // Store original color if not already stored
-        if (!originalColorsRef.current.has(nodeId) && material.color) {
-          originalColorsRef.current.set(nodeId, material.color.getHex())
-        }
-        
-        // Toggle selection visual
-        const isNowSelected = selectedNodesRef.current.has(nodeId)
-        
-        if (isNowSelected) {
-          // Set orange color for selected
-          material.color = new THREE.Color(0xffa500) // Orange
-        } else {
-          // Reset to original color (unless currently hovered)
-          if (highlightedNodeRef.current === nodeId) {
-            material.color = new THREE.Color(0xffff00) // Keep yellow if hovered
+      // Defer material mutation to ensure __threeObj exists
+      setTimeout(() => {
+        const node = graphData.nodes.find((n: any) => n.id === nodeId)
+        if (node && node.__threeObj && node.__threeObj.material) {
+          const sprite = node.__threeObj
+          const material = sprite.material
+          
+          // Store original color if not already stored
+          if (!originalColorsRef.current.has(nodeId) && material.color) {
+            originalColorsRef.current.set(nodeId, material.color.getHex())
+          }
+          
+          // Toggle selection visual
+          const isNowSelected = selectedNodesRef.current.has(nodeId)
+          
+          if (isNowSelected) {
+            // Set orange color for selected
+            material.color = new THREE.Color(0xffa500) // Orange
           } else {
-            const originalColor = originalColorsRef.current.get(nodeId)
-            if (originalColor !== undefined) {
-              material.color = new THREE.Color(originalColor)
+            // Reset to original color (unless currently hovered)
+            if (highlightedNodeRef.current === nodeId) {
+              material.color = new THREE.Color(0xffff00) // Keep yellow if hovered
+            } else {
+              const originalColor = originalColorsRef.current.get(nodeId)
+              if (originalColor !== undefined) {
+                material.color = new THREE.Color(originalColor)
+              }
             }
           }
+          
+          material.needsUpdate = true
         }
-        
-        material.needsUpdate = true
-      }
+      }, 0)
       
       // Trigger refresh to update visuals
       if (internalRef.current.refresh) {
