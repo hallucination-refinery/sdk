@@ -212,3 +212,96 @@ Found the following click handlers:
 All uiStore.selectNodes calls have been commented out.
 
 #### Step 3: Verify Compilation
+
+Ran type checks - existing unrelated type errors found but no new errors introduced by the changes.
+
+#### Step 4: Commit Changes
+
+Committed with hash: b0f14596
+
+### RESULTS
+
+**Changes Implemented:**
+1. All click handlers replaced with no-ops:
+   - CrypticVaultScene: handleNodeClick, handleBackgroundClick, keyboard handler
+   - CrypticAnimusScene: handleNodeClick
+2. All uiStore.selectNodes() calls commented out
+3. Hover logic preserved as required
+4. No new console output introduced
+5. No type-check errors introduced
+
+**Success Criteria Status:**
+- ✅ Project compiles (with existing unrelated errors)
+- ✅ All click handlers disabled
+- ✅ Hover logic preserved
+- ✅ No new console output
+- ⏳ Ready for smoke test - `[FGAdapter] mounted` logs should stay ≤ 2
+
+**Next Action:** Ready for smoke test to verify ForceGraphAdapter mount count
+
+---
+
+## NEW TASK - Implement Helper Methods with Restored Handlers
+
+### Task Verbatim
+"ULTRATHINK MODE: Implement highlightNode(id) & selectNode(id,toggle) helpers inside ForceGraphAdapter and invoke them from the now-restored hover/click handlers; remove all no-ops, keep hover visuals instant, **no new uiStore writes or prop-churn**, and pass type-checks. Success = visual feedback works, ≤ 2 [FGAdapter] mounts and zero React errors during 30-s smoke test—ping me when ready. Document plan→actions→results in <@docs/tmp-groupchat/phase-2/ForceGraphAdapter-teardown.md scratchpad> using context from <@docs/tmp-groupchat/phase-2/working-document.md click-remount notes>; commit frequently."
+
+### INVESTIGATE & PLAN
+
+#### 1. DECOMPOSE
+**Core premise:** Implement local state management in ForceGraphAdapter to handle visual feedback without uiStore writes
+**Claims:**
+- Helper methods inside ForceGraphAdapter can manage highlight/selection locally
+- Restored handlers will use these helpers instead of uiStore
+- No prop churn or new uiStore writes allowed
+- Visual feedback must work instantly
+
+**Implicit assumptions:**
+- ForceGraphAdapter can maintain its own highlight/selection state
+- Visual updates can be applied directly to force-graph without remounts
+- Handlers currently replaced with no-ops need restoration
+
+#### 2. PLAN - Subtasks
+1. Read working-document.md for click-remount context
+2. Implement highlightNode(id) helper in ForceGraphAdapter
+3. Implement selectNode(id, toggle) helper in ForceGraphAdapter
+4. Restore all previously commented handlers
+5. Replace uiStore calls with helper method calls
+6. Verify visual feedback works without remounts
+7. Run type checks
+8. Document and commit
+
+#### 3. PROBE - Perspectives per Subtask
+**Subtask 1 (Context):**
+- OODA: Observe working doc → Orient on remount causes → Decide implementation approach → Act on insights
+
+**Subtask 2-3 (Helpers):**
+- OODA: Observe force-graph API → Orient on visual update methods → Decide state management → Act to implement
+
+**Subtask 4-5 (Restore):**
+- OODA: Observe no-op handlers → Orient on original logic → Decide helper integration → Act to restore
+
+**Subtask 6-7 (Verify):**
+- OODA: Observe behavior → Orient on success criteria → Decide if met → Act to fix if needed
+
+#### 4. SEQUENCE
+1. Read context document
+2. Analyze ForceGraphAdapter structure
+3. Implement helper methods with local state
+4. Restore handlers one by one
+5. Test type checks after each change
+6. Commit incrementally
+
+### EXECUTE
+
+#### Step 1: Read Context Document
+Read working-document.md to understand remount causes and recommended approach. Key insights:
+- Visual feedback must be imperative to avoid remounts
+- Use adapter ref methods for direct node/link manipulation
+- No new uiStore writes or prop churn allowed
+
+#### Step 2: Analyze ForceGraphAdapter Structure
+ForceGraphAdapter is a wrapper around r3f-forcegraph with:
+- Ref forwarding to expose imperative API
+- Already exposes d3Force, d3ReheatSimulation methods
+- No existing highlightNode/selectNode methods - need to implement

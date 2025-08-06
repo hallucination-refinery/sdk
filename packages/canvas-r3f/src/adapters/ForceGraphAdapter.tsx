@@ -109,6 +109,10 @@ export interface ForceGraphAdapterRef {
     y: [number, number]
     z: [number, number]
   }
+
+  // Visual feedback methods
+  highlightNode: (nodeId: string | null) => void
+  selectNode: (nodeId: string, toggle?: boolean) => void
 }
 
 /**
@@ -125,18 +129,60 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   // console.log('[FGAdapter] typeof ref:', typeof ref)  // COMMENTED OUT: Render-phase console.log
   
   const { graphData, dataVersion = 0, disableLinkForce, ...restProps } = props
+  const internalRef = React.useRef<any>(null)
+  const highlightedNodeRef = React.useRef<string | null>(null)
+  const selectedNodesRef = React.useRef<Set<string>>(new Set())
   const safeGraphData = useMemo(() => {
     // console.log('[ForceGraphAdapter] Creating safe data for version:', dataVersion)  // COMMENTED OUT: Render-phase console.log
     return structuredClone(graphData)
   }, [graphData, dataVersion]) // Both dependencies for proper tracking
   // --- freeze-crash guard ----------------------------------------------
   useEffect(() => {
-    if (disableLinkForce) {
-      ;(ref as React.RefObject<any>).current?.d3Force('link', null)
+    if (disableLinkForce && internalRef.current) {
+      internalRef.current.d3Force('link', null)
     }
-  }, [disableLinkForce, ref])
+  }, [disableLinkForce])
   // ----------------------------------------------------------------------
   
+  // Imperative visual feedback methods
+  const highlightNode = React.useCallback((nodeId: string | null) => {
+    highlightedNodeRef.current = nodeId
+    // Force re-render of affected nodes
+    if (internalRef.current) {
+      const graphData = internalRef.current.graphData()
+      if (graphData && graphData.nodes) {
+        // Trigger visual update by refreshing node objects
+        internalRef.current.nodeColor(internalRef.current.nodeColor())
+      }
+    }
+  }, [])
+
+  const selectNode = React.useCallback((nodeId: string, toggle: boolean = true) => {
+    if (toggle && selectedNodesRef.current.has(nodeId)) {
+      selectedNodesRef.current.delete(nodeId)
+    } else {
+      selectedNodesRef.current.add(nodeId)
+    }
+    // Force re-render of affected nodes
+    if (internalRef.current) {
+      const graphData = internalRef.current.graphData()
+      if (graphData && graphData.nodes) {
+        // Trigger visual update by refreshing node objects
+        internalRef.current.nodeColor(internalRef.current.nodeColor())
+      }
+    }
+  }, [])
+
+  // Merge refs and add custom methods
+  React.useImperativeHandle(ref, () => {
+    if (!internalRef.current) return {} as any
+    return {
+      ...internalRef.current,
+      highlightNode,
+      selectNode
+    }
+  }, [highlightNode, selectNode])
+
   // Expose ref.current to window.__FG unconditionally after mount
   useEffect(() => {
     console.log('[FGAdapter] ref after mount:', ref)
@@ -152,7 +198,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
 
   // Critical: Call refresh() when data changes to trigger re-render
   useEffect(() => {
-    if (ref && typeof ref === 'object' && 'current' in ref && ref.current) {
+    if (internalRef.current) {
       // Edge case: Check if data exists and has nodes before calling refresh
       if (!safeGraphData || !safeGraphData.nodes || safeGraphData.nodes.length === 0) {
         console.log('[FGAdapter] Skipping refresh - no data or empty nodes array')
@@ -165,14 +211,14 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       })
       
       // Check if refresh method exists (it should according to r3f-forcegraph API)
-      if (typeof (ref.current as any).refresh === 'function') {
+      if (typeof internalRef.current.refresh === 'function') {
         try {
-          (ref.current as any).refresh()
+          internalRef.current.refresh()
           console.log('[FGAdapter] Called ref.current.refresh() successfully')
           
           // Also update window.__FG reference in case it changed
-          if ((window as any).__FG !== ref.current) {
-            (window as any).__FG = ref.current
+          if ((window as any).__FG !== internalRef.current) {
+            (window as any).__FG = internalRef.current
             console.log('[FGAdapter] Updated window.__FG with latest ref.current')
           }
         } catch (error) {
@@ -180,14 +226,14 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
         }
       } else {
         console.warn('[FGAdapter] refresh() method not found on ref.current')
-        console.log('[FGAdapter] Available methods:', Object.keys(ref.current || {}))
+        console.log('[FGAdapter] Available methods:', Object.keys(internalRef.current || {}))
       }
     }
-  }, [safeGraphData, ref])
+  }, [safeGraphData])
 
   return (
     <ForceGraph3D
-      ref={ref}
+      ref={internalRef}
       {...restProps} /* all user props EXCEPT graphData */
       graphData={safeGraphData} /* deep‑cloned, unfrozen data       */
       // Removed freeze guards to allow natural simulation
@@ -195,8 +241,9 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       // cooldownTicks={0} - was stopping after 1 tick
       // d3AlphaDecay={0} - was preventing alpha from decreasing
       onEngineStop={() => {
-        const api = (ref as React.RefObject<any>).current
-        api?.d3AlphaTarget?.(0.3)?.restart?.()
+        if (internalRef.current) {
+          internalRef.current.d3AlphaTarget?.(0.3)?.restart?.()
+        }
       }}
     />
   )
