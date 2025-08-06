@@ -307,20 +307,20 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     if ((categoriesChanged || tagsChanged) && !hasReheatedRef.current) {
       console.log('[FGAdapter] Lens changed, triggering one-shot reheat')
       
-      // Trigger reheat
-      if (internalRef.current.d3ReheatSimulation) {
-        try {
-          internalRef.current.d3ReheatSimulation()
-          hasReheatedRef.current = true
-          
-          // Reset flag after a delay to allow future reheats
-          setTimeout(() => {
-            hasReheatedRef.current = false
-          }, 2000) // 2 second cooldown
-        } catch (error) {
-          console.error('[FGAdapter] Error calling d3ReheatSimulation:', error)
-        }
-      }
+      // Trigger reheat - TEMPORARILY DISABLED to prevent layoutTick crash
+      // if (internalRef.current.d3ReheatSimulation) {
+      //   try {
+      //     internalRef.current.d3ReheatSimulation()
+      //     hasReheatedRef.current = true
+      //     
+      //     // Reset flag after a delay to allow future reheats
+      //     setTimeout(() => {
+      //       hasReheatedRef.current = false
+      //     }, 2000) // 2 second cooldown
+      //   } catch (error) {
+      //     console.error('[FGAdapter] Error calling d3ReheatSimulation:', error)
+      //   }
+      // }
       
       // Update prev refs
       prevLensRef.current = { categories: activeCategories, tags: activeTags }
