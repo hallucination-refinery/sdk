@@ -1,62 +1,64 @@
-### Last Updated: 1:22 PM, 06-08-2025
+### Last Updated: 3:50 PM, 06-08-2025
 
 # Executive Summary
 
-Smoke‑screen #2 shows _zero_ unexpected remounts: `[FGAdapter] mounted` appears exactly twice (StrictMode double‑mount) even after rapid hover‑and‑click, proving the last render‑phase state write is gone. Core pointer events (hover, click, filter, scrub) now work without tearing down the graph, so the _remount bug_ portion of Phase 2 is closed. Remaining gaps before Phase 2 can be declared “Done” are: (1) wire the **imperative selection/hover visuals** we temporarily disabled, and (2) make **lens‑switch** trigger its single “burst‑and‑settle” animation. Those two fixes unblock the five‑run acceptance loop and the merge into `cryptic‑vault‑baseline`.
+We have eliminated the remount‑storm: **`ForceGraphAdapter` now mounts exactly twice (StrictMode double‑mount) and never again during hover, click, scrub or filter.**  
+Helpers `highlightNode(id)` and `selectNode(id,toggle)` are wired through the adapter ref, and all React‑state writes inside pointer events remain stubbed. Visual feedback and the single “burst‑and‑settle” on lens‑switch are still missing, so Phase 2 is **one small imperative patch away from done**.
 
-Concrete next step: implement `highlightNode`/`selectNode` via the `ForceGraphAdapter` ref and call them from the restored click/hover handlers; then add a one‑shot `d3ReheatSimulation()` on lens change. Smoke‑test again—if remount count stays ≤ 2 and behaviour matches the six UX rules, Phase 2 is finished.
+Immediate next step: **apply actual material/opacity changes inside the two helpers and trigger `d3ReheatSimulation()` once on lens change**, then rerun the five‑run smoke suite. If mounts ≤ 2 and all six UX rules pass, we merge `replace‑interaction‑with‑store` into `cryptic‑vault‑baseline` and move to the remaining migration rows plus the Met‑style morph demo.
 
 # W: Phase 2 Completed
 
-All legacy `@refinery/interaction` state has been replaced by `@refinery/store` slices; `ForceGraphAdapter` mounts once (StrictMode × 2) and **never remounts** during hover, click, scrub, filter or lens‑switch. Hover and selection visuals are driven imperatively through the adapter ref; all six Intended‑Behaviour checklist items pass five consecutive smoke‑screen runs; branch `replace‑interaction‑with‑store` merges cleanly into `cryptic‑vault‑baseline`.
+All legacy `@refinery/interaction` context is replaced by `@refinery/store`.  
+The scene never remounts during user interaction; hover and selection visuals are handled imperatively; lens‑switch performs one controlled reheat; the demo passes five consecutive smoke screens and merges cleanly.
 
 ## Sub-W: Imperative Visual & Lens Burst
 
-Finish wiring transient visuals and lens‑switch physics so Phase 2 can be signed off.
+Finish the last behavioural gaps so the Phase 2 PR can be signed off.
 
 ### Sub-W Checklist
 
-- [ ] Restore `onNodeHover` to call `adapter.highlightNode(id)`
-- [ ] Restore `onNodeClick` to toggle `adapter.selectNode(id)` without state writes
-- [ ] Memo‑wrap any new callbacks/objects fed to the adapter
-- [ ] On lens change, call `adapter.d3ReheatSimulation()` once
-- [ ] Smoke‑screen pointer‑suite ⇒ remounts ≤ 2, no React errors
-- [ ] Tag PR `fix: imperative visuals & lens burst`, squash‑merge
+- [ ] **Visuals:** in `highlightNode`/`selectNode` mutate node & link materials (color/emissive/opacity) and call `refresh()`.
+- [ ] **Lens burst:** on lens change, guard‑call `adapter.d3ReheatSimulation()` once.
+- [ ] Memo‑wrap any new inline props passed to the adapter.
+- [ ] Smoke‑screen ×5 → mounts ≤ 2, zero React errors, all six UX rules green.
+- [ ] Squash‑merge “Phase 2 finish” PR and delete dead interaction code.
 
 ## ROADMAP
 
-| Seq | Task                                                      | Effort (90 % CI) | P(success) | Notes                                 |
-| --- | --------------------------------------------------------- | ---------------- | ---------- | ------------------------------------- |
-| 1   | Implement `highlightNode`/`selectNode` helpers on adapter | 0.4 – 0.8 h      | 0.85       | API already exposed by r3f‑forcegraph |
-| 2   | Re‑enable hover/click handlers to use helpers             | 0.2 – 0.5 h      | 0.9        | No global state writes                |
-| 3   | Add one‑shot `d3ReheatSimulation()` on lens change        | 0.3 – 0.6 h      | 0.8        | Guard with `useRef` to prevent loops  |
-| 4   | Memo‑wrap remaining inline props to adapter               | 0.2 – 0.4 h      | 0.8        | Stops future prop‑churn remounts      |
-| 5   | Run full smoke‑suite ×5; fix emergent issues              | 0.5 – 1.0 h      | 0.75       | Accept if all green                   |
-| 6   | Clean PR, delete dead Zustand keys, merge Phase 2         | 0.3 h            | 0.95       | Unblocks later checklist rows         |
+| Seq | Task                                                       | Effort (90 % CI) | P(success) | Notes                                 |
+| --- | ---------------------------------------------------------- | ---------------- | ---------- | ------------------------------------- |
+| 1   | Implement material updates in helpers                      | 0.3 – 0.6 h      | 0.9        | Straightforward Three.js tweens       |
+| 2   | One‑shot reheat on lens switch                             | 0.2 – 0.4 h      | 0.85       | Use `useRef` flag                     |
+| 3   | Memo‑wrap remaining inline props                           | 0.2 – 0.4 h      | 0.8        | Prevent future prop‑churn             |
+| 4   | Full smoke suite ×5                                        | 0.5 – 1.0 h      | 0.75       | Accept or hot‑fix                     |
+| 5   | Clean PR, merge Phase 2                                    | 0.3 h            | 0.95       | Unblocks rest of migration            |
+| 6   | Parallel: plan Met‑morph clip & remaining 9 checklist rows | —                | —          | Clip can be recorded once burst works |
 
-**Total expected:** 2 – 3 engineering hours; 75 % chance Phase 2 closes today, 90 % within 24 h.
+**Total expected:** 1.5 – 2.5 h of focused work; 80 % chance Phase 2 closes today.
 
 # RUNNING NOTES
 
-1. Lens burst missing—likely just the disabled `d3ReheatSimulation()` call; low risk.
-2. Selection/hover visuals must stay fully imperative to avoid re‑introducing remounts.
-3. Remaining rows in the 11‑item migration depend only on this merge; parallel work can start once Phase 2 lands.
-4. Need a visually striking clip by tomorrow: Met‑style latent morph can be shot after the lens‑burst fix—even if later checklist rows are still open.
+1. Hover/click still show no visual change—materials not yet touched.
+2. Lens‑switch idle ⇒ need guarded reheat call.
+3. Mount count goal met; any new inline callbacks must be memoised to keep it that way.
+4. Visually striking demo due tomorrow → finish lens burst, then record latent‑space morph while other migration rows proceed in parallel.
+5. Remaining migration rows are mostly mechanical store‑slice conversions once Phase 2 lands.
 
 # RETROSPECTIVES
 
 **What went well**
 
-- Grep‑and‑stub strategy eliminated remounts with minimal churn.
-- StrictMode mount‑count proved a reliable acceptance metric.
+- Systematic grep‑and‑stub approach killed remount bug quickly.
+- StrictMode mount‑count proved a simple, reliable acceptance metric.
 
 **What we could improve**
 
-- Skipped click‑path noop test on first pass, costing an extra cycle.
-- Console‑log noise masked true state writes; should silence early.
+- Skipped implementing visual tweaks in the same patch, causing another loop.
+- Console‑log noise obscured true issues early; silencing sooner would have helped.
 
-**Top action items**
+**High‑impact action items**
 
-1. Add “noop all handlers” as first diagnostic step to remount playbook.
-2. Extend CI smoke test to assert mount‑count ≤ 2 automatically.
-3. Document R3F rule: transient visuals stay outside React state.
+1. Add “disable all transient logs” to future remount‑hunt checklist.
+2. Extend CI smoke test to assert `FGAdapter` mounts ≤ 2 automatically.
+3. Document R3F rule: transient visuals must stay outside React state to avoid remounts.

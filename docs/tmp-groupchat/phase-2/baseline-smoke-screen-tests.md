@@ -1,18 +1,18 @@
 # Baseline Smoke Screen Tests
 
-Last Updated: 12:45 PM EST, 06/08/2025
+Last Updated: 3:45 PM EST, 06/08/2025
 
 ## Context
 
 - Branch: `repro-fg-remount`
-- Commit: b0f14596
+- Commit: f98a5f1c
 - Browser: Chrome Incognito 138.0.7204.169 (arm64)
-- Purpose: All click handlers have been replaced with no-ops as requested:
-  - ✅ Disabled all onNodeClick, background-click, and keyboard-click handlers
-  - ✅ Commented out all uiStore.selectNodes() calls
-  - ✅ Preserved hover logic untouched
-  - ✅ No new console output added
-  - ✅ Project compiles successfully
+- Changes:
+  - Added highlightNode(id) and selectNode(id, toggle) helpers to ForceGraphAdapter
+  - Used React.useImperativeHandle to merge custom methods with existing ref API
+  - Restored all click/hover handlers to use imperative methods
+  - Removed all NO-OP comments
+  - Kept all uiStore writes commented out to prevent remounts
 
 ## General Observations
 
@@ -58,13 +58,12 @@ ForceGraphAdapter.tsx:162 [FGAdapter] Data changed, calling refresh() {nodeCount
 ForceGraphAdapter.tsx:171 [FGAdapter] Called ref.current.refresh() successfully
 ForceGraphAdapter.tsx:142 [FGAdapter] ref after mount: {current: {…}}
 ForceGraphAdapter.tsx:144 [FGAdapter] ref.current: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:145 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
+ForceGraphAdapter.tsx:145 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']0: "emitParticle"1: "getGraphBbox"2: "d3ReheatSimulation"3: "d3Force"4: "resetCountdown"5: "tickFrame"6: "refresh"length: 7[[Prototype]]: Array(0)
 ForceGraphAdapter.tsx:146 [FGAdapter] Assigning window.__FG = ref.current
 ForceGraphAdapter.tsx:148 [FGAdapter] window.__FG assigned successfully
 ForceGraphAdapter.tsx:149 [CLAUDE] ready-for-smoke-screen
 ForceGraphAdapter.tsx:162 [FGAdapter] Data changed, calling refresh() {nodeCount: 213, linkCount: 276}
 ForceGraphAdapter.tsx:171 [FGAdapter] Called ref.current.refresh() successfully
-events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 64ms
 CrypticAnimusScene.tsx:210 [Physics config] Initialized successfully
 CrypticAnimusScene.tsx:213 [CrypticAnimusScene] Configuring physics forces!
 CrypticAnimusScene.tsx:289 [REHEAT] Initial d3ReheatSimulation called
@@ -74,7 +73,9 @@ CrypticAnimusScene.tsx:331 [SIMULATION] Testing if forces are applied...
 CrypticAnimusScene.tsx:335 [FORCES] link: true charge: true center: true
 CrypticAnimusScene.tsx:338 [Debug] window.__FG type: object
 CrypticAnimusScene.tsx:339 [Debug] window.__FG has graphData method: false
-CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 248ms
+CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 230ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 58ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 62ms
 ```
 
 ## Test 2 - Hover & Click on Node -> Filter Tag On/Off -> Timeline Scrubber
@@ -104,7 +105,6 @@ CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 248ms
 
 ```
 Navigated to http://localhost:3000/
-scheduler.development.js:14 [Violation] 'message' handler took 206ms
 CrypticAnimusScene.tsx:159 [INIT POSITIONS] Spawned 213 nodes - mode: origin
 CrypticAnimusScene.tsx:98 [GRAPH VERSION] Raw structure changed - updating ref. Nodes: 213 Links: 276
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 213
@@ -120,13 +120,12 @@ ForceGraphAdapter.tsx:162 [FGAdapter] Data changed, calling refresh() {nodeCount
 ForceGraphAdapter.tsx:171 [FGAdapter] Called ref.current.refresh() successfully
 ForceGraphAdapter.tsx:142 [FGAdapter] ref after mount: {current: {…}}
 ForceGraphAdapter.tsx:144 [FGAdapter] ref.current: {emitParticle: ƒ, getGraphBbox: ƒ, d3ReheatSimulation: ƒ, d3Force: ƒ, resetCountdown: ƒ, …}
-ForceGraphAdapter.tsx:145 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']
+ForceGraphAdapter.tsx:145 [FGAdapter] ref.current keys: (7) ['emitParticle', 'getGraphBbox', 'd3ReheatSimulation', 'd3Force', 'resetCountdown', 'tickFrame', 'refresh']0: "emitParticle"1: "getGraphBbox"2: "d3ReheatSimulation"3: "d3Force"4: "resetCountdown"5: "tickFrame"6: "refresh"length: 7[[Prototype]]: Array(0)
 ForceGraphAdapter.tsx:146 [FGAdapter] Assigning window.__FG = ref.current
 ForceGraphAdapter.tsx:148 [FGAdapter] window.__FG assigned successfully
 ForceGraphAdapter.tsx:149 [CLAUDE] ready-for-smoke-screen
 ForceGraphAdapter.tsx:162 [FGAdapter] Data changed, calling refresh() {nodeCount: 213, linkCount: 276}
 ForceGraphAdapter.tsx:171 [FGAdapter] Called ref.current.refresh() successfully
-events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 59ms
 CrypticAnimusScene.tsx:210 [Physics config] Initialized successfully
 CrypticAnimusScene.tsx:213 [CrypticAnimusScene] Configuring physics forces!
 CrypticAnimusScene.tsx:289 [REHEAT] Initial d3ReheatSimulation called
@@ -136,40 +135,42 @@ CrypticAnimusScene.tsx:331 [SIMULATION] Testing if forces are applied...
 CrypticAnimusScene.tsx:335 [FORCES] link: true charge: true center: true
 CrypticAnimusScene.tsx:338 [Debug] window.__FG type: object
 CrypticAnimusScene.tsx:339 [Debug] window.__FG has graphData method: false
-CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 286ms
+CrypticAnimusScene.tsx:237 [Violation] 'setTimeout' handler took 230ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 58ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 62ms
+events-f681e724.esm.js:2271 [Violation] 'requestAnimationFrame' handler took 53ms
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 211
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 206
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 202
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 199
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 192
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 188
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 183
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 176
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 164
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 159
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 156
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 151
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 146
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 138
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 119
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 113
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 104
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 132
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 127
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 116
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 108
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 96
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 92
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 87
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 81
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 73
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 70
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 62
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 58
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 54
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 47
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 30
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 42
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 38
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 27
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 23
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 19
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 12
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 7
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 4
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 7
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 12
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 15
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 19
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 23
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 27
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 30
@@ -181,20 +182,15 @@ CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 51
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 54
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 58
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 62
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 66
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 70
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 73
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 81
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 87
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 101
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 104
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 146
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 156
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 159
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 138
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 151
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 164
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 171
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 176
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 183
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 195
-CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 206
+CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 199
 CrypticAnimusScene.tsx:106 [REMOUNT CHECK] graphDataRef updated, visibleIds: 213
 ```

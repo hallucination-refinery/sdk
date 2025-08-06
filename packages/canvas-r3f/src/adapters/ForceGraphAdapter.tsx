@@ -74,6 +74,10 @@ export interface ForceGraphAdapterProps {
   // Freeze crash guard
   disableLinkForce?: boolean // defaults to false
 
+  // Lens props for detecting changes
+  activeCategories?: Set<string>
+  activeTags?: Set<string>
+
   // Other
   [key: string]: any
 }
@@ -128,10 +132,12 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   // console.log('[FGAdapter] ref type:', ref)  // COMMENTED OUT: Render-phase console.log
   // console.log('[FGAdapter] typeof ref:', typeof ref)  // COMMENTED OUT: Render-phase console.log
   
-  const { graphData, dataVersion = 0, disableLinkForce, ...restProps } = props
+  const { graphData, dataVersion = 0, disableLinkForce, activeCategories, activeTags, ...restProps } = props
   const internalRef = React.useRef<any>(null)
   const highlightedNodeRef = React.useRef<string | null>(null)
   const selectedNodesRef = React.useRef<Set<string>>(new Set())
+  const prevLensRef = React.useRef<{ categories?: Set<string>; tags?: Set<string> }>({})
+  const hasReheatedRef = React.useRef(false)
   const safeGraphData = useMemo(() => {
     // console.log('[ForceGraphAdapter] Creating safe data for version:', dataVersion)  // COMMENTED OUT: Render-phase console.log
     return structuredClone(graphData)
@@ -146,30 +152,89 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   
   // Imperative visual feedback methods
   const highlightNode = React.useCallback((nodeId: string | null) => {
+    const prevHighlighted = highlightedNodeRef.current
     highlightedNodeRef.current = nodeId
-    // Force re-render of affected nodes
-    if (internalRef.current) {
+    
+    if (!internalRef.current) return
+    
+    try {
       const graphData = internalRef.current.graphData()
-      if (graphData && graphData.nodes) {
-        // Trigger visual update by refreshing node objects
-        internalRef.current.nodeColor(internalRef.current.nodeColor())
+      if (!graphData || !graphData.nodes) return
+      
+      // Reset previous highlighted node
+      if (prevHighlighted) {
+        const prevNode = graphData.nodes.find((n: any) => n.id === prevHighlighted)
+        if (prevNode && prevNode.__threeObj) {
+          const sprite = prevNode.__threeObj
+          if (sprite.material) {
+            // Reset to original color (stored in material.color)
+            sprite.material.opacity = selectedNodesRef.current.has(prevHighlighted) ? 1.0 : 0.9
+            sprite.material.needsUpdate = true
+          }
+        }
       }
+      
+      // Highlight new node
+      if (nodeId) {
+        const node = graphData.nodes.find((n: any) => n.id === nodeId)
+        if (node && node.__threeObj) {
+          const sprite = node.__threeObj
+          if (sprite.material) {
+            // Increase opacity for highlight
+            sprite.material.opacity = 1.0
+            sprite.material.needsUpdate = true
+          }
+        }
+      }
+      
+      // Trigger refresh to update visuals
+      if (internalRef.current.refresh) {
+        internalRef.current.refresh()
+      }
+    } catch (error) {
+      console.error('[FGAdapter] Error in highlightNode:', error)
     }
   }, [])
 
   const selectNode = React.useCallback((nodeId: string, toggle: boolean = true) => {
-    if (toggle && selectedNodesRef.current.has(nodeId)) {
+    const wasSelected = selectedNodesRef.current.has(nodeId)
+    
+    if (toggle && wasSelected) {
       selectedNodesRef.current.delete(nodeId)
-    } else {
+    } else if (!wasSelected) {
       selectedNodesRef.current.add(nodeId)
     }
-    // Force re-render of affected nodes
-    if (internalRef.current) {
+    
+    if (!internalRef.current) return
+    
+    try {
       const graphData = internalRef.current.graphData()
-      if (graphData && graphData.nodes) {
-        // Trigger visual update by refreshing node objects
-        internalRef.current.nodeColor(internalRef.current.nodeColor())
+      if (!graphData || !graphData.nodes) return
+      
+      const node = graphData.nodes.find((n: any) => n.id === nodeId)
+      if (node && node.__threeObj) {
+        const sprite = node.__threeObj
+        if (sprite.material) {
+          // Toggle selection visual
+          const isNowSelected = selectedNodesRef.current.has(nodeId)
+          sprite.material.opacity = isNowSelected ? 1.0 : 0.9
+          
+          // Could also adjust color tint for selection
+          if (sprite.material.color) {
+            const tint = isNowSelected ? 0xffaa00 : 0xffffff // Orange tint for selection
+            sprite.material.color.setHex(tint)
+          }
+          
+          sprite.material.needsUpdate = true
+        }
       }
+      
+      // Trigger refresh to update visuals
+      if (internalRef.current.refresh) {
+        internalRef.current.refresh()
+      }
+    } catch (error) {
+      console.error('[FGAdapter] Error in selectNode:', error)
     }
   }, [])
 
@@ -230,6 +295,37 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       }
     }
   }, [safeGraphData])
+
+  // One-shot reheat on lens change
+  useEffect(() => {
+    if (!internalRef.current) return
+    
+    // Check if lens (activeCategories or activeTags) changed
+    const categoriesChanged = activeCategories !== prevLensRef.current.categories
+    const tagsChanged = activeTags !== prevLensRef.current.tags
+    
+    if ((categoriesChanged || tagsChanged) && !hasReheatedRef.current) {
+      console.log('[FGAdapter] Lens changed, triggering one-shot reheat')
+      
+      // Trigger reheat
+      if (internalRef.current.d3ReheatSimulation) {
+        try {
+          internalRef.current.d3ReheatSimulation()
+          hasReheatedRef.current = true
+          
+          // Reset flag after a delay to allow future reheats
+          setTimeout(() => {
+            hasReheatedRef.current = false
+          }, 2000) // 2 second cooldown
+        } catch (error) {
+          console.error('[FGAdapter] Error calling d3ReheatSimulation:', error)
+        }
+      }
+      
+      // Update prev refs
+      prevLensRef.current = { categories: activeCategories, tags: activeTags }
+    }
+  }, [activeCategories, activeTags])
 
   return (
     <ForceGraph3D

@@ -1011,6 +1011,8 @@ export default function CrypticAnimusScene({
         linkVisibility={linkVisibility} // Use memoized callback
         linkOpacity={getLinkOpacity}
         onBackgroundClick={onBackgroundClickRequest}
+        activeCategories={activeCategories}
+        activeTags={activeTags}
       />
     </FGErrorBoundary>
   )
