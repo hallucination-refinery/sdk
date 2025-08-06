@@ -1,6 +1,7 @@
 import React, { forwardRef, useMemo, useEffect } from 'react'
 // TODO: Remove this adapter once force-graph is replaced with SDK renderer
 import ForceGraph3D from 'r3f-forcegraph'
+import * as THREE from 'three'
 
 // ---------------------------------------------------------------------------
 // TEMP MONKEY‑PATCH (remove once ForceGraph is fully retired)
@@ -138,6 +139,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   const selectedNodesRef = React.useRef<Set<string>>(new Set())
   const prevLensRef = React.useRef<{ categories?: Set<string>; tags?: Set<string> }>({})
   const hasReheatedRef = React.useRef(false)
+  const originalColorsRef = React.useRef<Map<string, number>>(new Map())
   const safeGraphData = useMemo(() => {
     // console.log('[ForceGraphAdapter] Creating safe data for version:', dataVersion)  // COMMENTED OUT: Render-phase console.log
     return structuredClone(graphData)
@@ -164,26 +166,38 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       // Reset previous highlighted node
       if (prevHighlighted) {
         const prevNode = graphData.nodes.find((n: any) => n.id === prevHighlighted)
-        if (prevNode && prevNode.__threeObj) {
+        if (prevNode && prevNode.__threeObj && prevNode.__threeObj.material) {
           const sprite = prevNode.__threeObj
-          if (sprite.material) {
-            // Reset to original color (stored in material.color)
-            sprite.material.opacity = selectedNodesRef.current.has(prevHighlighted) ? 1.0 : 0.9
-            sprite.material.needsUpdate = true
+          const material = sprite.material
+          
+          // Reset to original color or orange if selected
+          if (selectedNodesRef.current.has(prevHighlighted)) {
+            material.color = new THREE.Color(0xffa500) // Orange for selected
+          } else {
+            const originalColor = originalColorsRef.current.get(prevHighlighted)
+            if (originalColor !== undefined) {
+              material.color = new THREE.Color(originalColor)
+            }
           }
+          material.needsUpdate = true
         }
       }
       
-      // Highlight new node
+      // Highlight new node with yellow
       if (nodeId) {
         const node = graphData.nodes.find((n: any) => n.id === nodeId)
-        if (node && node.__threeObj) {
+        if (node && node.__threeObj && node.__threeObj.material) {
           const sprite = node.__threeObj
-          if (sprite.material) {
-            // Increase opacity for highlight
-            sprite.material.opacity = 1.0
-            sprite.material.needsUpdate = true
+          const material = sprite.material
+          
+          // Store original color if not already stored
+          if (!originalColorsRef.current.has(nodeId) && material.color) {
+            originalColorsRef.current.set(nodeId, material.color.getHex())
           }
+          
+          // Set yellow color for hover
+          material.color = new THREE.Color(0xffff00) // Yellow
+          material.needsUpdate = true
         }
       }
       
@@ -212,21 +226,34 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       if (!graphData || !graphData.nodes) return
       
       const node = graphData.nodes.find((n: any) => n.id === nodeId)
-      if (node && node.__threeObj) {
+      if (node && node.__threeObj && node.__threeObj.material) {
         const sprite = node.__threeObj
-        if (sprite.material) {
-          // Toggle selection visual
-          const isNowSelected = selectedNodesRef.current.has(nodeId)
-          sprite.material.opacity = isNowSelected ? 1.0 : 0.9
-          
-          // Could also adjust color tint for selection
-          if (sprite.material.color) {
-            const tint = isNowSelected ? 0xffaa00 : 0xffffff // Orange tint for selection
-            sprite.material.color.setHex(tint)
-          }
-          
-          sprite.material.needsUpdate = true
+        const material = sprite.material
+        
+        // Store original color if not already stored
+        if (!originalColorsRef.current.has(nodeId) && material.color) {
+          originalColorsRef.current.set(nodeId, material.color.getHex())
         }
+        
+        // Toggle selection visual
+        const isNowSelected = selectedNodesRef.current.has(nodeId)
+        
+        if (isNowSelected) {
+          // Set orange color for selected
+          material.color = new THREE.Color(0xffa500) // Orange
+        } else {
+          // Reset to original color (unless currently hovered)
+          if (highlightedNodeRef.current === nodeId) {
+            material.color = new THREE.Color(0xffff00) // Keep yellow if hovered
+          } else {
+            const originalColor = originalColorsRef.current.get(nodeId)
+            if (originalColor !== undefined) {
+              material.color = new THREE.Color(originalColor)
+            }
+          }
+        }
+        
+        material.needsUpdate = true
       }
       
       // Trigger refresh to update visuals

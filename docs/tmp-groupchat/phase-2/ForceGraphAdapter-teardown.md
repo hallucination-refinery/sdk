@@ -540,3 +540,21 @@ to enable lens change detection in the adapter.
 ### EXECUTE
 
 #### Step 1: Disable d3ReheatSimulation
+Commented out d3ReheatSimulation call in lens change effect to prevent layoutTick crash.
+Committed with hash: 0f304eaa
+
+#### Step 2: Fix Color Mutations
+Updated highlightNode and selectNode methods:
+
+**highlightNode:**
+- Stores original colors in originalColorsRef Map
+- Sets yellow (0xffff00) for hover
+- Resets to original color on unhover
+- Preserves orange if node is selected
+
+**selectNode:**
+- Stores original colors if not stored
+- Sets orange (0xffa500) for selection
+- Resets to original color on deselect
+- Preserves yellow if currently hovered
+- Proper null guards for material access
