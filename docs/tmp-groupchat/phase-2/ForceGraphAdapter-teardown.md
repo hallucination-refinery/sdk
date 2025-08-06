@@ -305,3 +305,19 @@ ForceGraphAdapter is a wrapper around r3f-forcegraph with:
 - Ref forwarding to expose imperative API
 - Already exposes d3Force, d3ReheatSimulation methods
 - No existing highlightNode/selectNode methods - need to implement
+
+#### Step 3: Implement Helper Methods
+Implemented highlightNode(id) and selectNode(id, toggle) in ForceGraphAdapter:
+- Used internal ref and React.useImperativeHandle to merge custom methods
+- Store highlight/selection state in refs to avoid React state updates
+- Force visual updates by triggering nodeColor refresh
+- Committed with hash: b4204f5a
+
+#### Step 4: Restore Handlers in CrypticAnimusScene
+Restored handlers to use imperative methods:
+- handleNodeClick: calls fgRef.current.selectNode(node.id, true)
+- handleNodeHover: calls fgRef.current.highlightNode(node ? node.id : null)
+- Preserved existing prop callbacks for compatibility
+- No uiStore writes, purely imperative visual updates
+
+#### Step 5: Restore Handlers in CrypticVaultScene

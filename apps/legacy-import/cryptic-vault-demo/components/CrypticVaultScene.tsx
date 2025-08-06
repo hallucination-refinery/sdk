@@ -353,50 +353,51 @@ function CrypticVaultSceneContent() {
 
   const handleNodeClick = useCallback(
     (clickedNode: any) => {
-      // NO-OP: Temporarily disabled for remount testing
-      // const nodeId = clickedNode.id as string
-      // // uiStore.selectNodes([nodeId], 'replace')  // COMMENTED OUT: Testing for render-phase state write
+      const nodeId = clickedNode.id as string
+      // NOTE: uiStore.selectNodes removed to prevent remounts
+      // Visual selection is handled imperatively in CrypticAnimusScene
 
-      // // Perform two-hop traversal using currently visible subset
-      // const traversalResult = performTwoHopTraversal(
-      //   nodeId,
-      //   visibleNodesCurrent as any,
-      //   visibleEdgesCurrent as any
-      // )
-      // setHighlightState(traversalResult)
-      // setHighlightActiveTime(Date.now())
+      // Perform two-hop traversal using currently visible subset
+      const traversalResult = performTwoHopTraversal(
+        nodeId,
+        visibleNodesCurrent as any,
+        visibleEdgesCurrent as any
+      )
+      setHighlightState(traversalResult)
+      setHighlightActiveTime(Date.now())
     },
-    [uiStore, visibleNodesCurrent, visibleEdgesCurrent]
+    [visibleNodesCurrent, visibleEdgesCurrent]
   )
 
   const handleNodeHover = useCallback(
     (nodeId: string | null) => {
-      // uiStore.setHoverNode(nodeId)  // COMMENTED OUT: Testing for render-phase state write
+      // NOTE: uiStore.setHoverNode removed to prevent remounts
+      // Visual hover is handled imperatively in CrypticAnimusScene
     },
-    [uiStore]
+    []
   )
 
   const handleBackgroundClick = useCallback(() => {
-    // NO-OP: Temporarily disabled for remount testing
-    // uiStore.selectNodes([], 'replace')
-    // setHighlightState(null)
-    // setHighlightActiveTime(0)
-  }, [uiStore])
+    // NOTE: uiStore.selectNodes removed to prevent remounts
+    // Visual deselection is handled imperatively in CrypticAnimusScene
+    setHighlightState(null)
+    setHighlightActiveTime(0)
+  }, [])
 
   // Handle keyboard events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // NO-OP: Temporarily disabled for remount testing
-      // if (e.key === 'Escape') {
-      //   setHighlightState(null)
-      //   setHighlightActiveTime(0)
-      //   uiStore.selectNodes([], 'replace')
-      // }
+      if (e.key === 'Escape') {
+        setHighlightState(null)
+        setHighlightActiveTime(0)
+        // NOTE: uiStore.selectNodes removed to prevent remounts
+        // Visual deselection is handled imperatively in CrypticAnimusScene
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [uiStore])
+  }, [])
 
   // set initial timeIndex to latest on mount
   useEffect(() => {

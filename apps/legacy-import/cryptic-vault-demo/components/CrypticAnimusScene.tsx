@@ -788,10 +788,14 @@ export default function CrypticAnimusScene({
   // Handle node click - memoized
   const handleNodeClick = useCallback(
     (node: NodeObject<any>) => {
-      // NO-OP: Temporarily disabled for remount testing
-      // if (onNodeClick) {
-      //   onNodeClick(node)
-      // }
+      // Use imperative selectNode method on adapter ref
+      if (fgRef.current?.selectNode) {
+        fgRef.current.selectNode(node.id, true)
+      }
+      // Also call the prop handler if provided
+      if (onNodeClick) {
+        onNodeClick(node)
+      }
     },
     [onNodeClick]
   )
@@ -799,6 +803,11 @@ export default function CrypticAnimusScene({
   // Handle node hover - memoized to prevent re-creating function
   const handleNodeHover = useCallback(
     (node: any) => {
+      // Use imperative highlightNode method on adapter ref
+      if (fgRef.current?.highlightNode) {
+        fgRef.current.highlightNode(node ? node.id : null)
+      }
+      // Also call the prop handler if provided
       onNodeHoverProp?.(node)
     },
     [onNodeHoverProp]
