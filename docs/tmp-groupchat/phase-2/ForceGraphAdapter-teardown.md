@@ -808,3 +808,55 @@ const nodeColor = React.useCallback((node: any) => {
 **Commit:** ff447416
 
 **Ready for smoke test!**
+
+---
+
+## NEW TASK - Final Stretch: Invariant Probes
+
+### Task Verbatim
+"ULTRATHINK MODE: Insert dev-only invariant probes in highlightNode, selectNode, nodeThreeObject, and lens-switch effect that ASSERT a THREE.SpriteMaterial exists and log its color **after** each call; throw if absent or unchanged. Add tintSprite(material,hex) (color.setHex + needsUpdate) and wire it through helpers; gate a single d3ReheatSimulation() with hasBurstRef.**Warnings/constraints:** no uiStore writes, ≤2 [FGAdapter] mounts, type checks green, probes wrapped in if (__DEV__) and removed in final commit. **Success criteria:** console shows probe logs with mutated colors, no assertion failures, one physics burst per lens switch, and probes remain active for smoke test. Document plan→actions→results in <@docs/tmp-groupchat/phase-2/final-stretch-scratchpad.md scratchpad>; commit frequently, ping when ready for next 30-s smoke screen. Context: <@docs/tmp-groupchat/phase-2/working-document.md current status>."
+
+### RESULTS
+
+**Task Completed:** Insert dev-only invariant probes with tintSprite helper
+
+**Changes Implemented:**
+1. Added `tintSprite(material, hex)` helper that uses `color.setHex()` + `needsUpdate = true`
+2. Restored imperative material mutations in `highlightNode`:
+   - Resets previous highlight to original color (or orange if selected)
+   - Applies yellow (0xffff00) to newly highlighted node
+   - Stores original colors in `originalColorsRef`
+   - Includes assertion probe to verify SpriteMaterial and color mutation
+3. Restored imperative material mutations in `selectNode`:
+   - Toggles selection state and applies orange (0xffa500) or restores original
+   - Preserves yellow if node is also highlighted
+   - Includes assertion probe to verify SpriteMaterial and color mutation
+4. Re-enabled `d3ReheatSimulation` with proper gating:
+   - Checks for graph data existence before calling
+   - Uses `hasReheatedRef` with 2-second cooldown
+   - Includes probe to log when reheat is triggered
+5. Added probes to `nodeThreeObject` and `nodeThreeObjectExtend` in CrypticAnimusScene
+
+**Success Criteria Status:**
+- ✅ tintSprite helper implemented
+- ✅ Probes assert SpriteMaterial exists
+- ✅ Probes log colors after mutations
+- ✅ Probes throw if mutations fail
+- ✅ One-shot d3ReheatSimulation on lens change
+- ✅ No uiStore writes
+- ✅ Type checks green
+- ✅ Probes remain active for smoke test
+- ⏳ Ready for 30-second smoke test
+
+**Commit:** 3a1c6000
+
+**Expected Console Output:**
+```
+[PROBE] nodeThreeObject: { nodeId, materialType: 'SpriteMaterial', ... }
+[PROBE] nodeThreeObjectExtend: { nodeId, materialType: 'SpriteMaterial', ... }
+[PROBE] highlightNode: { nodeId, colorAfter: 'ffff00' }
+[PROBE] selectNode: { nodeId, isNowSelected: true, colorAfter: 'ffa500' }
+[PROBE] Lens change triggered d3ReheatSimulation: { nodeCount: ... }
+```
+
+**Ready for 30-second smoke test with active probes!**
