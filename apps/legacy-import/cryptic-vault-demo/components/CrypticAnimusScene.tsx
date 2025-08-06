@@ -111,7 +111,7 @@ export default function CrypticAnimusScene({
     links: memoizedLinks,
     nodeMap,
   } = useMemo(() => {
-    console.log('[CrypticAnimusScene] Memoizing graph data')
+    // console.log('[CrypticAnimusScene] Memoizing graph data')  // COMMENTED OUT: Render-phase console.log
     
     // Use structuredClone to ensure fresh objects, replacing shallow spreads
     const nodes = structuredClone(data.nodes)
@@ -175,20 +175,20 @@ export default function CrypticAnimusScene({
   )
 
   // Log before rendering ForceGraph3D to confirm component mounts
-  console.log('[Animus] render ForceGraph3D')
+  // console.log('[Animus] render ForceGraph3D')  // COMMENTED OUT: Render-phase console.log
   
   // Build verification marker
-  console.log('[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at:', new Date().toISOString())
+  // console.log('[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at:', new Date().toISOString())  // COMMENTED OUT: Render-phase console.log
   
   // Debug data availability
-  console.log('[Data debug] nodes:', memoizedGraphData.nodes.length, 'links:', memoizedGraphData.links.length)
-  console.log('[Data debug] ForceGraph3D component loaded:', !!ForceGraph3D)
+  // console.log('[Data debug] nodes:', memoizedGraphData.nodes.length, 'links:', memoizedGraphData.links.length)  // COMMENTED OUT: Render-phase console.log
+  // console.log('[Data debug] ForceGraph3D component loaded:', !!ForceGraph3D)  // COMMENTED OUT: Render-phase console.log
   
   // Debug filter states that control node visibility
-  console.log('[FILTERS] visibleIds:', visibleIds ? `Set(${visibleIds.size})` : 'undefined')
-  console.log('[FILTERS] activeCategories:', activeCategories ? `Set(${activeCategories.size})` : 'undefined')
-  console.log('[FILTERS] showSecrets:', showSecrets)
-  console.log('[FILTERS] activeTags:', activeTags ? `Set(${activeTags.size})` : 'undefined')
+  // console.log('[FILTERS] visibleIds:', visibleIds ? `Set(${visibleIds.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
+  // console.log('[FILTERS] activeCategories:', activeCategories ? `Set(${activeCategories.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
+  // console.log('[FILTERS] showSecrets:', showSecrets)  // COMMENTED OUT: Render-phase console.log
+  // console.log('[FILTERS] activeTags:', activeTags ? `Set(${activeTags.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
 
   // Configure physics forces
   useEffect(() => {

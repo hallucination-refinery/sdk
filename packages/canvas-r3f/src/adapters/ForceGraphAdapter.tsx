@@ -120,13 +120,13 @@ export interface ForceGraphAdapterRef {
  * @deprecated Will be removed once Cryptiq Mindmap migrates to SDK renderer
  */
 const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProps>((props, ref) => {
-  console.log('[FGAdapter] mounted')
-  console.log('[FGAdapter] ref type:', ref)
-  console.log('[FGAdapter] typeof ref:', typeof ref)
+  // console.log('[FGAdapter] mounted')  // COMMENTED OUT: Render-phase console.log
+  // console.log('[FGAdapter] ref type:', ref)  // COMMENTED OUT: Render-phase console.log
+  // console.log('[FGAdapter] typeof ref:', typeof ref)  // COMMENTED OUT: Render-phase console.log
   
   const { graphData, dataVersion = 0, disableLinkForce, ...restProps } = props
   const safeGraphData = useMemo(() => {
-    console.log('[ForceGraphAdapter] Creating safe data for version:', dataVersion)
+    // console.log('[ForceGraphAdapter] Creating safe data for version:', dataVersion)  // COMMENTED OUT: Render-phase console.log
     return structuredClone(graphData)
   }, [graphData, dataVersion]) // Both dependencies for proper tracking
   // --- freeze-crash guard ----------------------------------------------

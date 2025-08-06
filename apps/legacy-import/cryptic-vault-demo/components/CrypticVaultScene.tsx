@@ -146,7 +146,7 @@ function SceneContent({
     // Convert ALL nodes/edges to arrays WITHOUT filtering
     const allNodesArray = Array.from(graphStore.nodes.values())
     const allEdgesArray = Array.from(graphStore.edges.values())
-    
+
     const transformedNodes: any[] = allNodesArray.map((node) => ({
       ...node,
       childLinks: [],
@@ -156,7 +156,7 @@ function SceneContent({
         isHidden: node.state?.isHidden ?? false,
       },
     }))
-    
+
     const transformedLinks: any[] = allEdgesArray.map((link) => ({
       id: link.id || `${link.source}-${link.target}`,
       source: link.source,
@@ -164,8 +164,11 @@ function SceneContent({
       tier: link.tier || 0,
       confidence: link.confidence || 0.8,
     }))
-    
-    console.log('[SceneContent] Transforming full graph - NO filtering. Nodes:', transformedNodes.length)
+
+    console.log(
+      '[SceneContent] Transforming full graph - NO filtering. Nodes:',
+      transformedNodes.length
+    )
     return { nodes: transformedNodes, links: transformedLinks }
   }, [graphStore.nodes, graphStore.edges]) // NO visibleIds dependency!
 
@@ -218,7 +221,7 @@ function CrypticVaultSceneContent() {
   const nodeCache = useRef<Record<string, any>>({})
   const linkCache = useRef<Record<string, any>>({})
   const hasInitialisedGraph = useRef<boolean>(false)
-  
+
   // Stub for enrichedImages - empty Map as documented
   const enrichedImages = new Map<string, string>()
 
@@ -302,9 +305,9 @@ function CrypticVaultSceneContent() {
 
   useEffect(() => {
     // Guard to prevent re-initialization
-    if (hasInitialisedGraph.current) return;
-    hasInitialisedGraph.current = true;
-    
+    if (hasInitialisedGraph.current) return
+    hasInitialisedGraph.current = true
+
     // Convert array data to Maps and initialize graph store
     const nodeArray = graphData.nodes.map((n: any) => ({
       id: n.id,
@@ -351,7 +354,7 @@ function CrypticVaultSceneContent() {
   const handleNodeClick = useCallback(
     (clickedNode: any) => {
       const nodeId = clickedNode.id as string
-      uiStore.selectNodes([nodeId], 'replace')
+      // uiStore.selectNodes([nodeId], 'replace')  // COMMENTED OUT: Testing for render-phase state write
 
       // Perform two-hop traversal using currently visible subset
       const traversalResult = performTwoHopTraversal(
@@ -367,7 +370,7 @@ function CrypticVaultSceneContent() {
 
   const handleNodeHover = useCallback(
     (nodeId: string | null) => {
-      uiStore.setHoverNode(nodeId)
+      // uiStore.setHoverNode(nodeId)  // COMMENTED OUT: Testing for render-phase state write
     },
     [uiStore]
   )
