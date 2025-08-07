@@ -1,127 +1,154 @@
-# Final Stretch Scratchpad - ULTRATHINK MODE
+# Interaction Wiring Audit - Final Stretch
+**Timestamp:** 2025-08-07, 9:15 AM
 
-## Task Verbatim
-"ULTRATHINK MODE: Insert dev-only invariant probes in highlightNode, selectNode, nodeThreeObject, and lens-switch effect that ASSERT a THREE.SpriteMaterial exists and log its color **after** each call; throw if absent or unchanged. Add tintSprite(material,hex) (color.setHex + needsUpdate) and wire it through helpers; gate a single d3ReheatSimulation() with hasBurstRef.**Warnings/constraints:** no uiStore writes, d2 [FGAdapter] mounts, type checks green, probes wrapped in if (__DEV__) and removed in final commit. **Success criteria:** console shows probe logs with mutated colors, no assertion failures, one physics burst per lens switch, and probes remain active for smoke test. Document plan�actions�results in <@docs/tmp-groupchat/phase-2/final-stretch-scratchpad.md scratchpad>; commit frequently, ping when ready for next 30-s smoke screen. Context: <@docs/tmp-groupchat/phase-2/working-document.md current status>."
+## Executive Summary
 
-## INVESTIGATE & PLAN
+The interaction system is completely disconnected due to deliberate removal of store connections to prevent remounts. Events flow correctly through the UI layer but never reach the @refinery/store, causing zero visual feedback since the imperative methods depend on having a valid ref.
 
-### 1. DECOMPOSE
-**Core premise:** Insert invariant probes to assert SpriteMaterial exists and verify color mutations
-**Claims:**
-- Need to assert THREE.SpriteMaterial exists after each operation
-- Must log color after mutations to verify changes
-- Throw if material absent or color unchanged
-- Add tintSprite helper for consistent color application
-- Gate d3ReheatSimulation with hasBurstRef
+## Event Flow Analysis
 
-**Implicit assumptions:**
-- __DEV__ is available for dev-only code
-- SpriteMaterial.color can be set via setHex
-- needsUpdate triggers visual refresh
-- Current implementation may not be properly mutating colors
+### Current Architecture (BROKEN)
 
-### 2. PLAN - Subtasks
-1. Create final-stretch-scratchpad.md and document plan 
-2. Read working-document.md for current status
-3. Add tintSprite helper function
-4. Insert probes in highlightNode with assertions
-5. Insert probes in selectNode with assertions
-6. Insert probes in nodeThreeObject
-7. Add probe in lens-switch effect
-8. Re-enable d3ReheatSimulation with hasBurstRef gate
-9. Test and verify probe outputs
-10. Keep probes active for smoke test
-
-### 3. PROBE - Perspectives per Subtask
-**Subtask 3 (tintSprite):**
-- OODA: Observe material API � Orient on setHex � Decide implementation � Act to create
-
-**Subtask 4-7 (Probes):**
-- OODA: Observe operation � Orient on material state � Decide assertion � Act to verify
-
-**Subtask 8 (Reheat):**
-- OODA: Observe burst need � Orient on gate � Decide ref approach � Act to implement
-
-### 4. SEQUENCE
-1. Create scratchpad and read context 
-2. Implement tintSprite helper
-3. Add probes systematically to each function
-4. Re-enable gated d3ReheatSimulation
-5. Test assertions work correctly
-6. Commit with probes active
-
-## EXECUTE
-
-### Step 1: Read Context ✓
-From working-document.md:
-- We've stopped remounts but haven't proven material mutations work
-- Need invariant probes that assert SpriteMaterial exists and is tinted
-- Need to re-enable d3ReheatSimulation with proper gating
-- Keep probes active through 5 smoke tests
-
-### Step 2: Implement tintSprite Helper and Update ForceGraphAdapter ✓
-
-**Implemented:**
-1. Added `tintSprite(material, hex)` helper that uses `color.setHex()` and sets `needsUpdate = true`
-2. Restored imperative material mutations in `highlightNode`:
-   - Resets previous highlight to original color (or orange if selected)
-   - Applies yellow (0xffff00) to newly highlighted node
-   - Stores original colors in `originalColorsRef`
-   - Includes assertion probe to verify SpriteMaterial and color mutation
-3. Restored imperative material mutations in `selectNode`:
-   - Toggles selection state and applies orange (0xffa500) or restores original
-   - Preserves yellow if node is also highlighted
-   - Includes assertion probe to verify SpriteMaterial and color mutation
-4. Re-enabled `d3ReheatSimulation` with proper gating:
-   - Checks for graph data existence before calling
-   - Uses `hasReheatedRef` with 2-second cooldown
-   - Includes probe to log when reheat is triggered
-
-### Step 3: Add Probes to CrypticAnimusScene ✓
-
-**Implemented:**
-1. Added probe to `nodeThreeObject`:
-   - Logs nodeId, sprite type, material type, and initial color
-   - Asserts SpriteMaterial type
-2. Added probe to `nodeThreeObjectExtend`:
-   - Logs when materials are extended
-   - Shows material state when __threeObj is attached
-
-### Step 4: Fix TypeScript Errors ✓
-
-**Fixed:**
-- Replaced all `__DEV__` checks with `process.env.NODE_ENV !== 'production'`
-- TypeScript now passes for both packages
-
-### Results Summary
-
-**Task Completed:** Insert dev-only invariant probes with tintSprite helper
-
-**Changes Implemented:**
-1. ✓ tintSprite helper that uses `color.setHex()` + `needsUpdate = true`
-2. ✓ Imperative material mutations in highlightNode/selectNode
-3. ✓ Invariant probes that assert SpriteMaterial exists and log colors
-4. ✓ Probes throw if color mutation fails
-5. ✓ d3ReheatSimulation re-enabled with hasBurstRef gate
-6. ✓ All probes wrapped in NODE_ENV check (dev-only)
-7. ✓ TypeScript checks pass
-
-**Success Criteria Status:**
-- ✅ tintSprite helper implemented
-- ✅ Probes assert SpriteMaterial exists
-- ✅ Probes log colors after mutations
-- ✅ Probes throw if mutations fail
-- ✅ One-shot d3ReheatSimulation on lens change
-- ✅ No uiStore writes
-- ✅ Type checks green
-- ✅ Probes remain active for smoke test
-- ⏳ Ready for 30-second smoke test
-
-**Expected Console Output During Smoke Test:**
 ```
-[PROBE] nodeThreeObject: { nodeId, materialType: 'SpriteMaterial', ... }
-[PROBE] nodeThreeObjectExtend: { nodeId, materialType: 'SpriteMaterial', ... }
-[PROBE] highlightNode: { nodeId, colorAfter: 'ffff00' }
-[PROBE] selectNode: { nodeId, isNowSelected: true, colorAfter: 'ffa500' }
-[PROBE] Lens change triggered d3ReheatSimulation: { nodeCount: ... }
+User Action (hover/click)
+    �
+ForceGraph3D component (r3f-forcegraph)
+    �
+onNodeHover/onNodeClick props
+    �
+handleNodeHover/handleNodeClick (CrypticAnimusScene)
+    �
+fgRef.current.highlightNode/selectNode (imperative)
+    � 
+ FAILS - ref might not be ready
+ Store never updated
 ```
+
+### Root Cause
+
+1. **Store Deliberately Disconnected** - In `CrypticVaultScene.tsx`:
+   - Lines with `uiStore.selectNodes` removed (see comments in code)
+   - Lines with `uiStore.setHoverNode` removed  
+   - Rationale: "prevent remounts"
+
+2. **Imperative Methods Unreliable** - In `ForceGraphAdapter.tsx`:
+   - `highlightNode` (line 166-223) - works IF ref exists and __threeObj exists
+   - `selectNode` (line 225-280) - works IF ref exists and __threeObj exists
+   - Probes never fire because handlers aren't being called
+
+3. **Event Props Connected But Ineffective**:
+   - `CrypticAnimusScene` correctly passes handlers to ForceGraphAdapter
+   - Handlers call imperative methods that might fail silently
+   - No store updates mean no persistent state
+
+## Disconnected Handlers Identified
+
+### File: `/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticVaultScene.tsx`
+
+1. **handleNodeClick** (lines ~380-395):
+   - Should call: `uiStore.selectNodes([nodeId], 'replace')`
+   - Currently: Only calls imperative method
+
+2. **handleNodeHover** (lines ~397-403):
+   - Should call: `uiStore.setHoverNode(nodeId)`
+   - Currently: Empty function with comment about imperative handling
+
+3. **handleBackgroundClick** (lines ~405-410):
+   - Should call: `uiStore.clearSelection()`
+   - Currently: Only clears highlight state
+
+### File: `/workspace/packages/store/src/slices/ui-slice.ts`
+
+Store actions exist but unused:
+- `selectNodes` (line 68): Takes nodeIds and mode
+- `setHoverNode` (line 120): Takes nodeId or null
+- `clearSelection` (line 95): No params
+
+## Reconnection Plan
+
+### Option A: Hybrid Approach (RECOMMENDED)
+Keep imperative visual feedback for performance, add store updates for state consistency.
+
+**Target Files & Changes:**
+
+1. **`/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticVaultScene.tsx`**
+   
+   ```typescript
+   // Line ~380 - handleNodeClick
+   const handleNodeClick = useCallback((clickedNode: any) => {
+     const nodeId = clickedNode.id as string
+     
+     // Add store update (non-blocking)
+     queueMicrotask(() => {
+       uiStore.selectNodes([nodeId], 'replace')
+     })
+     
+     // Keep existing traversal logic
+     const traversalResult = performTwoHopTraversal(...)
+     setHighlightState(traversalResult)
+     setHighlightActiveTime(Date.now())
+   }, [...deps])
+   
+   // Line ~397 - handleNodeHover  
+   const handleNodeHover = useCallback((node: any) => {
+     // Add store update (non-blocking)
+     queueMicrotask(() => {
+       uiStore.setHoverNode(node ? node.id : null)
+     })
+   }, [])
+   
+   // Line ~405 - handleBackgroundClick
+   const handleBackgroundClick = useCallback(() => {
+     // Add store update
+     queueMicrotask(() => {
+       uiStore.clearSelection()
+     })
+     
+     setHighlightState(null)
+     setHighlightActiveTime(0)
+   }, [])
+   ```
+
+2. **Import store in CrypticVaultScene** (if not already):
+   ```typescript
+   import { useRefineryStore } from '@/store'
+   // ...
+   const uiStore = useRefineryStore()
+   ```
+
+### Option B: Pure Store-Driven (More work, cleaner)
+Remove imperative methods entirely, drive everything through store state.
+
+**Requires:**
+- Modify ForceGraphAdapter to read selection/hover from store
+- Update nodeColor prop to be reactive to store state
+- Larger refactor with higher risk
+
+## Lens Switch Wiring
+
+The lens switch (activeCategories/activeTags) appears to be working:
+- `ForceGraphAdapter` has effect watching these props (lines 341-380)
+- Calls `d3ReheatSimulation` when lens changes
+- Has proper gating with `hasReheatedRef` to prevent spam
+
+## Verification Strategy
+
+After reconnection:
+1. Add console.log to store actions to verify they're called
+2. Check Redux DevTools (if configured) for action dispatch
+3. Run smoke screen tests to verify visual feedback
+4. Verify probes in highlightNode/selectNode fire
+
+## Risk Assessment
+
+- **Low Risk:** Hybrid approach uses queueMicrotask to avoid sync issues
+- **Medium Risk:** Store updates might trigger unwanted re-renders elsewhere
+- **Mitigation:** Use queueMicrotask for all store updates to break sync chain
+
+## Next Steps
+
+1. Implement Option A (hybrid approach) 
+2. Test with single node interaction
+3. Verify store state updates in devtools
+4. Run full smoke screen test suite
+5. Document any side effects
