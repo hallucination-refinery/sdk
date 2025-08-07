@@ -294,12 +294,18 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
 
   // Merge refs and add custom methods
   React.useImperativeHandle(ref, () => {
-    if (!internalRef.current) return {} as any
-    return {
+    console.log('[STYLE] useImperativeHandle called, internalRef.current exists:', !!internalRef.current)
+    if (!internalRef.current) {
+      console.log('[STYLE] WARNING: internalRef.current is null, returning empty object')
+      return {} as any
+    }
+    const imperativeHandle = {
       ...internalRef.current,
       highlightNode,
       selectNode
     }
+    console.log('[STYLE] Exposing imperative handle with methods:', Object.keys(imperativeHandle).filter(k => typeof imperativeHandle[k] === 'function'))
+    return imperativeHandle
   }, [highlightNode, selectNode])
 
   // Expose ref.current to window.__FG unconditionally after mount

@@ -75,6 +75,26 @@ export default function CrypticAnimusScene({
 }: CrypticAnimusSceneProps) {
   const fgRef = useRef<any>(null)
   
+  // Log ref status after mount
+  useEffect(() => {
+    const checkRef = () => {
+      console.log('[PROPS] CrypticAnimusScene ref check, fgRef.current:', {
+        exists: !!fgRef.current,
+        hasHighlightNode: typeof fgRef.current?.highlightNode === 'function',
+        hasSelectNode: typeof fgRef.current?.selectNode === 'function',
+        methods: fgRef.current ? Object.keys(fgRef.current).filter(k => typeof fgRef.current[k] === 'function') : []
+      })
+    }
+    
+    // Check immediately
+    checkRef()
+    
+    // Check again after a short delay
+    const timer = setTimeout(checkRef, 100)
+    
+    return () => clearTimeout(timer)
+  }, [])
+  
   // Replace graphVersion with ref-based tracking to prevent remounts
   const graphDataRef = useRef(data)
   const prevDataStatsRef = useRef<{ nodeCount: number; linkCount: number }>({ nodeCount: 0, linkCount: 0 })
@@ -830,11 +850,22 @@ export default function CrypticAnimusScene({
   // Handle node click - memoized
   const handleNodeClick = useCallback(
     (node: NodeObject<any>) => {
-      console.log('[PROPS] CrypticAnimusScene.handleNodeClick:', { nodeId: node.id, hasRef: !!fgRef.current, timestamp: Date.now() })
+      console.log('[PROPS] CrypticAnimusScene.handleNodeClick:', { 
+        nodeId: node.id, 
+        hasRef: !!fgRef.current, 
+        hasSelectNode: typeof fgRef.current?.selectNode === 'function',
+        timestamp: Date.now() 
+      })
       // Use imperative selectNode method on adapter ref
       if (fgRef.current?.selectNode) {
         console.log('[PROPS] Calling imperative selectNode:', { nodeId: node.id })
         fgRef.current.selectNode(node.id, true)
+      } else {
+        console.warn('[PROPS] WARNING: fgRef.current.selectNode not available!', {
+          refExists: !!fgRef.current,
+          refType: typeof fgRef.current,
+          refKeys: fgRef.current ? Object.keys(fgRef.current) : []
+        })
       }
       // Also call the prop handler if provided
       if (onNodeClick) {
@@ -848,11 +879,22 @@ export default function CrypticAnimusScene({
   // Handle node hover - memoized to prevent re-creating function
   const handleNodeHover = useCallback(
     (node: any) => {
-      console.log('[PROPS] CrypticAnimusScene.handleNodeHover:', { nodeId: node?.id || null, hasRef: !!fgRef.current, timestamp: Date.now() })
+      console.log('[PROPS] CrypticAnimusScene.handleNodeHover:', { 
+        nodeId: node?.id || null, 
+        hasRef: !!fgRef.current, 
+        hasHighlightNode: typeof fgRef.current?.highlightNode === 'function',
+        timestamp: Date.now() 
+      })
       // Use imperative highlightNode method on adapter ref
       if (fgRef.current?.highlightNode) {
         console.log('[PROPS] Calling imperative highlightNode:', { nodeId: node?.id || null })
         fgRef.current.highlightNode(node ? node.id : null)
+      } else {
+        console.warn('[PROPS] WARNING: fgRef.current.highlightNode not available!', {
+          refExists: !!fgRef.current,
+          refType: typeof fgRef.current,
+          refKeys: fgRef.current ? Object.keys(fgRef.current) : []
+        })
       }
       // Also call the prop handler if provided
       if (onNodeHoverProp) {

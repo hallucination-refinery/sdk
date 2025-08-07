@@ -1,8 +1,8 @@
-### Last Updated: 10:11 AM, 07-08-2025
+### Last Updated: 11:57 AM, 07-08-2025
 
 # Executive Summary
 
-Despite implementing the store reconnection fix documented in commit 61bbfb75 and correcting the handleNodeHover signature mismatch, smoke screen tests confirm zero visual feedback on hover and click interactions. The refinery-mono agent analysis reveals the fundamental issue: while events propagate correctly and imperative methods may execute, React immediately re-renders with unchanged props, erasing any visual mutations. The declarative style callbacks in ForceGraphAdapter read store state that never updates, creating a disconnect between event handling and visual persistence. The immediate next step requires verifying whether store actions actually dispatch by adding console.log statements directly in the ui-slice.ts action implementations, then tracing why those dispatched values fail to reach the style callbacks that control node appearance.
+The pipeline tracing reveals that store actions execute successfully and update state as expected, but the imperative visual feedback methods (highlightNode/selectNode) never fire. The console logs show [STORE] actions dispatching correctly and [PROPS] handlers calling parent functions, but critically absent are any [STYLE] logs from ForceGraphAdapter's imperative methods. This indicates that the ref-based calls in CrypticAnimusScene (fgRef.current?.highlightNode) are failing silently, likely because the ref is not properly connected or the methods are not exposed on the ref object. The store updates alone cannot produce visual changes because the declarative style callbacks in the current architecture depend on the imperative methods to mutate materials. The immediate fix requires verifying that ForceGraphAdapter properly exposes highlightNode and selectNode through useImperativeHandle and that CrypticAnimusScene's fgRef correctly references the ForceGraphAdapter instance.
 
 ## W - Phase 2 Completed Success Criteria
 
@@ -20,43 +20,41 @@ Phase 2 — Replace the legacy @refinery/interaction context with the new @refin
 
 ---
 
-## Sub-W: Store-to-Renderer Pipeline Verification
+## Sub-W: Imperative Reference Chain Repair
 
-Trace and repair the complete data flow from store dispatch through to ForceGraphAdapter style callbacks to ensure hover and selection state changes produce persistent visual feedback.
+Fix the broken connection between CrypticAnimusScene's fgRef and ForceGraphAdapter's exposed imperative methods to enable visual feedback on hover and click interactions.
 
 ### Sub-W Checklist
 
-- [ ] Add console.log to ui-slice.ts actions (setHoverNode, selectNodes, clearSelection) to verify dispatch
-- [ ] Verify ForceGraphAdapter receives updated highlightState prop from CrypticAnimusScene
-- [ ] Confirm style callbacks (getLinkColor, getLinkWidth, nodeThreeObject) read current store values
-- [ ] Check if React re-render cycle overwrites imperative mutations
-- [ ] Test with single node interaction showing console logs at each pipeline stage
+- [ ] Verify ForceGraphAdapter exports highlightNode/selectNode via useImperativeHandle
+- [ ] Confirm CrypticAnimusScene's fgRef is properly typed and connected to ForceGraph3D
+- [ ] Add defensive logging before imperative calls to verify ref existence
+- [ ] Test that imperative methods execute and produce [STYLE] console logs
+- [ ] Validate visual feedback appears after imperative methods fire successfully
 
 ---
 
 ## ROADMAP
 
-**Immediate diagnostic phase** (0.5-1 hour, 90% confidence): Add console.log statements at three critical points - ui-slice actions, CrypticAnimusScene prop reception, and ForceGraphAdapter style callbacks. This will definitively show where the data flow breaks.
+**Imperative ref verification** (0.5-1 hour, 95% confidence): The smoking gun is the complete absence of [STYLE] logs despite [PROPS] logs showing attempts to call imperative methods. Check ForceGraphAdapter's useImperativeHandle implementation and verify the ref chain from CrypticAnimusScene through ForceGraph3D to the adapter. My confidence interval is 0.3-0.8 hours to identify the exact disconnection point.
 
-**Store subscription verification** (0.5-1 hour, 85% confidence): The refinery-mono agent identified that style callbacks must read store state every render. Verify that ForceGraphAdapter actually subscribes to the relevant store slices and that CrypticAnimusScene passes the correct props. My confidence interval for finding the subscription gap is 0.5-1.5 hours.
+**Ref connection repair** (0.5-1.5 hours, 85% confidence): Once identified, reconnect the ref chain properly. This likely involves ensuring ForceGraph3D correctly forwards its ref to ForceGraphAdapter and that the imperative handle exposes the expected methods. There's a 90% chance this is a simple forwarding issue rather than a complex architectural problem.
 
-**Declarative path repair** (1-2 hours, 70% confidence): Once the broken link is identified, reconnect the store values to the style callbacks. This likely involves ensuring highlightState prop correctly derives from store state and passes through component boundaries. There's a 75% chance this involves fixing prop drilling between CrypticVaultScene → CrypticAnimusScene → ForceGraphAdapter.
+**Visual feedback validation** (0.5 hour, 90% confidence): With imperative methods firing, verify that material mutations persist and produce the expected yellow (hover) and orange (selection) visual changes. The existing probe infrastructure will confirm success when [STYLE] logs appear alongside [PROBE] outputs.
 
-**React render cycle investigation** (0.5-1 hour if needed, 60% confidence): If store values reach style callbacks but visual changes still don't persist, the issue is React re-rendering with stale closure values. Solution would involve memoization adjustments or moving style functions to stable references.
-
-## **Total estimated completion**: 2.5-5 hours with 65% probability of achieving full interaction visual feedback today.
+## **Total estimated completion**: 1.5-3 hours with 80% probability of achieving full visual feedback. This is a more targeted fix than previously estimated since the issue is now narrowly identified as a ref disconnection rather than a broad store-to-renderer pipeline problem.
 
 # RUNNING NOTES
 
-Stack-ranked uncertainties requiring immediate investigation:
+Stack-ranked findings from the smoke test requiring immediate attention:
 
-1. **Store dispatch verification unknown** - No console output confirms whether queueMicrotask store calls actually execute. Without this baseline confirmation, all downstream debugging is speculative.
+1. **Imperative methods never execute** - Zero [STYLE] logs despite multiple hover/click interactions proves fgRef.current?.highlightNode() calls fail silently. This is the primary blocker preventing any visual feedback.
 
-2. **Prop flow from store to renderer untraced** - The refinery-mono agent shows that highlightState must flow from store through props to style callbacks, but current implementation's prop drilling path remains unverified.
+2. **Store updates work correctly** - All [STORE] logs show proper dispatch and state updates, eliminating store configuration as a concern. The queueMicrotask wrapper successfully prevents remounts while updating state.
 
-3. **Style callback store subscription unclear** - ForceGraphAdapter's getLinkColor and nodeThreeObject functions may be reading stale closures rather than current store state, causing React to paint with outdated values every render.
+3. **Props flow but don't trigger visuals** - [PROPS] logs confirm CrypticAnimusScene receives updates but without imperative methods firing, these updates cannot produce visual changes in the current hybrid architecture.
 
-4. **Imperative vs declarative conflict unresolved** - The hybrid approach attempts both imperative mutations and declarative updates, but if they execute in the wrong order or with different timing, they may cancel each other out.
+4. **Lens switching produces no reheat** - The absence of lens change logs when switching from Causal to Affinity suggests either the prop isn't reaching ForceGraphAdapter or the effect watching activeCategories/activeTags isn't firing.
 
 ---
 
@@ -64,16 +62,16 @@ Stack-ranked uncertainties requiring immediate investigation:
 
 **What went well:**
 
-- Successfully identified and documented the complete interaction disconnection through systematic probing
-- The refinery-mono agent analysis provided crucial insight about the declarative rendering cycle overwriting imperative changes
+- The comprehensive pipeline tracing immediately revealed the exact failure point: imperative methods not being called despite proper event handling
+- Store reconnection worked correctly with queueMicrotask preventing remounts while maintaining state updates
 
 **What we could improve:**
 
-- Should have added console.log statements to store actions immediately to verify basic dispatch flow before attempting complex reconnection strategies
-- The hybrid imperative/declarative approach added unnecessary complexity when a pure declarative solution would have been more reliable
+- Should have added defensive logging around ref existence before attempting imperative calls to catch silent failures earlier
+- The hybrid imperative/declarative architecture creates unnecessary complexity when a pure approach would be more maintainable
 
 **Highest impact action items:**
 
-1. Always verify store dispatch with logging before debugging downstream consumption
-2. Choose either imperative or declarative updates, not both, to avoid timing conflicts
-3. Test at each layer of the data flow pipeline rather than only at the visual output layer
+1. Always verify ref connections with existence checks before calling imperative methods
+2. Add explicit error logging for ref-based operations that might fail silently
+3. Consider migrating to pure declarative architecture to eliminate ref dependency fragility

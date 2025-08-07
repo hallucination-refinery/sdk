@@ -283,6 +283,7 @@ Successfully restored store connections in CrypticVaultScene.tsx:
 ### Next: Verification
 
 Need to verify that:
+
 1. DEV-ONLY probes in highlightNode/selectNode fire on interaction
 2. No console errors occur
 3. No remount storms happen
@@ -293,6 +294,7 @@ Need to verify that:
 ### Expected Console Output When Testing
 
 When hovering over nodes, you should see:
+
 ```
 [PROBE] highlightNode: {
   nodeId: "some-id",
@@ -302,6 +304,7 @@ When hovering over nodes, you should see:
 ```
 
 When clicking nodes, you should see:
+
 ```
 [PROBE] selectNode: {
   nodeId: "some-id",
@@ -323,6 +326,7 @@ When clicking nodes, you should see:
 ### Implementation Details
 
 The fix implements Option A (Hybrid Approach) from the audit:
+
 - Store updates wrapped in queueMicrotask to prevent synchronous remounts
 - Imperative visual feedback maintained for performance
 - Store persistence restored for state consistency
@@ -361,7 +365,7 @@ const handleNodeHover = useCallback(
   (node: any | null) => {
     // Extract nodeId from node object (CrypticAnimusScene passes full node, not just ID)
     const nodeId = node ? node.id : null
-    
+
     // Restore store update with queueMicrotask to prevent remounts
     queueMicrotask(() => {
       uiStore.setHoverNode(nodeId)
@@ -396,21 +400,23 @@ CrypticAnimusScene handlers
 - `highlightNode` (lines 166-223): Properly implemented with color mutations and probes
 - `selectNode` (lines 225-280): Properly implemented with selection logic and probes
 - `tintSprite` helper (lines 132-139): Correctly mutates material.color with needsUpdate flag
-- DEV-ONLY probes: Will fire IF node.__threeObj exists when methods called
+- DEV-ONLY probes: Will fire IF node.\_\_threeObj exists when methods called
 
 ### Success Criteria Evaluation
 
 #### Parsimony & Elegance Assessment
 
 **Strengths:**
+
 1. Minimal code changes - only handler signatures fixed
 2. queueMicrotask elegantly prevents sync remount issues
 3. Hybrid approach preserves performance while adding persistence
 4. Clean separation of concerns between imperative and declarative paths
 
 **Weaknesses:**
+
 1. Dual-path architecture (imperative + store) adds complexity
-2. Reliance on __threeObj timing creates potential race conditions
+2. Reliance on \_\_threeObj timing creates potential race conditions
 3. Type safety compromised with `any` types throughout
 
 **Overall:** Implementation is **reasonably parsimonious** but not optimal. A fully declarative approach would be more elegant but requires larger refactor.
@@ -427,7 +433,7 @@ When testing interactions, you should observe:
 
 ### Remaining Risks
 
-1. **Race Condition:** If __threeObj not ready, imperative methods fail silently
+1. **Race Condition:** If \_\_threeObj not ready, imperative methods fail silently
 2. **Type Safety:** Extensive use of `any` types masks potential errors
 3. **Store Sync:** queueMicrotask may cause timing issues with rapid interactions
 4. **Memory Leak:** originalColorsRef Map grows unbounded without cleanup
@@ -435,10 +441,136 @@ When testing interactions, you should observe:
 ### Final Assessment
 
 The implementation **partially satisfies** success criteria:
+
 - ✅ Restores store connections
-- ✅ Prevents remount storms  
+- ✅ Prevents remount storms
 - ✅ Maintains hybrid performance
 - ⚠️ Has signature bug (now fixed)
 - ⚠️ Not maximally elegant (dual-path complexity)
 
 **Recommendation:** Proceed with smoke test after this fix. Consider future refactor to pure declarative approach for true elegance
+
+---
+
+## Pipeline Tracing Instrumentation (2025-08-07, 11:50 AM)
+
+### Commit: 8c587e11
+
+Successfully added console.log tracing to verify complete store-to-renderer pipeline flow.
+
+### Instrumentation Points
+
+#### 1. Store Actions (`/workspace/packages/store/src/slices/ui-slice.ts`)
+
+Added [STORE] prefix logging to trace store dispatch and state updates:
+
+- **selectNodes** (lines 71-92):
+  - Logs when action called with nodeIds and mode
+  - Logs when microtask executes
+  - Logs before/after state changes
+- **setHoverNode** (lines 129-138):
+  - Logs when action called with nodeId
+  - Logs when microtask executes
+  - Logs before/after hoveredNodeId state
+
+- **clearSelection** (lines 117-127):
+  - Logs when action called
+  - Logs when microtask executes
+  - Logs before/after selectedNodeIds and selectedEdgeIds
+
+#### 2. Component Props (`/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx`)
+
+Added [PROPS] prefix logging to trace prop flow and event handling:
+
+- **Props Update Effect** (lines 194-205):
+  - Logs when any props change that might trigger re-renders
+  - Tracks: mouseSelectedNodeId, searchResultOutlineIds, gesturedNodeId, activeCategories, activeTags, visibleIds, highlightState
+
+- **handleNodeClick** (lines 817-829):
+  - Logs when click handler fires with nodeId
+  - Logs imperative selectNode call
+  - Logs parent onNodeClick handler call
+
+- **handleNodeHover** (lines 832-844):
+  - Logs when hover handler fires with nodeId
+  - Logs imperative highlightNode call
+  - Logs parent onNodeHoverProp handler call
+
+#### 3. Style Mutations (`/workspace/packages/canvas-r3f/src/adapters/ForceGraphAdapter.tsx`)
+
+Added [STYLE] prefix logging to trace imperative visual updates:
+
+- **highlightNode** (lines 166-223):
+  - Logs when method called with nodeId
+  - Logs early returns if no graphData
+  - Logs when yellow highlight applied (0xffff00)
+  - Existing DEV-ONLY probe validates material mutations
+
+- **selectNode** (lines 225-280):
+  - Logs when method called with nodeId and toggle
+  - Logs early returns if no graphData or \_\_threeObj
+  - Logs when orange selection applied (0xffa500)
+  - Existing DEV-ONLY probe validates material mutations
+
+- **Lens Change Effect** (lines 361-389):
+  - Logs when lens change triggers simulation reheat
+  - Tracks categoriesChanged and tagsChanged flags
+  - Shows nodeCount to verify data integrity
+
+### Expected Console Output Pattern
+
+When hovering over a node, the complete pipeline trace should show:
+
+```
+[PROPS] CrypticAnimusScene.handleNodeHover: { nodeId: "node-123", hasRef: true, timestamp: 1691410800000 }
+[PROPS] Calling imperative highlightNode: { nodeId: "node-123" }
+[STYLE] ForceGraphAdapter.highlightNode called: { nodeId: "node-123", timestamp: 1691410800001 }
+[STYLE] Applied yellow highlight to node: node-123
+[PROBE] highlightNode: { nodeId: "node-123", materialType: "SpriteMaterial", colorAfter: "ffff00" }
+[PROPS] Calling parent onNodeHoverProp handler: { nodeId: "node-123" }
+[STORE] setHoverNode called: { nodeId: "node-123", timestamp: 1691410800002 }
+[STORE] setHoverNode executing in microtask: { nodeId: "node-123" }
+[STORE] setHoverNode state updated: { before: null, after: "node-123" }
+[PROPS] CrypticAnimusScene props updated: { ... }
+```
+
+When clicking a node, the trace should show:
+
+```
+[PROPS] CrypticAnimusScene.handleNodeClick: { nodeId: "node-123", hasRef: true, timestamp: 1691410800100 }
+[PROPS] Calling imperative selectNode: { nodeId: "node-123" }
+[STYLE] ForceGraphAdapter.selectNode called: { nodeId: "node-123", toggle: true, timestamp: 1691410800101 }
+[STYLE] Applied orange selection to node: node-123
+[PROBE] selectNode: { nodeId: "node-123", wasSelected: false, isNowSelected: true, materialType: "SpriteMaterial", colorAfter: "ffa500" }
+[PROPS] Calling parent onNodeClick handler: { nodeId: "node-123" }
+[STORE] selectNodes called: { nodeIds: ["node-123"], mode: "replace", timestamp: 1691410800102 }
+[STORE] selectNodes executing in microtask: { nodeIds: ["node-123"], mode: "replace" }
+[STORE] selectNodes state updated: { before: [], after: ["node-123"] }
+[PROPS] CrypticAnimusScene props updated: { ... }
+```
+
+### Key Insights
+
+1. **Dual-Path Architecture Confirmed**: Events flow through both imperative (ref-based) and declarative (prop-based) paths simultaneously
+2. **Microtask Timing**: Store updates are deferred via queueMicrotask to prevent synchronous remounts
+3. **Material Mutations First**: Imperative visual feedback happens immediately, store updates follow
+4. **Props Update Last**: Component re-renders triggered by store changes happen after microtasks resolve
+
+### Verification Checklist
+
+- [ ] Run dev server and open console
+- [ ] Hover over a node - verify [STORE], [PROPS], [STYLE] logs appear in sequence
+- [ ] Click a node - verify selection logs show correct flow
+- [ ] Click background - verify clearSelection logs fire
+- [ ] Press Escape - verify clearSelection logs fire
+- [ ] Switch lens filters - verify lens change logs fire
+- [ ] Check for any console errors or warnings
+- [ ] Verify no remount storms (check for rapid component mount/unmount logs)
+
+### Next Steps
+
+1. Run smoke test with instrumentation active
+2. Analyze console output to verify complete pipeline flow
+3. Check if React re-renders overwrite imperative mutations
+4. Document any race conditions or timing issues discovered
+5. Consider removing instrumentation after verification complete
