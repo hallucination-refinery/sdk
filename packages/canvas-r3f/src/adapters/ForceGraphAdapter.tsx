@@ -294,18 +294,12 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
 
   // Merge refs and add custom methods
   React.useImperativeHandle(ref, () => {
-    console.log('[STYLE] useImperativeHandle called, internalRef.current exists:', !!internalRef.current)
-    if (!internalRef.current) {
-      console.log('[STYLE] WARNING: internalRef.current is null, returning empty object')
-      return {} as any
-    }
-    const imperativeHandle = {
+    if (!internalRef.current) return {} as any
+    return {
       ...internalRef.current,
       highlightNode,
       selectNode
     }
-    console.log('[STYLE] Exposing imperative handle with methods:', Object.keys(imperativeHandle).filter(k => typeof imperativeHandle[k] === 'function'))
-    return imperativeHandle
   }, [highlightNode, selectNode])
 
   // Expose ref.current to window.__FG unconditionally after mount
@@ -411,11 +405,10 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       ref={internalRef}
       {...restProps} /* all user props EXCEPT graphData */
       graphData={safeGraphData} /* deep‑cloned, unfrozen data       */
-      // CRITICAL: These props are REQUIRED for continuous simulation
-      // The legacy implementation relies on manual tick control via useFrame
-      cooldownTime={Infinity} // Prevents auto-stop, enables continuous simulation
-      cooldownTicks={0} // Disables tick-based stopping
-      d3AlphaDecay={0} // Prevents alpha from decreasing (keeps simulation active)
+      // Removed freeze guards to allow natural simulation
+      // cooldownTime={Infinity} - was preventing time-based stopping
+      // cooldownTicks={0} - was stopping after 1 tick
+      // d3AlphaDecay={0} - was preventing alpha from decreasing
       onEngineStop={() => {
         if (internalRef.current) {
           internalRef.current.d3AlphaTarget?.(0.3)?.restart?.()
