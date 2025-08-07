@@ -1,60 +1,59 @@
-### Last Updated: 5:50 PM, 06-08-2025
+### Last Updated: 8:50 AM, 07-08-2025
 
 # Executive Summary
 
-We have _stopped_ the remount storm, but we still fail Phase 2 because **no implementation attempt has yet demonstrated that it actually mutates the GPU‑side `SpriteMaterial` or triggers a single‑shot `d3ReheatSimulation` on lens change.**  
-The repeated failures share two patterns: (1) each patch was pushed without first _proving_ whether the library’s hooks fire (no persistent probes/tests), and (2) every time an API behaved unexpectedly we switched strategies rather than investigating.  
-**Concrete next step:** ship a _diagnostic_ commit that asserts, at runtime, that the material exists and is tinted **after** a helper call; keep those assertions until five smoke‑screens pass. That removes guesswork and gives us a measurable “done”.
+We successfully stopped the remount storm (≤2 mounts achieved) and confirmed SpriteMaterials exist through probes, but smoke screen tests reveal the core interaction system is completely disconnected. **Hovering and clicking nodes produces zero visual changes, and lens switching does nothing.** The probes in `highlightNode` and `selectNode` never fire, indicating these functions aren't being called at all. The @refinery/store migration appears functionally complete on paper but broke the event handler wiring. **Concrete next step:** immediately audit and reconnect the interaction event handlers in the new store architecture, then verify with targeted interaction probes.
 
 # W: Phase 2 Completed
 
-`@refinery/interaction` is fully replaced by `@refinery/store`; `ForceGraphAdapter` mounts ≤ 2; hover/node selection visibly tint sprites; lens switch reheats exactly once; five consecutive smoke tests pass all six UX rules; Phase 2 branch merges into `cryptic‑vault‑baseline`.
+`@refinery/interaction` is fully replaced by `@refinery/store`; `ForceGraphAdapter` mounts ≤ 2; hover/node selection visibly tint sprites; lens switch reheats exactly once; five consecutive smoke tests pass all six UX rules; Phase 2 branch merges into `cryptic-vault-baseline`.
 
-## Sub-W: **See‑It‑Change Diagnostics**
+## Sub-W: Event Handler Reconnection Surgery
 
-Add invariant probes & guards that _fail fast_ if a helper does not reach a `SpriteMaterial`, and verify a visible tint + reheat during smoke tests.
+Diagnose and repair the complete disconnection between user interactions (hover/click/lens-switch) and the corresponding handler functions in the new store architecture.
 
 ### Sub-W Checklist
 
-- [ ] **Invariant probes** inside `highlightNode`, `selectNode`, `nodeThreeObject`, `lensRef`:  
-       `console.assert(node.__threeObj && node.__threeObj.material instanceof THREE.SpriteMaterial, 'Missing material')`
-- [ ] `tintSprite(material, hex)` helper — `color.setHex(hex); needsUpdate = true`.
-- [ ] Guarded one‑shot `d3ReheatSimulation()` on lens change (`hasBurstRef` latch).
-- [ ] Memo‑wrap new callbacks to hold mount count at 2.
-- [ ] Five‑run smoke suite green → remove probes (keep unit test).
+- [ ] **Audit interaction wiring** - trace from UI events to store selectors/actions
+- [ ] **Reconnect hover handlers** - ensure mouse events reach `highlightNode` function
+- [ ] **Reconnect click handlers** - ensure click events reach `selectNode` function
+- [ ] **Reconnect lens switch** - ensure lens change triggers `d3ReheatSimulation`
+- [ ] **Verify probe coverage** - confirm all interaction functions have active probes
+- [ ] **Interaction smoke test** - single focused test of hover→click→lens switch sequence
 
 ## ROADMAP
 
-| Seq | Task                                    | 90 % CI   | P(success) | Notes                 |
-| --- | --------------------------------------- | --------- | ---------- | --------------------- |
-| 1   | Insert probes & fail‑fast asserts       | 0.3‑0.6 h | 0.9        | Stops silent failures |
-| 2   | Implement `tintSprite` + hook helpers   | 0.4‑0.8 h | 0.85       | Verify with probes    |
-| 3   | Re‑enable guarded reheat on lens switch | 0.2‑0.4 h | 0.8        | Expect one burst      |
-| 4   | Memo‑wrap props, run smoke suite ×5     | 0.5‑1.0 h | 0.7        | Accept/hot‑fix        |
-| 5   | Clean PR & merge Phase 2                | 0.3 h     | 0.95       | Unblocks rest         |
+1. **Event handler audit** (0.2-0.4 h, 95% confidence) - grep for old @refinery/interaction hook calls, identify missing store connections
+2. **Reconnect interaction pipeline** (0.5-1.2 h, 80% confidence) - wire hover/click/lens events through new store selectors and actions
+3. **Probe verification** (0.1-0.2 h, 90% confidence) - ensure `highlightNode`/`selectNode` probes fire on interaction
+4. **Targeted interaction test** (0.2 h, 85% confidence) - focused smoke test of interaction sequence only
+5. **Full smoke suite validation** (0.3-0.5 h, 75% confidence) - five consecutive passes with all interactions working
 
-_Total_: **1.7‑3 h**; 65 % chance Phase 2 closes today. If probe shows sprite texture ignores tint, pivot to `nodeSpriteText` with built‑in colour (add +0.5 h, 0.9 P).
+**Total estimate:** 1.3-2.3 hours with 70% probability of same-day completion. **Risk:** if store architecture requires significant rewiring, add +1-2 hours.
 
 # RUNNING NOTES
 
-1. **Unknowns** – does the current sprite material honour `color.setHex`? Probes will tell.
-2. Risk of re‑enabling simulation: prior `undefined.tick` crash; guard on null node list.
-3. Keep probes until five green runs; otherwise we regress invisibly again.
+1. **Critical gap identified** - mount/probe infrastructure works but interaction events never reach handlers
+2. **Store migration completeness questioned** - migration may be incomplete despite documentation claims
+3. **Probe strategy validated** - material probes work perfectly; need interaction-specific probes active
+4. **Timeline/filter functionality intact** - suggests store integration partially working for some features
 
 # RETROSPECTIVES
 
-_What went well_
+**What went well**
 
-- Grep‑and‑stub killed remount bug quickly.
-- Strict mount‑count became an objective pass/fail metric.
+- Probe strategy immediately revealed the real issue (interaction handlers not firing)
+- Mount count objective successfully achieved and maintained
+- Systematic smoke screen testing provided clear diagnostic data
 
-_What we could improve_
+**What we could improve**
 
-- We removed diagnostic logs before proving fixes, leading to blind patches.
-- Swapped approaches instead of inspecting why each failed.
+- Focused too heavily on material mutation without verifying interaction pipeline connectivity
+- Accepted migration "completion" claims without validating end-to-end interaction flows
+- Should have tested interaction handlers immediately after store migration
 
-_High‑impact action items_
+**High-impact action items**
 
-1. **Always add failing probe/test first**, then code until it passes.
-2. Preserve dev‑only assertions until a feature survives five smoke runs.
-3. Limit “solution hopping”: two failed attempts → mandatory deep dive with instrumentation.
+1. **Always test interaction flows first** when validating UI migrations - materials are useless without events
+2. **Probe at interaction entry points** not just rendering endpoints - verify events reach handlers
+3. **Never assume migration completeness** without end-to-end behavioral verification through user actions

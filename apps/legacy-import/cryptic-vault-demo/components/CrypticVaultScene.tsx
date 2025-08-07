@@ -373,7 +373,10 @@ function CrypticVaultSceneContent() {
   )
 
   const handleNodeHover = useCallback(
-    (nodeId: string | null) => {
+    (node: any | null) => {
+      // Extract nodeId from node object (CrypticAnimusScene passes full node, not just ID)
+      const nodeId = node ? node.id : null
+      
       // Restore store update with queueMicrotask to prevent remounts
       queueMicrotask(() => {
         uiStore.setHoverNode(nodeId)
