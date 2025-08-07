@@ -254,3 +254,44 @@ This connects the selector to the actual store state.
    - Store state → useFrame hook → sprite opacity/color updates each frame
 
 All three paths need to work for complete visual feedback!
+
+### 10. False Assumptions About "Functional Completeness" (14:45 PM)
+
+**Assumption 1**: "The ref chain is fixed, so highlights should work"
+- **Reality**: Ref chain was only PART of the problem
+- Missing simulation props prevented initialization
+- graphData() returns undefined even with refs connected
+
+**Assumption 2**: "Migration from @refinery/interaction to @refinery/store is complete"
+- **Reality**: Major architectural incompatibilities remain
+- queueMicrotask creates timing issues
+- Synchronous updates became async, breaking feedback loops
+
+**Assumption 3**: "Visual feedback is working, just needs minor fixes"
+- **Reality**: ENTIRE declarative path was dead (null selector)
+- Imperative path broken (no graphData)
+- Three separate feedback paths all broken in different ways
+
+**Assumption 4**: "Physics simulation is running"
+- **Reality**: Simulation wasn't even initializing
+- Critical props were commented out as "preventing stopping"
+- tickFrame crashed immediately due to undefined simulation
+
+**Assumption 5**: "Store updates trigger visual changes"
+- **Reality**: Store updates happen in microtasks AFTER render
+- Visual feedback expects immediate state availability
+- Race conditions prevent imperative methods from working
+
+**Assumption 6**: "The migration preserved all functionality"
+- **Reality**: Key functionality was STUBBED OUT
+- useSingleSelectedNode always returned null
+- Comments like "Sub-W stub" indicate incomplete work
+
+### 11. Summary of Root Causes
+
+1. **Incomplete Migration**: Critical hooks stubbed, not implemented
+2. **Architectural Mismatch**: Async store vs sync visual feedback
+3. **Missing Configuration**: Simulation props removed incorrectly
+4. **Broken Data Flow**: graphData method not exposing data
+5. **Race Conditions**: queueMicrotask delays breaking timing
+6. **Multiple Failure Points**: Three feedback paths, all broken differently
