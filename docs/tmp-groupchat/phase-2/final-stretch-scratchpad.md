@@ -574,3 +574,56 @@ When clicking a node, the trace should show:
 3. Check if React re-renders overwrite imperative mutations
 4. Document any race conditions or timing issues discovered
 5. Consider removing instrumentation after verification complete
+
+---
+
+## Imperative Chain Repair (2025-08-07, 12:20 PM)
+
+### Sub-W Progress from working-document.md
+
+Executing repairs for broken fgRef→ForceGraphAdapter chain per ULTRATHINK MODE.
+
+#### Verification Status
+
+✅ **useImperativeHandle confirmed** - ForceGraphAdapter.tsx lines 296-309:
+- Methods exposed: highlightNode (line 304), selectNode (line 305)
+- Proper dependency array includes both methods
+- Returns merged object with internalRef.current + custom methods
+
+✅ **Ref properly passed** - CrypticAnimusScene.tsx line 1046:
+- ForceGraph3D receives ref={fgRef}
+- fgRef defined as useRef<any>(null) at line 76
+
+#### Defensive Logging Added (commit 28bf3ef2)
+
+1. **ForceGraphAdapter.tsx**:
+   - useImperativeHandle logs when called and what methods exposed (lines 297-308)
+   - Warns if internalRef.current is null
+   - Lists all function methods being exposed
+
+2. **CrypticAnimusScene.tsx**:
+   - Mount effect checks ref status immediately and after 100ms delay (lines 79-96)
+   - Handlers log detailed ref state before attempting calls
+   - Explicit warnings when methods not available (lines 853-898)
+
+#### Next: Test Chain
+
+Run app and verify console shows:
+1. [STYLE] useImperativeHandle logs showing methods exposed
+2. [PROPS] ref check logs showing methods available
+3. [STYLE] logs from highlightNode/selectNode on interaction
+
+#### OODA Loop
+
+**Observe**: Ref chain appears connected in code
+**Orient**: Need runtime verification of actual method availability
+**Decide**: Run smoke test to check if methods fire
+**Act**: Ready for test execution
+
+### Success Criteria
+
+- ✅ ForceGraphAdapter exposes methods via useImperativeHandle
+- ✅ CrypticAnimusScene ref connected to ForceGraph3D
+- ✅ Defensive logging added around all ref calls
+- ⏳ [STYLE] logs fire on interaction (pending test)
+- ⏳ Visual feedback appears (pending test)
