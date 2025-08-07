@@ -625,5 +625,45 @@ Run app and verify console shows:
 - ✅ ForceGraphAdapter exposes methods via useImperativeHandle
 - ✅ CrypticAnimusScene ref connected to ForceGraph3D
 - ✅ Defensive logging added around all ref calls
+- ✅ **CRITICAL FIX: Dynamic import replaced with direct import**
 - ⏳ [STYLE] logs fire on interaction (pending test)
 - ⏳ Visual feedback appears (pending test)
+
+---
+
+## CRITICAL DISCOVERY: Dynamic Import Breaks Refs (12:25 PM)
+
+### Root Cause Identified
+
+**Next.js `dynamic()` doesn't forward refs!**
+
+The chain was broken at:
+```typescript
+// BROKEN - dynamic() doesn't forward refs
+const ForceGraph3D = dynamic(
+  () => import('@refinery/canvas-r3f').then((mod) => mod.ForceGraphAdapter),
+  { ssr: false }
+)
+```
+
+### Fix Applied (commit 515b9454)
+
+Replaced with direct import:
+```typescript
+// FIXED - Direct import preserves ref forwarding
+import { ForceGraphAdapter as ForceGraph3D } from '@refinery/canvas-r3f'
+```
+
+This completes the ref chain:
+1. CrypticAnimusScene creates `fgRef` ✅
+2. Passes to ForceGraph3D (ForceGraphAdapter) ✅ 
+3. ForceGraphAdapter receives via `forwardRef` ✅
+4. Exposes methods via `useImperativeHandle` ✅
+
+### Expected Behavior Now
+
+With ref chain repaired, interactions should produce:
+- [STYLE] useImperativeHandle logs on mount
+- [STYLE] ForceGraphAdapter.highlightNode/selectNode logs on hover/click
+- [PROBE] logs showing material mutations
+- Visual feedback (yellow hover, orange selection)
