@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo, useLayoutEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import { ForceGraphAdapter as ForceGraph3D } from '@refinery/canvas-r3f'
 // Local type definition to avoid r3f-forcegraph dependency
 type NodeObject<T = any> = T & {
   id?: string | number
@@ -29,14 +30,8 @@ class FGErrorBoundary extends React.Component<{ children: React.ReactNode }> {
   }
 }
 
-// Use SDK ForceGraphAdapter instead of direct r3f-forcegraph import
-const ForceGraph3D = dynamic(
-  () => import('@refinery/canvas-r3f').then((mod) => mod.ForceGraphAdapter),
-  {
-    ssr: false,
-    loading: () => null, // Return null while loading to prevent flashing
-  }
-)
+// NOTE: ForceGraph3D is now imported at the top of the file as ForceGraphAdapter
+// Previously used dynamic() but that breaks ref forwarding
 
 interface CrypticAnimusSceneProps {
   data: {
