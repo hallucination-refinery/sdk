@@ -1,8 +1,8 @@
-### Last Updated: 11:57 AM, 07-08-2025
+### Last Updated: 2:45 PM, 07-08-2025
 
 # Executive Summary
 
-The pipeline tracing reveals that store actions execute successfully and update state as expected, but the imperative visual feedback methods (highlightNode/selectNode) never fire. The console logs show [STORE] actions dispatching correctly and [PROPS] handlers calling parent functions, but critically absent are any [STYLE] logs from ForceGraphAdapter's imperative methods. This indicates that the ref-based calls in CrypticAnimusScene (fgRef.current?.highlightNode) are failing silently, likely because the ref is not properly connected or the methods are not exposed on the ref object. The store updates alone cannot produce visual changes because the declarative style callbacks in the current architecture depend on the imperative methods to mutate materials. The immediate fix requires verifying that ForceGraphAdapter properly exposes highlightNode and selectNode through useImperativeHandle and that CrypticAnimusScene's fgRef correctly references the ForceGraphAdapter instance.
+After three weeks of attempting to complete the Phase 2 migration from @refinery/interaction to @refinery/store, we must acknowledge that our fundamental approach has failed. The latest smoke test revealed yet another critical blocker—a physics engine tick error—which appears to be a consequence of our recent "fixes" rather than progress toward resolution. The pattern is clear: each tactical fix introduces new issues, suggesting deep architectural problems that incremental debugging cannot solve. The immediate priority is not to fix the tick error but to conduct a systematic investigation that challenges our core assumptions about this migration and establishes the correct path to completion.
 
 ## W - Phase 2 Completed Success Criteria
 
@@ -11,50 +11,88 @@ The pipeline tracing reveals that store actions execute successfully and update 
 
 ## Phase 2 Migration Checklist
 
-Phase 2 — Replace the legacy @refinery/interaction context with the new @refinery/store state slices (checklist extracted from docs/tmp-groupchat/migration-checklist.md):
-[x] Convert every provider in packages/interaction/\* to store slices (e.g. batchAddNodes, batchAddEdges, selectors).  
-[x] Swap all consumer hooks in CrypticVaultScene.tsx (and any other scene) from the old context to the new store API.  
-[x] Remove or archive the now-unused @refinery/interaction files after successful replacement.  
-[x] Consolidate duplicated state logic into the store and delete any redundant helpers left over from the context.  
-[ ] Verify that graph edits (adding/removing nodes & edges) flow through the store and CRDT history without regressions.
+Phase 2 — Replace the legacy @refinery/interaction context with the new @refinery/store state slices:
+[?] Convert every provider in packages/interaction/\* to store slices - NEEDS VERIFICATION
+[?] Swap all consumer hooks in CrypticVaultScene.tsx from old to new API - NEEDS VERIFICATION
+[?] Remove or archive now-unused @refinery/interaction files - NEEDS VERIFICATION
+[?] Consolidate duplicated state logic into store - NEEDS VERIFICATION
+[?] Verify graph edits flow through store and CRDT history - UNTESTED
+
+## Intended Behaviour — User-Experience Checklist
+
+- [ ] **Initial load**
+  - [ ] HUD appears immediately on first render
+  - [ ] All nodes spawn at the origin (0 ,0 ,0) and perform **one** outward burst
+  - [ ] Nodes settle and stay static until a lens change occurs
+
+- [ ] **Hover**
+  - [ ] Hovering any node leaves all node positions unchanged
+  - [ ] Physics engine remains idle (no forces applied)
+
+- [ ] **Click / Selection**
+  - [ ] Clicking a node highlights it **and** its directly related edges/nodes
+  - [ ] Clicking a different node transfers the highlight accordingly
+  - [ ] Clicking empty space clears all highlights
+  - [ ] No node positions change; physics stays idle throughout
+
+- [ ] **Timeline Scrub**
+  - [ ] Dragging the timeline slider shows or hides nodes and links based on time
+  - [ ] Node positions remain fixed during and after scrubbing
+  - [ ] Physics engine remains idle
+
+- [ ] **Category / Filter Toggle**
+  - [ ] Toggling a filter hides or reveals matching nodes and links
+  - [ ] Node positions stay unchanged while filtering
+  - [ ] Physics engine remains idle
+
+- [ ] **Lens Change (Causal ↔ Affinity ↔ Temporal)**
+  - [ ] Switching the lens triggers **exactly one** fresh burst from the origin
+  - [ ] Nodes resettle after the burst and stay static
+  - [ ] After resettling, behaviour reverts to the Hover, Click/Selection, Timeline Scrub, and Filter rules until the next lens switch
 
 ---
 
-## Sub-W: Imperative Reference Chain Repair
+## Sub-W: Systematic Architecture Investigation
 
-Fix the broken connection between CrypticAnimusScene's fgRef and ForceGraphAdapter's exposed imperative methods to enable visual feedback on hover and click interactions.
+Conduct a comprehensive investigation to identify why the Phase 2 migration has failed for three weeks, challenging all assumptions about the current implementation and establishing the exact sequence of fixes required to achieve W.
 
 ### Sub-W Checklist
 
-- [ ] Verify ForceGraphAdapter exports highlightNode/selectNode via useImperativeHandle
-- [ ] Confirm CrypticAnimusScene's fgRef is properly typed and connected to ForceGraph3D
-- [ ] Add defensive logging before imperative calls to verify ref existence
-- [ ] Test that imperative methods execute and produce [STYLE] console logs
-- [ ] Validate visual feedback appears after imperative methods fire successfully
+- [ ] Document all assumptions about the migration's "functional completeness"
+- [ ] Map the actual data flow from user interaction to visual feedback
+- [ ] Identify all architectural dependencies between @refinery/interaction and components
+- [ ] Compare working legacy demo against current broken implementation
+- [ ] List all changes made during the three-week migration attempt
+- [ ] Identify fundamental incompatibilities between old and new architectures
+- [ ] Define the specific technical repairs needed to complete the migration successfully
 
 ---
 
 ## ROADMAP
 
-**Imperative ref verification** (0.5-1 hour, 95% confidence): The smoking gun is the complete absence of [STYLE] logs despite [PROPS] logs showing attempts to call imperative methods. Check ForceGraphAdapter's useImperativeHandle implementation and verify the ref chain from CrypticAnimusScene through ForceGraph3D to the adapter. My confidence interval is 0.3-0.8 hours to identify the exact disconnection point.
+**Assumption documentation and validation** (2-3 hours, 95% confidence): List every assumption about what "functionally complete" means. Verify each claim in the migration checklist against actual code. Document discrepancies between assumed and actual state. This foundational work has a 90% probability of revealing critical misconceptions.
 
-**Ref connection repair** (0.5-1.5 hours, 85% confidence): Once identified, reconnect the ref chain properly. This likely involves ensuring ForceGraph3D correctly forwards its ref to ForceGraphAdapter and that the imperative handle exposes the expected methods. There's a 90% chance this is a simple forwarding issue rather than a complex architectural problem.
+**Architecture mapping** (3-4 hours, 90% confidence): Create comprehensive diagrams of both the legacy @refinery/interaction flow and the attempted @refinery/store implementation. Trace data flow from user interaction through store updates to visual rendering. This will likely expose architectural mismatches that incremental fixes cannot resolve.
 
-**Visual feedback validation** (0.5 hour, 90% confidence): With imperative methods firing, verify that material mutations persist and produce the expected yellow (hover) and orange (selection) visual changes. The existing probe infrastructure will confirm success when [STYLE] logs appear alongside [PROBE] outputs.
+**Differential analysis** (2-3 hours, 85% confidence): Systematically compare the working legacy demo against the current broken state. Document not just what's different, but why those differences exist and what assumptions led to them. There's an 80% chance this reveals fundamental incompatibilities.
 
-## **Total estimated completion**: 1.5-3 hours with 80% probability of achieving full visual feedback. This is a more targeted fix than previously estimated since the issue is now narrowly identified as a ref disconnection rather than a broad store-to-renderer pipeline problem.
+**Solution architecture** (1-2 hours, 95% confidence): Based on findings, define the precise technical changes required to make the migration work. This includes identifying which components need refactoring, which interfaces need adaptation, and which assumptions need correction to achieve successful integration.
+
+## **Total estimated completion**: 8-12 hours of investigation with 85% probability of identifying the true blockers and defining the path to completion.
 
 # RUNNING NOTES
 
-Stack-ranked findings from the smoke test requiring immediate attention:
+Critical questions requiring systematic investigation:
 
-1. **Imperative methods never execute** - Zero [STYLE] logs despite multiple hover/click interactions proves fgRef.current?.highlightNode() calls fail silently. This is the primary blocker preventing any visual feedback.
+1. **What does "functionally complete" actually mean?** The claim that the migration has been complete for three weeks needs rigorous verification. Which specific functions were migrated, which were stubbed, and which were ignored?
 
-2. **Store updates work correctly** - All [STORE] logs show proper dispatch and state updates, eliminating store configuration as a concern. The queueMicrotask wrapper successfully prevents remounts while updating state.
+2. **Why do fixes create new problems?** The pattern of each fix introducing new issues suggests fundamental architectural misalignment. Are we forcing incompatible paradigms together?
 
-3. **Props flow but don't trigger visuals** - [PROPS] logs confirm CrypticAnimusScene receives updates but without imperative methods firing, these updates cannot produce visual changes in the current hybrid architecture.
+3. **What changed between working and broken states?** A comprehensive diff between the last working version and current state, including all dependencies and configuration changes.
 
-4. **Lens switching produces no reheat** - The absence of lens change logs when switching from Causal to Affinity suggests either the prop isn't reaching ForceGraphAdapter or the effect watching activeCategories/activeTags isn't firing.
+4. **Are the architectures actually compatible?** The hybrid imperative/declarative approach suggests attempting to bridge incompatible paradigms. Can @refinery/store actually replace @refinery/interaction given current component architecture?
+
+5. **What is the minimum set of changes needed for completion?** Rather than continuing to debug symptoms, what are the essential modifications required to make this migration work?
 
 ---
 
@@ -62,16 +100,17 @@ Stack-ranked findings from the smoke test requiring immediate attention:
 
 **What went well:**
 
-- The comprehensive pipeline tracing immediately revealed the exact failure point: imperative methods not being called despite proper event handling
-- Store reconnection worked correctly with queueMicrotask preventing remounts while maintaining state updates
+- Pipeline tracing successfully identified specific failure points, even if we acted on symptoms rather than causes
+- The recognition that our approach has failed after three weeks shows healthy project assessment
 
 **What we could improve:**
 
-- Should have added defensive logging around ref existence before attempting imperative calls to catch silent failures earlier
-- The hybrid imperative/declarative architecture creates unnecessary complexity when a pure approach would be more maintainable
+- Should have questioned "functionally complete" assumption much earlier when issues persisted beyond a few days
+- Failed to maintain a clear rollback path, making it difficult to return to a known working state
+- Allowed tactical debugging to replace strategic thinking about architecture compatibility
 
 **Highest impact action items:**
 
-1. Always verify ref connections with existence checks before calling imperative methods
-2. Add explicit error logging for ref-based operations that might fail silently
-3. Consider migrating to pure declarative architecture to eliminate ref dependency fragility
+1. Stop all debugging until systematic investigation is complete
+2. Document every assumption and verify against actual implementation
+3. Establish clear technical requirements for successful migration completion

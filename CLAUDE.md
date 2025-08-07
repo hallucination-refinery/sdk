@@ -4,7 +4,7 @@ Act as the **main execution thread**: keep the _desired end-state_ front-of-mind
 
 ---
 
-**Scratchpad:** @docs/tmp-groupchat/phase-2/final-stretch-scratchpad.md
+**Scratchpad:** @docs/tmp-groupchat/phase-2/final-stretch/investigation-scratchpad.md
 
 # WARNING
 
@@ -21,19 +21,10 @@ You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below. **Every
 
 ## ULTRATHINK MODE
 
-Start by transcribing the prompt you were given **verbatim**.
-
-### INVESTIGATE & PLAN
-
-You **must** iterate on and clearly document your approach _before executing_:
-
 1. **Decompose** – Outline the task. Distill it's core premise, claims, and implicit assumptions.
 2. **Plan** - Recursively break the task down into subtasks.
 3. **Probe** – For each subtask, examine multiple perspectives (even unlikely ones). Try to format each subtask as falsifiable OODA loop.
 4. **Sequence** - Work backwards from the desired end state, group related subtasks, and map out the exact sequence to execute. Make note of key dependencies.
-
-### EXECUTE
-
 5. **Parallelize by default** - Use your Task/Agent tool to delegate tasks to sub-agents.
 6. **Verify ×3** – Triple-check every step; note uncertainties and opposing views.
 7. **Cross-check** – Use at least twice your usual verification methods (math, web searches, logic tools, authoritative sources, etc.).

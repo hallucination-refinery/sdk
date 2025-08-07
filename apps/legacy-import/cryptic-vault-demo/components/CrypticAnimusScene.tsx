@@ -336,16 +336,14 @@ export default function CrypticAnimusScene({
           return
         }
         
-        // FIXME: Add engine ready check to prevent tick crash
+        // CRITICAL: Engine ready check to prevent tick crash
         // The crash "Cannot read properties of undefined (reading 'tick')" occurs when
         // tickFrame() is called before the D3 force layout engine is initialized.
-        // Uncomment the following guard to prevent the crash:
-        /*
+        // This guard prevents the crash during initialization:
         if (!(fgRef.current as any).__kapsuleInstance?.layout) {
           console.log('[TICKS] Force layout engine not initialized yet, skipping tick execution')
           return
         }
-        */
         
         // run the warm-up ticks **after** the instance is ready
         for (let i = 0; i < maxTicks; i++) {

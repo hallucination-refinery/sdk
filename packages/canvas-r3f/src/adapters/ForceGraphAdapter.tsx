@@ -411,10 +411,11 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       ref={internalRef}
       {...restProps} /* all user props EXCEPT graphData */
       graphData={safeGraphData} /* deep‑cloned, unfrozen data       */
-      // Removed freeze guards to allow natural simulation
-      // cooldownTime={Infinity} - was preventing time-based stopping
-      // cooldownTicks={0} - was stopping after 1 tick
-      // d3AlphaDecay={0} - was preventing alpha from decreasing
+      // CRITICAL: These props are REQUIRED for continuous simulation
+      // The legacy implementation relies on manual tick control via useFrame
+      cooldownTime={Infinity} // Prevents auto-stop, enables continuous simulation
+      cooldownTicks={0} // Disables tick-based stopping
+      d3AlphaDecay={0} // Prevents alpha from decreasing (keeps simulation active)
       onEngineStop={() => {
         if (internalRef.current) {
           internalRef.current.d3AlphaTarget?.(0.3)?.restart?.()
