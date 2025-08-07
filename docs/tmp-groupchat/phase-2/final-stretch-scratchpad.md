@@ -1,6 +1,7 @@
-# Interaction Wiring Audit - Final Stretch
-**Timestamp:** 2025-08-07, 9:15 AM  
-**Last Audit:** 2025-08-07, 9:43 AM
+# Interaction Wiring Audit
+
+**Timestamp:** 2025-08-07, 9:00 AM  
+**Last Audit:** 2025-08-07, 9:18 AM
 
 ## Executive Summary
 
@@ -20,7 +21,7 @@ onNodeHover/onNodeClick props
 handleNodeHover/handleNodeClick (CrypticAnimusScene)
     �
 fgRef.current.highlightNode/selectNode (imperative)
-    � 
+    �
  FAILS - ref might not be ready
  Store never updated
 ```
@@ -29,12 +30,12 @@ fgRef.current.highlightNode/selectNode (imperative)
 
 1. **Store Deliberately Disconnected** - In `CrypticVaultScene.tsx`:
    - Lines with `uiStore.selectNodes` removed (see comments in code)
-   - Lines with `uiStore.setHoverNode` removed  
+   - Lines with `uiStore.setHoverNode` removed
    - Rationale: "prevent remounts"
 
 2. **Imperative Methods Unreliable** - In `ForceGraphAdapter.tsx`:
-   - `highlightNode` (line 166-223) - works IF ref exists and __threeObj exists
-   - `selectNode` (line 225-280) - works IF ref exists and __threeObj exists
+   - `highlightNode` (line 166-223) - works IF ref exists and \_\_threeObj exists
+   - `selectNode` (line 225-280) - works IF ref exists and \_\_threeObj exists
    - Probes never fire because handlers aren't being called
 
 3. **Event Props Connected But Ineffective**:
@@ -61,6 +62,7 @@ fgRef.current.highlightNode/selectNode (imperative)
 ### File: `/workspace/packages/store/src/slices/ui-slice.ts`
 
 Store actions exist but unused:
+
 - `selectNodes` (line 68): Takes nodeIds and mode
 - `setHoverNode` (line 120): Takes nodeId or null
 - `clearSelection` (line 95): No params
@@ -68,43 +70,44 @@ Store actions exist but unused:
 ## Reconnection Plan
 
 ### Option A: Hybrid Approach (RECOMMENDED)
+
 Keep imperative visual feedback for performance, add store updates for state consistency.
 
 **Target Files & Changes:**
 
 1. **`/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticVaultScene.tsx`**
-   
+
    ```typescript
    // Line ~380 - handleNodeClick
    const handleNodeClick = useCallback((clickedNode: any) => {
      const nodeId = clickedNode.id as string
-     
+
      // Add store update (non-blocking)
      queueMicrotask(() => {
        uiStore.selectNodes([nodeId], 'replace')
      })
-     
+
      // Keep existing traversal logic
      const traversalResult = performTwoHopTraversal(...)
      setHighlightState(traversalResult)
      setHighlightActiveTime(Date.now())
    }, [...deps])
-   
-   // Line ~397 - handleNodeHover  
+
+   // Line ~397 - handleNodeHover
    const handleNodeHover = useCallback((node: any) => {
      // Add store update (non-blocking)
      queueMicrotask(() => {
        uiStore.setHoverNode(node ? node.id : null)
      })
    }, [])
-   
+
    // Line ~405 - handleBackgroundClick
    const handleBackgroundClick = useCallback(() => {
      // Add store update
      queueMicrotask(() => {
        uiStore.clearSelection()
      })
-     
+
      setHighlightState(null)
      setHighlightActiveTime(0)
    }, [])
@@ -118,9 +121,11 @@ Keep imperative visual feedback for performance, add store updates for state con
    ```
 
 ### Option B: Pure Store-Driven (More work, cleaner)
+
 Remove imperative methods entirely, drive everything through store state.
 
 **Requires:**
+
 - Modify ForceGraphAdapter to read selection/hover from store
 - Update nodeColor prop to be reactive to store state
 - Larger refactor with higher risk
@@ -128,6 +133,7 @@ Remove imperative methods entirely, drive everything through store state.
 ## Lens Switch Wiring
 
 The lens switch (activeCategories/activeTags) appears to be working:
+
 - `ForceGraphAdapter` has effect watching these props (lines 341-380)
 - Calls `d3ReheatSimulation` when lens changes
 - Has proper gating with `hasReheatedRef` to prevent spam
@@ -135,6 +141,7 @@ The lens switch (activeCategories/activeTags) appears to be working:
 ## Verification Strategy
 
 After reconnection:
+
 1. Add console.log to store actions to verify they're called
 2. Check Redux DevTools (if configured) for action dispatch
 3. Run smoke screen tests to verify visual feedback
@@ -148,7 +155,7 @@ After reconnection:
 
 ## Next Steps
 
-1. Implement Option A (hybrid approach) 
+1. Implement Option A (hybrid approach)
 2. Test with single node interaction
 3. Verify store state updates in devtools
 4. Run full smoke screen test suite
@@ -163,8 +170,9 @@ After reconnection:
 #### ✅ VERIFIED - Store Deliberately Disconnected
 
 **CrypticVaultScene.tsx** (lines verified):
+
 - `handleNodeClick` (lines 354-370): Store calls removed with explicit NOTE comment
-- `handleNodeHover` (lines 372-378): Empty function with NOTE about removal  
+- `handleNodeHover` (lines 372-378): Empty function with NOTE about removal
 - `handleBackgroundClick` (lines 380-385): Only local state cleared, store removed
 - Escape key handler (lines 388-400): Store call removed with NOTE
 
@@ -173,6 +181,7 @@ After reconnection:
 #### ✅ VERIFIED - Imperative Methods Structure
 
 **ForceGraphAdapter.tsx** (`/workspace/packages/canvas-r3f/src/adapters/`):
+
 - `highlightNode` (lines 166-223): Confirmed with probes, depends on `__threeObj`
 - `selectNode` (lines 225-280): Confirmed with probes, depends on `__threeObj`
 - Both methods exposed via `useImperativeHandle` (lines 283-290)
@@ -181,6 +190,7 @@ After reconnection:
 #### ✅ VERIFIED - Store Actions Exist
 
 **ui-slice.ts** (`/workspace/packages/store/src/slices/`):
+
 - `selectNodes` (line 71): Takes `(nodeIds, mode)`, uses queueMicrotask
 - `setHoverNode` (line 129): Takes `(nodeId)`, uses queueMicrotask
 - `clearSelection` (line 117): No params, uses queueMicrotask
@@ -189,6 +199,7 @@ After reconnection:
 #### ✅ VERIFIED - Event Flow Architecture
 
 **Actual flow discovered:**
+
 ```
 User Action (hover/click)
     ↓
@@ -208,12 +219,14 @@ CrypticAnimusScene handlers (lines 817-842)
 #### ✅ VERIFIED - Lens Switch Wiring
 
 **ForceGraphAdapter.tsx** (lines 341-380):
+
 - Effect watches `activeCategories` and `activeTags`
 - Calls `d3ReheatSimulation` on change
 - Has proper gating with `hasReheatedRef` (2-second cooldown)
 - Includes DEV-ONLY probe for lens changes
 
 **CrypticAnimusScene.tsx** (lines 1042-1043):
+
 - Correctly passes `activeCategories` and `activeTags` props to ForceGraph3D
 
 ### Additional Findings
@@ -229,14 +242,48 @@ CrypticAnimusScene handlers (lines 817-842)
 ### Reconnection Plan Validation
 
 **Option A (Hybrid) is OPTIMAL** because:
+
 1. CrypticAnimusScene already calls both paths
 2. Only requires reconnecting store in CrypticVaultScene handlers
 3. Maintains imperative performance while adding state persistence
 4. Uses queueMicrotask to avoid sync remount issues
 
 **Implementation checklist:**
-1. Add `import { useRefineryStore } from '@refinery/store'` to CrypticVaultScene
-2. Add `const uiStore = useRefineryStore()` in component
-3. Restore store calls in handlers with queueMicrotask wrapper
-4. Verify with console.log in store actions
-5. Check probes fire in imperative methods
+
+1. ~~Add `import { useRefineryStore } from '@refinery/store'` to CrypticVaultScene~~ ✅ Not needed - uiStore already available via useUIStore()
+2. ~~Add `const uiStore = useRefineryStore()` in component~~ ✅ Already exists as useUIStore()
+3. ✅ Restore store calls in handlers with queueMicrotask wrapper - COMPLETED
+4. Verify with console.log in store actions - NEXT
+5. Check probes fire in imperative methods - NEXT
+
+## Store Reconnection Completed (2025-08-07, 10:15 AM)
+
+### Changes Applied
+
+Successfully restored store connections in CrypticVaultScene.tsx:
+
+1. **handleNodeClick** (lines 354-370):
+   - Added: `queueMicrotask(() => uiStore.selectNodes([nodeId], 'replace'))`
+   - Kept existing traversal logic intact
+   - Added uiStore to dependency array
+
+2. **handleNodeHover** (lines 372-378):
+   - Added: `queueMicrotask(() => uiStore.setHoverNode(nodeId))`
+   - Added uiStore to dependency array
+
+3. **handleBackgroundClick** (lines 380-386):
+   - Added: `queueMicrotask(() => uiStore.clearSelection())`
+   - Kept existing highlight state clearing
+   - Added uiStore to dependency array
+
+4. **Escape key handler** (lines 388-402):
+   - Added: `queueMicrotask(() => uiStore.clearSelection())`
+   - Added uiStore to useEffect dependency array
+
+### Next: Verification
+
+Need to verify that:
+1. DEV-ONLY probes in highlightNode/selectNode fire on interaction
+2. No console errors occur
+3. No remount storms happen
+4. Visual feedback works correctly

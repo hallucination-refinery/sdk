@@ -354,8 +354,11 @@ function CrypticVaultSceneContent() {
   const handleNodeClick = useCallback(
     (clickedNode: any) => {
       const nodeId = clickedNode.id as string
-      // NOTE: uiStore.selectNodes removed to prevent remounts
-      // Visual selection is handled imperatively in CrypticAnimusScene
+      
+      // Restore store update with queueMicrotask to prevent remounts
+      queueMicrotask(() => {
+        uiStore.selectNodes([nodeId], 'replace')
+      })
 
       // Perform two-hop traversal using currently visible subset
       const traversalResult = performTwoHopTraversal(
@@ -366,23 +369,28 @@ function CrypticVaultSceneContent() {
       setHighlightState(traversalResult)
       setHighlightActiveTime(Date.now())
     },
-    [visibleNodesCurrent, visibleEdgesCurrent]
+    [visibleNodesCurrent, visibleEdgesCurrent, uiStore]
   )
 
   const handleNodeHover = useCallback(
     (nodeId: string | null) => {
-      // NOTE: uiStore.setHoverNode removed to prevent remounts
-      // Visual hover is handled imperatively in CrypticAnimusScene
+      // Restore store update with queueMicrotask to prevent remounts
+      queueMicrotask(() => {
+        uiStore.setHoverNode(nodeId)
+      })
     },
-    []
+    [uiStore]
   )
 
   const handleBackgroundClick = useCallback(() => {
-    // NOTE: uiStore.selectNodes removed to prevent remounts
-    // Visual deselection is handled imperatively in CrypticAnimusScene
+    // Restore store update with queueMicrotask to prevent remounts
+    queueMicrotask(() => {
+      uiStore.clearSelection()
+    })
+    
     setHighlightState(null)
     setHighlightActiveTime(0)
-  }, [])
+  }, [uiStore])
 
   // Handle keyboard events
   useEffect(() => {
@@ -390,14 +398,17 @@ function CrypticVaultSceneContent() {
       if (e.key === 'Escape') {
         setHighlightState(null)
         setHighlightActiveTime(0)
-        // NOTE: uiStore.selectNodes removed to prevent remounts
-        // Visual deselection is handled imperatively in CrypticAnimusScene
+        
+        // Restore store update with queueMicrotask to prevent remounts
+        queueMicrotask(() => {
+          uiStore.clearSelection()
+        })
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [uiStore])
 
   // set initial timeIndex to latest on mount
   useEffect(() => {
