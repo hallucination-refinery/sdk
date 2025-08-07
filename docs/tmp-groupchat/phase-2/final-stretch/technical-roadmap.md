@@ -179,4 +179,3 @@ This is the most critical issue blocking visual feedback.
 1. Test current state thoroughly before proceeding
 2. Create branch for queueMicrotask removal
 3. Implement changes incrementally with testing between each
-4. Consider fallback to @refinery/interaction if Phase 2 proves too risky
