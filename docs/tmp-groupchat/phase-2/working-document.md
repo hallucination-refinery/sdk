@@ -1,59 +1,79 @@
-### Last Updated: 8:50 AM, 07-08-2025
+### Last Updated: 10:11 AM, 07-08-2025
 
 # Executive Summary
 
-We successfully stopped the remount storm (≤2 mounts achieved) and confirmed SpriteMaterials exist through probes, but smoke screen tests reveal the core interaction system is completely disconnected. **Hovering and clicking nodes produces zero visual changes, and lens switching does nothing.** The probes in `highlightNode` and `selectNode` never fire, indicating these functions aren't being called at all. The @refinery/store migration appears functionally complete on paper but broke the event handler wiring. **Concrete next step:** immediately audit and reconnect the interaction event handlers in the new store architecture, then verify with targeted interaction probes.
+Despite implementing the store reconnection fix documented in commit 61bbfb75 and correcting the handleNodeHover signature mismatch, smoke screen tests confirm zero visual feedback on hover and click interactions. The refinery-mono agent analysis reveals the fundamental issue: while events propagate correctly and imperative methods may execute, React immediately re-renders with unchanged props, erasing any visual mutations. The declarative style callbacks in ForceGraphAdapter read store state that never updates, creating a disconnect between event handling and visual persistence. The immediate next step requires verifying whether store actions actually dispatch by adding console.log statements directly in the ui-slice.ts action implementations, then tracing why those dispatched values fail to reach the style callbacks that control node appearance.
 
-# W: Phase 2 Completed
+## W - Phase 2 Completed Success Criteria
 
-`@refinery/interaction` is fully replaced by `@refinery/store`; `ForceGraphAdapter` mounts ≤ 2; hover/node selection visibly tint sprites; lens switch reheats exactly once; five consecutive smoke tests pass all six UX rules; Phase 2 branch merges into `cryptic-vault-baseline`.
+[ ] Migration from @refinery/interaction to @refinery/store complete (See "Phase 2 Migration Checklist" below)
+[ ] Five consecutive passing smoke-screen runs with the demo exhibiting the **Intended Behavior** (See "Intended Behaviour — User-Experience Checklist" below)
 
-## Sub-W: Event Handler Reconnection Surgery
+## Phase 2 Migration Checklist
 
-Diagnose and repair the complete disconnection between user interactions (hover/click/lens-switch) and the corresponding handler functions in the new store architecture.
+Phase 2 — Replace the legacy @refinery/interaction context with the new @refinery/store state slices (checklist extracted from docs/tmp-groupchat/migration-checklist.md):
+[x] Convert every provider in packages/interaction/\* to store slices (e.g. batchAddNodes, batchAddEdges, selectors).  
+[x] Swap all consumer hooks in CrypticVaultScene.tsx (and any other scene) from the old context to the new store API.  
+[x] Remove or archive the now-unused @refinery/interaction files after successful replacement.  
+[x] Consolidate duplicated state logic into the store and delete any redundant helpers left over from the context.  
+[ ] Verify that graph edits (adding/removing nodes & edges) flow through the store and CRDT history without regressions.
+
+---
+
+## Sub-W: Store-to-Renderer Pipeline Verification
+
+Trace and repair the complete data flow from store dispatch through to ForceGraphAdapter style callbacks to ensure hover and selection state changes produce persistent visual feedback.
 
 ### Sub-W Checklist
 
-- [ ] **Audit interaction wiring** - trace from UI events to store selectors/actions
-- [ ] **Reconnect hover handlers** - ensure mouse events reach `highlightNode` function
-- [ ] **Reconnect click handlers** - ensure click events reach `selectNode` function
-- [ ] **Reconnect lens switch** - ensure lens change triggers `d3ReheatSimulation`
-- [ ] **Verify probe coverage** - confirm all interaction functions have active probes
-- [ ] **Interaction smoke test** - single focused test of hover→click→lens switch sequence
+- [ ] Add console.log to ui-slice.ts actions (setHoverNode, selectNodes, clearSelection) to verify dispatch
+- [ ] Verify ForceGraphAdapter receives updated highlightState prop from CrypticAnimusScene
+- [ ] Confirm style callbacks (getLinkColor, getLinkWidth, nodeThreeObject) read current store values
+- [ ] Check if React re-render cycle overwrites imperative mutations
+- [ ] Test with single node interaction showing console logs at each pipeline stage
+
+---
 
 ## ROADMAP
 
-1. **Event handler audit** (0.2-0.4 h, 95% confidence) - grep for old @refinery/interaction hook calls, identify missing store connections
-2. **Reconnect interaction pipeline** (0.5-1.2 h, 80% confidence) - wire hover/click/lens events through new store selectors and actions
-3. **Probe verification** (0.1-0.2 h, 90% confidence) - ensure `highlightNode`/`selectNode` probes fire on interaction
-4. **Targeted interaction test** (0.2 h, 85% confidence) - focused smoke test of interaction sequence only
-5. **Full smoke suite validation** (0.3-0.5 h, 75% confidence) - five consecutive passes with all interactions working
+**Immediate diagnostic phase** (0.5-1 hour, 90% confidence): Add console.log statements at three critical points - ui-slice actions, CrypticAnimusScene prop reception, and ForceGraphAdapter style callbacks. This will definitively show where the data flow breaks.
 
-**Total estimate:** 1.3-2.3 hours with 70% probability of same-day completion. **Risk:** if store architecture requires significant rewiring, add +1-2 hours.
+**Store subscription verification** (0.5-1 hour, 85% confidence): The refinery-mono agent identified that style callbacks must read store state every render. Verify that ForceGraphAdapter actually subscribes to the relevant store slices and that CrypticAnimusScene passes the correct props. My confidence interval for finding the subscription gap is 0.5-1.5 hours.
+
+**Declarative path repair** (1-2 hours, 70% confidence): Once the broken link is identified, reconnect the store values to the style callbacks. This likely involves ensuring highlightState prop correctly derives from store state and passes through component boundaries. There's a 75% chance this involves fixing prop drilling between CrypticVaultScene → CrypticAnimusScene → ForceGraphAdapter.
+
+**React render cycle investigation** (0.5-1 hour if needed, 60% confidence): If store values reach style callbacks but visual changes still don't persist, the issue is React re-rendering with stale closure values. Solution would involve memoization adjustments or moving style functions to stable references.
+
+## **Total estimated completion**: 2.5-5 hours with 65% probability of achieving full interaction visual feedback today.
 
 # RUNNING NOTES
 
-1. **Critical gap identified** - mount/probe infrastructure works but interaction events never reach handlers
-2. **Store migration completeness questioned** - migration may be incomplete despite documentation claims
-3. **Probe strategy validated** - material probes work perfectly; need interaction-specific probes active
-4. **Timeline/filter functionality intact** - suggests store integration partially working for some features
+Stack-ranked uncertainties requiring immediate investigation:
+
+1. **Store dispatch verification unknown** - No console output confirms whether queueMicrotask store calls actually execute. Without this baseline confirmation, all downstream debugging is speculative.
+
+2. **Prop flow from store to renderer untraced** - The refinery-mono agent shows that highlightState must flow from store through props to style callbacks, but current implementation's prop drilling path remains unverified.
+
+3. **Style callback store subscription unclear** - ForceGraphAdapter's getLinkColor and nodeThreeObject functions may be reading stale closures rather than current store state, causing React to paint with outdated values every render.
+
+4. **Imperative vs declarative conflict unresolved** - The hybrid approach attempts both imperative mutations and declarative updates, but if they execute in the wrong order or with different timing, they may cancel each other out.
+
+---
 
 # RETROSPECTIVES
 
-**What went well**
+**What went well:**
 
-- Probe strategy immediately revealed the real issue (interaction handlers not firing)
-- Mount count objective successfully achieved and maintained
-- Systematic smoke screen testing provided clear diagnostic data
+- Successfully identified and documented the complete interaction disconnection through systematic probing
+- The refinery-mono agent analysis provided crucial insight about the declarative rendering cycle overwriting imperative changes
 
-**What we could improve**
+**What we could improve:**
 
-- Focused too heavily on material mutation without verifying interaction pipeline connectivity
-- Accepted migration "completion" claims without validating end-to-end interaction flows
-- Should have tested interaction handlers immediately after store migration
+- Should have added console.log statements to store actions immediately to verify basic dispatch flow before attempting complex reconnection strategies
+- The hybrid imperative/declarative approach added unnecessary complexity when a pure declarative solution would have been more reliable
 
-**High-impact action items**
+**Highest impact action items:**
 
-1. **Always test interaction flows first** when validating UI migrations - materials are useless without events
-2. **Probe at interaction entry points** not just rendering endpoints - verify events reach handlers
-3. **Never assume migration completeness** without end-to-end behavioral verification through user actions
+1. Always verify store dispatch with logging before debugging downstream consumption
+2. Choose either imperative or declarative updates, not both, to avoid timing conflicts
+3. Test at each layer of the data flow pipeline rather than only at the visual output layer

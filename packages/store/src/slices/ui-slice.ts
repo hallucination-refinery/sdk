@@ -69,9 +69,12 @@ export const createUISlice = (set: any, get: any): UISlice => ({
 
   // Selection actions
   selectNodes: (nodeIds, mode) => {
+    console.log('[STORE] selectNodes called:', { nodeIds, mode, timestamp: Date.now() })
     queueMicrotask(() => {
+      console.log('[STORE] selectNodes executing in microtask:', { nodeIds, mode })
       set(
         produce((state: UISlice) => {
+          const before = Array.from(state.selectedNodeIds)
           if (mode === 'replace') {
             state.selectedNodeIds = new Set(nodeIds)
           } else if (mode === 'add') {
@@ -85,6 +88,8 @@ export const createUISlice = (set: any, get: any): UISlice => ({
               }
             })
           }
+          const after = Array.from(state.selectedNodeIds)
+          console.log('[STORE] selectNodes state updated:', { before, after })
         })
       )
     })
@@ -115,11 +120,21 @@ export const createUISlice = (set: any, get: any): UISlice => ({
   },
 
   clearSelection: () => {
+    console.log('[STORE] clearSelection called:', { timestamp: Date.now() })
     queueMicrotask(() => {
+      console.log('[STORE] clearSelection executing in microtask')
       set(
         produce((state: UISlice) => {
+          const beforeNodes = Array.from(state.selectedNodeIds)
+          const beforeEdges = Array.from(state.selectedEdgeIds)
           state.selectedNodeIds.clear()
           state.selectedEdgeIds.clear()
+          console.log('[STORE] clearSelection state updated:', { 
+            beforeNodes, 
+            beforeEdges, 
+            afterNodes: [], 
+            afterEdges: [] 
+          })
         })
       )
     })
@@ -127,10 +142,14 @@ export const createUISlice = (set: any, get: any): UISlice => ({
   },
 
   setHoverNode: (nodeId) => {
+    console.log('[STORE] setHoverNode called:', { nodeId, timestamp: Date.now() })
     queueMicrotask(() => {
+      console.log('[STORE] setHoverNode executing in microtask:', { nodeId })
       set(
         produce((state: UISlice) => {
+          const before = state.hoveredNodeId
           state.hoveredNodeId = nodeId
+          console.log('[STORE] setHoverNode state updated:', { before, after: nodeId })
         })
       )
     })

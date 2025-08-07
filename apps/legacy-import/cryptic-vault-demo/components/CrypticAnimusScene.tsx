@@ -189,6 +189,20 @@ export default function CrypticAnimusScene({
   // console.log('[FILTERS] activeCategories:', activeCategories ? `Set(${activeCategories.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
   // console.log('[FILTERS] showSecrets:', showSecrets)  // COMMENTED OUT: Render-phase console.log
   // console.log('[FILTERS] activeTags:', activeTags ? `Set(${activeTags.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
+  
+  // Track prop changes from store
+  useEffect(() => {
+    console.log('[PROPS] CrypticAnimusScene props updated:', {
+      mouseSelectedNodeId,
+      searchResultOutlineIds: searchResultOutlineIds?.length || 0,
+      gesturedNodeId,
+      activeCategories: activeCategories?.size || 0,
+      activeTags: activeTags?.size || 0,
+      visibleIds: visibleIds?.size || 0,
+      highlightState: !!highlightState,
+      timestamp: Date.now()
+    })
+  }, [mouseSelectedNodeId, searchResultOutlineIds, gesturedNodeId, activeCategories, activeTags, visibleIds, highlightState])
 
   // Configure physics forces
   useEffect(() => {
@@ -816,12 +830,15 @@ export default function CrypticAnimusScene({
   // Handle node click - memoized
   const handleNodeClick = useCallback(
     (node: NodeObject<any>) => {
+      console.log('[PROPS] CrypticAnimusScene.handleNodeClick:', { nodeId: node.id, hasRef: !!fgRef.current, timestamp: Date.now() })
       // Use imperative selectNode method on adapter ref
       if (fgRef.current?.selectNode) {
+        console.log('[PROPS] Calling imperative selectNode:', { nodeId: node.id })
         fgRef.current.selectNode(node.id, true)
       }
       // Also call the prop handler if provided
       if (onNodeClick) {
+        console.log('[PROPS] Calling parent onNodeClick handler:', { nodeId: node.id })
         onNodeClick(node)
       }
     },
@@ -831,12 +848,17 @@ export default function CrypticAnimusScene({
   // Handle node hover - memoized to prevent re-creating function
   const handleNodeHover = useCallback(
     (node: any) => {
+      console.log('[PROPS] CrypticAnimusScene.handleNodeHover:', { nodeId: node?.id || null, hasRef: !!fgRef.current, timestamp: Date.now() })
       // Use imperative highlightNode method on adapter ref
       if (fgRef.current?.highlightNode) {
+        console.log('[PROPS] Calling imperative highlightNode:', { nodeId: node?.id || null })
         fgRef.current.highlightNode(node ? node.id : null)
       }
       // Also call the prop handler if provided
-      onNodeHoverProp?.(node)
+      if (onNodeHoverProp) {
+        console.log('[PROPS] Calling parent onNodeHoverProp handler:', { nodeId: node?.id || null })
+        onNodeHoverProp(node)
+      }
     },
     [onNodeHoverProp]
   )

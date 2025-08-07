@@ -164,8 +164,12 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   
   // Imperative visual feedback methods with material mutations
   const highlightNode = React.useCallback((nodeId: string | null) => {
+    console.log('[STYLE] ForceGraphAdapter.highlightNode called:', { nodeId, timestamp: Date.now() })
     const graphData = internalRef.current?.graphData?.()
-    if (!graphData || !graphData.nodes) return
+    if (!graphData || !graphData.nodes) {
+      console.log('[STYLE] highlightNode early return - no graphData')
+      return
+    }
     
     // Reset previous highlight
     if (highlightedNodeRef.current) {
@@ -196,6 +200,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
         }
         // Apply yellow highlight
         tintSprite(node.__threeObj.material, 0xffff00)
+        console.log('[STYLE] Applied yellow highlight to node:', nodeId)
         
         // DEV-ONLY PROBE
         if (process.env.NODE_ENV !== 'production') {
@@ -223,11 +228,18 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   }, [])
 
   const selectNode = React.useCallback((nodeId: string, toggle: boolean = true) => {
+    console.log('[STYLE] ForceGraphAdapter.selectNode called:', { nodeId, toggle, timestamp: Date.now() })
     const graphData = internalRef.current?.graphData?.()
-    if (!graphData || !graphData.nodes) return
+    if (!graphData || !graphData.nodes) {
+      console.log('[STYLE] selectNode early return - no graphData')
+      return
+    }
     
     const node = graphData.nodes.find((n: any) => n.id === nodeId)
-    if (!node?.__threeObj?.material) return
+    if (!node?.__threeObj?.material) {
+      console.log('[STYLE] selectNode early return - no __threeObj or material for node:', nodeId)
+      return
+    }
     
     const wasSelected = selectedNodesRef.current.has(nodeId)
     
@@ -251,6 +263,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       }
       // Apply orange selection
       tintSprite(node.__threeObj.material, 0xffa500)
+      console.log('[STYLE] Applied orange selection to node:', nodeId)
     }
     
     // DEV-ONLY PROBE
@@ -363,6 +376,12 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
                 nodeCount: graphData.nodes.length
               })
             }
+            console.log('[STYLE] Lens change detected, simulation reheated:', {
+              categoriesChanged,
+              tagsChanged,
+              nodeCount: graphData.nodes.length,
+              timestamp: Date.now()
+            })
             
             // Reset flag after a delay to allow future reheats
             setTimeout(() => {
