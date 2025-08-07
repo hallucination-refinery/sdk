@@ -1,116 +1,122 @@
-### Last Updated: 2:45 PM, 07-08-2025
+### Last Updated: 4:50 PM, 07-08-2025
 
 # Executive Summary
 
-After three weeks of attempting to complete the Phase 2 migration from @refinery/interaction to @refinery/store, we must acknowledge that our fundamental approach has failed. The latest smoke test revealed yet another critical blocker—a physics engine tick error—which appears to be a consequence of our recent "fixes" rather than progress toward resolution. The pattern is clear: each tactical fix introduces new issues, suggesting deep architectural problems that incremental debugging cannot solve. The immediate priority is not to fix the tick error but to conduct a systematic investigation that challenges our core assumptions about this migration and establishes the correct path to completion.
+Phase 1 (core stabilization) is complete; the demo now loads without crashing after restoring critical force‑simulation props and reconnecting the `useSingleSelectedNode` selector. All three visual‑feedback paths remain broken because of (1) race conditions introduced by `queueMicrotask` in the @refinery/store UI slice and (2) `graphData()` returning `undefined`, blocking imperative highlights. The immediate objective is to eliminate these timing defects, expose the graph data reliably, and re‑enable hover/click feedback before progressing to full UX validation.
+
+Concrete next steps:
+
+1. **Remove** `queueMicrotask` from `setHoverNode`, `selectNodes`, and `clearSelection`, running unit tests after each edit.
+2. **Patch `ForceGraphAdapter`** to expose the internal `__kapsuleInstance.graphData()` (or fallback to `ref.current._graphData`) and verify that `highlightNode` functions end‑to‑end.
+3. **Run five consecutive smoke‑screen tests** and tick off items in the Intended Behaviour checklist; only after these pass should we delete legacy @refinery/interaction assets and merge to `cryptic‑vault‑baseline`.
 
 ## W - Phase 2 Completed Success Criteria
 
-[ ] Migration from @refinery/interaction to @refinery/store complete (See "Phase 2 Migration Checklist" below)
-[ ] Five consecutive passing smoke-screen runs with the demo exhibiting the **Intended Behavior** (See "Intended Behaviour — User-Experience Checklist" below)
+[ ] Migration from @refinery/interaction to @refinery/store complete (See "Phase 2 Migration Checklist" below)  
+[ ] Five consecutive passing smoke‑screen runs with the demo exhibiting the **Intended Behavior** (See "Intended Behaviour — User-Experience Checklist" below)
 
 ## Phase 2 Migration Checklist
 
-Phase 2 — Replace the legacy @refinery/interaction context with the new @refinery/store state slices:
-[?] Convert every provider in packages/interaction/\* to store slices - NEEDS VERIFICATION
-[?] Swap all consumer hooks in CrypticVaultScene.tsx from old to new API - NEEDS VERIFICATION
-[?] Remove or archive now-unused @refinery/interaction files - NEEDS VERIFICATION
-[?] Consolidate duplicated state logic into store - NEEDS VERIFICATION
-[?] Verify graph edits flow through store and CRDT history - UNTESTED
+Phase 2 — Replace the legacy @refinery/interaction context with the new @refinery/store state slices:  
+[ ] Convert every provider in `packages/interaction/*` to store slices (e.g., `batchAddNodes`, `batchAddEdges`, selectors)  
+[ ] Swap all consumer hooks in `CrypticVaultScene.tsx` (and any other scene) from the old context to the new store API  
+[ ] Remove or archive the now‑unused @refinery/interaction files after successful replacement  
+[ ] Consolidate duplicated state logic into the store and delete any redundant helpers left over from the context  
+[ ] Verify that graph edits (adding/removing nodes & edges) flow through the store and CRDT history without regressions
 
 ## Intended Behaviour — User-Experience Checklist
 
 - [ ] **Initial load**
   - [ ] HUD appears immediately on first render
-  - [ ] All nodes spawn at the origin (0 ,0 ,0) and perform **one** outward burst
+  - [ ] All nodes spawn at (0, 0, 0) and perform **one** outward burst
   - [ ] Nodes settle and stay static until a lens change occurs
-
 - [ ] **Hover**
   - [ ] Hovering any node leaves all node positions unchanged
   - [ ] Physics engine remains idle (no forces applied)
-
 - [ ] **Click / Selection**
   - [ ] Clicking a node highlights it **and** its directly related edges/nodes
   - [ ] Clicking a different node transfers the highlight accordingly
   - [ ] Clicking empty space clears all highlights
   - [ ] No node positions change; physics stays idle throughout
-
 - [ ] **Timeline Scrub**
   - [ ] Dragging the timeline slider shows or hides nodes and links based on time
   - [ ] Node positions remain fixed during and after scrubbing
   - [ ] Physics engine remains idle
-
 - [ ] **Category / Filter Toggle**
   - [ ] Toggling a filter hides or reveals matching nodes and links
   - [ ] Node positions stay unchanged while filtering
   - [ ] Physics engine remains idle
-
-- [ ] **Lens Change (Causal ↔ Affinity ↔ Temporal)**
+- [ ] **Lens Change (Causal ↔ Affinity ↔ Temporal)**
   - [ ] Switching the lens triggers **exactly one** fresh burst from the origin
   - [ ] Nodes resettle after the burst and stay static
   - [ ] After resettling, behaviour reverts to the Hover, Click/Selection, Timeline Scrub, and Filter rules until the next lens switch
 
 ---
 
-## Sub-W: Systematic Architecture Investigation
+## Sub-W: Timing & Data Exposure Fix
 
-Conduct a comprehensive investigation to identify why the Phase 2 migration has failed for three weeks, challenging all assumptions about the current implementation and establishing the exact sequence of fixes required to achieve W.
+Re‑establish synchronous UI feedback by removing micro‑task‑deferred store updates and ensuring the force‑graph exposes `graphData()`, so hover and selection work reliably. This unblocks all three visual‑feedback paths and is a prerequisite for verifying the Intended Behaviour checklist.
 
 ### Sub-W Checklist
 
-- [ ] Document all assumptions about the migration's "functional completeness"
-- [ ] Map the actual data flow from user interaction to visual feedback
-- [ ] Identify all architectural dependencies between @refinery/interaction and components
-- [ ] Compare working legacy demo against current broken implementation
-- [ ] List all changes made during the three-week migration attempt
-- [ ] Identify fundamental incompatibilities between old and new architectures
-- [ ] Define the specific technical repairs needed to complete the migration successfully
+- [ ] Remove `queueMicrotask` from `ui-slice.ts` visual‑feedback methods
+- [ ] Expose `graphData()` (or safe fallback) from `ForceGraphAdapter`
+- [ ] Confirm `highlightNode` and `selectNode` operate end‑to‑end in runtime tests
+- [ ] Pass smoke‑screen test covering hover and click highlights
 
 ---
 
 ## ROADMAP
 
-**Assumption documentation and validation** (2-3 hours, 95% confidence): List every assumption about what "functionally complete" means. Verify each claim in the migration checklist against actual code. Document discrepancies between assumed and actual state. This foundational work has a 90% probability of revealing critical misconceptions.
+1. **Phase 2.A — Timing & Data Exposure (70 % chance to fix feedback issues, 3‑5 h)**
+   - Remove micro‑task deferrals and verify no React remount regressions (CI & manual tests).
+   - Patch adapter to expose graph data; validate highlights on hover/click.
 
-**Architecture mapping** (3-4 hours, 90% confidence): Create comprehensive diagrams of both the legacy @refinery/interaction flow and the attempted @refinery/store implementation. Trace data flow from user interaction through store updates to visual rendering. This will likely expose architectural mismatches that incremental fixes cannot resolve.
+2. **Phase 2.B — Visual‑Feedback Path Audit (60 %, 2‑3 h)**
+   - Trace declarative, imperative, and `useFrame` paths; reconcile color/opacity logic.
+   - Add Jest tests that simulate hover/click and assert material state.
 
-**Differential analysis** (2-3 hours, 85% confidence): Systematically compare the working legacy demo against the current broken state. Document not just what's different, but why those differences exist and what assumptions led to them. There's an 80% chance this reveals fundamental incompatibilities.
+3. **Phase 2.C — UX Behaviour Validation (50 %, 2‑4 h)**
+   - Run checklist items under varied graph sizes; profile for jank.
+   - Fix any physics or state sync anomalies.
 
-**Solution architecture** (1-2 hours, 95% confidence): Based on findings, define the precise technical changes required to make the migration work. This includes identifying which components need refactoring, which interfaces need adaptation, and which assumptions need correction to achieve successful integration.
+4. **Phase 2.D — Dead‑Code & Legacy Purge (90 %, 1 h)**
+   - Delete @refinery/interaction, stubs, and TODOs; ensure clean TS build.
 
-## **Total estimated completion**: 8-12 hours of investigation with 85% probability of identifying the true blockers and defining the path to completion.
+5. **Phase 3 — Performance Hardening (40 %, 2‑3 h)**
+   - Memoize expensive selectors; throttle expensive refs; add error boundaries.
+
+6. **Phase 4 — Final Smoke Suite & Merge (80 %, 1 h)**
+   - Achieve five consecutive passing runs; tag `v0.2.0` and merge to `cryptic‑vault‑baseline`.
+
+_Confidence intervals reflect unknowns around ForceGraph3D internals and React 19 quirks; schedule buffers 50 % slack for surprises._
+
+---
 
 # RUNNING NOTES
 
-Critical questions requiring systematic investigation:
-
-1. **What does "functionally complete" actually mean?** The claim that the migration has been complete for three weeks needs rigorous verification. Which specific functions were migrated, which were stubbed, and which were ignored?
-
-2. **Why do fixes create new problems?** The pattern of each fix introducing new issues suggests fundamental architectural misalignment. Are we forcing incompatible paradigms together?
-
-3. **What changed between working and broken states?** A comprehensive diff between the last working version and current state, including all dependencies and configuration changes.
-
-4. **Are the architectures actually compatible?** The hybrid imperative/declarative approach suggests attempting to bridge incompatible paradigms. Can @refinery/store actually replace @refinery/interaction given current component architecture?
-
-5. **What is the minimum set of changes needed for completion?** Rather than continuing to debug symptoms, what are the essential modifications required to make this migration work?
+1. **graphData exposure risk** – may require deep dive into `r3f‑forcegraph`; fallback to private field could break on lib upgrade.
+2. **Micro‑task removal risk** – could re‑introduce render thrash; monitor React DevTools for remounts.
+3. **Legacy file deletion** – ensure Git history tagged before purge to keep rollback path.
+4. **Physics determinism** – single‑burst requirement depends on alpha‑decay tuning; may need empirical calibration.
+5. **Solo‑founder bandwidth** – allocate Pomodoro slots and commit after each green test to avoid losing state.
 
 ---
 
 # RETROSPECTIVES
 
-**What went well:**
+**What went well**
 
-- Pipeline tracing successfully identified specific failure points, even if we acted on symptoms rather than causes
-- The recognition that our approach has failed after three weeks shows healthy project assessment
+- Rapid isolation of the tick‑crash root cause (commented simulation props)
+- Swift reconnection of the selection selector, restoring declarative path skeleton
 
-**What we could improve:**
+**What we could improve**
 
-- Should have questioned "functionally complete" assumption much earlier when issues persisted beyond a few days
-- Failed to maintain a clear rollback path, making it difficult to return to a known working state
-- Allowed tactical debugging to replace strategic thinking about architecture compatibility
+- Accepted “functionally complete” at face value; should have audited code earlier
+- Fix‑then‑break cycle indicates insufficient unit tests and unchecked architectural drift
 
-**Highest impact action items:**
+**High‑impact actions**
 
-1. Stop all debugging until systematic investigation is complete
-2. Document every assumption and verify against actual implementation
-3. Establish clear technical requirements for successful migration completion
+1. Institute smoke‑screen test gate before merging any “fix” branch.
+2. Adopt “assumption log” practice: every claim about completeness must reference code evidence.
+3. Add hover/click highlight test to catch regressions immediately.
