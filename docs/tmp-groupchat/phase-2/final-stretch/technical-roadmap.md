@@ -1,20 +1,21 @@
 # Technical Roadmap: Phase 2 Migration Completion
 
-**Created**: 2025-08-07, 14:50 PM EST
+**Created**: 2025-08-07, 14:50 PM EST  
+**Updated**: 2025-08-07, 15:10 PM EST (Post-Audit Revision)
 **Purpose**: Precise fix sequence to complete the stalled Phase 2 migration
 
 ## Executive Summary
 
 The Phase 2 migration from `@refinery/interaction` to `@refinery/store` has been stalled for three weeks due to multiple compounding issues. The migration was assumed to be "functionally complete" but investigation reveals six major root causes that must be addressed in a specific sequence to avoid further regression.
 
-## Critical Issues Identified
+## Critical Issues Identified (Verified)
 
-1. **Simulation not initializing** - Missing props prevent D3 force layout from starting
-2. **Selector hook stubbed** - Declarative visual feedback completely broken
-3. **Async store updates** - Race conditions with synchronous visual feedback
-4. **GraphData undefined** - Imperative methods cannot access node data
-5. **Multiple broken paths** - Three separate visual feedback mechanisms all failing
-6. **Incomplete migration** - Key functionality stubbed with "Sub-W" comments
+1. ✅ **Simulation not initializing** - Missing props prevented D3 force layout from starting (FIXED)
+2. ✅ **Selector hook stubbed** - Declarative visual feedback completely broken (FIXED)
+3. ⚠️ **Async store updates** - Race conditions with synchronous visual feedback (CONFIRMED, NOT FIXED)
+4. ⚠️ **GraphData undefined** - Imperative methods cannot access node data (NEEDS RUNTIME VERIFICATION)
+5. ⚠️ **Multiple broken paths** - Three separate visual feedback mechanisms all failing (PARTIALLY FIXED)
+6. ✓ **Incomplete migration** - Only 2 "Sub-W" stubs found, not systemic issue
 
 ## Fix Sequence (Order Matters!)
 
@@ -31,21 +32,25 @@ The Phase 2 migration from `@refinery/interaction` to `@refinery/store` has been
    - Connect `useSingleSelectedNode` to actual store
    - **File**: `/workspace/apps/legacy-import/cryptic-vault-demo/store/selectors.ts`
 
-### Phase 2: Fix Timing Issues
+### Phase 2: Fix Timing Issues (CRITICAL PATH)
 
 **Goal**: Resolve race conditions between store and visual feedback
 
-3. **Remove queueMicrotask delays**
-   - Make store updates synchronous for visual feedback
-   - Keep async only where remounts are actually problematic
+3. **Remove queueMicrotask delays** ⚠️ HIGH RISK
+   - Currently ALL store methods use queueMicrotask (lines 73, 100, 124, 146, 160+ in ui-slice.ts)
+   - This causes imperative methods to fire BEFORE state updates complete
+   - **Approach**: Selectively remove for visual feedback methods only
    - **Files**: 
-     - `/workspace/packages/store/src/slices/ui-slice.ts`
-     - `/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticVaultScene.tsx`
+     - `/workspace/packages/store/src/slices/ui-slice.ts` (setHoverNode, selectNodes, clearSelection)
+   - **Risk**: May cause remounts - test thoroughly
 
-4. **Fix graphData exposure**
-   - Ensure ForceGraph3D's graphData() method returns actual data
-   - May require waiting for simulation initialization
-   - Add retry logic if data not immediately available
+4. **Fix graphData exposure** ⚠️ COMPLEX
+   - ForceGraph3D component must expose internal data via graphData() method
+   - Currently returns undefined even after data is passed
+   - **Investigation needed**: 
+     - Check r3f-forcegraph library source
+     - May need to access __kapsuleInstance directly
+     - Consider using ref.current._graphData fallback
    - **File**: `/workspace/packages/canvas-r3f/src/adapters/ForceGraphAdapter.tsx`
 
 ### Phase 3: Restore Visual Feedback
@@ -150,3 +155,28 @@ The migration is complete when:
 
 Start with Phase 2, Step 3: Remove queueMicrotask delays in store updates.
 This is the most critical issue blocking visual feedback.
+
+---
+
+## Audit Notes (Added 15:10 PM)
+
+### Verified Fixes
+- Simulation props restored and working
+- Selector hook connected properly
+- Dynamic import replaced with direct import
+
+### Remaining Critical Issues
+1. **queueMicrotask race conditions** - Confirmed in all store methods
+2. **graphData() undefined** - Pattern verified, runtime behavior unknown
+3. **Three feedback paths** - Only declarative path partially fixed
+
+### Risk Assessment
+- **HIGH**: Removing queueMicrotask may cause React remount issues
+- **MEDIUM**: graphData() fix may require library modification
+- **LOW**: Remaining stubs are minimal (only 2 found)
+
+### Recommended Approach
+1. Test current state thoroughly before proceeding
+2. Create branch for queueMicrotask removal
+3. Implement changes incrementally with testing between each
+4. Consider fallback to @refinery/interaction if Phase 2 proves too risky
