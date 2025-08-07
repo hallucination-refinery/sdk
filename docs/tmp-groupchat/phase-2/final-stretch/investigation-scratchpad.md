@@ -295,3 +295,36 @@ All three paths need to work for complete visual feedback!
 4. **Broken Data Flow**: graphData method not exposing data
 5. **Race Conditions**: queueMicrotask delays breaking timing
 6. **Multiple Failure Points**: Three feedback paths, all broken differently
+
+---
+
+## Investigation Complete (14:55 PM)
+
+### Deliverables Created:
+
+1. **Investigation Scratchpad** (this file) - Complete forensic analysis with timeline
+2. **Technical Roadmap** (`technical-roadmap.md`) - 5-phase fix sequence with time estimates
+3. **Critical Fixes Applied**:
+   - Restored simulation props (fixes tick error)
+   - Connected selector hook (enables declarative feedback)
+
+### Key Discoveries:
+
+The Phase 2 migration was NOT "functionally complete" as assumed. Six major issues compound to create total visual feedback failure:
+- Core simulation never initialized
+- Store selector completely stubbed out  
+- Architectural mismatch between async store and sync rendering
+- Multiple "Sub-W stub" placeholders throughout codebase
+- Three separate feedback paths all broken independently
+- Race conditions from queueMicrotask delays
+
+### Recommended Next Steps:
+
+Follow the Technical Roadmap Phase 2-5 in sequence. The migration is salvageable but requires 9-15 hours of systematic fixes. The alternative is reverting to `@refinery/interaction` if time is critical.
+
+### Commits Made:
+1. `23363150` - fix: restore critical simulation props to fix tick error
+2. `c4bed9b7` - fix: connect useSingleSelectedNode hook to actual store  
+3. `42b7d852` - docs: complete forensic investigation of Phase 2 migration failure
+
+**Investigation Status: COMPLETE ✅**
