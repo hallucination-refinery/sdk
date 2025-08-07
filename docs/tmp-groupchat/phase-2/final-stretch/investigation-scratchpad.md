@@ -172,3 +172,85 @@ CrypticAnimusScene (213 nodes)
     → ForceGraph3D (r3f-forcegraph)
 ```
 Data IS flowing, but ForceGraph3D isn't initializing its simulation properly without the cooldown props.
+
+### 6. Architectural Comparison: @refinery/interaction vs @refinery/store (14:35 PM)
+
+**Legacy Implementation (@refinery/interaction)**:
+- Uses Redux-like reducer pattern with dispatched actions
+- Synchronous state updates 
+- Actions: `MOUSE_SELECT_NODE`, `SET_MOUSE_HOVERED_NODE`, etc.
+- State shape includes `forceGraphRef` for direct imperative control
+- Single centralized state with all graph, UI, and physics state
+
+**Current Implementation (@refinery/store)**:
+- Uses Zustand store with direct method calls
+- **ASYNC state updates via queueMicrotask()** - "to prevent remounts"
+- Methods: `selectNodes()`, `setHoverNode()`, etc.
+- Returns `RendererCommand` objects for decoupling
+- Split into slices (ui-slice, etc.)
+
+**Critical Architectural Incompatibility**:
+1. **Timing Issue**: queueMicrotask delays state updates to next microtask
+2. **Render Cycle Mismatch**: Updates happen AFTER render, not during
+3. **Lost Synchronization**: Visual feedback relies on immediate state availability
+4. **Race Conditions**: Imperative methods fire before state updates complete
+
+**Evidence from Console Logs**:
+```
+[STORE] setHoverNode called: {nodeId: 'cc742484d', timestamp: 1754584158314}
+[STORE] setHoverNode executing in microtask: {nodeId: 'cc742484d'}
+[STYLE] highlightNode early return - no graphData
+```
+
+The highlightNode imperative method fires BEFORE the store update completes!
+
+### 7. Fix Applied: Restored Simulation Props (14:33 PM)
+
+**Changes Made**:
+1. Restored `cooldownTime={Infinity}`, `cooldownTicks={0}`, `d3AlphaDecay={0}` in ForceGraphAdapter
+2. Enabled engine ready check in CrypticAnimusScene to prevent crash during init
+3. Committed as: "fix: restore critical simulation props to fix tick error"
+
+**Expected Result**: 
+- Tick error should be resolved
+- Simulation should initialize and run continuously
+- But highlights still won't work due to timing issues with queueMicrotask
+
+### 8. CRITICAL DISCOVERY: Broken Selector Hook (14:40 PM)
+
+**Found in** `/workspace/apps/legacy-import/cryptic-vault-demo/store/selectors.ts`:
+```typescript
+// Sub-W stub – replace with real selector in W
+export const useSingleSelectedNode = () => null
+```
+
+**This completely breaks declarative visual feedback!**
+
+The hook that should connect selection state to visual rendering always returns `null`.
+This means:
+- `mouseSelectedNodeId` prop is always null
+- `buildCrypticNodeSprite` never receives selection state
+- Node colors never change based on selection
+- The entire declarative feedback path is dead
+
+**Fix Applied**:
+```typescript
+export const useSingleSelectedNode = () => {
+  return useUIStore(selectSingleSelectedNode)
+}
+```
+
+This connects the selector to the actual store state.
+
+### 9. Three Parallel Feedback Paths Identified
+
+1. **Declarative Path** (currently broken by null selector):
+   - Store state → useSingleSelectedNode → mouseSelectedNodeId prop → nodeThreeObject → color
+
+2. **Imperative Path** (broken by missing graphData):
+   - Store state → highlightNode/selectNode methods → direct material mutation
+
+3. **UseFrame Path** (may work after fixes):
+   - Store state → useFrame hook → sprite opacity/color updates each frame
+
+All three paths need to work for complete visual feedback!
