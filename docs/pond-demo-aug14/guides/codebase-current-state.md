@@ -1,6 +1,14 @@
 # ForceGraph Integration Current State Documentation
 **Generated:** 12-08-2025 by HOPPER-A
+**Last Updated:** 6:28 PM EST, 12-08-2025 by CARMACK-B
 **Last Analyzed Commit:** feat/pond-demo-aug14
+
+## Change Tracking Table
+
+| NAME | Commit | Change | Reason | Last Updated |
+|------|--------|--------|--------|--------------|
+| HOPPER-A | Initial | Created document | Initial documentation | 12-08-2025 |
+| CARMACK-B | Pending | Added timestamps, verified interfaces, added risks | Critical audit | 6:28 PM EST, 12-08-2025 |
 
 ## Overview
 This document captures the complete current state of ForceGraph integration, documenting every interface, prop, method, and integration point that the canvas-latent implementation must satisfy.
@@ -14,6 +22,7 @@ This document captures the complete current state of ForceGraph integration, doc
 ### ForceGraphAdapter Component  
 **Location:** `/workspace/packages/canvas-r3f/src/adapters/ForceGraphAdapter.tsx`
 **Lines:** 419
+**Status:** @deprecated (line 129) - Will be removed once Cryptiq Mindmap migrates to SDK renderer
 
 ## Complete Interface Definitions
 
@@ -147,6 +156,8 @@ export interface ForceGraphAdapterRef {
 ### Props Passed from CrypticAnimusScene to ForceGraphAdapter
 
 The following props are passed from CrypticAnimusScene to ForceGraphAdapter (lines 1126-1148):
+
+**VERIFIED:** 6:28 PM EST, 12-08-2025 by CARMACK-B - All props confirmed present
 
 1. **ref={fgRef}** - ForceGraph reference for imperative methods
 2. **graphData={memoizedGraphData}** - Nodes and links data structure
@@ -344,6 +355,23 @@ const tintSprite = (material: any, hex: number) => {
 - warmupTicks: 60 initial ticks
 - cooldownTicks: 180 for settling
 - Alpha target manipulation
+
+## Uncertainties and Integration Risks
+
+**Documented by CARMACK-B - 6:28 PM EST, 12-08-2025**
+
+### Critical Uncertainties
+1. **Component Path** - CrypticAnimusScene.tsx is NOT in a 'scene/' subdirectory as initially suggested
+2. **Deprecated Component** - ForceGraphAdapter is marked @deprecated
+3. **Debug Logging** - Extensive commented-out console.logs throughout codebase
+4. **Monkey Patches** - Object.freeze override indicates underlying library issues
+
+### Integration Risks
+1. **Physics Node Freezing** - Object.freeze monkey patch for vx/vy/vz properties
+2. **Window.__FG Exposure** - Debug hack with 50+ retry attempts
+3. **Material Mutations** - Direct mutation patterns may cause render issues
+4. **Ref-based State** - Heavy use of refs to avoid React re-renders
+5. **Dynamic Import** - SSR disabled, loading state returns null
 
 ## Canvas-Latent Requirements Summary
 

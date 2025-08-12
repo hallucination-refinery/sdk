@@ -1,6 +1,14 @@
 # ForceGraph Dependency Analysis
 **Generated:** 12-08-2025 by HOPPER-A
+**Last Updated:** 6:29 PM EST, 12-08-2025 by CARMACK-B
 **Component Analysis:** CrypticAnimusScene & ForceGraphAdapter
+
+## Change Tracking Table
+
+| NAME | Commit | Change | Reason | Last Updated |
+|------|--------|--------|--------|--------------|
+| HOPPER-A | Initial | Created dependency analysis | Initial documentation | 12-08-2025 |
+| CARMACK-B | Pending | Corrected versions, added warnings | Audit findings | 6:29 PM EST, 12-08-2025 |
 
 ## Dependency Tree
 
@@ -318,18 +326,20 @@ if (!graphData) return
 
 ## Package Structure
 
-### NPM Dependencies
+### NPM Dependencies (VERIFIED)
 ```json
 {
   "dependencies": {
-    "react": "^18.x",
-    "three": "^0.15x",
-    "@react-three/fiber": "^8.x",
-    "r3f-forcegraph": "^1.x",
-    "next": "^13.x"
+    "react": "19.1.0",          // CORRECTED: was documented as ^18.x
+    "three": "0.176.0",         // CORRECTED: was documented as ^0.15x
+    "@react-three/fiber": "9.1.2",  // CORRECTED: was documented as ^8.x
+    "r3f-forcegraph": "^1.1.1",     // Verified correct
+    "next": "15.3.2"             // CORRECTED: was documented as ^13.x
   }
 }
 ```
+
+**WARNING:** Major version differences from initial documentation!
 
 ### Module Resolution
 ```
@@ -430,6 +440,27 @@ Object.freeze = function(obj) {
   return __origFreeze(obj)
 }
 ```
+
+## Critical Warnings and Uncertainties
+
+**Added by CARMACK-B - 6:29 PM EST, 12-08-2025**
+
+### Version Compatibility Risks
+1. **React 19.1.0** - Using bleeding edge React version (19.1.0), not stable 18.x
+2. **Next.js 15.3.2** - Using latest Next.js, significant changes from 13.x
+3. **Three.js 0.176.0** - Much newer than documented 0.15x
+
+### Code Quality Concerns
+1. **Monkey Patches** - Object.freeze override is a red flag
+2. **Commented Debug Code** - Extensive commented console.logs throughout
+3. **Retry Logic** - Multiple retry patterns suggest instability
+4. **@deprecated Marker** - ForceGraphAdapter is deprecated
+
+### Missing Documentation
+1. Component path incorrectly documented (no 'scene/' directory)
+2. Version numbers significantly wrong
+3. Deprecation status not mentioned
+4. Debug/development flags not documented
 
 ## Canvas-Latent Implementation Requirements
 
