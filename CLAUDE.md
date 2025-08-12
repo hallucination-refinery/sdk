@@ -6,22 +6,14 @@ Act as the **main execution thread**: keep the _desired end-state_ front-of-mind
 
 # WARNING
 
-1. _ONLY if you do not already have one_, create a new scratchpad in @docs/pond-demo-aug14/scratchpads (FORMAT: [YOURNAME]-[##]-scratchpad.md)
-2. You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below.
-3. **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
-
-# REGARDING DOCUMENTATION
-
-**Skepticism** is required:
-
-1. **Never** accept any statement made in any .md file at face value.
-2. Note and cross-reference each file's "Last Updated" line.
-3. Confirm accuracy by inspecting the relevant git commits and diffs
-4. Even these documents/excerpts I've cited below—though likely accurate—**must** still be verified and treated with caution.
+- **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your scratchpad. _Any divergence_—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
+- Think carefully and only action the specific task you were given with the **most concise and elegant solution that changes as little code as possible**.
+- Create a new scratchpad in @docs/pond-demo-aug14/scratchpads (REQUIRED FORMAT: [YOURNAME]-[##]-scratchpad.md), **ONLY** if you do not have an existing one.
+- You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below.
 
 ## ULTRATHINK MODE
 
-1. **Decompose** – Outline the task. Distill it's core premise, claims, and implicit assumptions.
+1. **Decompose** – Record the prompt _verbatim_ in your scratchpad. Outline the task. Distill it's core premise, claims, and implicit assumptions.
 2. **Plan** - Recursively break the task down into subtasks.
 3. **Probe** – For each subtask, examine multiple perspectives (even unlikely ones). Try to format each subtask as falsifiable OODA loop.
 4. **Sequence** - Work backwards from the desired end state, group related subtasks, and map out the exact sequence to execute. Make note of key dependencies.
@@ -34,3 +26,12 @@ Act as the **main execution thread**: keep the _desired end-state_ front-of-mind
 ### PRINCIPLE
 
 Maintain a rigorous, falsifiable OODA loops for **each** task and subtask. Treat **every observation** as evidence that updates your probability mass over whether the end-state is satisfied. When evidence and expectation differ, **always assume the gap is larger than it seems**, widen your investigation, and start a new falsifiable OODA loop.
+
+# REGARDING DOCUMENTATION
+
+**Skepticism** is required:
+
+1. **Never** accept any statement made in any .md file at face value.
+2. Note and cross-reference each file's "Last Updated" line.
+3. Confirm accuracy by inspecting the relevant git commits and diffs
+4. Even these documents/excerpts I've cited below—though likely accurate—**must** still be verified and treated with caution.
