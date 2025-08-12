@@ -74,33 +74,43 @@ export default function CrypticAnimusScene({
   activeTags,
 }: CrypticAnimusSceneProps) {
   const fgRef = useRef<any>(null)
-  
+
   // Replace graphVersion with ref-based tracking to prevent remounts
   const graphDataRef = useRef(data)
-  const prevDataStatsRef = useRef<{ nodeCount: number; linkCount: number }>({ nodeCount: 0, linkCount: 0 })
+  const prevDataStatsRef = useRef<{ nodeCount: number; linkCount: number }>({
+    nodeCount: 0,
+    linkCount: 0,
+  })
   const hasSpawnedRef = useRef(false)
-  
+
   // Debug mode flag
-  const isDebugMode = process.env.NODE_ENV === 'development' && 
-                     process.env.NEXT_PUBLIC_DEBUG_GRAPH === 'true'
-  
+  const isDebugMode =
+    process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_GRAPH === 'true'
+
   // Retry counters
   const physicsRetryCount = useRef(0)
   const windowFGRetryCount = useRef(0)
-  
+
   // Track RAW structure changes and update ref without remounts
   useEffect(() => {
     const nodeCount = data.nodes.length
     const linkCount = data.links.length
-    
-    if (prevDataStatsRef.current.nodeCount !== nodeCount || 
-        prevDataStatsRef.current.linkCount !== linkCount) {
-      console.log('[GRAPH VERSION] Raw structure changed - updating ref. Nodes:', nodeCount, 'Links:', linkCount)
+
+    if (
+      prevDataStatsRef.current.nodeCount !== nodeCount ||
+      prevDataStatsRef.current.linkCount !== linkCount
+    ) {
+      console.log(
+        '[GRAPH VERSION] Raw structure changed - updating ref. Nodes:',
+        nodeCount,
+        'Links:',
+        linkCount
+      )
       graphDataRef.current = data
       prevDataStatsRef.current = { nodeCount, linkCount }
     }
   }, [data]) // Track data changes
-  
+
   // Validation logging (separate useEffect)
   useEffect(() => {
     console.log('[REMOUNT CHECK] graphDataRef updated, visibleIds:', visibleIds?.size)
@@ -112,41 +122,43 @@ export default function CrypticAnimusScene({
     nodeMap,
   } = useMemo(() => {
     // console.log('[CrypticAnimusScene] Memoizing graph data')  // COMMENTED OUT: Render-phase console.log
-    
+
     // Use structuredClone to ensure fresh objects, replacing shallow spreads
     const nodes = structuredClone(data.nodes)
     const links = structuredClone(data.links)
-    
+
     // Gate spawn logic with hasSpawnedRef
     if (!hasSpawnedRef.current && nodes.length > 0) {
       const spawnMode = process.env.NEXT_PUBLIC_GRAPH_SPAWN
       const nodeCount = nodes.length
       let positionsAdded = 0
-      
-      if (spawnMode === "sphere") {
+
+      if (spawnMode === 'sphere') {
         // Use sphere pattern for initial positions
         const radius = Math.cbrt(nodeCount) * 50 // Scale radius based on node count
-        
+
         nodes.forEach((node, index) => {
           // Use golden ratio for better distribution
           const goldenRatio = (1 + Math.sqrt(5)) / 2
-          const theta = 2 * Math.PI * index / goldenRatio
-          const phi = Math.acos(1 - 2 * (index + 0.5) / nodeCount)
-          
+          const theta = (2 * Math.PI * index) / goldenRatio
+          const phi = Math.acos(1 - (2 * (index + 0.5)) / nodeCount)
+
           // Convert spherical to cartesian coordinates
           node.x = radius * Math.sin(phi) * Math.cos(theta)
           node.y = radius * Math.sin(phi) * Math.sin(theta)
           node.z = radius * Math.cos(phi)
-          
+
           // Add small random perturbation to avoid perfect symmetry
           node.x += (Math.random() - 0.5) * 10
           node.y += (Math.random() - 0.5) * 10
           node.z += (Math.random() - 0.5) * 10
-          
+
           positionsAdded++
         })
-        
-        console.log(`[INIT POSITIONS] Spawned ${positionsAdded} nodes - mode: sphere (radius: ${radius.toFixed(0)})`)
+
+        console.log(
+          `[INIT POSITIONS] Spawned ${positionsAdded} nodes - mode: sphere (radius: ${radius.toFixed(0)})`
+        )
       } else {
         // Default: spawn all nodes at origin for burst animation
         nodes.forEach((node) => {
@@ -155,13 +167,13 @@ export default function CrypticAnimusScene({
           node.z = 0
           positionsAdded++
         })
-        
+
         console.log(`[INIT POSITIONS] Spawned ${positionsAdded} nodes - mode: origin`)
       }
-      
+
       hasSpawnedRef.current = true
     }
-    
+
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     return { nodes, links, nodeMap }
   }, [data]) // Use data dependency
@@ -176,20 +188,20 @@ export default function CrypticAnimusScene({
 
   // Log before rendering ForceGraph3D to confirm component mounts
   // console.log('[Animus] render ForceGraph3D')  // COMMENTED OUT: Render-phase console.log
-  
+
   // Build verification marker
   // console.log('[Build marker] CrypticAnimusScene v3 - useEffect deps fix - built at:', new Date().toISOString())  // COMMENTED OUT: Render-phase console.log
-  
+
   // Debug data availability
   // console.log('[Data debug] nodes:', memoizedGraphData.nodes.length, 'links:', memoizedGraphData.links.length)  // COMMENTED OUT: Render-phase console.log
   // console.log('[Data debug] ForceGraph3D component loaded:', !!ForceGraph3D)  // COMMENTED OUT: Render-phase console.log
-  
+
   // Debug filter states that control node visibility
   // console.log('[FILTERS] visibleIds:', visibleIds ? `Set(${visibleIds.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
   // console.log('[FILTERS] activeCategories:', activeCategories ? `Set(${activeCategories.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
   // console.log('[FILTERS] showSecrets:', showSecrets)  // COMMENTED OUT: Render-phase console.log
   // console.log('[FILTERS] activeTags:', activeTags ? `Set(${activeTags.size})` : 'undefined')  // COMMENTED OUT: Render-phase console.log
-  
+
   // Track prop changes from store
   useEffect(() => {
     console.log('[PROPS] CrypticAnimusScene props updated:', {
@@ -200,16 +212,25 @@ export default function CrypticAnimusScene({
       activeTags: activeTags?.size || 0,
       visibleIds: visibleIds?.size || 0,
       highlightState: !!highlightState,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
-  }, [mouseSelectedNodeId, searchResultOutlineIds, gesturedNodeId, activeCategories, activeTags, visibleIds, highlightState])
+  }, [
+    mouseSelectedNodeId,
+    searchResultOutlineIds,
+    gesturedNodeId,
+    activeCategories,
+    activeTags,
+    visibleIds,
+    highlightState,
+  ])
 
   // Configure physics forces
   useEffect(() => {
     const checkAndConfigurePhysics = () => {
       if (!fgRef.current || !fgRef.current.d3Force) {
         physicsRetryCount.current++
-        if (physicsRetryCount.current > 50) { // Max 5 seconds
+        if (physicsRetryCount.current > 50) {
+          // Max 5 seconds
           console.error('[Physics config] Failed to initialize after 50 retries')
           return
         }
@@ -220,7 +241,7 @@ export default function CrypticAnimusScene({
         setTimeout(checkAndConfigurePhysics, 100)
         return
       }
-      
+
       console.log('[Physics config] Initialized successfully')
       physicsRetryCount.current = 0
 
@@ -239,7 +260,7 @@ export default function CrypticAnimusScene({
 
       fgRef.current.d3Force('center')?.strength(0.1)
     }
-    
+
     checkAndConfigurePhysics()
     // Let the simulation run continuously; we will let ForceGraph manage alpha decay
   }, []) // Run once on mount, retry internally if ref not ready
@@ -247,7 +268,7 @@ export default function CrypticAnimusScene({
   // Expose ForceGraph ref for console inspection
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null
-    
+
     const setupWindowFG = () => {
       if (!fgRef.current) {
         windowFGRetryCount.current++
@@ -261,23 +282,26 @@ export default function CrypticAnimusScene({
         setTimeout(setupWindowFG, 100)
         return
       }
-      
+
       windowFGRetryCount.current = 0
-      
       ;(window as any).__FG = fgRef.current
-      
+
       if (isDebugMode) {
         console.log('FG ref', fgRef.current)
         console.log('[Window FG] window.__FG assigned successfully')
       }
-      
+
       // Wrap all operations in try-catch to prevent debugger pause
       try {
         if (isDebugMode) {
           // === Phase 0 Instrumentation - BEFORE ===
           const simData = (window as any).__FG?.graphData?.()
           if (simData?.nodes?.length > 0) {
-            const beforePos = { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z }
+            const beforePos = {
+              x: simData.nodes[0].x,
+              y: simData.nodes[0].y,
+              z: simData.nodes[0].z,
+            }
             console.log('[FREEZE-TEST before]', {
               node0: simData.nodes[0],
               hasVelocity: 'vx' in simData.nodes[0],
@@ -293,14 +317,17 @@ export default function CrypticAnimusScene({
               hasVelocity: 'vx' in simData.nodes[0],
               position: { x: simData.nodes[0].x, y: simData.nodes[0].y, z: simData.nodes[0].z },
               positionChanged:
-                simData.nodes[0].x !== (window as any).__beforePos.x || 
-                simData.nodes[0].y !== (window as any).__beforePos.y || 
+                simData.nodes[0].x !== (window as any).__beforePos.x ||
+                simData.nodes[0].y !== (window as any).__beforePos.y ||
                 simData.nodes[0].z !== (window as any).__beforePos.z,
             })
           }
         }
         // Initial reheat and force multiple ticks with counting
-        console.log('%c[REHEAT] Initial d3ReheatSimulation called', 'color: red; font-weight: bold; font-size: 14px')
+        console.log(
+          '%c[REHEAT] Initial d3ReheatSimulation called',
+          'color: red; font-weight: bold; font-size: 14px'
+        )
         if (fgRef.current.d3ReheatSimulation) {
           // FIXME: Also check engine ready before d3ReheatSimulation
           // if (!(fgRef.current as any).__kapsuleInstance?.layout) {
@@ -309,18 +336,18 @@ export default function CrypticAnimusScene({
           // }
           fgRef.current.d3ReheatSimulation()
         }
-        
+
         // Force many ticks to ensure initial separation
         let tickCount = 0
         const maxTicks = 20 // perf cap
         console.log('[TICKS] Starting forced tick execution...')
-        
+
         // early-exit until the kapsule instance exists
         if (!fgRef.current?.tickFrame) {
           console.log('[TICKS] ForceGraph not ready yet, skipping tick execution')
           return
         }
-        
+
         // FIXME: Add engine ready check to prevent tick crash
         // The crash "Cannot read properties of undefined (reading 'tick')" occurs when
         // tickFrame() is called before the D3 force layout engine is initialized.
@@ -331,7 +358,7 @@ export default function CrypticAnimusScene({
           return
         }
         */
-        
+
         // run the warm-up ticks **after** the instance is ready
         for (let i = 0; i < maxTicks; i++) {
           if (fgRef.current.tickFrame) {
@@ -340,404 +367,449 @@ export default function CrypticAnimusScene({
           }
         }
         console.log(`[TICKS] Executed ${tickCount} ticks successfully (target: ${maxTicks})`)
-        
+
         // Verify simulation is active
         console.log('[SIMULATION] Testing if forces are applied...')
         const linkForce = fgRef.current.d3Force?.('link')
         const chargeForce = fgRef.current.d3Force?.('charge')
         const centerForce = fgRef.current.d3Force?.('center')
-        console.log('[FORCES] link:', !!linkForce, 'charge:', !!chargeForce, 'center:', !!centerForce)
-        
+        console.log(
+          '[FORCES] link:',
+          !!linkForce,
+          'charge:',
+          !!chargeForce,
+          'center:',
+          !!centerForce
+        )
+
         // Remove problematic debug code that references undefined graphData
         console.log('[Debug] window.__FG type:', typeof (window as any).__FG)
-        console.log('[Debug] window.__FG has graphData method:', typeof (window as any).__FG?.graphData === 'function')
+        console.log(
+          '[Debug] window.__FG has graphData method:',
+          typeof (window as any).__FG?.graphData === 'function'
+        )
       } catch (error) {
         console.error('[Window FG] Error during initial setup:', error)
         console.error('[Window FG] Stack trace:', (error as Error).stack)
       }
-      
+
       // Initial position check
       if (isDebugMode) {
         setTimeout(() => {
-        try {
-          const simData = (window as any).__FG?.graphData?.()
-          if (simData?.nodes?.length > 0) {
-            console.log('[INITIAL POS] Checking initial node positions...')
-            const sampleSize = Math.min(5, simData.nodes.length)
-            let allAtOrigin = true
-            
-            for (let i = 0; i < sampleSize; i++) {
-              const node = simData.nodes[i]
-              const x = node.x ?? 0
-              const y = node.y ?? 0
-              const z = node.z ?? 0
-              
-              if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01 || Math.abs(z) > 0.01) {
-                allAtOrigin = false
+          try {
+            const simData = (window as any).__FG?.graphData?.()
+            if (simData?.nodes?.length > 0) {
+              console.log('[INITIAL POS] Checking initial node positions...')
+              const sampleSize = Math.min(5, simData.nodes.length)
+              let allAtOrigin = true
+
+              for (let i = 0; i < sampleSize; i++) {
+                const node = simData.nodes[i]
+                const x = node.x ?? 0
+                const y = node.y ?? 0
+                const z = node.z ?? 0
+
+                if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01 || Math.abs(z) > 0.01) {
+                  allAtOrigin = false
+                }
+
+                console.log(
+                  `[INITIAL POS] Node ${node.id}: (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`
+                )
               }
-              
-              console.log(`[INITIAL POS] Node ${node.id}: (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`)
+
+              if (allAtOrigin) {
+                console.error('[INITIAL POS] CRITICAL: All nodes start at origin (0,0,0)!')
+                console.log(
+                  '[INITIAL POS] This explains the clumping - nodes need initial positions'
+                )
+              } else {
+                console.log('[INITIAL POS] Good: Nodes have initial positions')
+              }
             }
-            
-            if (allAtOrigin) {
-              console.error('[INITIAL POS] CRITICAL: All nodes start at origin (0,0,0)!')
-              console.log('[INITIAL POS] This explains the clumping - nodes need initial positions')
-            } else {
-              console.log('[INITIAL POS] Good: Nodes have initial positions')
-            }
+          } catch (e) {
+            console.error('[INITIAL POS] Error checking positions:', e)
           }
-        } catch (e) {
-          console.error('[INITIAL POS] Error checking positions:', e)
-        }
-      }, 500) // Wait a bit for simulation to initialize
+        }, 500) // Wait a bit for simulation to initialize
       }
-      
+
       // Position monitoring commented out due to runtime error at line 167
       // TODO: Access simulation data correctly through ForceGraph API
       // Previous code was accessing input graphData instead of simulation data
-      
+
       // PHASE 1: Deep inspection of window.__FG - wait 1s to ensure full initialization
       if (isDebugMode) {
         setTimeout(() => {
-        console.log('=== PHASE 1: window.__FG Deep Inspection ===')
-        console.log('1. Basic info:')
-        console.log('  Type:', typeof (window as any).__FG)
-        console.log('  Constructor:', (window as any).__FG?.constructor?.name)
-        
-        console.log('2. Direct properties:')
-        console.log('  Object.keys:', Object.keys((window as any).__FG || {}))
-        console.log('  Object.getOwnPropertyNames:', Object.getOwnPropertyNames((window as any).__FG || {}))
-        
-        console.log('3. Prototype chain:')
-        let proto = Object.getPrototypeOf((window as any).__FG)
-        let level = 0
-        while (proto && level < 5) {
-          console.log(`  Level ${level}:`, Object.getOwnPropertyNames(proto))
-          proto = Object.getPrototypeOf(proto)
-          level++
-        }
-        
-        console.log('4. All enumerable properties:')
-        const allProps: any[] = []
-        for (let key in (window as any).__FG) {
-          allProps.push({
-            key, 
-            type: typeof (window as any).__FG[key],
-            value: typeof (window as any).__FG[key] === 'function' ? '[Function]' : (window as any).__FG[key]
-          })
-        }
-        console.table(allProps)
-        
-        console.log('5. Method availability:')
-        const methods = ['d3Force', 'd3ReheatSimulation', 'tickFrame', 'emitParticle', 'getGraphBbox', 'resetCountdown', 'refresh']
-        methods.forEach(m => {
-          console.log(`  ${m}:`, typeof (window as any).__FG[m])
-        })
-        
-        console.log('6. Hidden/private properties:')
-        // Note: r3f-forcegraph doesn't expose internal state like __kapsuleInstance
-        const hiddenProps = ['_engine', '_state', '_simulation', '_graphForce', '__graphSimulation']
-        hiddenProps.forEach(p => {
-          console.log(`  ${p}:`, (window as any).__FG[p] !== undefined ? 'EXISTS' : 'undefined')
-        })
-      }, 1000)
-      
-      // PHASE 2: Monitor how ref evolves over time
-      const checkRef = (delay: number, label: string) => {
-        setTimeout(() => {
-          if (!(window as any).__FG) {
-            console.log(`[${label}] window.__FG is undefined`)
-            return
-          }
-          
-          const keys = Object.keys((window as any).__FG)
-          const protoKeys = Object.keys(Object.getPrototypeOf((window as any).__FG) || {})
-          
-          console.log(`=== PHASE 2: Ref Evolution at ${label} ===`)
-          console.log('Direct keys count:', keys.length)
-          console.log('Proto keys count:', protoKeys.length)
-          
-          // Check for any new properties
-          const allCurrentProps = [...keys, ...protoKeys]
-          console.log('All properties:', allCurrentProps)
-          
-          // Try to find simulation
-          if ((window as any).__FG.d3Force) {
-            const linkForce = (window as any).__FG.d3Force('link')
-            console.log('d3Force("link") returns:', linkForce)
-            console.log('Has .alpha() method?', typeof linkForce?.alpha === 'function')
-          }
-        }, delay)
-      }
+          console.log('=== PHASE 1: window.__FG Deep Inspection ===')
+          console.log('1. Basic info:')
+          console.log('  Type:', typeof (window as any).__FG)
+          console.log('  Constructor:', (window as any).__FG?.constructor?.name)
 
-      // Check at multiple intervals
-      checkRef(100, '100ms')
-      checkRef(500, '500ms')
-      checkRef(1000, '1s')
-      checkRef(2000, '2s')
-      checkRef(5000, '5s')
-      
-      // PHASE 3: Test force configuration and simulation methods
-      setTimeout(() => {
-        console.log('=== PHASE 3: Force & Simulation Testing ===')
-        
-        if (!(window as any).__FG) {
-          console.log('ERROR: window.__FG is undefined')
-          return
-        }
-        
-        console.log('1. Testing d3Force method:')
-        const d3ForceMethod = (window as any).__FG.d3Force
-        console.log('  d3Force type:', typeof d3ForceMethod)
-        console.log('  d3Force toString:', d3ForceMethod?.toString?.())
-        
-        console.log('2. Testing force retrieval:')
-        const forces = ['link', 'charge', 'center', 'x', 'y', 'z', 'collide']
-        forces.forEach(forceName => {
-          try {
-            const force = (window as any).__FG.d3Force?.(forceName)
-            console.log(`  Force "${forceName}":`, force)
-            console.log(`    Type:`, typeof force)
-            console.log(`    Has strength?:`, typeof force?.strength === 'function')
-            console.log(`    Has alpha?:`, typeof force?.alpha === 'function')
-          } catch (e) {
-            console.log(`  Force "${forceName}": ERROR -`, (e as Error).message)
+          console.log('2. Direct properties:')
+          console.log('  Object.keys:', Object.keys((window as any).__FG || {}))
+          console.log(
+            '  Object.getOwnPropertyNames:',
+            Object.getOwnPropertyNames((window as any).__FG || {})
+          )
+
+          console.log('3. Prototype chain:')
+          let proto = Object.getPrototypeOf((window as any).__FG)
+          let level = 0
+          while (proto && level < 5) {
+            console.log(`  Level ${level}:`, Object.getOwnPropertyNames(proto))
+            proto = Object.getPrototypeOf(proto)
+            level++
           }
-        })
-        
-        console.log('3. Testing simulation control methods:')
-        try {
-          console.log('  d3ReheatSimulation result:', (window as any).__FG.d3ReheatSimulation?.())
-          console.log('  tickFrame result:', (window as any).__FG.tickFrame?.())
-          console.log('  resetCountdown result:', (window as any).__FG.resetCountdown?.())
-        } catch (e) {
-          console.log('  Simulation control ERROR:', (e as Error).message)
-        }
-        
-        console.log('4. Looking for simulation via d3Force:')
-        // Sometimes d3Force() with no args returns the simulation
-        try {
-          const noArgResult = (window as any).__FG.d3Force?.()
-          console.log('  d3Force() no args:', noArgResult)
-          console.log('  Has .alpha()?:', typeof noArgResult?.alpha === 'function')
-          console.log('  Has .nodes()?:', typeof noArgResult?.nodes === 'function')
-        } catch (e) {
-          console.log('  d3Force() no args ERROR:', (e as Error).message)
-        }
-        
-        // PHASE 5: Alternative access attempts
-        console.log('5. Alternative access attempts:')
-        
-        // Check THREE.Group properties (ThreeForceGraph extends Group)
-        console.log('  Is THREE.Group?', (window as any).__FG instanceof (window as any).THREE?.Group)
-        console.log('  Children:', (window as any).__FG.children?.length)
-        
-        // Look for graph data
-        console.log('  graphData method?', typeof (window as any).__FG.graphData)
-        if ((window as any).__FG.graphData) {
-          const data = (window as any).__FG.graphData()
-          console.log('  Graph data:', { nodes: data?.nodes?.length, links: data?.links?.length })
-        }
-        
-        // Check for any property containing 'sim', 'engine', 'force'
-        const allKeys: string[] = []
-        for (let key in (window as any).__FG) {
-          allKeys.push(key)
-        }
-        const relevantKeys = allKeys.filter(k => 
-          k.toLowerCase().includes('sim') || 
-          k.toLowerCase().includes('engine') || 
-          k.toLowerCase().includes('force') ||
-          k.toLowerCase().includes('alpha')
-        )
-        console.log('  Relevant keys:', relevantKeys)
-      }, 3000)
-      
-      // PHASE 2B: Access Simulation Data Correctly
-      setTimeout(() => {
-        console.log('=== PHASE 2B: Accessing Simulation Data ===')
-        
-        if (!(window as any).__FG) {
-          console.log('ERROR: window.__FG is undefined')
-          return
-        }
-        
-        // Test 1: graphData() method
-        console.log('1. Testing graphData() method:')
-        try {
-          const simData = (window as any).__FG.graphData?.()
-          console.log('  graphData() returned:', typeof simData)
-          console.log('  Has nodes?', Array.isArray(simData?.nodes))
-          console.log('  Node count:', simData?.nodes?.length)
-          if (simData?.nodes?.length > 0) {
-            console.log('  First node:', simData.nodes[0])
-            console.log('  Node has x,y,z?', 'x' in simData.nodes[0], 'y' in simData.nodes[0], 'z' in simData.nodes[0])
-            
-            // Check first 3 nodes for positions
-            const sample = simData.nodes.slice(0, 3)
-            sample.forEach((node: any, i: number) => {
-              console.log(`  Node ${i}: id=${node.id}, x=${node.x}, y=${node.y}, z=${node.z}`)
+
+          console.log('4. All enumerable properties:')
+          const allProps: any[] = []
+          for (let key in (window as any).__FG) {
+            allProps.push({
+              key,
+              type: typeof (window as any).__FG[key],
+              value:
+                typeof (window as any).__FG[key] === 'function'
+                  ? '[Function]'
+                  : (window as any).__FG[key],
             })
           }
-        } catch (e) {
-          console.log('  graphData() ERROR:', e)
+          console.table(allProps)
+
+          console.log('5. Method availability:')
+          const methods = [
+            'd3Force',
+            'd3ReheatSimulation',
+            'tickFrame',
+            'emitParticle',
+            'getGraphBbox',
+            'resetCountdown',
+            'refresh',
+          ]
+          methods.forEach((m) => {
+            console.log(`  ${m}:`, typeof (window as any).__FG[m])
+          })
+
+          console.log('6. Hidden/private properties:')
+          // Note: r3f-forcegraph doesn't expose internal state like __kapsuleInstance
+          const hiddenProps = [
+            '_engine',
+            '_state',
+            '_simulation',
+            '_graphForce',
+            '__graphSimulation',
+          ]
+          hiddenProps.forEach((p) => {
+            console.log(`  ${p}:`, (window as any).__FG[p] !== undefined ? 'EXISTS' : 'undefined')
+          })
+        }, 1000)
+
+        // PHASE 2: Monitor how ref evolves over time
+        const checkRef = (delay: number, label: string) => {
+          setTimeout(() => {
+            if (!(window as any).__FG) {
+              console.log(`[${label}] window.__FG is undefined`)
+              return
+            }
+
+            const keys = Object.keys((window as any).__FG)
+            const protoKeys = Object.keys(Object.getPrototypeOf((window as any).__FG) || {})
+
+            console.log(`=== PHASE 2: Ref Evolution at ${label} ===`)
+            console.log('Direct keys count:', keys.length)
+            console.log('Proto keys count:', protoKeys.length)
+
+            // Check for any new properties
+            const allCurrentProps = [...keys, ...protoKeys]
+            console.log('All properties:', allCurrentProps)
+
+            // Try to find simulation
+            if ((window as any).__FG.d3Force) {
+              const linkForce = (window as any).__FG.d3Force('link')
+              console.log('d3Force("link") returns:', linkForce)
+              console.log('Has .alpha() method?', typeof linkForce?.alpha === 'function')
+            }
+          }, delay)
         }
-        
-        // Test 2: THREE.js scene graph
-        console.log('2. Exploring THREE.js scene:')
-        try {
-          const fg = (window as any).__FG
-          console.log('  FG is THREE.Object3D?', fg?.isObject3D)
-          console.log('  FG type:', fg?.type)
-          console.log('  Children count:', fg?.children?.length)
-          if (fg?.children?.length > 0) {
-            console.log('  First child type:', fg.children[0]?.type)
-            console.log('  First child name:', fg.children[0]?.name)
-          }
-        } catch (e) {
-          console.log('  THREE.js exploration ERROR:', e)
-        }
-        
-        // Test 3: getGraphBbox for bounds
-        console.log('3. Testing getGraphBbox:')
-        try {
-          const bbox = (window as any).__FG.getGraphBbox?.()
-          console.log('  Bounding box:', bbox)
-        } catch (e) {
-          console.log('  getGraphBbox ERROR:', e)
-        }
-      }, 2000)
-      
-      // Monitor positions over time
-      const monitorPositions = (delay: number, label: string) => {
+
+        // Check at multiple intervals
+        checkRef(100, '100ms')
+        checkRef(500, '500ms')
+        checkRef(1000, '1s')
+        checkRef(2000, '2s')
+        checkRef(5000, '5s')
+
+        // PHASE 3: Test force configuration and simulation methods
         setTimeout(() => {
-          if (!(window as any).__FG) return
-          
+          console.log('=== PHASE 3: Force & Simulation Testing ===')
+
+          if (!(window as any).__FG) {
+            console.log('ERROR: window.__FG is undefined')
+            return
+          }
+
+          console.log('1. Testing d3Force method:')
+          const d3ForceMethod = (window as any).__FG.d3Force
+          console.log('  d3Force type:', typeof d3ForceMethod)
+          console.log('  d3Force toString:', d3ForceMethod?.toString?.())
+
+          console.log('2. Testing force retrieval:')
+          const forces = ['link', 'charge', 'center', 'x', 'y', 'z', 'collide']
+          forces.forEach((forceName) => {
+            try {
+              const force = (window as any).__FG.d3Force?.(forceName)
+              console.log(`  Force "${forceName}":`, force)
+              console.log(`    Type:`, typeof force)
+              console.log(`    Has strength?:`, typeof force?.strength === 'function')
+              console.log(`    Has alpha?:`, typeof force?.alpha === 'function')
+            } catch (e) {
+              console.log(`  Force "${forceName}": ERROR -`, (e as Error).message)
+            }
+          })
+
+          console.log('3. Testing simulation control methods:')
+          try {
+            console.log('  d3ReheatSimulation result:', (window as any).__FG.d3ReheatSimulation?.())
+            console.log('  tickFrame result:', (window as any).__FG.tickFrame?.())
+            console.log('  resetCountdown result:', (window as any).__FG.resetCountdown?.())
+          } catch (e) {
+            console.log('  Simulation control ERROR:', (e as Error).message)
+          }
+
+          console.log('4. Looking for simulation via d3Force:')
+          // Sometimes d3Force() with no args returns the simulation
+          try {
+            const noArgResult = (window as any).__FG.d3Force?.()
+            console.log('  d3Force() no args:', noArgResult)
+            console.log('  Has .alpha()?:', typeof noArgResult?.alpha === 'function')
+            console.log('  Has .nodes()?:', typeof noArgResult?.nodes === 'function')
+          } catch (e) {
+            console.log('  d3Force() no args ERROR:', (e as Error).message)
+          }
+
+          // PHASE 5: Alternative access attempts
+          console.log('5. Alternative access attempts:')
+
+          // Check THREE.Group properties (ThreeForceGraph extends Group)
+          console.log(
+            '  Is THREE.Group?',
+            (window as any).__FG instanceof (window as any).THREE?.Group
+          )
+          console.log('  Children:', (window as any).__FG.children?.length)
+
+          // Look for graph data
+          console.log('  graphData method?', typeof (window as any).__FG.graphData)
+          if ((window as any).__FG.graphData) {
+            const data = (window as any).__FG.graphData()
+            console.log('  Graph data:', { nodes: data?.nodes?.length, links: data?.links?.length })
+          }
+
+          // Check for any property containing 'sim', 'engine', 'force'
+          const allKeys: string[] = []
+          for (let key in (window as any).__FG) {
+            allKeys.push(key)
+          }
+          const relevantKeys = allKeys.filter(
+            (k) =>
+              k.toLowerCase().includes('sim') ||
+              k.toLowerCase().includes('engine') ||
+              k.toLowerCase().includes('force') ||
+              k.toLowerCase().includes('alpha')
+          )
+          console.log('  Relevant keys:', relevantKeys)
+        }, 3000)
+
+        // PHASE 2B: Access Simulation Data Correctly
+        setTimeout(() => {
+          console.log('=== PHASE 2B: Accessing Simulation Data ===')
+
+          if (!(window as any).__FG) {
+            console.log('ERROR: window.__FG is undefined')
+            return
+          }
+
+          // Test 1: graphData() method
+          console.log('1. Testing graphData() method:')
+          try {
+            const simData = (window as any).__FG.graphData?.()
+            console.log('  graphData() returned:', typeof simData)
+            console.log('  Has nodes?', Array.isArray(simData?.nodes))
+            console.log('  Node count:', simData?.nodes?.length)
+            if (simData?.nodes?.length > 0) {
+              console.log('  First node:', simData.nodes[0])
+              console.log(
+                '  Node has x,y,z?',
+                'x' in simData.nodes[0],
+                'y' in simData.nodes[0],
+                'z' in simData.nodes[0]
+              )
+
+              // Check first 3 nodes for positions
+              const sample = simData.nodes.slice(0, 3)
+              sample.forEach((node: any, i: number) => {
+                console.log(`  Node ${i}: id=${node.id}, x=${node.x}, y=${node.y}, z=${node.z}`)
+              })
+            }
+          } catch (e) {
+            console.log('  graphData() ERROR:', e)
+          }
+
+          // Test 2: THREE.js scene graph
+          console.log('2. Exploring THREE.js scene:')
+          try {
+            const fg = (window as any).__FG
+            console.log('  FG is THREE.Object3D?', fg?.isObject3D)
+            console.log('  FG type:', fg?.type)
+            console.log('  Children count:', fg?.children?.length)
+            if (fg?.children?.length > 0) {
+              console.log('  First child type:', fg.children[0]?.type)
+              console.log('  First child name:', fg.children[0]?.name)
+            }
+          } catch (e) {
+            console.log('  THREE.js exploration ERROR:', e)
+          }
+
+          // Test 3: getGraphBbox for bounds
+          console.log('3. Testing getGraphBbox:')
+          try {
+            const bbox = (window as any).__FG.getGraphBbox?.()
+            console.log('  Bounding box:', bbox)
+          } catch (e) {
+            console.log('  getGraphBbox ERROR:', e)
+          }
+        }, 2000)
+
+        // Monitor positions over time
+        const monitorPositions = (delay: number, label: string) => {
+          setTimeout(() => {
+            if (!(window as any).__FG) return
+
+            try {
+              const simData = (window as any).__FG.graphData?.()
+              if (simData?.nodes?.length > 0) {
+                const sample = simData.nodes.slice(0, 3)
+                console.log(`=== Position Monitor at ${label} ===`)
+                sample.forEach((node: any) => {
+                  console.log(
+                    `Node ${node.id}: x=${node.x?.toFixed(2)}, y=${node.y?.toFixed(2)}, z=${node.z?.toFixed(2)}`
+                  )
+                })
+              }
+            } catch (e) {
+              console.log(`Position monitor error at ${label}:`, e)
+            }
+          }, delay)
+        }
+
+        // Monitor at different times
+        monitorPositions(3000, '3s')
+        monitorPositions(4000, '4s')
+        monitorPositions(5000, '5s')
+
+        // PHASE 4: Force Simulation Activation
+        setTimeout(() => {
+          console.log('=== PHASE 4: Force Simulation Activation ===')
+
+          if (!(window as any).__FG) {
+            console.log('ERROR: window.__FG is undefined')
+            return
+          }
+
+          // Test 1: Add positional forces to spread nodes
+          console.log('1. Adding positional forces to spread nodes:')
+          try {
+            // Add weak x,y forces to prevent all nodes at center
+            const xForce = (window as any).__FG.d3Force?.('x', null)
+            const yForce = (window as any).__FG.d3Force?.('y', null)
+            console.log('  Cleared x,y forces')
+
+            // Add collision force to push nodes apart
+            console.log('  Testing collision force...')
+            const hasCollide = (window as any).__FG.d3Force?.('collide')
+            console.log('  Current collide force:', !!hasCollide)
+
+            // Strengthen charge force even more
+            const chargeForce = (window as any).__FG.d3Force?.('charge')
+            if (chargeForce && chargeForce.strength) {
+              chargeForce.strength(-800) // Very strong repulsion
+              console.log('  Increased charge force strength to -800')
+            }
+
+            // Reheat after force changes
+            console.log('%c[REHEAT] After force modifications', 'color: green; font-weight: bold')
+            ;(window as any).__FG.d3ReheatSimulation?.()
+
+            // Force many ticks
+            const maxTicks = 20 // perf cap
+            for (let i = 0; i < maxTicks; i++) {
+              ;(window as any).__FG.tickFrame?.()
+            }
+            console.log(`  Forced ${maxTicks} additional ticks`)
+          } catch (e) {
+            console.log('  Force modification ERROR:', e)
+          }
+
+          // Test 2: Manual node position spreading
+          console.log('2. Testing manual node spreading:')
           try {
             const simData = (window as any).__FG.graphData?.()
             if (simData?.nodes?.length > 0) {
-              const sample = simData.nodes.slice(0, 3)
-              console.log(`=== Position Monitor at ${label} ===`)
-              sample.forEach((node: any) => {
-                console.log(`Node ${node.id}: x=${node.x?.toFixed(2)}, y=${node.y?.toFixed(2)}, z=${node.z?.toFixed(2)}`)
+              console.log('  Current first 3 nodes:')
+              simData.nodes.slice(0, 3).forEach((n: any) => {
+                console.log(`    ${n.id}: x=${n.x}, y=${n.y}, z=${n.z}`)
               })
-            }
-          } catch (e) {
-            console.log(`Position monitor error at ${label}:`, e)
-          }
-        }, delay)
-      }
-      
-      // Monitor at different times
-      monitorPositions(3000, '3s')
-      monitorPositions(4000, '4s')
-      monitorPositions(5000, '5s')
-      
-      // PHASE 4: Force Simulation Activation
-      setTimeout(() => {
-        console.log('=== PHASE 4: Force Simulation Activation ===')
-        
-        if (!(window as any).__FG) {
-          console.log('ERROR: window.__FG is undefined')
-          return
-        }
-        
-        // Test 1: Add positional forces to spread nodes
-        console.log('1. Adding positional forces to spread nodes:')
-        try {
-          // Add weak x,y forces to prevent all nodes at center
-          const xForce = (window as any).__FG.d3Force?.('x', null)
-          const yForce = (window as any).__FG.d3Force?.('y', null)
-          console.log('  Cleared x,y forces')
-          
-          // Add collision force to push nodes apart
-          console.log('  Testing collision force...')
-          const hasCollide = (window as any).__FG.d3Force?.('collide')
-          console.log('  Current collide force:', !!hasCollide)
-          
-          // Strengthen charge force even more
-          const chargeForce = (window as any).__FG.d3Force?.('charge')
-          if (chargeForce && chargeForce.strength) {
-            chargeForce.strength(-800) // Very strong repulsion
-            console.log('  Increased charge force strength to -800')
-          }
-          
-          // Reheat after force changes
-          console.log('%c[REHEAT] After force modifications', 'color: green; font-weight: bold')
-          ;(window as any).__FG.d3ReheatSimulation?.()
-          
-          // Force many ticks
-          const maxTicks = 20 // perf cap
-          for (let i = 0; i < maxTicks; i++) {
-            (window as any).__FG.tickFrame?.()
-          }
-          console.log(`  Forced ${maxTicks} additional ticks`)
-        } catch (e) {
-          console.log('  Force modification ERROR:', e)
-        }
-        
-        // Test 2: Manual node position spreading
-        console.log('2. Testing manual node spreading:')
-        try {
-          const simData = (window as any).__FG.graphData?.()
-          if (simData?.nodes?.length > 0) {
-            console.log('  Current first 3 nodes:')
-            simData.nodes.slice(0, 3).forEach((n: any) => {
-              console.log(`    ${n.id}: x=${n.x}, y=${n.y}, z=${n.z}`)
-            })
-            
-            // Check if all at origin
-            const allAtOrigin = simData.nodes.every((n: any) => 
-              n.x === 0 && n.y === 0 && n.z === 0
-            )
-            console.log('  All nodes at origin?', allAtOrigin)
-            
-            if (allAtOrigin) {
-              console.log('  Manually spreading nodes...')
-              // Spread nodes in a sphere
-              simData.nodes.forEach((node: any, i: number) => {
-                const angle1 = (i / simData.nodes.length) * Math.PI * 2
-                const angle2 = (i / simData.nodes.length) * Math.PI
-                const radius = 100
-                node.x = radius * Math.sin(angle2) * Math.cos(angle1)
-                node.y = radius * Math.sin(angle2) * Math.sin(angle1)
-                node.z = radius * Math.cos(angle2)
-              })
-              
-              // Update graph with new positions
-              ;(window as any).__FG.graphData?.(simData)
-              console.log('  Applied manual spreading')
-              
-              // Reheat and tick
-              ;(window as any).__FG.d3ReheatSimulation?.()
-              const maxTicks = 20 // perf cap
-              for (let i = 0; i < maxTicks; i++) {
-                (window as any).__FG.tickFrame?.()
+
+              // Check if all at origin
+              const allAtOrigin = simData.nodes.every(
+                (n: any) => n.x === 0 && n.y === 0 && n.z === 0
+              )
+              console.log('  All nodes at origin?', allAtOrigin)
+
+              if (allAtOrigin) {
+                console.log('  Manually spreading nodes...')
+                // Spread nodes in a sphere
+                simData.nodes.forEach((node: any, i: number) => {
+                  const angle1 = (i / simData.nodes.length) * Math.PI * 2
+                  const angle2 = (i / simData.nodes.length) * Math.PI
+                  const radius = 100
+                  node.x = radius * Math.sin(angle2) * Math.cos(angle1)
+                  node.y = radius * Math.sin(angle2) * Math.sin(angle1)
+                  node.z = radius * Math.cos(angle2)
+                })
+
+                // Update graph with new positions
+                ;(window as any).__FG.graphData?.(simData)
+                console.log('  Applied manual spreading')
+
+                // Reheat and tick
+                ;(window as any).__FG.d3ReheatSimulation?.()
+                const maxTicks = 20 // perf cap
+                for (let i = 0; i < maxTicks; i++) {
+                  ;(window as any).__FG.tickFrame?.()
+                }
               }
             }
+          } catch (e) {
+            console.log('  Manual spreading ERROR:', e)
           }
-        } catch (e) {
-          console.log('  Manual spreading ERROR:', e)
-        }
-        
-        // Test 3: Use refresh method
-        console.log('3. Testing refresh method:')
-        try {
-          ;(window as any).__FG.refresh?.()
-          console.log('  Called refresh()')
-        } catch (e) {
-          console.log('  refresh() ERROR:', e)
-        }
-      }, 4500) // Run after other phases complete
+
+          // Test 3: Use refresh method
+          console.log('3. Testing refresh method:')
+          try {
+            ;(window as any).__FG.refresh?.()
+            console.log('  Called refresh()')
+          } catch (e) {
+            console.log('  refresh() ERROR:', e)
+          }
+        }, 4500) // Run after other phases complete
       }
 
       // TEMP diagnostics: kick simulation each second and log alpha
       // REMOVED: Per-second timer to improve performance
       // intervalId = setInterval(() => { ... }, 1000)
     }
-    
+
     setupWindowFG()
-    
+
     return () => {
       // Cleanup removed since intervalId timer was disabled
       // if (intervalId) clearInterval(intervalId)
@@ -789,12 +861,13 @@ export default function CrypticAnimusScene({
           hasExistingThreeObj: !!node.__threeObj,
           spriteType: sprite?.constructor?.name,
           materialType: sprite?.material?.constructor?.name,
-          materialColor: sprite?.material?.color?.getHexString?.()
+          materialColor: sprite?.material?.color?.getHexString?.(),
         })
         if (sprite?.material) {
           console.assert(
             sprite.material.constructor.name === 'SpriteMaterial',
-            '[nodeThreeObject] Expected SpriteMaterial, got:', sprite.material.constructor.name
+            '[nodeThreeObject] Expected SpriteMaterial, got:',
+            sprite.material.constructor.name
           )
         }
       }
@@ -812,7 +885,7 @@ export default function CrypticAnimusScene({
         obj.material.opacity = 1
         obj.material.needsUpdate = true
       }
-      
+
       // DEV-ONLY PROBE
       if (process.env.NODE_ENV !== 'production') {
         console.log('[PROBE] nodeThreeObjectExtend:', {
@@ -820,7 +893,7 @@ export default function CrypticAnimusScene({
           objType: obj?.constructor?.name,
           materialType: obj?.material?.constructor?.name,
           materialColorBefore: obj?.material?.color?.getHexString?.(),
-          hasThreeObj: !!node?.__threeObj
+          hasThreeObj: !!node?.__threeObj,
         })
       }
     }
@@ -830,7 +903,11 @@ export default function CrypticAnimusScene({
   // Handle node click - memoized
   const handleNodeClick = useCallback(
     (node: NodeObject<any>) => {
-      console.log('[PROPS] CrypticAnimusScene.handleNodeClick:', { nodeId: node.id, hasRef: !!fgRef.current, timestamp: Date.now() })
+      console.log('[PROPS] CrypticAnimusScene.handleNodeClick:', {
+        nodeId: node.id,
+        hasRef: !!fgRef.current,
+        timestamp: Date.now(),
+      })
       // Use imperative selectNode method on adapter ref
       if (fgRef.current?.selectNode) {
         console.log('[PROPS] Calling imperative selectNode:', { nodeId: node.id })
@@ -848,7 +925,11 @@ export default function CrypticAnimusScene({
   // Handle node hover - memoized to prevent re-creating function
   const handleNodeHover = useCallback(
     (node: any) => {
-      console.log('[PROPS] CrypticAnimusScene.handleNodeHover:', { nodeId: node?.id || null, hasRef: !!fgRef.current, timestamp: Date.now() })
+      console.log('[PROPS] CrypticAnimusScene.handleNodeHover:', {
+        nodeId: node?.id || null,
+        hasRef: !!fgRef.current,
+        timestamp: Date.now(),
+      })
       // Use imperative highlightNode method on adapter ref
       if (fgRef.current?.highlightNode) {
         console.log('[PROPS] Calling imperative highlightNode:', { nodeId: node?.id || null })
@@ -1056,7 +1137,8 @@ export default function CrypticAnimusScene({
         linkColor={getLinkColor}
         linkWidth={getLinkWidth}
         linkCurvature={0.2}
-        cooldownTime={Infinity}
+        warmupTicks={60}
+        cooldownTicks={180}
         nodeVisibility={nodeVisibility} // Use memoized callback
         linkVisibility={linkVisibility} // Use memoized callback
         linkOpacity={getLinkOpacity}

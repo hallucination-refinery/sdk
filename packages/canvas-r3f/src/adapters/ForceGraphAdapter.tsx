@@ -142,8 +142,8 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   // console.log('[FGAdapter] mounted')  // COMMENTED OUT: Render-phase console.log
   // console.log('[FGAdapter] ref type:', ref)  // COMMENTED OUT: Render-phase console.log
   // console.log('[FGAdapter] typeof ref:', typeof ref)  // COMMENTED OUT: Render-phase console.log
-  
-  const { graphData, dataVersion = 0, disableLinkForce, activeCategories, activeTags, ...restProps } = props
+
+  const { graphData, disableLinkForce, activeCategories, activeTags, ...restProps } = props
   const internalRef = React.useRef<any>(null)
   const highlightedNodeRef = React.useRef<string | null>(null)
   const selectedNodesRef = React.useRef<Set<string>>(new Set())
@@ -151,9 +151,9 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   const hasReheatedRef = React.useRef(false)
   const originalColorsRef = React.useRef<Map<string, number>>(new Map())
   const safeGraphData = useMemo(() => {
-    // console.log('[ForceGraphAdapter] Creating safe data for version:', dataVersion)  // COMMENTED OUT: Render-phase console.log
-    return structuredClone(graphData)
-  }, [graphData, dataVersion]) // Both dependencies for proper tracking
+    // Preserve identity to avoid simulation resets
+    return graphData
+  }, [graphData])
   // --- freeze-crash guard ----------------------------------------------
   useEffect(() => {
     if (disableLinkForce && internalRef.current) {
@@ -161,16 +161,19 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     }
   }, [disableLinkForce])
   // ----------------------------------------------------------------------
-  
+
   // Imperative visual feedback methods with material mutations
   const highlightNode = React.useCallback((nodeId: string | null) => {
-    console.log('[STYLE] ForceGraphAdapter.highlightNode called:', { nodeId, timestamp: Date.now() })
+    console.log('[STYLE] ForceGraphAdapter.highlightNode called:', {
+      nodeId,
+      timestamp: Date.now(),
+    })
     const graphData = internalRef.current?.graphData?.()
     if (!graphData || !graphData.nodes) {
       console.log('[STYLE] highlightNode early return - no graphData')
       return
     }
-    
+
     // Reset previous highlight
     if (highlightedNodeRef.current) {
       const prevNode = graphData.nodes.find((n: any) => n.id === highlightedNodeRef.current)
@@ -187,7 +190,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
         }
       }
     }
-    
+
     // Apply new highlight
     highlightedNodeRef.current = nodeId
     if (nodeId) {
@@ -201,26 +204,29 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
         // Apply yellow highlight
         tintSprite(node.__threeObj.material, 0xffff00)
         console.log('[STYLE] Applied yellow highlight to node:', nodeId)
-        
+
         // DEV-ONLY PROBE
         if (process.env.NODE_ENV !== 'production') {
           const material = node.__threeObj.material
           console.assert(
             material instanceof THREE.SpriteMaterial,
-            '[highlightNode] Expected SpriteMaterial, got:', material?.constructor?.name
+            '[highlightNode] Expected SpriteMaterial, got:',
+            material?.constructor?.name
           )
           console.log('[PROBE] highlightNode:', {
             nodeId,
             materialType: material?.constructor?.name,
-            colorAfter: material?.color?.getHexString?.()
+            colorAfter: material?.color?.getHexString?.(),
           })
           if (material?.color?.getHex?.() !== 0xffff00) {
-            throw new Error(`[highlightNode] Color mutation failed! Expected 0xffff00, got ${material?.color?.getHex?.()}`)
+            throw new Error(
+              `[highlightNode] Color mutation failed! Expected 0xffff00, got ${material?.color?.getHex?.()}`
+            )
           }
         }
       }
     }
-    
+
     // Force refresh
     if (internalRef.current?.refresh) {
       internalRef.current.refresh()
@@ -228,21 +234,25 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
   }, [])
 
   const selectNode = React.useCallback((nodeId: string, toggle: boolean = true) => {
-    console.log('[STYLE] ForceGraphAdapter.selectNode called:', { nodeId, toggle, timestamp: Date.now() })
+    console.log('[STYLE] ForceGraphAdapter.selectNode called:', {
+      nodeId,
+      toggle,
+      timestamp: Date.now(),
+    })
     const graphData = internalRef.current?.graphData?.()
     if (!graphData || !graphData.nodes) {
       console.log('[STYLE] selectNode early return - no graphData')
       return
     }
-    
+
     const node = graphData.nodes.find((n: any) => n.id === nodeId)
     if (!node?.__threeObj?.material) {
       console.log('[STYLE] selectNode early return - no __threeObj or material for node:', nodeId)
       return
     }
-    
+
     const wasSelected = selectedNodesRef.current.has(nodeId)
-    
+
     // Toggle selection state
     if (toggle && wasSelected) {
       selectedNodesRef.current.delete(nodeId)
@@ -265,27 +275,30 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
       tintSprite(node.__threeObj.material, 0xffa500)
       console.log('[STYLE] Applied orange selection to node:', nodeId)
     }
-    
+
     // DEV-ONLY PROBE
     if (process.env.NODE_ENV !== 'production') {
       const material = node.__threeObj.material
       const isNowSelected = selectedNodesRef.current.has(nodeId)
       console.assert(
         material instanceof THREE.SpriteMaterial,
-        '[selectNode] Expected SpriteMaterial, got:', material?.constructor?.name
+        '[selectNode] Expected SpriteMaterial, got:',
+        material?.constructor?.name
       )
       console.log('[PROBE] selectNode:', {
         nodeId,
         wasSelected,
         isNowSelected,
         materialType: material?.constructor?.name,
-        colorAfter: material?.color?.getHexString?.()
+        colorAfter: material?.color?.getHexString?.(),
       })
       if (isNowSelected && material?.color?.getHex?.() !== 0xffa500) {
-        throw new Error(`[selectNode] Color mutation failed! Expected 0xffa500 for selected, got ${material?.color?.getHex?.()}`)
+        throw new Error(
+          `[selectNode] Color mutation failed! Expected 0xffa500 for selected, got ${material?.color?.getHex?.()}`
+        )
       }
     }
-    
+
     // Force refresh
     if (internalRef.current?.refresh) {
       internalRef.current.refresh()
@@ -298,7 +311,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     return {
       ...internalRef.current,
       highlightNode,
-      selectNode
+      selectNode,
     }
   }, [highlightNode, selectNode])
 
@@ -315,49 +328,31 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     }
   }, [ref])
 
-  // Critical: Call refresh() when data changes to trigger re-render
+  // One-time refresh on mount to ensure initial render
   useEffect(() => {
-    if (internalRef.current) {
-      // Edge case: Check if data exists and has nodes before calling refresh
-      if (!safeGraphData || !safeGraphData.nodes || safeGraphData.nodes.length === 0) {
-        console.log('[FGAdapter] Skipping refresh - no data or empty nodes array')
-        return
-      }
-      
-      console.log('[FGAdapter] Data changed, calling refresh()', {
-        nodeCount: safeGraphData.nodes.length,
-        linkCount: safeGraphData.links?.length || 0
-      })
-      
-      // Check if refresh method exists (it should according to r3f-forcegraph API)
-      if (typeof internalRef.current.refresh === 'function') {
-        try {
-          internalRef.current.refresh()
-          console.log('[FGAdapter] Called ref.current.refresh() successfully')
-          
-          // Also update window.__FG reference in case it changed
-          if ((window as any).__FG !== internalRef.current) {
-            (window as any).__FG = internalRef.current
-            console.log('[FGAdapter] Updated window.__FG with latest ref.current')
-          }
-        } catch (error) {
-          console.error('[FGAdapter] Error calling refresh():', error)
+    if (!internalRef.current) return
+    if (!safeGraphData || !safeGraphData.nodes || safeGraphData.nodes.length === 0) return
+    if (typeof internalRef.current.refresh === 'function') {
+      try {
+        internalRef.current.refresh()
+        console.log('[FGAdapter] Initial refresh() on mount completed')
+        if ((window as any).__FG !== internalRef.current) {
+          ;(window as any).__FG = internalRef.current
         }
-      } else {
-        console.warn('[FGAdapter] refresh() method not found on ref.current')
-        console.log('[FGAdapter] Available methods:', Object.keys(internalRef.current || {}))
+      } catch (error) {
+        console.error('[FGAdapter] Initial refresh() error:', error)
       }
     }
-  }, [safeGraphData])
+  }, [])
 
   // One-shot reheat on lens change with hasBurstRef gate
   useEffect(() => {
     if (!internalRef.current) return
-    
+
     // Check if lens (activeCategories or activeTags) changed
     const categoriesChanged = activeCategories !== prevLensRef.current.categories
     const tagsChanged = activeTags !== prevLensRef.current.tags
-    
+
     if ((categoriesChanged || tagsChanged) && !hasReheatedRef.current) {
       // Trigger reheat with proper gating
       if (internalRef.current.d3ReheatSimulation) {
@@ -367,22 +362,22 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
           if (graphData && graphData.nodes && graphData.nodes.length > 0) {
             internalRef.current.d3ReheatSimulation()
             hasReheatedRef.current = true
-            
+
             // DEV-ONLY PROBE
             if (process.env.NODE_ENV !== 'production') {
               console.log('[PROBE] Lens change triggered d3ReheatSimulation:', {
                 categoriesChanged,
                 tagsChanged,
-                nodeCount: graphData.nodes.length
+                nodeCount: graphData.nodes.length,
               })
             }
             console.log('[STYLE] Lens change detected, simulation reheated:', {
               categoriesChanged,
               tagsChanged,
               nodeCount: graphData.nodes.length,
-              timestamp: Date.now()
+              timestamp: Date.now(),
             })
-            
+
             // Reset flag after a delay to allow future reheats
             setTimeout(() => {
               hasReheatedRef.current = false
@@ -392,7 +387,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
           console.error('[FGAdapter] Error calling d3ReheatSimulation:', error)
         }
       }
-      
+
       // Update prev refs
       prevLensRef.current = { categories: activeCategories, tags: activeTags }
     }
@@ -404,7 +399,7 @@ const ForceGraphAdapter = forwardRef<ForceGraphAdapterRef, ForceGraphAdapterProp
     <ForceGraph3D
       ref={internalRef}
       {...restProps} /* all user props EXCEPT graphData */
-      graphData={safeGraphData} /* deep‑cloned, unfrozen data       */
+      graphData={safeGraphData}
       // Removed freeze guards to allow natural simulation
       // cooldownTime={Infinity} - was preventing time-based stopping
       // cooldownTicks={0} - was stopping after 1 tick
