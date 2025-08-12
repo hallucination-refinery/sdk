@@ -10,6 +10,11 @@ export const selectSingleSelectedNode = (state: UIState): string | null => {
 }
 
 // CRITICAL FIX: Connect the selector to the actual store
-export const useSingleSelectedNode = () => {
-  return useUIStore(selectSingleSelectedNode)
+export const useSingleSelectedNode = (): string | null => {
+  const { selectedNodeIds } = useUIStore()
+  if (selectedNodeIds.size === 1) {
+    const value = selectedNodeIds.values().next().value
+    return value !== undefined ? value : null
+  }
+  return null
 }
