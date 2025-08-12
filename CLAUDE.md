@@ -4,11 +4,11 @@ Act as the **main execution thread**: keep the _desired end-state_ front-of-mind
 
 ---
 
-**Scratchpad:** @docs/tmp-groupchat/phase-2/final-stretch/investigation-scratchpad.md
-
 # WARNING
 
-You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below. **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
+1. _ONLY if you do not already have one_, create a new scratchpad in @docs/pond-demo-aug14/scratchpads (FORMAT: [YOURNAME]-[##]-scratchpad.md)
+2. You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below.
+3. **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your assigned scratchpad. Any divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
 
 # REGARDING DOCUMENTATION
 
