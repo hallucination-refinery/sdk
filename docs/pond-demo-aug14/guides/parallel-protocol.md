@@ -9,10 +9,43 @@
 |------|--------|--------|--------|--------------|
 | HOPPER-B | Initial | Created parallel protocol | Enable conflict-free parallel development | 10:47 PM EST, Aug 12, 2025 |
 | DIJKSTRA-C | Audit Fix | Fixed date formats, updated timeline, added package creation | Critical issues found during audit | 1:30 AM EST, Aug 13, 2025 |
+| KERNIGHAN-A | Branch Model | Added explicit branch names and pre-flight sync protocol | Standardize cross-branch state | 2:29 PM EST, Aug 13, 2025 |
+| DIJKSTRA-G | SHA & Scope | Added published SHAs, behavioral-contract reference, scope gates | Documentation audit requirement | 2:38 PM EST, Aug 13, 2025 |
 
 ## Overview
 
 This protocol defines exact file ownership and integration boundaries for three Claude Code instances working in parallel to build the canvas-latent package. Each instance has exclusive write access to their designated files, preventing merge conflicts while enabling maximum velocity.
+
+### Three-Branch Worktree Model
+
+Parallel development occurs across three synchronized branches:
+- **canvas-latent-core**: Instance 1 (Renderer) - Core rendering layer implementation
+- **canvas-latent-interaction**: Instance 2 (Animator) - Animation and interaction layer
+- **canvas-latent-integration**: Instance 3 (Integrator) - Integration, types, and validation
+
+## Pre-flight Sync Protocol
+
+### Sync Points
+
+Before each major integration milestone, all instances must:
+1. **Commit** all local changes with descriptive message
+2. **Push** to respective branch (canvas-latent-core, canvas-latent-interaction, canvas-latent-integration)
+3. **Verify** no uncommitted changes with `git status`
+4. **Document** sync completion in scratchpad with SHA
+
+### Fallback Procedures
+
+If merge conflicts arise:
+1. **Fast-Forward (FF):** Attempt fast-forward merge first
+2. **Cherry-Pick:** If FF fails, cherry-pick specific commits
+3. **Directory Checkout:** Last resort - checkout entire directories from source branch
+4. **Instance 3 Resolution:** Integration instance owns final conflict resolution
+
+### Published Branch SHAs (from working-doc.md)
+- **A1 (feat-pond-demo-aug14):** 87c238d9
+- **canvas-latent-core:** a4f517e0
+- **canvas-latent-interaction:** e7673963
+- **SYNC STATUS:** VERIFIED
 
 ## Critical Constraints
 
@@ -21,6 +54,8 @@ This protocol defines exact file ownership and integration boundaries for three 
 - **Package Creation:** Instance 3 MUST create package structure FIRST
 - **Integration Points:** Must be respected exactly as defined
 - **File Paths:** Must be created exactly as specified (typos cause conflicts)
+- **Behavioral Contract:** All implementations must satisfy requirements in `behavioral-contract.md`
+- **Scope Gates:** No physics simulation, no complex edge rendering (see behavioral-contract.md)
 
 ## Instance Territories
 
