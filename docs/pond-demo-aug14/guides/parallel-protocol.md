@@ -178,7 +178,8 @@ Instance 3 (types) → Instance 1 (core) → Instance 2 (animations)
 
 ### Milestone 1: Structure (3:00 AM)
 - [ ] Instance 3: All type definitions complete
-- [ ] Instance 1: Core interfaces defined
+- [x] Instance 1: Core interfaces defined
+- [x] Instance 1: Core Renderer Surfaces (scaffolded)
 - [ ] Instance 2: Animation contracts established
 - [ ] All: Basic file structure created
 
