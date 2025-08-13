@@ -210,3 +210,15 @@ Following infrastructure setup, three Claude Code instances will execute in para
 - Target: 300-1000 nodes at 60fps on M1 Pro
 - Memory budget: Keep under 200MB for smooth recording
 - Interaction latency: <16ms for hover feedback
+
+---
+
+## MILESTONES
+
+### Milestone 0: Types landed (12:43 PM EST, 13-08-2025)
+- ✅ NodeData type verified with required position field  
+- ✅ AnimationConfig fields match documentation  
+- ✅ CanvasLatentProps preserves all prop names from ForceGraphAdapterProps  
+- ✅ Constants values within documented ranges (450ms animations, correct color codes)  
+- ✅ Index re-exports both types and constants correctly  
+- **Audited by:** DIJKSTRA-D
