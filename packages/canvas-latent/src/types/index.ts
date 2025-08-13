@@ -18,6 +18,12 @@ export interface AnimationConfig {
   fadeTransition: number;
 }
 
+export interface LinkData {
+  source: string;
+  target: string;
+  [key: string]: unknown;
+}
+
 export interface CanvasLatentProps {
   ref?: React.Ref<HTMLDivElement>;
   graphData: { nodes: NodeData[]; links: LinkData[] };
@@ -70,11 +76,5 @@ export interface CanvasLatentProps {
   activeTags?: Set<string>;
   
   // Additional props for extensibility
-  [key: string]: unknown;
-}
-
-export interface LinkData {
-  source: string;
-  target: string;
   [key: string]: unknown;
 }
