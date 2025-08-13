@@ -2,10 +2,12 @@ import type { NodeData } from '../types';
 import type { TweenRegistry } from './TweenRegistry';
 import type * as THREE from 'three';
 
+// NodeAttributeManager will be imported from core when available
+// For now, defining the expected interface
 export interface NodeAttributeManager {
-  updatePosition(nodeId: string, x: number, y: number, z: number): void;
-  updateColor(nodeId: string, color: string): void;
-  updateOpacity(nodeId: string, opacity: number): void;
+  setPosition(nodeId: string, position: THREE.Vector3): void;
+  setOpacity(nodeId: string, opacity: number): void;
+  setColor(nodeId: string, color: THREE.Color): void;
   setSelected(nodeId: string, selected: boolean): void;
 }
 
@@ -18,4 +20,6 @@ export interface BurstAnimationConfig {
   duration?: number;
 }
 
-export type RunBurst = (config: BurstAnimationConfig) => void;
+export function runBurst(_config: BurstAnimationConfig): void {
+  // Interface only - no implementation logic
+}

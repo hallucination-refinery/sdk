@@ -23,6 +23,4 @@ export interface TweenRegistry {
   tick(now: number): void;
   
   cancel(id: string): void;
-  
-  runBurst(nodes: import('../types').NodeData[]): void;
 }
