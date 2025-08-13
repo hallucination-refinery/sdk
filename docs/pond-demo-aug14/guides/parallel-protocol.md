@@ -203,51 +203,6 @@ Instance 3 (types) → Instance 1 (core) → Instance 2 (animations)
 | src/constants.ts | Instance 3 | All | Lock values by 11:30 PM |
 | src/core/NodeAttributeManager.ts | Instance 1 | Instance 2 | Interface locked by 11:45 PM |
 
-## Core Renderer Surfaces (scaffolded)
-
-### NodeAttributeManager API Conformance
-**Audit Completed:** 3:06 PM EST, Aug 13, 2025
-
-**Methods (Confirmed Present):**
-- `setPosition(nodeId: string, v: THREE.Vector3)` - Updates node position, marks dirty range
-- `setOpacity(nodeId: string, a: number)` - Updates opacity attribute
-- `setColor(nodeId: string, c: THREE.Color)` - Updates instance color RGB values
-- `setSelected(nodeId: string, sel: boolean)` - Updates selection state
-- `flush()` - Applies dirty ranges to GPU buffers (TODO implementation)
-- `dispose()` - Cleans up maps and resources
-- `indexOf(nodeId: string): number` - Returns instance index for nodeId
-- `idAt(idx: number): string` - Returns nodeId at instance index
-
-**Internal Data Structures (Confirmed):**
-- `nodeToIndex` / `indexToNode` - Bidirectional id↔index mapping
-- `instanceColor` (Float32Array) - RGB color storage
-- `aOpacity` (Float32Array) - Opacity attribute storage
-- `selected` (Uint8Array) - Selection state storage
-- Dirty-range tracking per attribute with header documentation
-
-**Performance Notes:**
-- [PERF] tags on all hot paths (setters, indexOf)
-- No per-frame allocations in setter methods
-- Pre-allocated typed arrays for attributes
-- TODO: instanceMatrix write-path implementation
-
-### InstancedNodeMesh Factory
-**Signature:** `static build(count: number): { mesh: THREE.InstancedMesh; aOpacity: THREE.InstancedBufferAttribute }`
-
-**Implementation Status:**
-- ✓ Factory method returns mesh + aOpacity attribute
-- ✓ Geometry creation with [PERF] balance note
-- ✓ onBeforeCompile TODO for shader injection
-- ✓ InstancedBufferAttribute setup
-
-### Type Integration
-**Source:** integration@87c238d9 (synced in commit a4f517e0)
-**Location:** `packages/canvas-latent/src/types/index.ts`
-
-**Imports Added:**
-- Both Core scaffolds now import `NodeData` from '../types'
-- Types include NodeData, AnimationConfig, CanvasLatentProps
-
 ## Integration Points
 
 ### Milestone 0: Package Initialization (IMMEDIATE - 1:45 AM)
@@ -256,11 +211,19 @@ Instance 3 (types) → Instance 1 (core) → Instance 2 (animations)
 - [ ] Instance 3: Create src/types/index.ts with all interfaces
 - [ ] Instance 3: Create basic directory structure for all instances
 
-### Milestone 1: Structure (3:00 AM)
-- [ ] Instance 3: All type definitions complete
-- [ ] Instance 1: Core interfaces defined
-- [ ] Instance 2: Animation contracts established
-- [ ] All: Basic file structure created
+### Milestone 1: Core & Interaction scaffolds + audits (3:20 PM EST)
+**Published by:** KERNIGHAN-A  
+**Base-of-truth branch:** feat-pond-demo-aug14  
+**Mirror procedure:** All worktrees MUST sync docs/pond-demo-aug14/** from feat-pond-demo-aug14
+
+**Published SHAs:**
+- **A1 (canvas-latent-integration):** 87c238d9 - Types initialization commit
+- **B1 (canvas-latent-core):** 42fbea3d - Core scaffold commit
+- **B2 (canvas-latent-core):** 1429f0cc - Core audit commit
+- **C1 (canvas-latent-interaction):** 7f1775cb - Interaction scaffold commit
+- **C2 (canvas-latent-interaction):** c25810ce - Interaction audit commit
+
+**Status:** COMPLETE - All scaffolds implemented and audited
 
 ### Milestone 2: Implementation (6:00 AM)
 - [ ] Instance 1: Rendering functional
