@@ -17,14 +17,14 @@
 
 ---
 
-## **Last Updated:** Wednesday, 3:15 AM EST, 13-08-2025
+## **Last Updated:** Wednesday, 9:38 AM EST, 13-08-2025
 
 # Executive Summary
 
 Infrastructure phase complete. Three worktrees established on isolated branches at 3:10 AM. Currently in 15-minute transition before parallel implementation kickoff at 3:30 AM. Critical technical decisions remain unresolved, creating implementation risk. ~38 hours until Thursday 5PM deadline.
 
-**Current Phase:** Pre-Implementation Gap (3:10 AM - 3:30 AM)  
-**Next Phase:** Core Implementation Sprint (3:30 AM - 6:00 AM)
+**Current Phase:** Integration & Behavioral Validation (now)  
+**Next Phase:** Polish & Recording (Wednesday afternoon)
 
 ## W - Polished Demo Clip & SDK Status Update
 
@@ -212,6 +212,11 @@ From `behavioral-contract.md`:
 | InstancedMesh Attributes | 1. Separate buffers<br>2. Packed interleaved<br>3. Texture lookup | **Option 1** | Simpler for rapid dev |
 | Animation | 1. Three.js AnimationMixer<br>2. Custom tweening<br>3. Shader morphing | **Option 2** | More control, predictable |
 | Hit Detection | 1. Raycasting<br>2. GPU picking<br>3. Precomputed | **Option 1** | Proven, fast enough for 1K nodes |
+
+### Technical Decisions (LOCKED — 9:38 AM EST, 13-08-2025)
+- InstancedMesh: Separate Float32Array buffers (position, color, alpha, selected)
+- Animation System: Custom tweening with simple easing
+- Hit Detection: Three.js Raycaster
 
 ### Coordination Protocol
 - Instance sync: Every 30 minutes
