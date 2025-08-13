@@ -11,6 +11,7 @@
 | DIJKSTRA-C | Audit Fix | Fixed date formats, updated timeline, added package creation | Critical issues found during audit | 1:30 AM EST, Aug 13, 2025 |
 | KERNIGHAN-A | Branch Model | Added explicit branch names and pre-flight sync protocol | Standardize cross-branch state | 2:29 PM EST, Aug 13, 2025 |
 | DIJKSTRA-G | SHA & Scope | Added published SHAs, behavioral-contract reference, scope gates | Documentation audit requirement | 2:38 PM EST, Aug 13, 2025 |
+| DIJKSTRA-G | SHA Update | Updated SHAs to match actual branch commits (B1/B2, C1/C2) | Cross-branch audit found stale SHAs | 3:48 PM EST, Aug 13, 2025 |
 
 ## Overview
 
@@ -42,10 +43,11 @@ If merge conflicts arise:
 4. **Instance 3 Resolution:** Integration instance owns final conflict resolution
 
 ### Published Branch SHAs (from working-doc.md)
-- **A1 (feat-pond-demo-aug14):** 87c238d9
-- **canvas-latent-core:** a4f517e0
-- **canvas-latent-interaction:** e7673963
-- **SYNC STATUS:** VERIFIED
+- **feat-pond-demo-aug14 (A1):** 87c238d9
+- **canvas-latent-core (B1/B2):** 42fbea3d (scaffold) / 1429f0cc (audit)
+- **canvas-latent-interaction (C1/C2):** 7f1775cb (scaffold) / c25810ce (audit)
+- **canvas-latent-integration:** 87c238d9
+- **SYNC STATUS:** VERIFIED @ 3:48 PM EST Aug 13
 
 ## Critical Constraints
 

@@ -1,9 +1,25 @@
 # DIJKSTRA-G-01 Scratchpad
-**Date/Time:** 2:38 PM EST, 13-08-2025  
+**Date/Time:** 3:48 PM EST, 13-08-2025  
 **Branch:** feat-pond-demo-aug14  
-**Task:** Cross-branch documentation audit
+**Task:** [D2 / AUDIT / 10–15 min] Audit cross-branch documentation
+
+## NEW TASK SESSION - 3:48 PM
 
 ## TASK VERBATIM
+[D2 / AUDIT / 10–15 min] Audit cross-branch documentation: verify SHAs, scope gates, and that all worktrees mirror the base-of-truth docs; fix deltas.
+
+### STEP-BY-STEP:
+1) Cross-check SHAs recorded in base-of-truth docs against actual commits in `canvas-latent-core`, `canvas-latent-interaction`, `canvas-latent-integration`.
+2) Verify **scope gates** (no physics, no edges) and **sync flow** are present and identical in all mirrored docs.
+3) If any branch's `docs/pond-demo-aug14/**` differs from base-of-truth, re-mirror from this branch and commit: `docs(sync): re-mirror base-of-truth docs @<D1_SHA>`.
+4) Add an audit confirmation line to `working-doc.md` with timestamp and "Doc Sync VERIFIED".
+
+### SUCCESS CRITERIA:
+- `parallel-protocol.md` and `working-doc.md` on all branches match the base-of-truth exactly.
+- All recorded SHAs resolve and correspond to the intended commits.
+- Commit: `docs(audit): cross-branch doc sync & scope gates verified`
+
+## PREVIOUS TASK (2:38 PM)
 [DOCS / AUDIT] Cross-branch documentation audit. Verify protocol & working-doc reflect the **three-branch model**, **published SHAs** (A1=87c238d9, core=a4f517e0, interaction=e7673963), **scope gates** (no physics/no edges), and **Phase 2 ACTIVE**; fix deltas; log audit result.
 
 ## CORE PREMISE
@@ -56,7 +72,29 @@ Ensure documentation consistency across three critical files to prevent document
 5. Triple-verify changes ✓
 6. Commit ✓
 
-## AUDIT RESULT
+## NEW AUDIT RESULTS - 3:48 PM
+
+### SHA Verification
+**FOUND DISCREPANCY:** parallel-protocol.md had stale SHAs
+- Listed: a4f517e0 (core), e7673963 (interaction) - OLD
+- Actual: 42fbea3d/1429f0cc (core), 7f1775cb/c25810ce (interaction) - CURRENT
+- **FIXED:** Updated parallel-protocol.md with correct SHAs
+
+### Worktree Doc Sync Status
+- **canvas-latent-core:** ✅ All docs match base-of-truth exactly
+- **canvas-latent-interaction:** ✅ All docs match base-of-truth exactly  
+- **canvas-latent-integration:** ✅ All docs match base-of-truth exactly
+
+### Scope Gates Verification
+- **behavioral-contract.md:** ✅ Contains explicit Scope Gates section
+- **parallel-protocol.md:** ✅ References scope gates and behavioral-contract.md
+
+### Actions Taken
+1. Fixed stale SHAs in parallel-protocol.md
+2. Added audit confirmation to working-doc.md with timestamp
+3. Verified all worktrees have identical docs to base-of-truth
+
+## PREVIOUS AUDIT RESULT (2:38 PM)
 **STATUS:** COMPLETE
 **COMMIT SHA:** 58342a8b
 **COMMIT MESSAGE:** docs(audit): cross-branch doc sync & scope gates verified
