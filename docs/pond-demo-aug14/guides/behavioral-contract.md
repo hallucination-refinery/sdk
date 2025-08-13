@@ -10,6 +10,7 @@
 | BELLARD-A | Initial | Created behavioral contract | Extract formal requirements from working-doc and vision | 8:50 PM EST, 12-08-2025 |
 | DIJKSTRA-A | Audit | Fixed timing errors, added missing context | Verified all claims against source documents | 9:15 PM EST, 12-08-2025 |
 | DIJKSTRA-A | Revision | Replaced defeatist warnings with constructive guidance | Corrected date, added implementation strategy | 9:35 PM EST, Aug 12, 2025 |
+| DIJKSTRA-F | Update | Added Animation Surfaces & FSM section | Document animation interfaces and state machine | 2:17 PM EST, Aug 13, 2025 |
 
 ## Overview
 
@@ -204,6 +205,29 @@ customAttribute.selected // Selection state (0 or 1)
 - [ ] 1000+ nodes at 60fps
 - [ ] GPU instancing for 50k+ nodes
 - [ ] Sub-frame interaction response
+
+## Animation Surfaces & FSM
+
+### Animation System Architecture
+
+**TweenRegistry Interface:**
+- [ ] `add()` method accepts id, updater, duration, easing, onComplete
+- [ ] `tick()` method processes animation frame updates
+- [ ] `cancel()` method allows animation interruption
+- [ ] `runBurst()` method typed with `NodeData[]` parameter
+
+**FSM States & Transitions:**
+- [ ] Five states: Idle, Highlighting, Selected, Morphing, Fading
+- [ ] Valid transitions documented in TransitionMap
+- [ ] Guard functions prevent invalid state changes
+- [ ] "Disable during Morphing" guard blocks interactions
+
+**Implementation Checklist:**
+- [ ] TweenRegistry signature matches Integration types
+- [ ] FSM states align with interaction requirements
+- [ ] NodeAttributeManager interface implemented
+- [ ] BurstAnimationConfig properly typed
+- [ ] All animation surfaces consumable by Adapter
 
 ## Edge Rendering (Optional)
 
