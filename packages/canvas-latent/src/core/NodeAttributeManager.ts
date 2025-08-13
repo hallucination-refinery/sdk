@@ -39,6 +39,19 @@ export class NodeAttributeManager {
     this.selected = new Uint8Array(capacity);
   }
   
+  registerNode(nodeId: string, index: number): void {
+    this.nodeToIndex.set(nodeId, index);
+    this.indexToNode.set(index, nodeId);
+  }
+  
+  unregisterNode(nodeId: string): void {
+    const index = this.nodeToIndex.get(nodeId);
+    if (index !== undefined) {
+      this.nodeToIndex.delete(nodeId);
+      this.indexToNode.delete(index);
+    }
+  }
+  
   setPosition(nodeId: string, v: THREE.Vector3): void {
     // [PERF] Hot path - called frequently during animations
     const index = this.indexOf(nodeId);
