@@ -276,3 +276,5 @@ B2 audit completed successfully at 3:15 PM EST. All Core scaffold requirements v
 - Imports now reference Integration types correctly
 - No per-frame allocations detected in hot paths
 - Documentation updated in both protocol and working docs
+
+**Final Commit:** 1429f0cc - "docs(core): document Core surfaces & dirty ranges [audit]"

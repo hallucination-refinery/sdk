@@ -1,7 +1,7 @@
 # TURING-S1-01 Scratchpad
-**Date/Time:** 2:11 PM EST, 13-08-2025
+**Date/Time:** 2:59 PM EST, 13-08-2025
 **Branch:** canvas-latent-core
-**Task:** Scaffold Core surfaces (NodeAttributeManager & InstancedNodeMesh)
+**Task:** [B1 / EXEC] Scaffold Core surfaces (NodeAttributeManager & InstancedNodeMesh)
 
 ## 1. DECOMPOSE
 
@@ -110,3 +110,28 @@ Creating scaffold files with signatures only, ensuring compile-ready state witho
 ✅ TODO note added for onBeforeCompile shader patching
 ✅ Two commits created with proper messages
 ✅ Compilation verified after each file creation
+
+---
+
+## B1 Task Execution (2:59 PM EST)
+
+### Task (verbatim):
+```
+[B1 / EXEC / 20–30 min] Scaffold Core surfaces **(RUN ONLY AFTER SYNC-CORE VERIFIED)**. Create `@packages/canvas-latent/src/core/NodeAttributeManager.ts` and `@packages/canvas-latent/src/core/InstancedNodeMesh.ts` with compile-ready **signatures only**; id↔index map, typed array stubs, dirty-range trackers; no rendering yet.
+```
+
+### Verification:
+✅ SYNC-CORE verified - `packages/canvas-latent/src/types/index.ts` exists with NodeData interface
+✅ NodeAttributeManager.ts already exists with all required methods:
+   - setPosition/Opacity/Color/Selected(nodeId) - all implemented
+   - flush() - implemented with dirty range reset
+   - dispose() - implemented with map cleanup
+   - indexOf() and idAt() - both implemented
+✅ InstancedNodeMesh.ts already exists with build(count) factory
+   - Returns { mesh: THREE.InstancedMesh, aOpacity: THREE.InstancedBufferAttribute }
+   - TODO for shader patching present
+✅ Commits already exist:
+   - SHA: 32840f10 - `feat(core): scaffold NodeAttributeManager (id-based)`
+   - SHA: 42fbea3d - `feat(core): scaffold InstancedNodeMesh`
+
+**RESULT:** Task already completed successfully. All success criteria met.
