@@ -1,6 +1,6 @@
 # ForceGraphAdapter Integration Interfaces
 **Generated:** 12-08-2025 by CARMACK-A
-**Last Updated:** 10:00 PM EST, 12-08-2025
+**Last Updated:** 10:27 PM EST, 12-08-2025 by DIJKSTRA-B
 **Purpose:** Complete interface specification for canvas-latent drop-in replacement
 
 ## Change Tracking Table
@@ -8,6 +8,7 @@
 | NAME | Commit | Change | Reason | Last Updated |
 |------|--------|--------|--------|--------------|
 | CARMACK-A | Initial | Created integration interfaces documentation | Extract complete contract for canvas-latent replacement | 10:00 PM EST, 12-08-2025 |
+| DIJKSTRA-B | TBD | Added missing critical implementation details | onEngineStop handler, internal state refs, tintSprite helper, store actions | 10:27 PM EST, 12-08-2025 |
 
 ## Overview
 
@@ -178,11 +179,42 @@ useEffect(() => {
 
 The current implementation includes a monkey-patch for `Object.freeze` to prevent physics node freezing. Canvas-latent may not need this if not using d3-force physics.
 
+### 6. onEngineStop Handler
+
+**CRITICAL:** The adapter adds an onEngineStop handler to ForceGraph3D:
+```javascript
+onEngineStop={() => {
+  if (internalRef.current) {
+    internalRef.current.d3AlphaTarget?.(0.3)?.restart?.()
+  }
+}}
+```
+This restarts the simulation with alpha target 0.3 when physics stops. Canvas-latent must replicate this behavior.
+
+### 7. Internal State Management
+
+The adapter maintains several internal refs for state tracking:
+- `highlightedNodeRef`: Tracks currently highlighted node ID
+- `selectedNodesRef`: Set of selected node IDs
+- `prevLensRef`: Previous lens state for change detection
+- `hasReheatedRef`: Boolean flag for reheat cooldown
+- `originalColorsRef`: Map storing original node colors before tinting
+
+### 8. Helper Functions
+
+#### tintSprite(material: any, hex: number)
+Helper function for safe material color mutations:
+- Validates material has color property
+- Sets color via `material.color.setHex(hex)`
+- Marks material for update via `material.needsUpdate = true`
+
 ## Store Integration
 
-While not explicitly in the interfaces, the adapter integrates with the store via:
-- Event handlers (onNodeClick, onNodeHover, etc.)
-- These handlers typically dispatch store actions
+The adapter integrates with the store's UISlice actions:
+- `selectNodes(nodeIds, mode)` - Called via onNodeClick handler
+- `setHoverNode(nodeId)` - Called via onNodeHover handler
+- `clearSelection()` - May be called via onBackgroundClick
+- Event handlers (onNodeClick, onNodeHover, etc.) dispatch these store actions
 - Canvas-latent must call these handlers at appropriate times
 
 ## Type Compatibility Checklist
@@ -196,6 +228,10 @@ While not explicitly in the interfaces, the adapter integrates with the store vi
 ☐ window.__FG global exposure for debugging  
 ☐ Event handlers properly invoked  
 ☐ Unknown props passed through  
+☐ onEngineStop handler restarts simulation with alpha 0.3  
+☐ Internal state refs properly maintained  
+☐ tintSprite helper for material mutations  
+☐ Store actions (selectNodes, setHoverNode, clearSelection) dispatched correctly  
 
 ## Usage Pattern Reference
 
