@@ -1,7 +1,7 @@
 # LOVELACE-01 Scratchpad
-**Date:** 2025-08-13 14:13 EST  
+**Date:** 2025-08-13 15:05 EST  
 **Branch:** canvas-latent-interaction  
-**Task ID:** INTERACTION / EXEC
+**Task ID:** INTERACTION / EXEC (Re-run)
 
 ## 1. DECOMPOSE
 
@@ -100,20 +100,23 @@ Final review:
 ### Step 1: Creating TweenRegistry.ts
 - Location: packages/canvas-latent/src/animations/TweenRegistry.ts
 - Methods: add(), tick(), cancel()
+- Removed runBurst method (not part of spec)
 
 ### Step 2: Creating BurstAnimation.ts  
 - Location: packages/canvas-latent/src/animations/BurstAnimation.ts
-- Interface only with runBurst signature
+- Interface only with runBurst function signature
+- Updated NodeAttributeManager interface to match expected Core API
 
 ### Step 3: Creating StateMachine.ts
 - Location: packages/canvas-latent/src/interactions/StateMachine.ts
 - States enum and transition map
+- Guard condition: interactions disabled during Morphing
 
 ### Step 4: TypeScript Verification
-- Command: npx tsc --noEmit
+- Command: pnpm -w -s tsc -p packages/canvas-latent
 - Result: ✅ PASSED
 
 ### Step 5: Commit
 - Message: feat(anim): add TweenRegistry/Burst interfaces and FSM skeleton
-- SHA: b5c259cf
-- Logged to working-doc: ✅ COMPLETED
+- SHA: 7f1775cb
+- Logged to working-doc: ✅ COMPLETED (15:05 EST)
