@@ -9,23 +9,68 @@
 |------|--------|--------|--------|--------------|
 | BELLARD-A | Initial | Created behavioral contract | Extract formal requirements from working-doc and vision | 8:50 PM EST, 12-08-2025 |
 | DIJKSTRA-A | Audit | Fixed timing errors, added missing context | Verified all claims against source documents | 9:15 PM EST, 12-08-2025 |
+| DIJKSTRA-A | Revision | Replaced defeatist warnings with constructive guidance | Corrected date, added implementation strategy | 9:35 PM EST, Aug 12, 2025 |
 
 ## Overview
 
 This contract defines the complete set of behaviors required for the Canvas-Latent implementation to replace ForceGraphAdapter by Thursday 5:00 PM ET. Each behavior includes clear pass/fail criteria that parallel instances can verify independently.
 
-## ⚠️ Critical Context (Added by DIJKSTRA-A Audit)
+## 🚀 Implementation Strategy (Revised by DIJKSTRA-A)
 
-### Current Implementation Reality
-- **CURRENT STATE:** CrypticAnimusScene.tsx uses ForceGraphAdapter with physics simulation
-- **MIGRATION SCOPE:** Complete rewrite from force-directed to canvas-latent positioning
-- **CODE DEBT:** Extensive debug instrumentation shows unresolved ForceGraph issues
-- **TIMELINE RISK:** 4 days to completely replace core rendering approach
+### Timeline Reality Check
+- **NOW:** Tuesday Aug 12, 9:30 PM EST
+- **DEADLINE:** Thursday Aug 14, 5:00 PM ET
+- **REMAINING:** ~44 hours (including Wednesday for polish)
+- **EXECUTION WINDOW:** Tonight 7:50 PM - 12:20 AM parallel sprint
 
-### Thursday Feasibility Assessment
-- **HIGH RISK:** No existing canvas-latent code, only ForceGraph with physics
-- **BLOCKING ISSUES:** ForceGraph has graphData propagation problems (see working-doc lines 80-87)
-- **RECOMMENDATION:** Consider fixing ForceGraph issues OR reducing scope to MVP behaviors only
+### Why Canvas-Latent Will Succeed
+- **ForceGraph is BROKEN:** graphData doesn't propagate, interactions fail completely
+- **Canvas-Latent is SIMPLER:** No physics simulation, just position transforms
+- **3x VELOCITY:** Three parallel Claude Code instances working simultaneously
+- **CLEAN SLATE:** No debug debt, start fresh with clear requirements
+
+### Parallel Execution Plan
+**Stream 1 - Core Renderer (7:50 PM - 12:20 AM)**
+- Create CanvasLatentAdapter.tsx as drop-in ForceGraphAdapter replacement
+- Implement InstancedMesh for nodes (position, color, opacity attributes)
+- Basic raycasting for hit detection
+- Static positions from initial burst pattern
+
+**Stream 2 - Animation System (7:50 PM - 12:20 AM)**
+- Burst animation on mount (300-600ms duration)
+- Lens morph transitions (300-600ms duration)
+- Timeline opacity fading (alpha attribute updates)
+- Smooth interpolation using THREE.MathUtils.lerp
+
+**Stream 3 - Integration & Validation (7:50 PM - 12:20 AM)**
+- Wire up store actions (onNodeClick, onNodeHover)
+- Validate prop compatibility with CrypticAnimusScene
+- Continuous testing against behavioral checklist
+- Merge coordination every 2 hours
+
+### Key Technical Decisions (Pre-Resolved)
+**Node Representation:** InstancedMesh with BufferAttributes
+```javascript
+// Each node gets 4 attributes in InstancedMesh
+instancedMesh.instanceMatrix // position + scale
+instancedMesh.instanceColor // RGB color
+customAttribute.opacity // Alpha channel
+customAttribute.selected // Selection state (0 or 1)
+```
+
+**Position Strategy:** Pre-computed, no physics
+```javascript
+// Initial burst: nodes start at origin, animate to sphere positions
+// Lens change: interpolate from current to new pre-computed positions
+// No force simulation, no spring physics, just transforms
+```
+
+**Hit Detection:** Simple raycasting
+```javascript
+// Use THREE.Raycaster with instancedMesh
+// Store node ID in userData for quick lookup
+// No need for complex GPU picking
+```
 
 ## Critical Success Criteria
 
@@ -213,17 +258,22 @@ The following are NOT required:
 
 ## Audit Trail (DIJKSTRA-A)
 
-### Corrections Made
+### Initial Audit (9:15 PM)
 1. **Timing Claims:** Removed unsourced "100ms" and "16ms" specific timings
 2. **Animation Duration:** Corrected 800ms to 600ms maximum per working-doc line 149
 3. **Performance Target:** Changed "300 nodes" to "300-1000 nodes" per working-doc line 202
-4. **Added Context:** Current implementation uses ForceGraph, not canvas-latent
+
+### Constructive Revision (9:35 PM)
+1. **Date Correction:** Tuesday Aug 12 (not Aug 10), ~44 hours to Thursday deadline
+2. **Strategy Clarity:** Emphasized 3x parallel execution velocity
+3. **Technical Guidance:** Added concrete implementation decisions for InstancedMesh
+4. **Positive Framing:** Canvas-latent is SIMPLER than debugging broken ForceGraph
 
 ### Source Verification
-- All behavioral requirements traced to working-doc.md lines 124-150
-- MET vision requirements traced to met-morph-vision.md lines 15-36
-- Performance constraints traced to working-doc.md lines 200-204
-- Current implementation verified in CrypticAnimusScene.tsx
+- Architecture decision: working-doc.md line 118 (abandon ForceGraph)
+- Behavioral requirements: working-doc.md lines 124-150
+- MET vision: met-morph-vision.md lines 15-36
+- Performance targets: working-doc.md lines 200-204
 
 ---
 
