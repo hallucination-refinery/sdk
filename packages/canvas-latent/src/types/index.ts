@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 export interface NodeData {
   id: string;
   position: {
@@ -17,43 +19,43 @@ export interface AnimationConfig {
 }
 
 export interface CanvasLatentProps {
-  ref?: React.Ref<any>;
-  graphData: { nodes: any[]; links: any[] };
+  ref?: React.Ref<HTMLDivElement>;
+  graphData: { nodes: NodeData[]; links: LinkData[] };
 
   nodeId?: string;
   linkSource?: string;
   linkTarget?: string;
 
-  onNodeClick?: (node: any, event?: any) => void;
-  onNodeHover?: (node: any | null) => void;
-  onNodeRightClick?: (node: any, event?: any) => void;
-  onLinkClick?: (link: any, event?: any) => void;
-  onLinkHover?: (link: any | null) => void;
-  onBackgroundClick?: (event?: any) => void;
-  onBackgroundRightClick?: (event?: any) => void;
+  onNodeClick?: (node: NodeData, event?: MouseEvent) => void;
+  onNodeHover?: (node: NodeData | null) => void;
+  onNodeRightClick?: (node: NodeData, event?: MouseEvent) => void;
+  onLinkClick?: (link: LinkData, event?: MouseEvent) => void;
+  onLinkHover?: (link: LinkData | null) => void;
+  onBackgroundClick?: (event?: MouseEvent) => void;
+  onBackgroundRightClick?: (event?: MouseEvent) => void;
 
   /**
    * @deprecated No-op in canvas-latent implementation. Included for compatibility.
    */
-  nodeThreeObject?: (node: any) => any;
+  nodeThreeObject?: (node: NodeData) => THREE.Object3D;
   /**
    * @deprecated No-op in canvas-latent implementation. Included for compatibility.
    */
-  nodeThreeObjectExtend?: (obj: any, node: any) => boolean;
-  nodeVisibility?: (node: any) => boolean;
-  nodeColor?: (node: any) => string;
+  nodeThreeObjectExtend?: (obj: THREE.Object3D, node: NodeData) => boolean;
+  nodeVisibility?: (node: NodeData) => boolean;
+  nodeColor?: (node: NodeData) => string;
   nodeOpacity?: number;
   nodeRelSize?: number;
-  nodeVal?: (node: any) => number;
-  nodeLabel?: (node: any) => string;
-  nodeDesc?: (node: any) => string;
+  nodeVal?: (node: NodeData) => number;
+  nodeLabel?: (node: NodeData) => string;
+  nodeDesc?: (node: NodeData) => string;
 
-  linkVisibility?: (link: any) => boolean;
-  linkColor?: (link: any) => string;
-  linkWidth?: (link: any) => number;
-  linkCurvature?: number | ((link: any) => number);
-  linkCurveRotation?: number | ((link: any) => number);
-  linkMaterial?: any;
+  linkVisibility?: (link: LinkData) => boolean;
+  linkColor?: (link: LinkData) => string;
+  linkWidth?: (link: LinkData) => number;
+  linkCurvature?: number | ((link: LinkData) => number);
+  linkCurveRotation?: number | ((link: LinkData) => number);
+  linkMaterial?: THREE.Material;
   linkOpacity?: number;
   linkResolution?: number;
 
@@ -66,6 +68,13 @@ export interface CanvasLatentProps {
 
   activeCategories?: Set<string>;
   activeTags?: Set<string>;
+  
+  // Additional props for extensibility
+  [key: string]: unknown;
+}
 
-  [key: string]: any;
+export interface LinkData {
+  source: string;
+  target: string;
+  [key: string]: unknown;
 }

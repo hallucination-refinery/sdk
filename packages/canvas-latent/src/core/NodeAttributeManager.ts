@@ -8,9 +8,28 @@ export class NodeAttributeManager {
   private aOpacity: Float32Array;
   private selected: Uint8Array;
   
+  /**
+   * Dirty range tracking for color attribute updates.
+   * Tracks min/max indices that have been modified since last flush.
+   */
   private dirtyRangeColor: { min: number; max: number } = { min: Infinity, max: -Infinity };
+  
+  /**
+   * Dirty range tracking for opacity attribute updates.
+   * Tracks min/max indices that have been modified since last flush.
+   */
   private dirtyRangeOpacity: { min: number; max: number } = { min: Infinity, max: -Infinity };
+  
+  /**
+   * Dirty range tracking for selected attribute updates.
+   * Tracks min/max indices that have been modified since last flush.
+   */
   private dirtyRangeSelected: { min: number; max: number } = { min: Infinity, max: -Infinity };
+  
+  /**
+   * Dirty range tracking for matrix (position) updates.
+   * Tracks min/max indices that have been modified since last flush.
+   */
   private dirtyRangeMatrix: { min: number; max: number } = { min: Infinity, max: -Infinity };
   
   constructor(capacity: number) {
@@ -20,6 +39,7 @@ export class NodeAttributeManager {
   }
   
   setPosition(nodeId: string, v: THREE.Vector3): void {
+    // [PERF] Hot path - called frequently during animations
     const index = this.indexOf(nodeId);
     if (index === -1) return;
     
@@ -29,6 +49,7 @@ export class NodeAttributeManager {
   }
   
   setOpacity(nodeId: string, a: number): void {
+    // [PERF] Hot path - called during timeline scrubbing
     const index = this.indexOf(nodeId);
     if (index === -1) return;
     
@@ -38,6 +59,7 @@ export class NodeAttributeManager {
   }
   
   setColor(nodeId: string, c: THREE.Color): void {
+    // [PERF] Hot path - called during hover/selection
     const index = this.indexOf(nodeId);
     if (index === -1) return;
     
@@ -60,6 +82,7 @@ export class NodeAttributeManager {
   }
   
   flush(): void {
+    // [PERF] Critical path - called every frame
     // TODO: Apply dirty ranges to GPU buffers
     this.dirtyRangeColor = { min: Infinity, max: -Infinity };
     this.dirtyRangeOpacity = { min: Infinity, max: -Infinity };
@@ -73,6 +96,7 @@ export class NodeAttributeManager {
   }
   
   indexOf(nodeId: string): number {
+    // [PERF] Hot path - called by all setter methods
     return this.nodeToIndex.get(nodeId) ?? -1;
   }
   

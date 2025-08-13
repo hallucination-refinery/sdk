@@ -13,10 +13,12 @@
     "react": "^18.2.0",
     "mobx": "^6.9.0",
     "mobx-react-lite": "^3.4.0",
-    "framer-motion": "^10.0.0"
+    "framer-motion": "^10.0.0",
+    "three": "^0.161.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
+    "@types/three": "^0.161.0",
     "typescript": "^5.0.0"
   }
 }
