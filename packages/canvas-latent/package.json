@@ -6,8 +6,7 @@
   "types": "types/index.ts",
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "lint": "eslint src"
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "react": "^18.2.0",
