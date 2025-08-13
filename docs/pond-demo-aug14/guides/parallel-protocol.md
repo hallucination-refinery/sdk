@@ -211,11 +211,19 @@ Instance 3 (types) → Instance 1 (core) → Instance 2 (animations)
 - [ ] Instance 3: Create src/types/index.ts with all interfaces
 - [ ] Instance 3: Create basic directory structure for all instances
 
-### Milestone 1: Structure (3:00 AM)
-- [ ] Instance 3: All type definitions complete
-- [ ] Instance 1: Core interfaces defined
-- [ ] Instance 2: Animation contracts established
-- [ ] All: Basic file structure created
+### Milestone 1: Core & Interaction scaffolds + audits (3:20 PM EST)
+**Published by:** KERNIGHAN-A  
+**Base-of-truth branch:** feat-pond-demo-aug14  
+**Mirror procedure:** All worktrees MUST sync docs/pond-demo-aug14/** from feat-pond-demo-aug14
+
+**Published SHAs:**
+- **A1 (canvas-latent-integration):** 87c238d9 - Types initialization commit
+- **B1 (canvas-latent-core):** 42fbea3d - Core scaffold commit
+- **B2 (canvas-latent-core):** 1429f0cc - Core audit commit
+- **C1 (canvas-latent-interaction):** 7f1775cb - Interaction scaffold commit
+- **C2 (canvas-latent-interaction):** c25810ce - Interaction audit commit
+
+**Status:** COMPLETE - All scaffolds implemented and audited
 
 ### Milestone 2: Implementation (6:00 AM)
 - [ ] Instance 1: Rendering functional
