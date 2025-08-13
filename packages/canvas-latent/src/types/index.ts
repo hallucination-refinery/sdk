@@ -1,3 +1,5 @@
+import type { Ref } from 'react';
+
 export interface NodeData {
   id: string;
   position: {
@@ -17,7 +19,7 @@ export interface AnimationConfig {
 }
 
 export interface CanvasLatentProps {
-  ref?: React.Ref<any>;
+  ref?: Ref<any>;
   graphData: { nodes: any[]; links: any[] };
 
   nodeId?: string;
