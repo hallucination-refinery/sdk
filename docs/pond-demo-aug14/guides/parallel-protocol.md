@@ -10,6 +10,7 @@
 | HOPPER-B | Initial | Created parallel protocol | Enable conflict-free parallel development | 10:47 PM EST, Aug 12, 2025 |
 | DIJKSTRA-C | Audit Fix | Fixed date formats, updated timeline, added package creation | Critical issues found during audit | 1:30 AM EST, Aug 13, 2025 |
 | KERNIGHAN-A | Branch Model | Added explicit branch names and pre-flight sync protocol | Standardize cross-branch state | 2:29 PM EST, Aug 13, 2025 |
+| DIJKSTRA-G | SHA & Scope | Added published SHAs, behavioral-contract reference, scope gates | Documentation audit requirement | 2:38 PM EST, Aug 13, 2025 |
 
 ## Overview
 
@@ -40,6 +41,12 @@ If merge conflicts arise:
 3. **Directory Checkout:** Last resort - checkout entire directories from source branch
 4. **Instance 3 Resolution:** Integration instance owns final conflict resolution
 
+### Published Branch SHAs (from working-doc.md)
+- **A1 (feat-pond-demo-aug14):** 87c238d9
+- **canvas-latent-core:** a4f517e0
+- **canvas-latent-interaction:** e7673963
+- **SYNC STATUS:** VERIFIED
+
 ## Critical Constraints
 
 - **Deadline:** Thursday Aug 14, 5:00 PM ET (~39.5 hours from NOW - 1:30 AM Wed)
@@ -47,6 +54,8 @@ If merge conflicts arise:
 - **Package Creation:** Instance 3 MUST create package structure FIRST
 - **Integration Points:** Must be respected exactly as defined
 - **File Paths:** Must be created exactly as specified (typos cause conflicts)
+- **Behavioral Contract:** All implementations must satisfy requirements in `behavioral-contract.md`
+- **Scope Gates:** No physics simulation, no complex edge rendering (see behavioral-contract.md)
 
 ## Instance Territories
 
