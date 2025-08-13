@@ -1,243 +1,225 @@
-## Information Processing: Working Doc Audit
-
-### Current State Analysis (3:15 AM)
-- **Infrastructure**: Complete at 3:10 AM per agent log
-- **Implementation**: Scheduled kickoff at 3:30 AM (15 minutes from now)
-- **Critical Gap**: Technical decisions still pending research
-
-### Key Discrepancies Found
-1. **Phase Timing**: We're in a 20-minute gap between infrastructure completion (3:10 AM) and implementation start (3:30 AM)
-2. **Research Status**: Technical decisions (InstancedMesh, animation, hit detection) marked complete in my draft but actually pending
-3. **Decision Log**: Missing critical 3:05 AM and 3:10 AM entries from agent activity
-
-### Open Questions Requiring Resolution
-- Who makes technical decisions before 3:30 AM kickoff?
-- Are Claude Code instances already assigned to worktrees?
-- How do we handle the pending behavioral baseline from smoke tests?
-
----
-
-## **Last Updated:** Wednesday, 3:15 AM EST, 13-08-2025
+## **Last Updated:** Wednesday, 2:29 PM EST, 13-08-2025
 
 # Executive Summary
 
-Infrastructure phase complete. Three worktrees established on isolated branches at 3:10 AM. Currently in 15-minute transition before parallel implementation kickoff at 3:30 AM. Critical technical decisions remain unresolved, creating implementation risk. ~38 hours until Thursday 5PM deadline.
+ForceGraph baseline documented: rendering functional but interactions fail due to missing graphData propagation. State management logs correctly but visual feedback broken. Decision: Invest 90 minutes in comprehensive codebase analysis and parallel infrastructure setup before canvas-latent implementation. This front-loaded investment enables three Claude Code instances to work in parallel without conflicts, dramatically increasing velocity for the tight Thursday deadline.
 
-**Current Phase:** Pre-Implementation Gap (3:10 AM - 3:30 AM)  
-**Next Phase:** Core Implementation Sprint (3:30 AM - 6:00 AM)
+**Current Phase:** Codebase Analysis and Infrastructure Setup (6:20 PM - 7:50 PM)  
+**Next Phase:** Parallel Canvas-Latent Implementation (7:50 PM - 12:20 AM)
+
+**Current Phase:** Integration & Behavioral Validation (now)  
+**Next Phase:** Polish & Recording (Wednesday afternoon)
 
 ## W - Polished Demo Clip & SDK Status Update
 
-The singular near-term objective is to submit a **Pond partner update by Thu Aug 14, 5:00 PM ET** containing a **new 30–45s Cryptiq Mindmap demo video** and a concise **SDK migration status note** that acknowledges the July slip while showing tangible progress. Execution plan: **resolve technical decisions (NOW)**, then **parallel canvas-latent sprint (2.5 hrs)**, then **integrate/validate (3 hrs)**, then **polish/record Wednesday afternoon**, and **final QA + submit Thursday**.
+The singular near-term objective is to submit a **Pond partner update by Thu Aug 14, 5:00 PM ET** containing a **new 30–45s Cryptiq Mindmap demo video** and a concise **SDK migration status note** that acknowledges the July slip while showing tangible progress. The execution plan is to **conduct thorough codebase analysis and scaffolding (90 min)**, then **execute parallel canvas-latent implementation (4.5 hrs)**, then **polish/record Wednesday**, and **QA + submit Thursday**.
 
 ## Sprint Status Tracker
 
-### Completed Phase: Infrastructure Setup ✅
-- **Started:** 6:20 PM Tuesday
-- **Completed:** 3:10 AM Wednesday
-- **Deliverables:** Behavioral contract, integration interfaces, parallel protocol, worktree structure
+### Active Phase: Infrastructure Setup
 
-### Current Phase: Pre-Implementation Gap
-- **Started:** 3:10 AM
-- **Target:** 3:30 AM kickoff
-- **Critical Actions:** Resolve technical decisions, assign Claude instances
+- **Started:** 6:20 PM
+- **Target Completion:** 7:50 PM
+- **Progress:** Documentation templates initiated, codebase analysis pending
 
-### Upcoming Phase: Core Implementation Sprint
-- **Stream 1 (Core Renderer):** `/workspace/worktrees/canvas-latent-core`
-- **Stream 2 (Animation/Interaction):** `/workspace/worktrees/canvas-latent-interaction`
-- **Stream 3 (Integration/Verification):** `/workspace/worktrees/canvas-latent-integration`
+### Parallel Work Streams (Not Yet Active)
+
+- **Stream 1 (Core Renderer):** Awaiting infrastructure completion
+- **Stream 2 (Animation/Interaction):** Awaiting infrastructure completion
+- **Stream 3 (Integration/Verification):** Awaiting infrastructure completion
 
 ### Critical Path Items
+
 1. ✅ Git worktree setup for parallel development
-2. ✅ Current codebase interface documentation
+2. ⏳ Current codebase interface documentation
 3. ⏳ Behavioral baseline from smoke tests
-4. ⚠️ **Technical decision research (BLOCKING)**
-   - InstancedMesh attribute packing
-   - Animation architecture choice
-   - Hit detection strategy
+4. ⏳ Technical decision research (InstancedMesh, animation, hit detection)
+   s
 
 ---
 
 # PLAN
 
-## Immediate Actions (3:15 AM - 3:30 AM)
+## Sub-W — Codebase Analysis and Infrastructure Setup (90 minutes)
 
-### Technical Decision Resolution
-- [ ] **InstancedMesh Attributes**: Define packing strategy for position, color, alpha, selected
-- [ ] **Animation System**: Choose between Three.js utilities, custom tweening, or shaders
-- [ ] **Hit Detection**: Select raycasting vs GPU picking for 300-1000 nodes
+Conduct comprehensive analysis of current ForceGraph implementation, document all integration interfaces, establish parallel development infrastructure with three git worktrees, and create coordination scaffolding to enable conflict-free parallel development.
 
-### Claude Instance Assignment
-- [ ] Assign specific Claude Code instances to each worktree
-- [ ] Provide initial implementation prompts with technical decisions
-- [ ] Confirm behavioral contract understanding
+### Infrastructure Setup Checklist
 
-## Core Implementation Sprint (3:30 AM - 6:00 AM)
+- [x] **Document Current State** - Complete analysis of CrypticAnimusScene/ForceGraphAdapter interfaces
+- [ ] **Extract Behavioral Contract** - Transform checklist into formal specification file
+- [ ] **Create Worktree Structure** - Set up three parallel development branches
+- [ ] **Research Critical Decisions** - InstancedMesh attributes, animation approach, hit detection
+- [ ] **Scaffold Coordination Docs** - Templates for status updates, blocking issues, integration
+- [ ] **Define Instance Boundaries** - Clear ownership and interface definitions
+- [ ] **Establish Integration Protocol** - Merge windows, conflict resolution, validation
 
-### Stream 1: Core Renderer
-- Initialize package structure matching integration interfaces
-- Implement InstancedMesh with decided attribute strategy
-- Basic Three.js scene, camera, controls
-- Export ForceGraphAdapter-compatible interface
+### Parallel Implementation Plan (7:50 PM - 12:20 AM)
 
-### Stream 2: Animation/Interaction
-- Burst animation from origin (using decided approach)
-- Lens morphing with 300-600ms transitions
-- Hover/selection visual states
-- Timeline alpha control
+Following infrastructure setup, three Claude Code instances will execute in parallel:
 
-### Stream 3: Integration/Verification
-- Drop-in adapter implementation
-- Continuous merge from other streams
-- Behavioral contract validation
-- Performance monitoring setup
+- **Instance 1:** Core InstancedMesh renderer with attribute management
+- **Instance 2:** Animation system and interaction handling
+- **Instance 3:** Continuous integration and documentation updates
 
 ---
 
 ## Blocking Issues
 
 ### Current Blockers
-- ⚠️ **Technical decisions unresolved** - Must decide before 3:30 AM implementation start
 
-### Resolved Issues
-- ✅ Worktree infrastructure complete
-- ✅ Documentation scaffolding finalized
-- ✅ Integration interfaces validated
+- None (infrastructure phase just beginning)
+
+### Anticipated Risks
+
+- **Integration Surfaces:** Need to document exact props/methods expected by HUD components
+- **Data Structure Compatibility:** Must understand current node format for InstancedMesh transformation
+- **Performance Unknowns:** Hit detection strategy requires research before implementation
 
 ---
 
 ## Integration Points
 
-### Validated Interfaces (from integration-interfaces.md)
-```typescript
-interface CanvasLatentProps {
-  graphData: { nodes: Node[]; links: Link[] };
-  mouseSelectedNodeId: string | null;
-  activeCategories: string[];
-  activeTags: string[];
-  timeRange: { start: Date; end: Date };
-  currentLens: 'causal' | 'affinity' | 'temporal';
-  onNodeHover: (nodeId: string | null) => void;
-  onNodeClick: (nodeId: string) => void;
-}
-```
+### Discovered Interfaces
 
-### Required Ref Methods
-- `highlightNode(nodeId: string): void`
-- `selectNode(nodeId: string): void`
-- `refresh(): void`
-- `zoomToFit(): void`
+- **CrypticAnimusScene Props:**
+  - `graphData`: Core data structure (currently not reaching ForceGraphAdapter)
+  - `mouseSelectedNodeId`: Selection state from store
+  - `activeCategories`/`activeTags`: Filter state
+  - Timeline range for visibility calculations
+
+- **ForceGraphAdapter Methods:**
+  - `highlightNode()`: Called but returns early due to missing graphData
+  - `selectNode()`: Same issue as highlight
+  - `refresh()`: Currently called but may be causing remount issues
+
+### Canvas-Latent Integration Requirements
+
+- Must accept same prop structure as ForceGraphAdapter
+- Must trigger same store actions for selection/hover
+- Must respect timeline/filter visibility calculations
+- Must provide smooth drop-in replacement
 
 ---
 
 ## Real-Time Decision Log
 
-### 3:10 AM - Worktree Setup Complete
-**Action:** Created base branch and three worktrees from clean HEAD  
-**Details:**
-- Base: `feat/canvas-latent-demo` at commit `360d3fa2`
-- Worktrees created at `/workspace/worktrees/*`
-- All branches verified active and isolated
+### 3:30 PM - Infrastructure Investment Decision
 
-### 3:05 AM - Repository Hygiene
-**Action:** Staged and committed pending doc changes  
-**Result:** Clean base state for parallel development
+**Decision:** Spend 90 minutes on setup before implementation  
+**Rationale:** Parallel development without proper coordination = integration nightmare. Front-loaded investment enables 3x velocity during implementation phase.  
+**Evidence:** Anthropic teams report 2-4x speedup with proper Claude Code orchestration
 
-### 10:30 PM Tuesday - Pre-flight Go Decision
-**Decision:** Proceed with parallel implementation  
-**Rationale:** Infrastructure complete, risks identified and mitigated
+### 2:25 PM - Branch Strategy Decision
 
-### 3:30 PM Tuesday - Infrastructure Investment
-**Decision:** 90-minute setup before implementation  
-**Result:** Paid off with clean parallel structure
+**Decision:** Create new branch instead of continuing on feat/repro-fg-remount  
+**Rationale:** 146 commits ahead of main = too much technical debt. Clean slate reduces cognitive load.  
+**Result:** Created feat/canvas-latent-demo branch
 
-### 1:25 PM Tuesday - Architecture Pivot
-**Decision:** Abandon ForceGraph, build canvas-latent  
-**Rationale:** ForceGraph fundamentally broken (graphData propagation)
+### 1:25 PM - Architecture Pivot Decision
+
+**Decision:** Abandon ForceGraph debugging, go straight to canvas-latent  
+**Rationale:** ForceGraph shows fundamental issues (graphData not propagating). Time investment in debugging > building new.  
+**Evidence:** Smoke tests show state changes work but visual feedback completely broken
 
 ---
 
-## Behavioral Contract Summary
+## Intended Behaviour — Reference Specification
 
-From `behavioral-contract.md`:
-- **Initial Load**: HUD immediate, nodes at origin, ONE burst, then static
-- **Hover**: Visual change only, no position movement
-- **Selection**: Highlight propagates to connected nodes
-- **Timeline**: Alpha-only visibility changes
-- **Filters**: Hide/show without position changes
-- **Lens Switch**: ONE morph animation, 300-600ms
+**Note:** This checklist serves as the behavioral contract all parallel instances must satisfy:
+
+- [ ] **Initial load**
+  - [ ] HUD appears immediately on first render
+  - [ ] All nodes spawn at (0, 0, 0) and perform **one** outward burst
+  - [ ] Nodes settle and stay static until a lens change occurs
+- [ ] **Hover**
+  - [ ] Hovering any node leaves all node positions unchanged
+  - [ ] Visual feedback through color/opacity only
+- [ ] **Click / Selection**
+  - [ ] Clicking a node highlights it **and** its directly related edges/nodes
+  - [ ] Clicking a different node transfers the highlight accordingly
+  - [ ] Clicking empty space clears all highlights
+  - [ ] No node positions change during selection
+- [ ] **Timeline Scrub**
+  - [ ] Dragging the timeline slider shows or hides nodes based on time
+  - [ ] Node positions remain fixed during scrubbing
+  - [ ] Only alpha channel changes for visibility
+- [ ] **Category / Filter Toggle**
+  - [ ] Toggling a filter hides or reveals matching nodes
+  - [ ] Node positions stay unchanged while filtering
+- [ ] **Lens Change (Causal ↔ Affinity ↔ Temporal)**
+  - [ ] Switching triggers **one** burst animation
+  - [ ] Nodes morph to new positions over 300-600ms
+  - [ ] After settling, all interaction rules apply until next lens change
 
 ---
 
-## ROADMAP (Updated Timeline)
+## ROADMAP (Revised Timeline)
 
-### ✅ Phase 1: Infrastructure (6:20 PM Tue - 3:10 AM Wed)
-- All documentation complete
-- Worktree structure established
+### Milestone 0: Types initialized & syncs VERIFIED
+- **Status:** COMPLETE
+- **Verified by:** KERNIGHAN-A
+- **Time:** 2:29 PM EST, Aug 13, 2025
+- **Evidence:** Package structure created, type definitions complete, branch syncs verified
 
-### ⏳ Phase 2: Technical Decisions (3:15 AM - 3:30 AM) ← CURRENT
-- Resolve blocking technical choices
-- Assign Claude instances
-- Prepare implementation prompts
+### Phase 1: Infrastructure (6:20 PM - 7:50 PM) ✅ COMPLETE
 
-### Phase 3: Core Sprint (3:30 AM - 6:00 AM)
-- Parallel implementation across three streams
-- 30-minute sync cycles
-- Continuous integration branch updates
+- Document existing interfaces and data flow
+- Set up git worktrees for parallel development
+- Create coordination scaffolding
+- Research technical decisions
+- Define clear boundaries between instances
 
-### Phase 4: Integration & Validation (6:00 AM - 9:00 AM)
-- Merge all streams
-- Validate behavioral contract
-- Performance optimization
-- Fix integration issues
+### Phase 2: Parallel Implementation (ACTIVE)
 
-### Phase 5: Polish & Recording (Wed afternoon)
-- Visual refinements
-- Demo recording
-- Migration note drafting
+#### Branch SHA Status
+- **A1 (feat-pond-demo-aug14):** 87c238d9
+- **canvas-latent-core:** a4f517e0
+- **canvas-latent-interaction:** e7673963
+- **SYNC-CORE/INTXN:** VERIFIED
 
-### Phase 6: Final QA & Submit (Thu)
-- Last validation pass
-- Submission package prep
-- 5:00 PM deadline
+- **Stream 1:** Core renderer (InstancedMesh, attributes, basic rendering)
+- **Stream 2:** Animation (burst, morphing, timeline alpha)
+- **Stream 3:** Integration (merge streams, update docs, validate behavior)
+
+### Phase 3: Recording (11:50 PM - 12:20 AM)
+
+- Integrate all streams
+- Record rough demo showing all behaviors
+- Package for Wednesday polish
 
 ---
 
 ## RUNNING NOTES
 
-### Technical Decisions Matrix (MUST RESOLVE BY 3:30 AM)
+### Current Understanding
 
-| Decision | Options | Recommendation | Rationale |
-|----------|---------|----------------|-----------|
-| InstancedMesh Attributes | 1. Separate buffers<br>2. Packed interleaved<br>3. Texture lookup | **Option 1** | Simpler for rapid dev |
-| Animation | 1. Three.js AnimationMixer<br>2. Custom tweening<br>3. Shader morphing | **Option 2** | More control, predictable |
-| Hit Detection | 1. Raycasting<br>2. GPU picking<br>3. Precomputed | **Option 1** | Proven, fast enough for 1K nodes |
+1. **ForceGraph Issues:** `graphData` not reaching adapter, causing all interactions to fail
+2. **State Management Works:** Store updates fire correctly, just no visual feedback
+3. **Timeline Works:** Visibility calculation logic is sound, can reuse
+
+### Technical Decisions Pending Research
+
+1. **InstancedMesh Attributes:** How to pack position, color, alpha, selected state efficiently?
+2. **Animation Architecture:** Three.js AnimationMixer vs custom tweening vs shader-based?
+3. **Hit Detection:** Raycasting vs GPU picking vs precomputed hit map?
+4. **Edge Rendering:** Skip for demo or implement with LineSegments2?
+
+### Technical Decisions (LOCKED — 9:38 AM EST, 13-08-2025)
+- InstancedMesh: Separate Float32Array buffers (position, color, alpha, selected)
+- Animation System: Custom tweening with simple easing
+- Hit Detection: Three.js Raycaster
 
 ### Coordination Protocol
-- Instance sync: Every 30 minutes
-- Merge windows: 5:00 AM, 7:00 AM
-- Blocking escalation: Immediate to working-doc
-- Integration branch: Single source of truth
 
-### Performance Targets (Unchanged)
-- 300-1000 nodes @ 60fps on M1 Pro
-- <200MB memory footprint
-- <16ms interaction response
-- Smooth recording capability
+- Each instance updates their scratchpad every 30 minutes
+- Integration instance checks for conflicts every hour
+- Blocking issues immediately added to this document
+- Merge window every 2 hours (9:50 PM, 11:50 PM)
+- **Next Audit:** 3:00 PM EST (30 min from now)
 
-### Next 15 Minutes Critical
-1. Finalize technical decisions
-2. Create implementation prompts for each stream
-3. Launch Claude instances at exactly 3:30 AM
-4. Begin parallel sprint
+### Performance Constraints
 
----
-
-## Completion Log
-
-### SYNC-CORE: Types imported to canvas-latent-integration (1:07 PM EST, 13-08-2025)
-- ✅ SYNC-CORE done @ 5f48dc56
-- ✅ Cherry-picked A1 (fb61733b), A2 (462869e6), and 291ed516 from feat/pond-demo-aug14
-- ✅ All required files present: package.json, tsconfig.json, src/types/index.ts, src/constants.ts
-- ✅ TypeScript compilation verified (pnpm -w -s tsc -p packages/canvas-latent exits 0)
-- **Executed by:** RITCHIE-S1
+- Target: 300-1000 nodes at 60fps on M1 Pro
+- Memory budget: Keep under 200MB for smooth recording
+- Interaction latency: <16ms for hover feedback

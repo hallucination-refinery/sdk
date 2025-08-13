@@ -10,10 +10,19 @@
 | BELLARD-A | Initial | Created behavioral contract | Extract formal requirements from working-doc and vision | 8:50 PM EST, 12-08-2025 |
 | DIJKSTRA-A | Audit | Fixed timing errors, added missing context | Verified all claims against source documents | 9:15 PM EST, 12-08-2025 |
 | DIJKSTRA-A | Revision | Replaced defeatist warnings with constructive guidance | Corrected date, added implementation strategy | 9:35 PM EST, Aug 12, 2025 |
+| DIJKSTRA-G | Scope Gates | Added explicit Scope Gates section | Documentation audit requirement | 2:38 PM EST, Aug 13, 2025 |
 
 ## Overview
 
 This contract defines the complete set of behaviors required for the Canvas-Latent implementation to replace ForceGraphAdapter by Thursday 5:00 PM ET. Each behavior includes clear pass/fail criteria that parallel instances can verify independently.
+
+## Scope Gates
+
+**CRITICAL: The following constraints define what is explicitly OUT OF SCOPE:**
+- **No physics simulation**: All positions are pre-computed or algorithmically determined
+- **No complex edges**: Edge rendering is optional; if included, must be simple lines only
+- **No force-directed layout**: Positions encode semantic meaning, not physical forces
+- **No spring animations**: Use simple interpolation (lerp) for all transitions
 
 ## 🚀 Implementation Strategy (Revised by DIJKSTRA-A)
 
