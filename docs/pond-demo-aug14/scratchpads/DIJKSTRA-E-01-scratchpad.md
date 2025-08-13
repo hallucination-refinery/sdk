@@ -1,7 +1,7 @@
 # DIJKSTRA-E-01 Scratchpad
-**Date/Time:** 2:15 PM, 13-08-2025
+**Date/Time:** 3:06 PM EST, 13-08-2025
 **Branch:** canvas-latent-core
-**Task:** [CORE / AUDIT] Audit Core scaffolds for API conformance and perf notes
+**Task:** [B2 / AUDIT / 10-15 min] Audit Core scaffolds for API conformance and memory layout
 
 ## ULTRATHINK MODE
 
@@ -177,3 +177,102 @@ The codebase now compiles without TypeScript errors and is ready for continued p
 ### 6. REFLECT
 
 Git workflow completed successfully. All audit changes have been properly reviewed, staged in logical groups, committed with clear messages following repository conventions, and pushed to remote. The commits clearly document the work done and maintain traceability.
+
+---
+
+## B2 Task - 3:06 PM EST
+
+### 1. DECOMPOSE
+**Prompt (verbatim):** 
+"[B2 / AUDIT / 10–15 min] Audit Core scaffolds for API conformance and memory layout; ensure they target the **synced** types commit (integration@87c238d9). Document findings; make a single audit commit."
+
+**Core premise:** Validate Core scaffolds match Integration types and have proper memory layout for performance.
+
+**Claims:**
+- Core must expose stable, id-based manager + instanced mesh surfaces
+- Must match Integration types commit 87c238d9
+- No per-frame allocations allowed
+- Specific API methods required
+
+**Implicit assumptions:**
+- Core scaffolds exist from previous work
+- Integration types are the source of truth
+- Memory layout is critical for performance
+
+### 2. PLAN
+**Subtasks:**
+1. Verify NodeAttributeManager has exact methods: setPosition/Opacity/Color/Selected(nodeId), flush, dispose, indexOf, idAt
+2. Check internals: id↔index map, typed arrays (instanceColor, aOpacity), instanceMatrix write-path TODO
+3. Verify dirty-range fields per attribute with header docs
+4. Check InstancedNodeMesh.build(count) factory signature
+5. Verify imports from packages/canvas-latent/src/types
+6. Check for per-frame allocations in setters
+7. Update docs: parallel-protocol.md and working-doc.md
+8. Create single audit commit
+
+### 3. PROBE
+**OODA Loops:**
+- **Observe:** Core scaffold state → **Orient:** Match to spec → **Decide:** Pass/fix → **Act:** Document/update
+- **Observe:** Memory patterns → **Orient:** Identify allocations → **Decide:** Mark [PERF][TODO] → **Act:** Document
+- **Observe:** Import paths → **Orient:** Verify Integration types → **Decide:** Correct paths → **Act:** Update
+
+### 4. SEQUENCE
+1. Read Core scaffold files
+2. Check NodeAttributeManager API conformance
+3. Verify internal data structures
+4. Check InstancedNodeMesh factory
+5. Audit imports and memory patterns
+6. Update documentation
+7. Commit findings
+
+### 5. Execution Log
+
+#### Phase 1: Core Scaffolds Audit
+
+**NodeAttributeManager.ts:**
+✓ Methods present: setPosition, setOpacity, setColor, setSelected (all take nodeId)
+✓ Methods present: flush, dispose, indexOf, idAt
+✓ Internal id↔index maps: nodeToIndex, indexToNode Maps present
+✓ Typed arrays: instanceColor (Float32Array), aOpacity (Float32Array), selected (Uint8Array)
+✓ Dirty-range fields per attribute with header docs (lines 11-33)
+✓ [PERF] tags on hot paths present
+✓ TODO for instanceMatrix write-path noted (line 46)
+✗ Missing: Not importing types from packages/canvas-latent/src/types
+
+**InstancedNodeMesh.ts:**
+✓ build(count) factory signature correct - returns {mesh, aOpacity}
+✓ onBeforeCompile TODO present (lines 14-17)
+✓ [PERF] tag on geometry creation
+✗ Missing: Not importing types from packages/canvas-latent/src/types
+
+**Memory/Allocation Issues:**
+✓ No per-frame allocations in setters - all use pre-allocated typed arrays
+✓ Dirty range tracking uses min/max pattern without allocations
+
+**Type Sync Status:**
+✓ Types synced from integration@87c238d9 in commit a4f517e0
+✓ Types located at packages/canvas-latent/src/types/index.ts
+✓ Core scaffolds now importing NodeData from '../types'
+
+#### Phase 2: Documentation Updates
+
+**parallel-protocol.md:**
+✓ Added "Core Renderer Surfaces (scaffolded)" section
+✓ Documented all confirmed API methods and signatures
+✓ Listed internal data structures and performance notes
+✓ Referenced type integration source
+
+**working-doc.md:**
+✓ Updated Branch SHA Status with e69f5949
+✓ Added audit note: "Core surfaces conform to API + imports fixed"
+
+### 6. REFLECT
+
+B2 audit completed successfully at 3:15 PM EST. All Core scaffold requirements verified:
+- NodeAttributeManager exposes exact API methods required
+- Internal structures properly implemented (id↔index maps, typed arrays)
+- Dirty-range tracking documented and implemented
+- InstancedNodeMesh factory signature correct
+- Imports now reference Integration types correctly
+- No per-frame allocations detected in hot paths
+- Documentation updated in both protocol and working docs

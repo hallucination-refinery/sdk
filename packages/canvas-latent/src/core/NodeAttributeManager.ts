@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { NodeData } from '../types';
 
 export class NodeAttributeManager {
   private nodeToIndex: Map<string, number> = new Map();

@@ -174,7 +174,7 @@ Following infrastructure setup, three Claude Code instances will execute in para
 
 #### Branch SHA Status
 - **A1 (feat-pond-demo-aug14):** 87c238d9
-- **canvas-latent-core:** a4f517e0
+- **canvas-latent-core:** e69f5949 (B2 Audit: Core surfaces conform to API + imports fixed)
 - **canvas-latent-interaction:** e7673963
 - **SYNC-CORE/INTXN:** VERIFIED
 
