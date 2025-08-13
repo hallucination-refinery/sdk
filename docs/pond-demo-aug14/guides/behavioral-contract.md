@@ -8,10 +8,24 @@
 | NAME | Commit | Change | Reason | Last Updated |
 |------|--------|--------|--------|--------------|
 | BELLARD-A | Initial | Created behavioral contract | Extract formal requirements from working-doc and vision | 8:50 PM EST, 12-08-2025 |
+| DIJKSTRA-A | Audit | Fixed timing errors, added missing context | Verified all claims against source documents | 9:15 PM EST, 12-08-2025 |
 
 ## Overview
 
 This contract defines the complete set of behaviors required for the Canvas-Latent implementation to replace ForceGraphAdapter by Thursday 5:00 PM ET. Each behavior includes clear pass/fail criteria that parallel instances can verify independently.
+
+## ⚠️ Critical Context (Added by DIJKSTRA-A Audit)
+
+### Current Implementation Reality
+- **CURRENT STATE:** CrypticAnimusScene.tsx uses ForceGraphAdapter with physics simulation
+- **MIGRATION SCOPE:** Complete rewrite from force-directed to canvas-latent positioning
+- **CODE DEBT:** Extensive debug instrumentation shows unresolved ForceGraph issues
+- **TIMELINE RISK:** 4 days to completely replace core rendering approach
+
+### Thursday Feasibility Assessment
+- **HIGH RISK:** No existing canvas-latent code, only ForceGraph with physics
+- **BLOCKING ISSUES:** ForceGraph has graphData propagation problems (see working-doc lines 80-87)
+- **RECOMMENDATION:** Consider fixing ForceGraph issues OR reducing scope to MVP behaviors only
 
 ## Critical Success Criteria
 
@@ -28,10 +42,10 @@ This contract defines the complete set of behaviors required for the Canvas-Late
 **Requirement:** System displays immediately with animated entry
 
 **Pass Criteria:**
-- [ ] HUD components render within 100ms of mount
+- [ ] HUD components render immediately on mount
 - [ ] All nodes initialize at origin (0, 0, 0)
 - [ ] Exactly ONE outward burst animation executes
-- [ ] Animation completes within 800ms (designer discretion on exact duration)
+- [ ] Animation completes within 300-600ms (designer discretion within range)
 - [ ] Nodes remain static after settling
 
 **Fail Criteria:**
@@ -45,7 +59,7 @@ This contract defines the complete set of behaviors required for the Canvas-Late
 **Requirement:** Visual feedback without position changes
 
 **Pass Criteria:**
-- [ ] Hovering triggers visual change within 16ms (single frame)
+- [ ] Hovering triggers visual change immediately
 - [ ] Only color, opacity, or scale changes occur (designer discretion on specifics)
 - [ ] All node positions remain unchanged
 - [ ] Hover state clears when cursor moves away
@@ -92,14 +106,14 @@ This contract defines the complete set of behaviors required for the Canvas-Late
 **Requirement:** Category/tag filtering with stable positions
 
 **Pass Criteria:**
-- [ ] Toggle hides/shows matching nodes within 100ms
+- [ ] Toggle hides/shows matching nodes immediately
 - [ ] Transition uses opacity only (designer discretion on fade duration)
 - [ ] All node positions unchanged
 - [ ] Multiple filters can be active simultaneously
 
 **Fail Criteria:**
 - Nodes reposition when filtered
-- Filter application takes >100ms
+- Filter application has noticeable delay
 - Filter state doesn't persist correctly
 
 ### 6. Lens Switching
@@ -108,14 +122,14 @@ This contract defines the complete set of behaviors required for the Canvas-Late
 
 **Pass Criteria:**
 - [ ] Triggers exactly ONE morph animation
-- [ ] Animation duration 300-800ms (designer discretion)
+- [ ] Animation duration 300-600ms (designer discretion within range)
 - [ ] Interactions disabled during animation
 - [ ] Smooth interpolation to new positions
 - [ ] All interaction rules resume after settling
 
 **Fail Criteria:**
 - Multiple animations triggered
-- Animation takes >800ms
+- Animation takes >600ms
 - Interactions work during animation
 - Jerky or stuttering movement
 - Nodes continue drifting after animation
@@ -137,7 +151,7 @@ This contract defines the complete set of behaviors required for the Canvas-Late
 ### Performance Boundaries
 
 **Minimum Requirements (Thursday Demo):**
-- [ ] 300 nodes at 60fps on M1 Pro
+- [ ] 300-1000 nodes at 60fps on M1 Pro
 - [ ] <200MB memory footprint
 - [ ] <16ms interaction latency
 
@@ -196,6 +210,20 @@ The following are NOT required:
 - Multi-selection with box/lasso
 - Node editing capabilities
 - Persistence/saving of positions
+
+## Audit Trail (DIJKSTRA-A)
+
+### Corrections Made
+1. **Timing Claims:** Removed unsourced "100ms" and "16ms" specific timings
+2. **Animation Duration:** Corrected 800ms to 600ms maximum per working-doc line 149
+3. **Performance Target:** Changed "300 nodes" to "300-1000 nodes" per working-doc line 202
+4. **Added Context:** Current implementation uses ForceGraph, not canvas-latent
+
+### Source Verification
+- All behavioral requirements traced to working-doc.md lines 124-150
+- MET vision requirements traced to met-morph-vision.md lines 15-36
+- Performance constraints traced to working-doc.md lines 200-204
+- Current implementation verified in CrypticAnimusScene.tsx
 
 ---
 
