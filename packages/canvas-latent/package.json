@@ -1,22 +1,33 @@
 {
-  "name": "@pond/canvas-latent",
+  "name": "@packages/canvas-latent",
   "version": "0.1.0",
-  "private": true,
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./constants": {
+      "import": "./dist/constants.js",
+      "types": "./dist/constants.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "lint": "eslint src"
+    "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "react": "^18.2.0",
-    "mobx": "^6.9.0",
-    "mobx-react-lite": "^3.4.0",
-    "framer-motion": "^10.0.0"
+  "peerDependencies": {
+    "react": "^18",
+    "three": "^0.157"
   },
   "devDependencies": {
-    "@types/react": "^18.2.0",
     "typescript": "^5.0.0"
   }
 }
