@@ -162,6 +162,18 @@ Following infrastructure setup, three Claude Code instances will execute in para
 - **Time:** 2:29 PM EST, Aug 13, 2025
 - **Evidence:** Package structure created, type definitions complete, branch syncs verified
 
+### Milestone 1: Core & Interaction scaffolds + audits
+- **Status:** COMPLETE
+- **Published by:** KERNIGHAN-A
+- **Time:** 3:20 PM EST, Aug 13, 2025
+- **Evidence:** All scaffolds implemented and audited across branches
+- **Current SHAs:**
+  - A1 (integration): 87c238d9
+  - B1 (core scaffold): 42fbea3d
+  - B2 (core audit): 1429f0cc
+  - C1 (interaction scaffold): 7f1775cb
+  - C2 (interaction audit): c25810ce
+
 ### Phase 1: Infrastructure (6:20 PM - 7:50 PM) ✅ COMPLETE
 
 - Document existing interfaces and data flow
@@ -172,15 +184,18 @@ Following infrastructure setup, three Claude Code instances will execute in para
 
 ### Phase 2: Parallel Implementation (ACTIVE)
 
-#### Branch SHA Status
-- **A1 (feat-pond-demo-aug14):** 87c238d9
-- **canvas-latent-core:** a4f517e0
-- **canvas-latent-interaction:** e7673963
-- **SYNC-CORE/INTXN:** VERIFIED
+#### Branch SHA Status (Updated 3:20 PM EST)
+- **feat-pond-demo-aug14:** Current branch (base-of-truth for docs)
+- **canvas-latent-integration:** 87c238d9 (A1 - types initialized)
+- **canvas-latent-core:** 42fbea3d (B1), 1429f0cc (B2) - scaffold + audit complete
+- **canvas-latent-interaction:** 7f1775cb (C1), c25810ce (C2) - scaffold + audit complete
+- **SYNC STATUS:** Phase 2 ACTIVE
 
-- **Stream 1:** Core renderer (InstancedMesh, attributes, basic rendering)
-- **Stream 2:** Animation (burst, morphing, timeline alpha)
-- **Stream 3:** Integration (merge streams, update docs, validate behavior)
+#### Stream Progress
+- **Stream 1 (Core):** ~60% - InstancedMesh scaffolded, needs integration
+- **Stream 2 (Interaction):** ~60% - Animation FSM scaffolded, needs refinement
+- **Stream 3 (Integration):** ~40% - Types complete, awaiting stream merges
+- **Next sync:** 4:00 PM EST
 
 ### Phase 3: Recording (11:50 PM - 12:20 AM)
 
