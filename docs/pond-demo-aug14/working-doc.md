@@ -1,4 +1,4 @@
-## **Last Updated:** Tuesday, 6:20 PM EST, 12-08-2025
+## **Last Updated:** Wednesday, 9:38 AM EST, 13-08-2025
 
 # Executive Summary
 
@@ -6,6 +6,9 @@ ForceGraph baseline documented: rendering functional but interactions fail due t
 
 **Current Phase:** Codebase Analysis and Infrastructure Setup (6:20 PM - 7:50 PM)  
 **Next Phase:** Parallel Canvas-Latent Implementation (7:50 PM - 12:20 AM)
+
+**Current Phase:** Integration & Behavioral Validation (now)  
+**Next Phase:** Polish & Recording (Wednesday afternoon)
 
 ## W - Polished Demo Clip & SDK Status Update
 
@@ -189,6 +192,11 @@ Following infrastructure setup, three Claude Code instances will execute in para
 2. **Animation Architecture:** Three.js AnimationMixer vs custom tweening vs shader-based?
 3. **Hit Detection:** Raycasting vs GPU picking vs precomputed hit map?
 4. **Edge Rendering:** Skip for demo or implement with LineSegments2?
+
+### Technical Decisions (LOCKED — 9:38 AM EST, 13-08-2025)
+- InstancedMesh: Separate Float32Array buffers (position, color, alpha, selected)
+- Animation System: Custom tweening with simple easing
+- Hit Detection: Three.js Raycaster
 
 ### Coordination Protocol
 
