@@ -10,7 +10,7 @@ export class InstancedNodeMesh {
     const geometry = new THREE.SphereGeometry(1, 16, 16);
     const material = new THREE.MeshBasicMaterial({
       vertexColors: true,
-      transparent: true,
+      transparent: false,
     });
     
     material.onBeforeCompile = (shader) => {
