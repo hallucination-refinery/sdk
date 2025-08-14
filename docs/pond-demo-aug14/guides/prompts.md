@@ -482,3 +482,433 @@ git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug1
 - For S1: DOC-SYNC (M2-S1-DOC) → CODE-SYNC (M2-S1-CODE) → IMPLEMENTATION (M2-S1-IMPL) → DOC-PUBLISH (M2-S1-DOCPUB)
 - For S2: DOC-SYNC (M2-S2-DOC) → CODE-SYNC (M2-S2-CODE) → IMPLEMENTATION (M2-S2-IMPL) → DOC-PUBLISH (M2-S2-DOCPUB)
 - For S3: DOC-SYNC (M2-S3-DOC) → CODE-SYNC (M2-S3-CODE) → IMPLEMENTATION (M2-S3-IMPL) → DOC-PUBLISH (M2-S3-DOCPUB)
+
+---
+
+## Milestone Status Report
+
+**Current State:** 11:45 PM EST, 13-08-2025 — Milestone 2 complete and ledger updated (A1, S1, S2, S3). Integration boots, but the legacy scene errors on missing `@refinery/canvas-r3f`. We will unblock baseline testing by adding a dedicated harness that imports `@refinery/canvas-latent` directly and by advancing Milestone 3.
+**Milestone 1 Delay Analysis:** Branches started without mandatory DOC-SYNC and lacked SHA tracking, causing cross-branch drift and rework. Missing guard blocks allowed work to proceed with unmet prerequisites. Prompts below enforce DOC-SYNC/CODE-SYNC gates and append-only ledger updates to maintain a single source of truth.
+
+## Task Decomposition
+
+### Dependencies
+
+- **S1 (Core Renderer)** M3 work depends on A1 types baseline being present (idempotent if already cherry-picked).
+- **S2 (Animation)** M3 work depends on A1 types baseline and S1’s published interface contracts (already present via types; idempotent CODE-SYNC).
+- **S3 (Integration)** harness depends on S1/S2 published M3 SHAs to cherry-pick; harness avoids `@refinery/canvas-r3f` by importing `@refinery/canvas-latent` directly.
+
+### Sequencing
+
+- **Step 1 (parallel):** S1 and S2 each run DOC-SYNC → CODE-SYNC, then implement their M3 tasks and DOCPUB. They are independent and can run in parallel.
+- **Step 2 (serial):** S3 runs DOC-SYNC → CODE-SYNC (waiting for S1/S2 M3 SHAs if not present), then implements the harness/dev toggles, DOCPUB, and finally publishes a smoke-screen “PING” in docs to trigger the baseline test.
+
+## Implementation Prompts
+
+### [M3-S1-DOC] - Stream 1 (Core) - DOC-SYNC
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:45 PM EST, 13-08-2025  
+**NAME:** You are KERNIGHAN-A (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** DOC-SYNC central docs; verify A1 baseline present in ledger.  
+**GUARD BLOCK:**
+
+- Pull latest docs; ensure clean FF-only update.
+- Verify ledger exists and contains `KEY=A1-INTEGRATION-TYPES`.  
+  **CONTEXT:** S1 M3 compiles against A1 types; idempotent if already present.  
+  **WARNINGS:** Do not modify docs during DOC-SYNC.  
+  **SUCCESS CRITERIA:** Docs current; A1 key found.  
+  **RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+[ -f "/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md" ] || { echo "FATAL: ledger missing"; exit 1; }
+grep -q "KEY=A1-INTEGRATION-TYPES" /workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md || { echo "FATAL: A1 baseline missing"; exit 1; }
+```
+
+**Prevents:** Starts from fresh docs with verified baseline, eliminating stale-type drift.
+
+---
+
+### [M3-S1-CODE] - Stream 1 (Core) - CODE-SYNC
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:46 PM EST, 13-08-2025  
+**NAME:** You are KERNIGHAN-B (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** Cherry-pick A1 types baseline if not already ancestor, then proceed.  
+**GUARD BLOCK:** Clean working tree; correct branch.  
+**CONTEXT:** Idempotent merge-base guard; skip if already integrated.  
+**WARNINGS:** Abort on conflicts.  
+**SUCCESS CRITERIA:** A1 SHA is ancestor of HEAD.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+A1_SHA=$(grep "KEY=A1-INTEGRATION-TYPES" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+git -C /workspace/worktrees/canvas-latent-core rev-parse --abbrev-ref HEAD | grep -E '^canvas-latent-core$' || { echo "Wrong branch"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-core status --porcelain | grep . && { echo "Dirty working tree"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-core fetch origin
+git -C /workspace/worktrees/canvas-latent-core merge-base --is-ancestor "$A1_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-core cherry-pick -x "$A1_SHA"
+```
+
+**Prevents:** Ensures S1 compiles against the shared contract that other streams use.
+
+---
+
+### [M3-S1-IMPL] - Stream 1 (Core) - IMPLEMENTATION
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:47 PM EST, 13-08-2025  
+**NAME:** You are KERNIGHAN-C (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** Complete attribute write paths in `NodeAttributeManager` (setPosition/Color/Opacity/Selected), coalesce dirty ranges in `flush()`, and implement base color policy (by category/tags).  
+**GUARD BLOCK:**
+
+- Work only under `packages/canvas-latent/src/core` and `utils`.
+- No per-frame allocations; single draw call preserved.  
+  **CONTEXT:** InstancedMesh uses instanceMatrix, instanceColor, aOpacity attributes; maintain baseColor cache for restores.  
+  **WARNINGS:** Do not expand shader surface; keep onBeforeCompile patch minimal.  
+  **SUCCESS CRITERIA:**
+- All setters write into typed arrays and mark min/max dirty ranges; `flush()` updates ranges once/frame.
+- Base color resolves from category/tags with priority table; selection/hover overwrite and restore correctly.
+- Builds pass; one draw call maintained.  
+  **RESOURCES:** @packages/canvas-latent/src/core/NodeAttributeManager.ts, @packages/canvas-latent/src/core/InstancedNodeMesh.ts, @packages/canvas-latent/src/utils/PositionCalculator.ts
+
+```bash
+git -C /workspace/worktrees/canvas-latent-core status --porcelain | cat
+# (Make edits in owned files)
+git -C /workspace/worktrees/canvas-latent-core add packages/canvas-latent/src/core/NodeAttributeManager.ts packages/canvas-latent/src/core/InstancedNodeMesh.ts packages/canvas-latent/src/utils/PositionCalculator.ts
+git -C /workspace/worktrees/canvas-latent-core commit -m "core(attributes): implement setPosition/Color/Opacity/Selected; coalesced flush(); base color policy by category/tags"
+git -C /workspace/worktrees/canvas-latent-core push origin canvas-latent-core
+```
+
+**Prevents:** Avoids partial updates and color drift that previously caused inconsistent visuals.
+
+---
+
+### [M3-S1-DOCPUB] - Stream 1 (Core) - DOC-PUBLISH
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:49 PM EST, 13-08-2025  
+**NAME:** You are KERNIGHAN-D (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** Append latest S1 commit SHA to ledger (KEY=S1-ATTRIBUTES-A1).  
+**GUARD BLOCK:** Pull docs first; append one line; immediate push.  
+**CONTEXT:** S3 will cherry-pick this onto integration.  
+**WARNINGS:** Append-only; no edits to prior lines.  
+**SUCCESS CRITERIA:** New `[LEDGER]` with KEY=S1-ATTRIBUTES-A1.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+S1_SHA=$(git -C /workspace/worktrees/canvas-latent-core rev-parse HEAD)
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+[ -f "$LEDGER" ] || printf "# SHA Ledger\n\n" > "$LEDGER"
+printf "[LEDGER] KEY=S1-ATTRIBUTES-A1 SHA=%s BRANCH=canvas-latent-core DATE=%s MSG=\"NodeAttributeManager setters + flush + base colors\"\n" "$S1_SHA" "$DATE_STR" >> "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(sha-ledger): record S1-ATTRIBUTES-A1 $S1_SHA"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+**Prevents:** Provides a deterministic S1 anchor for integration to consume.
+
+---
+
+### [M3-S2-DOC] - Stream 2 (Animation) - DOC-SYNC
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:50 PM EST, 13-08-2025  
+**NAME:** You are RITCHIE-A (Stream 2)  
+**BRANCH:** canvas-latent-interaction  
+**TASK:** DOC-SYNC central docs; verify A1 baseline present.  
+**GUARD BLOCK:** Pull docs; ensure ledger+A1.  
+**CONTEXT:** S2 compiles against A1; idempotent.  
+**WARNINGS:** No doc edits here.  
+**SUCCESS CRITERIA:** Docs current; A1 found.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+[ -f "/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md" ] || { echo "FATAL: ledger missing"; exit 1; }
+grep -q "KEY=A1-INTEGRATION-TYPES" /workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md || { echo "FATAL: A1 baseline missing"; exit 1; }
+```
+
+**Prevents:** Starts S2 with verified baseline to avoid contract mismatches.
+
+---
+
+### [M3-S2-CODE] - Stream 2 (Animation) - CODE-SYNC
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:51 PM EST, 13-08-2025  
+**NAME:** You are RITCHIE-B (Stream 2)  
+**BRANCH:** canvas-latent-interaction  
+**TASK:** Cherry-pick A1 baseline if not ancestor.  
+**GUARD BLOCK:** Clean working tree; correct branch.  
+**CONTEXT:** Idempotent; skip if present.  
+**WARNINGS:** Abort on conflicts.  
+**SUCCESS CRITERIA:** A1 is ancestor of HEAD.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+A1_SHA=$(grep "KEY=A1-INTEGRATION-TYPES" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+git -C /workspace/worktrees/canvas-latent-interaction rev-parse --abbrev-ref HEAD | grep -E '^canvas-latent-interaction$' || { echo "Wrong branch"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-interaction status --porcelain | grep . && { echo "Dirty working tree"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-interaction fetch origin
+git -C /workspace/worktrees/canvas-latent-interaction merge-base --is-ancestor "$A1_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-interaction cherry-pick -x "$A1_SHA"
+```
+
+**Prevents:** Keeps S2 on the same type contract as other streams.
+
+---
+
+### [M3-S2-IMPL] - Stream 2 (Animation) - IMPLEMENTATION
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:52 PM EST, 13-08-2025  
+**NAME:** You are RITCHIE-C (Stream 2)  
+**BRANCH:** canvas-latent-interaction  
+**TASK:** Implement Timeline fade: when `visibleIds` or `nodeVisibility` changes, tween `aOpacity` per node (120–200ms), throttle updates to ≥1 frame.  
+**GUARD BLOCK:**
+
+- Use `NodeAttributeManager.setOpacity()` and `flush()` once per frame.
+- No position writes; interactions unaffected.  
+  **CONTEXT:** Follow behavioral contract: fade only; no flicker.  
+  **WARNINGS:** Avoid per-node allocations; batch writes.  
+  **SUCCESS CRITERIA:**
+- Fades are smooth and bounded; no stutter; zero position drift.
+- Rapid scrub toggles don’t glitch; throttled to frame cadence.  
+  **RESOURCES:** @packages/canvas-latent/src/animations/TimelineAnimation.ts, @packages/canvas-latent/src/utils/Interpolation.ts, @packages/canvas-latent/src/types/index.ts, @packages/canvas-latent/src/constants.ts
+
+```bash
+git -C /workspace/worktrees/canvas-latent-interaction status --porcelain | cat
+# (Create/modify files)
+git -C /workspace/worktrees/canvas-latent-interaction add packages/canvas-latent/src/animations/TimelineAnimation.ts packages/canvas-latent/src/utils/Interpolation.ts packages/canvas-latent/src/constants.ts
+git -C /workspace/worktrees/canvas-latent-interaction commit -m "anim(timeline): opacity tween on visibleIds/nodeVisibility changes; frame-throttled; no position writes"
+git -C /workspace/worktrees/canvas-latent-interaction push origin canvas-latent-interaction
+```
+
+**Prevents:** Stops binary show/hide flicker and guarantees stability during scrubs.
+
+---
+
+### [M3-S2-DOCPUB] - Stream 2 (Animation) - DOC-PUBLISH
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:54 PM EST, 13-08-2025  
+**NAME:** You are RITCHIE-D (Stream 2)  
+**BRANCH:** canvas-latent-interaction  
+**TASK:** Append S2 Timeline fade commit SHA to ledger (KEY=S2-TIMELINE-FADE-A1).  
+**GUARD BLOCK:** Pull docs; append one line; push.  
+**CONTEXT:** Integration will consume this SHA.  
+**WARNINGS:** Append-only.  
+**SUCCESS CRITERIA:** New KEY=S2-TIMELINE-FADE-A1.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+S2_SHA=$(git -C /workspace/worktrees/canvas-latent-interaction rev-parse HEAD)
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+[ -f "$LEDGER" ] || printf "# SHA Ledger\n\n" > "$LEDGER"
+printf "[LEDGER] KEY=S2-TIMELINE-FADE-A1 SHA=%s BRANCH=canvas-latent-interaction DATE=%s MSG=\"Timeline opacity fade + throttle\"\n" "$S2_SHA" "$DATE_STR" >> "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(sha-ledger): record S2-TIMELINE-FADE-A1 $S2_SHA"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+**Prevents:** Publishes the exact S2 artifact for integration to cherry-pick deterministically.
+
+---
+
+### [M3-S3-DOC] - Stream 3 (Integration) - DOC-SYNC
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:55 PM EST, 13-08-2025  
+**NAME:** You are THOMPSON-A (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** DOC-SYNC central docs; validate presence of S1-ATTRIBUTES-A1 and S2-TIMELINE-FADE-A1.  
+**GUARD BLOCK:** Pull docs; require both keys; STOP if missing.  
+**CONTEXT:** Harness will import `@refinery/canvas-latent`, bypassing `@refinery/canvas-r3f` errors.  
+**WARNINGS:** Don’t proceed without both keys.  
+**SUCCESS CRITERIA:** Both keys present.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+grep -q "KEY=S1-ATTRIBUTES-A1" "$LEDGER" || { echo "WAIT: S1-ATTRIBUTES-A1 missing"; exit 1; }
+grep -q "KEY=S2-TIMELINE-FADE-A1" "$LEDGER" || { echo "WAIT: S2-TIMELINE-FADE-A1 missing"; exit 1; }
+```
+
+**Prevents:** Blocks integration work until upstream artifacts are published.
+
+---
+
+### [M3-S3-CODE] - Stream 3 (Integration) - CODE-SYNC
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:56 PM EST, 13-08-2025  
+**NAME:** You are THOMPSON-B (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** Cherry-pick S1-ATTRIBUTES-A1 then S2-TIMELINE-FADE-A1 onto integration.  
+**GUARD BLOCK:** Clean working tree; correct branch.  
+**CONTEXT:** Deterministic order S1 → S2.  
+**WARNINGS:** Abort on unexpected conflicts.  
+**SUCCESS CRITERIA:** Both SHAs are ancestors of HEAD.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+S1_SHA=$(grep "KEY=S1-ATTRIBUTES-A1" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+S2_SHA=$(grep "KEY=S2-TIMELINE-FADE-A1" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+git -C /workspace/worktrees/canvas-latent-integration rev-parse --abbrev-ref HEAD | grep -E '^canvas-latent-integration$' || { echo "Wrong branch"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-integration status --porcelain | grep . && { echo "Dirty working tree"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-integration fetch origin
+git -C /workspace/worktrees/canvas-latent-integration merge-base --is-ancestor "$S1_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-integration cherry-pick -x "$S1_SHA"
+git -C /workspace/worktrees/canvas-latent-integration merge-base --is-ancestor "$S2_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-integration cherry-pick -x "$S2_SHA"
+```
+
+**Prevents:** Ensures integration includes the exact upstream artifacts before implementing harness.
+
+---
+
+### [M3-S3-IMPL] - Stream 3 (Integration) - IMPLEMENTATION (Harness + Dev Toggles)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:57 PM EST, 13-08-2025  
+**NAME:** You are THOMPSON-C (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** Build a sample harness page that imports `@refinery/canvas-latent` directly with dev toggles; avoid `@refinery/canvas-r3f`.  
+**GUARD BLOCK:**
+
+- Restrict edits to the app’s harness route and minimal wiring; no changes to legacy scene.  
+  **CONTEXT:** Next.js 15 with app directory; create `app/harness/latent/page.tsx` rendering `CanvasLatentAdapter` with minimal `graphData` stub and HUD mount check. Dev toggles via `NEXT_PUBLIC_DEBUG_GRAPH=1` and `NEXT_PUBLIC_LATENT_TRACE=1`.  
+  **WARNINGS:** Do not touch `CrypticAnimusScene`; harness is isolated.  
+  **SUCCESS CRITERIA:**
+- `pnpm -w dev --filter cryptic-vault-demo` serves `/harness/latent` without module errors; one-burst on load; HUD immediate.  
+  **RESOURCES:** @apps/legacy-import/cryptic-vault-demo/app/harness/latent/page.tsx, @packages/canvas-latent/src/adapters/CanvasLatentAdapter.tsx
+
+```bash
+# (Create the harness page and commit)
+git -C /workspace/worktrees/canvas-latent-integration add apps/legacy-import/cryptic-vault-demo/app/harness/latent/page.tsx
+git -C /workspace/worktrees/canvas-latent-integration commit -m "integration(harness): add /harness/latent using @refinery/canvas-latent with dev toggles"
+git -C /workspace/worktrees/canvas-latent-integration push origin canvas-latent-integration
+```
+
+**Prevents:** Bypasses missing `@refinery/canvas-r3f` by running against the new package directly, unblocking baseline testing.
+
+---
+
+### [M3-S3-DOCPUB] - Stream 3 (Integration) - DOC-PUBLISH (Harness)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:59 PM EST, 13-08-2025  
+**NAME:** You are THOMPSON-D (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** Append harness commit SHA to ledger (KEY=S3-HARNESS-SMOKE-A1).  
+**GUARD BLOCK:** Pull docs; append one line; push.  
+**CONTEXT:** Docs become the launch instructions source for baseline testing.  
+**WARNINGS:** Append-only.  
+**SUCCESS CRITERIA:** New KEY=S3-HARNESS-SMOKE-A1 line present.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+```bash
+S3_SHA=$(git -C /workspace/worktrees/canvas-latent-integration rev-parse HEAD)
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+[ -f "$LEDGER" ] || printf "# SHA Ledger\n\n" > "$LEDGER"
+printf "[LEDGER] KEY=S3-HARNESS-SMOKE-A1 SHA=%s BRANCH=canvas-latent-integration DATE=%s MSG=\"Harness page + dev toggles for baseline\"\n" "$S3_SHA" "$DATE_STR" >> "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(sha-ledger): record S3-HARNESS-SMOKE-A1 $S3_SHA"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+**Prevents:** Publishes a deterministic integration anchor for the harness.
+
+---
+
+### [M3-SMOKE-PING] - Docs - USER PING (Baseline Test Instructions)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 12:00 AM EST, 14-08-2025  
+**NAME:** You are ENGELBART-A (Docs)  
+**BRANCH:** feat-pond-demo-aug14  
+**TASK:** Publish a short, actionable baseline smoke-screen runbook pointing to `/harness/latent`, then ping user.  
+**GUARD BLOCK:** Append a new file under `smoke-screen-tests/` with timestamped name; commit and push.  
+**CONTEXT:** Use dev flags `NEXT_PUBLIC_DEBUG_GRAPH=1 NEXT_PUBLIC_LATENT_TRACE=1`; avoid legacy scene.  
+**WARNINGS:** Keep instructions minimal and deterministic.  
+**SUCCESS CRITERIA:** New runbook committed and pushed; includes steps and expected outcomes.  
+**RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/smoke-screen-tests/
+
+```bash
+RUNBOOK=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/smoke-screen-tests/14-08-2025-#baseline-harness.md
+cat > "$RUNBOOK" << 'EOF'
+# Baseline Smoke (Harness)
+
+## Steps
+1) From /workspace/worktrees/feat-pond-demo-aug14: `NEXT_PUBLIC_DEBUG_GRAPH=1 NEXT_PUBLIC_LATENT_TRACE=1 pnpm -w dev --filter cryptic-vault-demo`
+2) Open http://localhost:3000/harness/latent
+3) Verify: HUD immediate; nodes spawn at (0,0,0); exactly one burst (300–600ms); no drift.
+
+## Notes
+- Harness imports @refinery/canvas-latent directly to avoid @refinery/canvas-r3f errors.
+- If anything fails, STOP and log expected vs observed in a new scratchpad.
+EOF
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$RUNBOOK"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(smoke): baseline harness runbook and user ping"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+**Prevents:** Eliminates ambiguity by providing a single, minimal test path and instructions.
+
+---
+
+## Self-Validation Checklist
+
+- [ ] Every implementation has DOC-SYNC then CODE-SYNC prompts before it
+- [ ] Every sync prompt has exact git commands
+- [ ] SHA writes trigger immediate doc pushes
+- [ ] No work starts without both syncs
+
+- S1 (Core): M3-S1-DOC → M3-S1-CODE → M3-S1-IMPL → M3-S1-DOCPUB
+- S2 (Animation): M3-S2-DOC → M3-S2-CODE → M3-S2-IMPL → M3-S2-DOCPUB
+- S3 (Integration): M3-S3-DOC → M3-S3-CODE → M3-S3-IMPL → M3-S3-DOCPUB → M3-SMOKE-PING
