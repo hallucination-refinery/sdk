@@ -10,11 +10,32 @@ export class InstancedNodeMesh {
     const geometry = new THREE.SphereGeometry(1, 16, 16);
     const material = new THREE.MeshBasicMaterial({
       vertexColors: true,
+      transparent: true,
     });
     
-    // TODO: Patch shader with onBeforeCompile for opacity support
     material.onBeforeCompile = (shader) => {
-      // TODO: Inject aOpacity attribute and modify fragment shader
+      shader.vertexShader = `
+        attribute float aOpacity;
+        varying float vOpacity;
+        ${shader.vertexShader}
+      `.replace(
+        '#include <color_vertex>',
+        `
+        #include <color_vertex>
+        vOpacity = aOpacity;
+        `
+      );
+      
+      shader.fragmentShader = `
+        varying float vOpacity;
+        ${shader.fragmentShader}
+      `.replace(
+        '#include <color_fragment>',
+        `
+        #include <color_fragment>
+        diffuseColor.a *= vOpacity;
+        `
+      );
     };
     
     const mesh = new THREE.InstancedMesh(geometry, material, count);
