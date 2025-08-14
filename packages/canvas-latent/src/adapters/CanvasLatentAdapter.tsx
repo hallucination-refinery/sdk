@@ -217,6 +217,8 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
       const handlePointerDown = (ev: PointerEvent) => {
         const canvasEl = (three.gl as any).domElement as HTMLCanvasElement | undefined
         if (!canvasEl || !meshRef.current || !mgrRef.current) return
+        // Ensure world matrices are current for accurate raycasting
+        meshRef.current.updateMatrixWorld(true)
         const rect = canvasEl.getBoundingClientRect()
         const ndcX = ((ev.clientX - rect.left) / rect.width) * 2 - 1
         const ndcY = -((ev.clientY - rect.top) / rect.height) * 2 + 1
@@ -321,6 +323,8 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
       burstDoneRef.current = false
 
       // Initial camera frame: zoom to fit after burst completes
+      // Force colors visible on first paint
+      mgr.flush()
       return () => {
         ;(three.scene as any).remove(mesh)
         ;(three.gl as any).domElement?.removeEventListener('pointerdown', handlePointerDown)

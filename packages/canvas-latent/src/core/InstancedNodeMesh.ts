@@ -12,6 +12,8 @@ export class InstancedNodeMesh {
       vertexColors: true,
       transparent: false,
     })
+    // Ensure no base tint so instance colors are visible
+    material.color.set(0xffffff)
 
     material.onBeforeCompile = (shader) => {
       shader.vertexShader = `
@@ -39,6 +41,8 @@ export class InstancedNodeMesh {
     }
 
     const mesh = new THREE.InstancedMesh(geometry, material, count)
+    // Ensure raycasting has valid bounds
+    geometry.computeBoundingSphere()
 
     const aOpacity = new THREE.InstancedBufferAttribute(new Float32Array(count), 1)
 
