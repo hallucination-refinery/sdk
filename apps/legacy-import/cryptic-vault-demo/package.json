@@ -26,7 +26,8 @@
     "redux": "^5.0.1",
     "three": "0.176.0",
     "tailwind-merge": "^3.3.0",
-    "r3f-forcegraph": "^1.1.1"
+    "r3f-forcegraph": "^1.1.1",
+    "@pond/canvas-latent": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.0",
