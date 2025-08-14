@@ -409,8 +409,8 @@ git -C /workspace/worktrees/canvas-latent-integration merge-base --is-ancestor "
 **Prompt:**
 
 **ULTRATHINK MODE**  
-**CURRENT DATE/TIME:** 5:50 PM EST, 13-08-2025  
-**NAME:** You are VON-NEUMANN-C (Stream 3)  
+**CURRENT DATE/TIME:** 10:40 PM EST, 13-08-2025  
+**NAME:** You are **VON-NEUMANN-C** (Stream 3)  
 **BRANCH:** canvas-latent-integration  
 **TASK:** Wire adapter events to store callbacks; implement ref API stubs (no-ops for d3Force\*); expose `window.__FG`.  
 **GUARD BLOCK:**
