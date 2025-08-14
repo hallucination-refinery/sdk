@@ -2,6 +2,11 @@ import type { NextConfig } from 'next'
 import path from 'path'
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return process.env.NODE_ENV === 'development'
+      ? [{ source: '/', destination: '/harness/latent', permanent: false }]
+      : [];
+  },
   eslint: {
     // Sub-W: Temporarily ignore ESLint during Next.js production build
     ignoreDuringBuilds: false,
