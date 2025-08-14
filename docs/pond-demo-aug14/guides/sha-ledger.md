@@ -5,3 +5,4 @@
 [LEDGER] KEY=S2-BURSTANIMATION-A1 SHA=70d41bb03889b817494da17bd82cbe5ef231d770 BRANCH=canvas-latent-interaction DATE=2025-08-13T23:29:09Z MSG="BurstAnimation (origin→layout)"
 [LEDGER] KEY=S3-ADAPTER-WIRING-A1 SHA=ccc0054e5e087473d0b759f7590f348454b5485d BRANCH=canvas-latent-integration DATE=2025-08-14T02:45:02Z MSG="Adapter wiring + ref stubs + window.__FG"
 [LEDGER] KEY=S3-ADAPTER-WIRING-A1 SHA=ccc0054e5e087473d0b759f7590f348454b5485d BRANCH=canvas-latent-integration DATE=2025-08-14T03:16:00Z MSG="Adapter wiring + ref stubs + window.__FG"
+[LEDGER] KEY=S2-TIMELINE-FADE-A1 SHA=dcbdc98e65fe3c2ab72cb8b1eb41cffaf48ff393 BRANCH=canvas-latent-interaction DATE=2025-08-14T04:26:47Z MSG="Timeline opacity fade + throttle"
