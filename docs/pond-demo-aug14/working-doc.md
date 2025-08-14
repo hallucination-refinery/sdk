@@ -239,3 +239,8 @@ Following infrastructure setup, three Claude Code instances will execute in para
 - Target: 300-1000 nodes at 60fps on M1 Pro
 - Memory budget: Keep under 200MB for smooth recording
 - Interaction latency: <16ms for hover feedback
+
+### M3 Status (2025-08-14T06:43:34Z)
+- Dev redirect active; harness route verified
+- Core attributes + Interaction timeline fade present (S1/S2)
+- Harness smoke runbook published; user ping recorded
