@@ -10,3 +10,4 @@
 [LEDGER] KEY=S3-HARNESS-SMOKE-A1 SHA=9d22a064fe6872701d73cbe11fe4a4e208f9168c BRANCH=canvas-latent-integration DATE=2025-08-14T04:48:37Z MSG="Harness page + dev toggles for baseline"
 [LEDGER] KEY=S3-DEV-REDIRECT-M3 SHA=76ef928b5755d59b2018a79a76241b37b7d9df5e BRANCH=canvas-latent-integration DATE=2025-08-14T06:20:06Z MSG="Dev redirect + local package wiring + exports"
 [LEDGER] KEY=S3-SMOKE-PING-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=2025-08-14T06:24:33Z MSG="Baseline harness ping published (M3)"
+[LEDGER] KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=2025-08-14T15:57:08Z MSG="Manual smoke visual audit appended"
