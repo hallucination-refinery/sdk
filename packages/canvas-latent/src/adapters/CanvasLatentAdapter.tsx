@@ -178,6 +178,8 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
     const orbitRef = useRef<any>(null)
     const meshRef = useRef<THREE.InstancedMesh | null>(null)
     const mgrRef = useRef<NodeAttributeManager | null>(null)
+    const raycasterRef = useRef<THREE.Raycaster | null>(null)
+    const selectedIdRef = useRef<string | null>(null)
     const burstStartRef = useRef<number | null>(null)
     const burstDoneRef = useRef<boolean>(false)
     const targetsRef = useRef<THREE.Vector3[]>([])
@@ -209,6 +211,39 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
       const mgr = new NodeAttributeManager(count)
       mgr.setMesh(mesh)
       mgrRef.current = mgr
+
+      // Raycaster initialization and click handler for selection
+      raycasterRef.current = new THREE.Raycaster()
+      const handlePointerDown = (ev: PointerEvent) => {
+        const canvasEl = (three.gl as any).domElement as HTMLCanvasElement | undefined
+        if (!canvasEl || !meshRef.current || !mgrRef.current) return
+        const rect = canvasEl.getBoundingClientRect()
+        const ndcX = ((ev.clientX - rect.left) / rect.width) * 2 - 1
+        const ndcY = -((ev.clientY - rect.top) / rect.height) * 2 + 1
+        const rc = raycasterRef.current!
+        rc.setFromCamera(new THREE.Vector2(ndcX, ndcY), three.camera as any)
+        const hits = rc.intersectObject(meshRef.current as any, false)
+        const mgrLoc = mgrRef.current
+        if (hits && hits.length > 0) {
+          const hit: any = hits[0]
+          const idx: number | undefined = hit.instanceId
+          if (idx != null) {
+            const nodeId = mgrLoc!.idAt(idx)
+            if (selectedIdRef.current && selectedIdRef.current !== nodeId) {
+              mgrLoc!.restoreBaseColor(selectedIdRef.current)
+            }
+            mgrLoc!.setColor(nodeId, new THREE.Color(0xffa500))
+            selectedIdRef.current = nodeId
+          }
+        } else {
+          if (selectedIdRef.current) {
+            mgrLoc!.restoreBaseColor(selectedIdRef.current)
+            selectedIdRef.current = null
+          }
+          onBackgroundClick?.(ev as any)
+        }
+      }
+      ;(three.gl as any).domElement?.addEventListener('pointerdown', handlePointerDown)
       if (FORCE_VISIBLE) {
         const positions: THREE.Vector3[] = []
         for (let i = 0; i < count; i++) {
@@ -288,6 +323,7 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
       // Initial camera frame: zoom to fit after burst completes
       return () => {
         ;(three.scene as any).remove(mesh)
+        ;(three.gl as any).domElement?.removeEventListener('pointerdown', handlePointerDown)
         mgr.dispose()
       }
     }, [count])
@@ -345,7 +381,7 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
 
   return (
     <Canvas
-      style={{ width: '100%', height: '100%', background: '#0d1117' }}
+      style={{ width: '100%', height: '100%', background: '#ffffff' }}
       onPointerMissed={(e) => onBackgroundClick?.(e)}
     >
       <LatentScene />
