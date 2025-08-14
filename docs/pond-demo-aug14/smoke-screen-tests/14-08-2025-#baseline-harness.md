@@ -8,3 +8,8 @@
 ## Notes
 - Harness imports @refinery/canvas-latent directly to avoid @refinery/canvas-r3f errors.
 - If anything fails, STOP and log expected vs observed in a new scratchpad.
+
+## Dev Redirect Verified (M3)
+- Root route ('/') redirects to '/harness/latent' in development
+- Harness imports @pond/canvas-latent directly; no @refinery/canvas-r3f module errors
+- Use: NEXT_PUBLIC_DEBUG_GRAPH=1 NEXT_PUBLIC_LATENT_TRACE=1
