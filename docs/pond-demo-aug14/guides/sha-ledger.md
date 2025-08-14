@@ -8,3 +8,4 @@
 [LEDGER] KEY=S2-TIMELINE-FADE-A1 SHA=dcbdc98e65fe3c2ab72cb8b1eb41cffaf48ff393 BRANCH=canvas-latent-interaction DATE=2025-08-14T04:26:47Z MSG="Timeline opacity fade + throttle"
 [LEDGER] KEY=S1-ATTRIBUTES-A1 SHA=0ddc7a9a4e2c3c034ffc1a9683499da19ee0519c BRANCH=canvas-latent-core DATE=2025-08-14T04:31:11Z MSG="NodeAttributeManager setters + flush + base colors"
 [LEDGER] KEY=S3-HARNESS-SMOKE-A1 SHA=9d22a064fe6872701d73cbe11fe4a4e208f9168c BRANCH=canvas-latent-integration DATE=2025-08-14T04:48:37Z MSG="Harness page + dev toggles for baseline"
+[LEDGER] KEY=S3-DEV-REDIRECT-M3 SHA=76ef928b5755d59b2018a79a76241b37b7d9df5e BRANCH=canvas-latent-integration DATE=2025-08-14T06:20:06Z MSG="Dev redirect + local package wiring + exports"
