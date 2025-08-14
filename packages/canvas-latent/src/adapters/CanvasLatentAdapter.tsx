@@ -6,6 +6,7 @@ import { DEFAULT_ANIMATION_CONFIG } from '../constants'
 import { NodeAttributeManager } from '../core/NodeAttributeManager'
 import { InstancedNodeMesh } from '../core/InstancedNodeMesh'
 import { PositionCalculator } from '../utils/PositionCalculator'
+const FORCE_VISIBLE = process.env.NEXT_PUBLIC_LATENT_TRACE === '1'
 import type { CanvasLatentProps, CanvasLatentRef } from '../types'
 
 const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((props, ref) => {
@@ -208,6 +209,22 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
       const mgr = new NodeAttributeManager(count)
       mgr.setMesh(mesh)
       mgrRef.current = mgr
+      if (FORCE_VISIBLE) {
+        const positions=[]
+        for (let i=0;i<count;i++) {
+          const n=graphData.nodes[i]
+          const tx=(n.x ?? n.position?.x) ?? 0
+          const ty=(n.y ?? n.position?.y) ?? 0
+          const tz=(n.z ?? n.position?.z) ?? 0
+          mgr.setPosition(n.id ?? String(i), new THREE.Vector3(tx,ty,tz))
+          mgr.setOpacity(n.id ?? String(i), 1)
+          positions.push(new THREE.Vector3(tx,ty,tz))
+        }
+        mgr.flush()
+        try { InstancedNodeMesh.zoomToFit(positions, three.camera, null, 1.2) } catch {}
+        try { (mesh.material as any).transparent=false } catch {}
+        burstDoneRef.current=true
+      }
 
       // Register nodes, set initial positions at origin (burst start)
       targetsRef.current = []
