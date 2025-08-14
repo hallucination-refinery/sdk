@@ -83,3 +83,53 @@ Establish Milestone 1 documentation with exact SHAs from git and ensure consiste
 ✅ Phase 2 marked ACTIVE with current status
 ✅ All worktrees have synchronized base-of-truth documentation
 ✅ Task completed successfully at 3:26 PM EST
+
+---
+
+## TASK 3: M3-S1-DOC (ACTIVE)
+**Date/Time:** 11:45 PM EST, 13-08-2025
+**Branch:** canvas-latent-core
+
+### Task (Verbatim from lines 512-535)
+**TASK:** DOC-SYNC central docs; verify A1 baseline present in ledger.
+**GUARD BLOCK:**
+- Pull latest docs; ensure clean FF-only update.
+- Verify ledger exists and contains `KEY=A1-INTEGRATION-TYPES`.
+  **CONTEXT:** S1 M3 compiles against A1 types; idempotent if already present.
+  **WARNINGS:** Do not modify docs during DOC-SYNC.
+  **SUCCESS CRITERIA:** Docs current; A1 key found.
+  **RESOURCES:** @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+### ULTRATHINK MODE
+
+#### 1. DECOMPOSE
+Core premise: Synchronize documentation and verify A1 baseline types are present in the ledger.
+Claims: A1-INTEGRATION-TYPES must be present for S1 M3 compilation.
+Assumptions: feat-pond-demo-aug14 branch contains the latest docs with required ledger.
+
+#### 2. PLAN
+Subtasks:
+1. Fetch origin repository
+2. Checkout feat-pond-demo-aug14 branch
+3. Pull latest changes with --ff-only
+4. Verify sha-ledger.md file exists
+5. Verify A1-INTEGRATION-TYPES key is present in ledger
+
+#### 3. PROBE (OODA Loops)
+Each command has clear success/failure criteria with explicit exit codes.
+
+#### 4. SEQUENCE
+Linear sequence required due to dependencies.
+
+### Execution Log
+- 11:45 PM: Starting DOC-SYNC task
+- 11:45 PM: Fetched origin successfully
+- 11:45 PM: Already on feat-pond-demo-aug14 branch
+- 11:45 PM: Pull --ff-only completed (already up to date)
+- 11:45 PM: Verified sha-ledger.md file exists
+- 11:45 PM: Verified KEY=A1-INTEGRATION-TYPES present in ledger
+
+### Final Verification
+✅ Docs current (already up to date with origin)
+✅ A1 baseline found (KEY=A1-INTEGRATION-TYPES present)
+✅ Task completed successfully - SUCCESS CRITERIA MET
