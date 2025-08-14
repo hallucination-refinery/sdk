@@ -211,29 +211,39 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
       mgrRef.current = mgr
       if (FORCE_VISIBLE) {
         const positions: THREE.Vector3[] = []
-        for (let i=0;i<count;i++) {
-          const n=graphData.nodes[i]
-          const tx=(n.x ?? n.position?.x) ?? 0
-          const ty=(n.y ?? n.position?.y) ?? 0
-          const tz=(n.z ?? n.position?.z) ?? 0
-          mgr.setPosition(n.id ?? String(i), new THREE.Vector3(tx,ty,tz))
+        for (let i = 0; i < count; i++) {
+          const n = graphData.nodes[i]
+          const tx = n.x ?? n.position?.x ?? 0
+          const ty = n.y ?? n.position?.y ?? 0
+          const tz = n.z ?? n.position?.z ?? 0
+          mgr.setPosition(n.id ?? String(i), new THREE.Vector3(tx, ty, tz))
           mgr.setOpacity(n.id ?? String(i), 1)
           // Initialize visible color (prefer nodeColor prop, else default medium-blue)
           const colorStr = typeof nodeColor === 'function' ? nodeColor(n) : undefined
           const color = new THREE.Color(colorStr ?? 0x2196f3)
           mgr.setColor(n.id ?? String(i), color)
-          positions.push(new THREE.Vector3(tx,ty,tz))
+          positions.push(new THREE.Vector3(tx, ty, tz))
         }
         mgr.flush()
         try {
           InstancedNodeMesh.zoomToFit(positions, three.camera as any, orbitRef.current, 1.2)
           // One-shot reframe to ensure reliable framing after first paint
           setTimeout(() => {
-            try { InstancedNodeMesh.zoomToFit(positions, three.camera as any, orbitRef.current, 1.2) } catch (_err) { void _err }
+            try {
+              InstancedNodeMesh.zoomToFit(positions, three.camera as any, orbitRef.current, 1.2)
+            } catch (_err) {
+              void _err
+            }
           }, 300)
-        } catch (_err) { void _err }
-        try { (mesh.material as any).transparent=false } catch (_err) { void _err }
-        burstDoneRef.current=true
+        } catch (_err) {
+          void _err
+        }
+        try {
+          ;(mesh.material as any).transparent = false
+        } catch (_err) {
+          void _err
+        }
+        burstDoneRef.current = true
       }
 
       // Register nodes, set initial positions at origin (burst start)
@@ -310,7 +320,11 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
           const positions = targetsRef.current
           InstancedNodeMesh.zoomToFit(positions, three.camera as any, orbitRef.current, 1.2)
           setTimeout(() => {
-            try { InstancedNodeMesh.zoomToFit(positions, three.camera as any, orbitRef.current, 1.2) } catch (_err) { void _err }
+            try {
+              InstancedNodeMesh.zoomToFit(positions, three.camera as any, orbitRef.current, 1.2)
+            } catch (_err) {
+              void _err
+            }
           }, 300)
         }
       }
