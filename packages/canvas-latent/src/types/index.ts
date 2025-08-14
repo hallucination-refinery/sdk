@@ -71,3 +71,41 @@ export interface CanvasLatentProps {
 
   [key: string]: any;
 }
+
+export interface CanvasLatentRef {
+  // Graph data methods
+  graphData: () => { nodes: any[]; links: any[] };
+  
+  // Camera methods
+  cameraPosition: (position?: { x?: number; y?: number; z?: number }, lookAt?: { x?: number; y?: number; z?: number }, duration?: number) => { x: number; y: number; z: number };
+  zoomToFit: (duration?: number, padding?: number, nodeFilter?: (node: any) => boolean) => void;
+  
+  // Node methods
+  centerAt: (x?: number, y?: number, duration?: number) => { x: number; y: number };
+  zoom: (zoomLevel?: number, duration?: number) => number;
+  
+  // Force simulation methods (no-ops for canvas-latent)
+  d3Force: (forceName: string, force?: any) => any;
+  d3ReheatSimulation: () => void;
+  d3AlphaTarget: (target?: number) => number;
+  d3AlphaDecay: (decay?: number) => number;
+  d3VelocityDecay: (decay?: number) => number;
+  
+  // Utility methods
+  refresh: () => void;
+  pauseAnimation: () => void;
+  resumeAnimation: () => void;
+  
+  // Scene access
+  scene: () => any;
+  camera: () => any;
+  renderer: () => any;
+  controls: () => any;
+  
+  // Screen/world coordinate conversion
+  screen2GraphCoords: (x: number, y: number, distance?: number) => { x: number; y: number; z: number };
+  graph2ScreenCoords: (x: number, y: number, z?: number) => { x: number; y: number };
+  
+  // Node position methods
+  getGraphBbox: (nodeFilter?: (node: any) => boolean) => { x: [number, number]; y: [number, number]; z: [number, number] };
+}
