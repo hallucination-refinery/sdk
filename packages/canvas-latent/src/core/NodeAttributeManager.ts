@@ -106,6 +106,10 @@ export class NodeAttributeManager {
       this.instanceColor[offset] = baseColor.r
       this.instanceColor[offset + 1] = baseColor.g
       this.instanceColor[offset + 2] = baseColor.b
+
+      // Mark color dirty so first post-registration flush uploads colors
+      this.dirtyRangeColor.min = Math.min(this.dirtyRangeColor.min, index)
+      this.dirtyRangeColor.max = Math.max(this.dirtyRangeColor.max, index)
     }
   }
 

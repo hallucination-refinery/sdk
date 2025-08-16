@@ -242,6 +242,7 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
         if (!canvasEl || !meshRef.current || !mgrRef.current) return
         // Ensure world matrices are current for accurate raycasting
         meshRef.current.updateMatrixWorld(true)
+        ;(three.camera as any)?.updateMatrixWorld?.(true)
         const rect = canvasEl.getBoundingClientRect()
         const ndcX = ((ev.clientX - rect.left) / rect.width) * 2 - 1
         const ndcY = -((ev.clientY - rect.top) / rect.height) * 2 + 1
