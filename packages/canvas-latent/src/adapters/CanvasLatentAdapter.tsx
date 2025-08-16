@@ -197,6 +197,29 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
         new Float32Array(count * 3),
         3
       )
+      // Seed per-instance colors BEFORE first render using built-in API
+      for (let i = 0; i < count; i++) {
+        const n = graphData.nodes[i]
+        const colorStr = typeof nodeColor === 'function' ? nodeColor(n) : undefined
+        const color = new THREE.Color(colorStr ?? 0x2196f3)
+        if ((mesh as any).setColorAt) {
+          ;(mesh as any).setColorAt(i, color)
+        } else {
+          const ic: any = (mesh as any).instanceColor
+          if (typeof ic?.setXYZ === 'function') ic.setXYZ(i, color.r, color.g, color.b)
+          else if (ic?.array) {
+            const o = i * 3
+            ic.array[o] = color.r
+            ic.array[o + 1] = color.g
+            ic.array[o + 2] = color.b
+          }
+        }
+      }
+      try {
+        ;(mesh as any).instanceColor.needsUpdate = true
+      } catch (_err) {
+        void _err
+      }
 
       // Scale geometry by nodeRelSize (uniform for baseline)
       if (nodeRelSize && nodeRelSize !== 1) {
@@ -223,6 +246,8 @@ const CanvasLatentAdapter = forwardRef<CanvasLatentRef, CanvasLatentProps>((prop
         const ndcX = ((ev.clientX - rect.left) / rect.width) * 2 - 1
         const ndcY = -((ev.clientY - rect.top) / rect.height) * 2 + 1
         const rc = raycasterRef.current!
+        // Update camera world matrix for accurate raycasting
+        ;(three.camera as any)?.updateMatrixWorld?.(true)
         rc.setFromCamera(new THREE.Vector2(ndcX, ndcY), three.camera as any)
         const hits = rc.intersectObject(meshRef.current as any, false)
         const mgrLoc = mgrRef.current
