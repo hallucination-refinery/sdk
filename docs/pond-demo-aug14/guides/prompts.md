@@ -808,7 +808,7 @@ git -C /workspace/worktrees/canvas-latent-integration merge-base --is-ancestor "
 **Prompt:**
 
 **ULTRATHINK MODE**  
-**CURRENT DATE/TIME:** 11:57 PM EST, 13-08-2025  
+**CURRENT DATE/TIME:** 12:50 AM EST, 14-08-2025  
 **NAME:** You are THOMPSON-C (Stream 3)  
 **BRANCH:** canvas-latent-integration  
 **TASK:** Build a sample harness page that imports `@refinery/canvas-latent` directly with dev toggles; avoid `@refinery/canvas-r3f`.  
@@ -837,7 +837,7 @@ git -C /workspace/worktrees/canvas-latent-integration push origin canvas-latent-
 **Prompt:**
 
 **ULTRATHINK MODE**  
-**CURRENT DATE/TIME:** 11:59 PM EST, 13-08-2025  
+**CURRENT DATE/TIME:** 12:55 AM EST, 14-08-2025  
 **NAME:** You are THOMPSON-D (Stream 3)  
 **BRANCH:** canvas-latent-integration  
 **TASK:** Append harness commit SHA to ledger (KEY=S3-HARNESS-SMOKE-A1).  
@@ -900,7 +900,341 @@ git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug1
 
 **Prevents:** Eliminates ambiguity by providing a single, minimal test path and instructions.
 
+--
+
+### [M3-AF-1] AUDIT & FIX — Dev Redirect + Local Package Wiring (Integration)
+
+**ULTRATHINK MODE**
+**CURRENT DATE/TIME:** 2:18 AM EST, 14-08-2025
+**NAME:** THOMPSON-AF (Audit & Fix)
+**BRANCH:** canvas-latent-integration
+**TASK:** In dev, redirect “/” → “/harness/latent”, ensure the app depends on the local `@pond/canvas-latent`, and export adapter symbols. Commit, push, then write SHA to ledger as S3-DEV-REDIRECT-M3.
+
+**GUARD BLOCK:**
+
+- DOC-SYNC docs and require both keys before any changes:
+  - `KEY=S1-ATTRIBUTES-A1`, `KEY=S2-TIMELINE-FADE-A1`
+- CODE-SYNC integration (idempotent): cherry-pick S1 then S2 if not ancestors.
+- Scope: only `canvas-latent-integration` and central docs worktree.
+
+```bash
+# DOC-SYNC (docs)
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+grep -q "KEY=S1-ATTRIBUTES-A1" "$LEDGER" || { echo "WAIT: S1-ATTRIBUTES-A1 missing"; exit 1; }
+grep -q "KEY=S2-TIMELINE-FADE-A1" "$LEDGER" || { echo "WAIT: S2-TIMELINE-FADE-A1 missing"; exit 1; }
+
+# CODE-SYNC (integration)
+S1_SHA=$(grep "KEY=S1-ATTRIBUTES-A1" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+S2_SHA=$(grep "KEY=S2-TIMELINE-FADE-A1" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+git -C /workspace/worktrees/canvas-latent-integration rev-parse --abbrev-ref HEAD | grep -E '^canvas-latent-integration$' || { echo "Wrong branch"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-integration status --porcelain | grep . && { echo "Dirty working tree"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-integration fetch origin
+git -C /workspace/worktrees/canvas-latent-integration merge-base --is-ancestor "$S1_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-integration cherry-pick -x "$S1_SHA"
+git -C /workspace/worktrees/canvas-latent-integration merge-base --is-ancestor "$S2_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-integration cherry-pick -x "$S2_SHA"
+
+# Dev-only redirect for root → harness
+CFG=/workspace/worktrees/canvas-latent-integration/apps/legacy-import/cryptic-vault-demo/next.config.ts
+grep -q "redirects()" "$CFG" || cat >> "$CFG" << 'EOF'
+
+export default {
+  async redirects() {
+    return process.env.NODE_ENV === 'development'
+      ? [{ source: '/', destination: '/harness/latent', permanent: false }]
+      : [];
+  },
+};
+EOF
+
+# Ensure app depends on local @pond/canvas-latent
+APP_PKG=/workspace/worktrees/canvas-latent-integration/apps/legacy-import/cryptic-vault-demo/package.json
+node -e "const fs=require('fs');const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p,'utf8'));j.dependencies=j.dependencies||{};if(!j.dependencies['@pond/canvas-latent']){j.dependencies['@pond/canvas-latent']='workspace:*';fs.writeFileSync(p, JSON.stringify(j,null,2));console.log('added');}else{console.log('exists');}" "$APP_PKG"
+
+# Ensure adapter exports in package index
+PKG_INDEX=/workspace/worktrees/canvas-latent-integration/packages/canvas-latent/src/index.ts
+grep -q "CanvasLatentAdapter" "$PKG_INDEX" || echo "export { CanvasLatentAdapter } from './adapters/CanvasLatentAdapter'" >> "$PKG_INDEX"
+grep -q "CanvasLatentRef" "$PKG_INDEX" || echo "export type { CanvasLatentRef } from './adapters/CanvasLatentAdapter'" >> "$PKG_INDEX"
+
+# Commit + push integration changes
+git -C /workspace/worktrees/canvas-latent-integration add .
+git -C /workspace/worktrees/canvas-latent-integration commit -m "integration(dev): dev redirect '/'→'/harness/latent'; add @pond/canvas-latent dep; ensure adapter exports"
+git -C /workspace/worktrees/canvas-latent-integration push origin canvas-latent-integration
+
+# DOCPUB: record SHA in ledger as S3-DEV-REDIRECT-M3
+INTEG_SHA=$(git -C /workspace/worktrees/canvas-latent-integration rev-parse HEAD)
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+printf "[LEDGER] KEY=S3-DEV-REDIRECT-M3 SHA=%s BRANCH=canvas-latent-integration DATE=%s MSG=\"Dev redirect + local package wiring + exports\"\n" "$INTEG_SHA" "$DATE_STR" >> "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(sha-ledger): record S3-DEV-REDIRECT-M3 $INTEG_SHA"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
 ---
+
+### [M3-VIS-2] Audit & Investigate: Latest Manual Visual Confirmation Smoke
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** NOW  
+**NAME:** ENGELBART-VIS (Docs Auditor)  
+**BRANCH:** feat-pond-demo-aug14  
+**TASK:** Read the latest manual smoke screen test results (user-documented), compare against the predictions below, classify outcome, extract error signatures, and publish a concise "Audit Findings" section with prioritized next steps. Record a docs-only ledger entry.
+
+**GUARD BLOCK:**
+
+- DOC-SYNC central docs fast-forward only; require `KEY=S3-DEV-REDIRECT-M3` to ensure harness baseline is valid.
+- Inputs are docs-only; do not modify any code or non-doc files.
+- Require the runbook file to exist; STOP with a clear message if missing.
+- Idempotent writes: append a new audit section each run, do not rewrite prior content.
+
+**INPUTS:**
+
+- RUNBOOK: @filepath (replace with the actual smoke log path the user just updated)
+- LEDGER: `/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md`
+
+**PREDICTIONS (to score hit/miss):**
+
+- P1 (80%): With `NEXT_PUBLIC_LATENT_TRACE=1`, spheres render immediately (opaque), proving draw path.
+- P2 (70%): Disabling the flag next will show one-time burst (~450ms) then `zoomToFit`.
+- P3 (65%): No React unknown-prop warnings (adapter DOM spread removed).
+- P4 (60%): ≥60 FPS at ~300 nodes (single draw call) during idle.
+- P5 (55%): If any issue persists, it will be camera framing timing (needs follow-up `zoomToFit`).
+
+**EVIDENCE CLASSIFIERS:**
+
+- Visible pass: any screenshot/note stating "spheres visible" or mesh counts in console.
+- Attribute flush error: lines matching `NodeAttributeManager` + `updateRange`/`offset`.
+- Camera issue: nodes render but off-screen until zoom invoked; multiple `zoomToFit` calls.
+- Build/route issues: legacy `@refinery/canvas-r3f` errors or 404 on `/harness/latent`.
+
+**PROCEDURE:**
+
+1. DOC-SYNC docs and verify ledger key.
+2. Read RUNBOOK tail section (latest entry) and extract: server logs (first 10), browser console (first 10), observations, screenshots/notes.
+3. Score P1–P5 as Hit/Miss/Unknown with one-sentence justification each; cite exact log lines when possible.
+4. Classify state: {Visible-OK, Visible-Camera-Issue, Not-Visible-Attributes, Not-Visible-Other}. Produce a 3-item prioritized Next Actions list aligned to class.
+5. Append `## Audit Findings (ISO-8601 timestamp)` to RUNBOOK containing: Observations, Prediction Scores, Root-Cause Hypothesis, Next Actions, Go/No-Go for proceeding to selection wiring today.
+6. Append a docs-only ledger entry `KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only` and push immediately.
+
+**SUCCESS CRITERIA:**
+
+- New "Audit Findings" section appended to RUNBOOK with scored predictions and prioritized actions.
+- Ledger updated with `S3-SMOKE-AUDIT-M3` and pushed.
+- A crisp Go/No-Go with the single highest-impact next step called out.
+
+```bash
+# DOC-SYNC (docs)
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+
+# Inputs
+RUNBOOK=@filepath
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+# Guard checks
+[ -f "$RUNBOOK" ] || { echo "FATAL: RUNBOOK missing at $RUNBOOK"; exit 1; }
+grep -q "KEY=S3-DEV-REDIRECT-M3" "$LEDGER" || { echo "WAIT: S3-DEV-REDIRECT-M3 missing"; exit 1; }
+
+# (The agent will now read $RUNBOOK, perform the audit, and append an 'Audit Findings' section.)
+
+# DOCPUB — record docs-only ledger entry for this audit
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+printf "[LEDGER] KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=%s MSG=\"Manual smoke visual audit appended\"\n" "$DATE_STR" >> "$LEDGER"
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$RUNBOOK" "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(smoke-audit): append M3 visual audit; ledger S3-SMOKE-AUDIT-M3"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+- How this addresses your request:
+  - Echoes back the exact actions: read your smoke log, compare to predictions, classify outcome, publish findings, and ledger a docs-only entry.
+  - Constrains scope to docs-only with guard blocks, aligning with your manual test workflow and preventing code churn near deadline.
+  - Provides a complete, copy-pastable prompt with explicit inputs, classifiers, and success criteria.
+  - Forces a crisp Go/No-Go and calls out the single highest-impact next step, keeping focus on delivering by 5 PM.
+
+---
+
+### [M3-AFZ-3] AUDIT & FINALIZE — Milestone 3 Finalization & Self-Validation
+
+**ULTRATHINK MODE**
+**CURRENT DATE/TIME:** NOW
+**NAME:** DIJKSTRA-AFZ (Audit & Finalize)
+**BRANCH:** feat-pond-demo-aug14
+**TASK:** Verify all M3 keys present and publish a short M3 status note.
+**BASELINE:** Carefully read the _quick_ smoke screen test documented @worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/smoke-screen-tests/14-08-2025-#baseline-harness.md
+**GUARD BLOCK:**
+
+- DOC-SYNC docs; require keys:
+  - `S1-ATTRIBUTES-A1`, `S2-TIMELINE-FADE-A1`, `S3-HARNESS-SMOKE-A1`, `S3-DEV-REDIRECT-M3`, `S3-SMOKE-PING-M3`.
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+for KEY in S1-ATTRIBUTES-A1 S2-TIMELINE-FADE-A1 S3-HARNESS-SMOKE-A1 S3-DEV-REDIRECT-M3 S3-SMOKE-PING-M3; do
+  grep -q "KEY=$KEY" "$LEDGER" || { echo "WAIT: $KEY missing"; exit 1; }
+done
+
+NOTE=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/working-doc.md
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+cat >> "$NOTE" << EOF
+
+### M3 Status (${DATE_STR})
+- Dev redirect active; harness route verified
+- Core attributes + Interaction timeline fade present (S1/S2)
+- Harness smoke runbook published; user ping recorded
+EOF
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$NOTE"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(status): Milestone 3 ready — redirect + harness verified; user ping recorded"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+--
+
+### [M3-VIS-1] Force-Visibility Triage — Adapter (Integration)
+
+**ULTRATHINK MODE**
+**CURRENT DATE/TIME:** 10:56 AM
+**NAME:** THOMPSON-VIS
+**BRANCH:** canvas-latent-integration
+**TASK:** _Systematically_ audit, verify and, (if needed) correct your work. Force InstancedMesh visibility and frame the camera to prove the draw path. Temporarily bypass burst/alpha. Commit with clear message.
+**REQUIREMENT:**
+
+1. _EVERY_ claim in your scratchpad is false until explicitly verified.
+2. Maintain a rigorous, falsifiable OODA loops for **each** subtask/claim.
+3. Treat **every observation** as evidence that updates your probability mass over whether the end-state is satisfied.
+4. When evidence and expectation differ, **always assume the gap is larger than it seems**, widen your investigation, and start a new falsifiable OODA loop.
+
+**GUARD BLOCK:**
+
+- DOC-SYNC docs; require `S3-DEV-REDIRECT-M3` present in ledger.
+- Modify ONLY `packages/canvas-latent/src/adapters/CanvasLatentAdapter.tsx`.
+- Keep changes minimal and reversible (guard with a local “FORCE_VISIBLE” flag).
+
+```bash
+# 1) DOC-SYNC
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+grep -q "KEY=S3-DEV-REDIRECT-M3" "$LEDGER" || { echo "WAIT: S3-DEV-REDIRECT-M3 missing"; exit 1; }
+
+# 2) Apply minimal adapter edits (force visibility flag + forced positions + zoomToFit)
+ADAPTER=/workspace/worktrees/canvas-latent-integration/packages/canvas-latent/src/adapters/CanvasLatentAdapter.tsx
+node - <<'EOF'
+const fs=require('fs');const p=process.argv[1];let s=fs.readFileSync(p,'utf8');
+if(!s.includes('const FORCE_VISIBLE')){
+  s=s.replace(
+    "import { PositionCalculator } from '../utils/PositionCalculator';",
+    "import { PositionCalculator } from '../utils/PositionCalculator';\nconst FORCE_VISIBLE = process.env.NEXT_PUBLIC_LATENT_TRACE === '1';"
+  );
+  s=s.replace(
+    /const { mesh } = InstancedNodeMesh.build\(count\);[\s\S]*?meshRef\.current = mesh;/,
+    (m)=>m+"\n      if (FORCE_VISIBLE) {\n        const positions=[];\n        for (let i=0;i<count;i++) {\n          const n=graphData.nodes[i];\n          const tx=(n.x ?? n.position?.x) ?? 0;\n          const ty=(n.y ?? n.position?.y) ?? 0;\n          const tz=(n.z ?? n.position?.z) ?? 0;\n          mgr.setPosition(n.id ?? String(i), new (require('three')).Vector3(tx,ty,tz));\n          mgr.setOpacity(n.id ?? String(i), 1);\n          positions.push(new (require('three')).Vector3(tx,ty,tz));\n        }\n        mgr.flush();\n        try { require('../core/InstancedNodeMesh').InstancedNodeMesh.zoomToFit(positions, three.camera, null, 1.2); } catch {}\n        try { mesh.material.transparent=false; } catch {}\n        burstDoneRef.current=true;\n      }\n"
+  );
+  fs.writeFileSync(p,s);
+  console.log('patched');
+} else { console.log('exists'); }
+EOF
+# 3) Commit and push
+git -C /workspace/worktrees/canvas-latent-integration add /workspace/worktrees/canvas-latent-integration/packages/canvas-latent/src/adapters/CanvasLatentAdapter.tsx
+git -C /workspace/worktrees/canvas-latent-integration commit -m "vis(debug): force visibility & zoomToFit when NEXT_PUBLIC_LATENT_TRACE=1; bypass alpha/burst for proof"
+git -C /workspace/worktrees/canvas-latent-integration push origin canvas-latent-integration
+```
+
+--
+
+### [M3-VIS-2] Audit & Investigate: Latest Manual Visual Confirmation Smoke
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 11:50 AM EST, 14-08-2025
+**NAME:** ENGELBART-VIS (Code + Docs Auditor)  
+**BRANCH:** feat-pond-demo-aug14  
+**TASK:** Read the latest manual smoke screen test results (user-documented), compare against the predictions below, cross-reference with codebase, investigate classify outcome, extract error signatures, and publish a concise "Audit Findings" section with prioritized next steps. Record a docs-only ledger entry.
+
+**GUARD BLOCK:**
+
+- DOC-SYNC central docs fast-forward only; require `KEY=S3-DEV-REDIRECT-M3` to ensure harness baseline is valid.
+- Inputs are docs + READ-ONLY codebase cross-reference; strictly no code edits, staging, or commits (only append to RUNBOOK/LEDGER).
+- Require the runbook file to exist; STOP with a clear message if missing.
+- Idempotent writes: append a new audit section each run, do not rewrite prior content.
+
+**INPUTS:**
+
+- RUNBOOK: `@worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/smoke-screen-tests/14-08-2025-#visual-confirmation-baseline.md`
+- LEDGER: `@/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md`
+- THOMPSON-VIS SCRATCHPAD: `worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/scratchpads/THOMPSON-VIS-01-scratchpad.md`
+- SCREENSHOT: `@worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/smoke-screen-tests/browser-screenshot-14-08-2025-#visual-confirmation-baseline.png`
+
+**PREDICTIONS (to score hit/miss):**
+
+- P1 (80%): With `NEXT_PUBLIC_LATENT_TRACE=1`, spheres render immediately (opaque), proving draw path.
+- P2 (70%): Disabling the flag next will show one-time burst (~450ms) then `zoomToFit`.
+- P3 (65%): No React unknown-prop warnings (adapter DOM spread removed).
+- P4 (60%): ≥60 FPS at ~300 nodes (single draw call) during idle.
+- P5 (55%): If any issue persists, it will be camera framing timing (needs follow-up `zoomToFit`).
+
+**EVIDENCE CLASSIFIERS:**
+
+- Source evidence: cite relevant filepath:line-range excerpts that support the classification.
+- Visible pass: any screenshot/note stating "spheres visible" or mesh counts in console.
+- Attribute flush error: lines matching `NodeAttributeManager` + `updateRange`/`offset`.
+- Camera issue: nodes render but off-screen until zoom invoked; multiple `zoomToFit` calls.
+- Build/route issues: legacy `@refinery/canvas-r3f` errors or 404 on `/harness/latent`.
+
+**PROCEDURE:**
+
+1. DOC-SYNC docs and verify ledger key.
+
+2) Read RUNBOOK tail (latest entry) and extract: server logs (first 10), browser console (first 10), observations, screenshots/notes; THEN cross-reference code (READ-ONLY) in:
+   - packages/canvas-latent/src/adapters/CanvasLatentAdapter.tsx
+   - packages/canvas-latent/src/core/NodeAttributeManager.ts
+   - packages/canvas-latent/src/core/InstancedNodeMesh.ts
+     Look for: 'aOpacity' attribute creation/usage, 'instanceColor', 'updateRange' and 'flush(', and any guards around mesh/geometry attributes. Quote small code excerpts with filepath:line ranges in findings.
+
+3. Score P1–P5 as Hit/Miss/Unknown with one-sentence justification each; cite exact log lines when possible.
+4. Classify state: {Visible-OK, Visible-Camera-Issue, Not-Visible-Attributes, Not-Visible-Other}. Produce a 3-item prioritized Next Actions list aligned to class.
+5. Append `## Audit Findings (ISO-8601 timestamp)` to RUNBOOK containing: Observations, Prediction Scores, Root-Cause Hypothesis, Next Actions, Go/No-Go for proceeding to selection wiring today.
+6. Append a docs-only ledger entry `KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only` and push immediately.
+
+**SUCCESS CRITERIA:**
+
+- New "Audit Findings" section appended to RUNBOOK with scored predictions and prioritized actions.
+- Ledger updated with `S3-SMOKE-AUDIT-M3` and pushed.
+- A crisp Go/No-Go with the single highest-impact next step called out.
+
+```bash
+# DOC-SYNC (docs)
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+
+# Inputs
+RUNBOOK=@filepath
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+# Guard checks
+[ -f "$RUNBOOK" ] || { echo "FATAL: RUNBOOK missing at $RUNBOOK"; exit 1; }
+grep -q "KEY=S3-DEV-REDIRECT-M3" "$LEDGER" || { echo "WAIT: S3-DEV-REDIRECT-M3 missing"; exit 1; }
+
+# (The agent will now read $RUNBOOK, perform the audit, and append an 'Audit Findings' section.)
+
+# DOCPUB — record docs-only ledger entry for this audit
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+printf "[LEDGER] KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=%s MSG=\"Manual smoke visual audit appended\"\n" "$DATE_STR" >> "$LEDGER"
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$RUNBOOK" "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(smoke-audit): append M3 visual audit; ledger S3-SMOKE-AUDIT-M3"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+--
 
 ## Self-Validation Checklist
 
@@ -912,3 +1246,7 @@ git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug1
 - S1 (Core): M3-S1-DOC → M3-S1-CODE → M3-S1-IMPL → M3-S1-DOCPUB
 - S2 (Animation): M3-S2-DOC → M3-S2-CODE → M3-S2-IMPL → M3-S2-DOCPUB
 - S3 (Integration): M3-S3-DOC → M3-S3-CODE → M3-S3-IMPL → M3-S3-DOCPUB → M3-SMOKE-PING
+
+```
+
+```

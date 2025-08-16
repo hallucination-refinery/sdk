@@ -25,3 +25,11 @@ Core premise: Cherry-pick two specific commits (S1-ATTRIBUTES-A1, S2-TIMELINE-FA
 
 ## Execution
 Executing provided bash script to perform cherry-picks.
+
+## Results
+✓ Successfully cherry-picked S1-ATTRIBUTES-A1 (0ddc7a9a) → new SHA: 6cd32af7
+✓ Successfully cherry-picked S2-TIMELINE-FADE-A1 (dcbdc98e) → new SHA: c36f4711
+✓ Commits applied in deterministic order (S1 → S2)
+✓ Clean cherry-picks with no conflicts
+
+Note: Cherry-picked commits have new SHAs as expected.
