@@ -63,6 +63,38 @@ export class NodeAttributeManager {
   
   setMesh(mesh: THREE.InstancedMesh): void {
     this.mesh = mesh;
+    
+    // Create instanceColor attribute if missing
+    if (!mesh.instanceColor && mesh.geometry) {
+      const existingAttr = mesh.geometry.getAttribute('instanceColor');
+      if (!existingAttr) {
+        const instanceColor = new THREE.InstancedBufferAttribute(
+          new Float32Array(mesh.count * 3),
+          3
+        );
+        instanceColor.setUsage(THREE.DynamicDrawUsage);
+        instanceColor.updateRange = { offset: 0, count: -1 };
+        mesh.geometry.setAttribute('instanceColor', instanceColor);
+      } else {
+        // Ensure existing attribute has proper usage and updateRange
+        existingAttr.setUsage(THREE.DynamicDrawUsage);
+        if (!existingAttr.updateRange) {
+          existingAttr.updateRange = { offset: 0, count: -1 };
+        }
+      }
+    }
+    
+    // On first registration pass, perform a one-time needsUpdate fallback for first paint
+    if (mesh.instanceMatrix) {
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+    if (mesh.instanceColor) {
+      mesh.instanceColor.needsUpdate = true;
+    }
+    const aOpacityAttr = mesh.geometry.getAttribute('aOpacity');
+    if (aOpacityAttr) {
+      aOpacityAttr.needsUpdate = true;
+    }
   }
   
   registerNode(nodeId: string, index: number, nodeData?: NodeData): void {
@@ -199,8 +231,12 @@ export class NodeAttributeManager {
         this.instanceMatrix.subarray(start, start + count),
         start
       );
-      this.mesh.instanceMatrix.updateRange.offset = start;
-      this.mesh.instanceMatrix.updateRange.count = count;
+      
+      // Handle missing updateRange gracefully
+      if (this.mesh.instanceMatrix.updateRange) {
+        this.mesh.instanceMatrix.updateRange.offset = start;
+        this.mesh.instanceMatrix.updateRange.count = count;
+      }
       this.mesh.instanceMatrix.needsUpdate = true;
     }
     
@@ -214,8 +250,12 @@ export class NodeAttributeManager {
           this.instanceColor.subarray(start, start + count),
           start
         );
-        colorAttr.updateRange.offset = start;
-        colorAttr.updateRange.count = count;
+        
+        // Handle missing updateRange gracefully
+        if (colorAttr.updateRange) {
+          colorAttr.updateRange.offset = start;
+          colorAttr.updateRange.count = count;
+        }
         colorAttr.needsUpdate = true;
       }
     }
@@ -230,8 +270,12 @@ export class NodeAttributeManager {
           this.aOpacity.subarray(start, start + count),
           start
         );
-        opacityAttr.updateRange.offset = start;
-        opacityAttr.updateRange.count = count;
+        
+        // Handle missing updateRange gracefully
+        if (opacityAttr.updateRange) {
+          opacityAttr.updateRange.offset = start;
+          opacityAttr.updateRange.count = count;
+        }
         opacityAttr.needsUpdate = true;
       }
     }

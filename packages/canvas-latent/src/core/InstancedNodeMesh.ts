@@ -10,7 +10,8 @@ export class InstancedNodeMesh {
     const geometry = new THREE.SphereGeometry(1, 16, 16);
     const material = new THREE.MeshBasicMaterial({
       vertexColors: true,
-      transparent: true,
+      transparent: false, // Keep transparent=false for visibility until fade is enabled
+      color: 0xffffff, // No base tint
     });
     
     material.onBeforeCompile = (shader) => {
@@ -40,12 +41,24 @@ export class InstancedNodeMesh {
     
     const mesh = new THREE.InstancedMesh(geometry, material, count);
     
+    // Create instanceColor buffer if not already present
+    if (!geometry.getAttribute('instanceColor')) {
+      const instanceColor = new THREE.InstancedBufferAttribute(
+        new Float32Array(count * 3),
+        3
+      );
+      geometry.setAttribute('instanceColor', instanceColor);
+    }
+    
     const aOpacity = new THREE.InstancedBufferAttribute(
       new Float32Array(count),
       1
     );
     
     geometry.setAttribute('aOpacity', aOpacity);
+    
+    // Ensure boundingSphere is computed once
+    geometry.computeBoundingSphere();
     
     return {
       mesh,
