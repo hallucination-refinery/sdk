@@ -12,3 +12,4 @@
 [LEDGER] KEY=S3-SMOKE-PING-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=2025-08-14T06:24:33Z MSG="Baseline harness ping published (M3)"
 [LEDGER] KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=2025-08-14T15:57:08Z MSG="Manual smoke visual audit appended"
 [LEDGER] KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=2025-08-14T16:08:43Z MSG="Manual smoke visual audit reviewed"
+[LEDGER] KEY=S1-COLOR-PIPE-M3 SHA=0a1aa1d3b06051f7b4cf34291ea1b6c9ecd3308d BRANCH=canvas-latent-core DATE=2025-08-16T17:41:05Z MSG="InstanceColor pipeline visible on first paint"
