@@ -13,3 +13,5 @@
 [LEDGER] KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=2025-08-14T15:57:08Z MSG="Manual smoke visual audit appended"
 [LEDGER] KEY=S3-SMOKE-AUDIT-M3 SHA=docs-only BRANCH=feat-pond-demo-aug14 DATE=2025-08-14T16:08:43Z MSG="Manual smoke visual audit reviewed"
 [LEDGER] KEY=S1-COLOR-PIPE-M3 SHA=0a1aa1d3b06051f7b4cf34291ea1b6c9ecd3308d BRANCH=canvas-latent-core DATE=2025-08-16T17:41:05Z MSG="InstanceColor pipeline visible on first paint"
+[LEDGER] KEY=S3-SEL-DOC-SYNC SHA=docs-only BRANCH=canvas-latent-integration DATE=2025-08-16T18:46:00Z MSG="DOC-SYNC selection test to canvas-latent-integration"
+[LEDGER] KEY=S3-SELECTION-M3 SHA=8d24d540a2dae62f02345c70c6b03e0d396e3814 BRANCH=canvas-latent-integration DATE=2025-08-16T18:01:25Z MSG="Click-to-select (orange) + background-clear"
