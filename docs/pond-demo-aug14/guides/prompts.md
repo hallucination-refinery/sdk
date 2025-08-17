@@ -1250,3 +1250,309 @@ git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug1
 ```
 
 ```
+
+---
+
+### [M3-S1-COLOR-DOC] - Stream 1 (Core) - DOC-SYNC (Color Pipeline)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** NOW  
+**NAME:** KERNIGHAN-COLOR-DOC (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** DOC-SYNC central docs before fixing the `instanceColor` shader pipeline so node colors are visible on first paint.
+
+**GUARD BLOCK:**
+
+- Pull docs fast-forward only; no local doc diffs permitted.
+- Require `KEY=A1-INTEGRATION-TYPES` in ledger (baseline types).
+- Do not modify code during DOC-SYNC.
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+[ -f "$LEDGER" ] || { echo "FATAL: ledger missing"; exit 1; }
+grep -q "KEY=A1-INTEGRATION-TYPES" "$LEDGER" || { echo "FATAL: A1 baseline missing"; exit 1; }
+```
+
+---
+
+### [M3-S1-COLOR-CODE] - Stream 1 (Core) - CODE-SYNC (Color Pipeline)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 1:28 PM EST, 16-08-2025  
+**NAME:** KERNIGHAN-COLORCODE (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** Read A1 baseline SHA from ledger and cherry-pick if not ancestor. Prepare to implement color pipeline fix.
+
+**GUARD BLOCK:**
+
+- Correct branch; clean working tree.
+- Idempotent: skip if already ancestor.
+
+```bash
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+A1_SHA=$(grep "KEY=A1-INTEGRATION-TYPES" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+
+git -C /workspace/worktrees/canvas-latent-core rev-parse --abbrev-ref HEAD | grep -E '^canvas-latent-core$' || { echo "Wrong branch"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-core status --porcelain | grep . && { echo "Dirty working tree"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-core fetch origin
+git -C /workspace/worktrees/canvas-latent-core merge-base --is-ancestor "$A1_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-core cherry-pick -x "$A1_SHA"
+```
+
+---
+
+### [M3-S1-COLOR-IMPL] - Stream 1 (Core) - IMPLEMENTATION (Color Pipeline)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** NOW  
+**NAME:** KERNIGHAN-COLORIMPL (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** Ensure per-instance colors render on first paint. Wire `instanceColor` buffer, enable vertex colors, eliminate base tinting, and guarantee an initial flush path.
+
+**CONTEXT:** InstancedMesh should display colors written via `NodeAttributeManager.setColor()`. Material must read instance colors; geometry must expose `instanceColor` attribute; `flush()` must mark `instanceColor.needsUpdate=true` at least once before first frame.
+
+**GUARD BLOCK:**
+
+- Edit only Stream 1 files:  
+  `packages/canvas-latent/src/core/InstancedNodeMesh.ts`,  
+  `packages/canvas-latent/src/core/NodeAttributeManager.ts`.
+- Preserve single draw call; no per-frame allocations.
+- Keep `aOpacity` hook intact.
+
+**CHANGES TO MAKE:**
+
+- In `InstancedNodeMesh.build(count)`:
+  - Create `instanceColor` buffer: `geometry.setAttribute('instanceColor', new THREE.InstancedBufferAttribute(new Float32Array(count*3), 3))` (if not already present).
+  - Ensure `material.vertexColors = true` and `material.color.set(0xffffff)` (no base tint).
+  - Keep `transparent=false` for visibility until fade is enabled.
+  - Ensure `geometry.computeBoundingSphere()` is called once.
+- In `NodeAttributeManager.setMesh(mesh)`:
+  - If `mesh.instanceColor` or `geometry.getAttribute('instanceColor')` missing, create the attribute and attach; set `usage=DynamicDrawUsage` and initialize `updateRange={offset:0,count:-1}`.
+  - On first registration pass, perform a one-time `needsUpdate=true` fallback for `instanceMatrix`, `instanceColor`, and `aOpacity` to guarantee first paint.
+- In `flush()`:
+  - If any target attribute lacks `updateRange`, set `needsUpdate=true` (full update) and continue (no throws).
+
+**SUCCESS CRITERIA:**
+
+- Fresh boot shows nodes with non-black colors on first paint.
+- No console errors; single draw call confirmed.
+- Subsequent color changes via manager appear within one frame.
+
+```bash
+git -C /workspace/worktrees/canvas-latent-core status --porcelain | cat
+git -C /workspace/worktrees/canvas-latent-core add packages/canvas-latent/src/core/InstancedNodeMesh.ts packages/canvas-latent/src/core/NodeAttributeManager.ts
+git -C /workspace/worktrees/canvas-latent-core commit -m "core(color): ensure instanceColor buffer + vertexColors; eliminate base tint; first-paint needsUpdate fallback; boundingSphere once"
+git -C /workspace/worktrees/canvas-latent-core push origin canvas-latent-core
+```
+
+---
+
+### [M3-S1-COLOR-DOCPUB] - Stream 1 (Core) - DOC-PUBLISH (Color Pipeline)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 1:40 PM EST, 16-08-2025
+**NAME:** KERNIGHAN-COLOR-DOCPUB (Stream 1)  
+**BRANCH:** canvas-latent-core  
+**TASK:** Append latest color-pipeline commit to ledger as `KEY=S1-COLOR-PIPE-M3` and push docs.
+
+**GUARD BLOCK:** Pull docs; append one well-formed line; push immediately.
+
+```bash
+CORE_SHA=$(git -C /workspace/worktrees/canvas-latent-core rev-parse HEAD)
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+[ -f "$LEDGER" ] || printf "# SHA Ledger\n\n" > "$LEDGER"
+printf "[LEDGER] KEY=S1-COLOR-PIPE-M3 SHA=%s BRANCH=canvas-latent-core DATE=%s MSG=\"InstanceColor pipeline visible on first paint\"\n" "$CORE_SHA" "$DATE_STR" >> "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(sha-ledger): record S1-COLOR-PIPE-M3 $CORE_SHA"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+---
+
+### [M3-S3-SEL-DOC] - Stream 3 (Integration) - DOC-SYNC (Selection)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 1:45 PM EST, 16-08-2025
+**NAME:** THOMPSON-SEL-DOC (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** DOC-SYNC central docs and require `S1-COLOR-PIPE-M3` before integrating selection.
+
+**GUARD BLOCK:** Pull docs; require color-pipeline key present.
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 fetch origin
+git -C /workspace/worktrees/feat-pond-demo-aug14 checkout feat-pond-demo-aug14
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+grep -q "KEY=S1-COLOR-PIPE-M3" "$LEDGER" || { echo "WAIT: S1-COLOR-PIPE-M3 missing"; exit 1; }
+```
+
+---
+
+### [M3-S3-SEL-CODE] - Stream 3 (Integration) - CODE-SYNC (Selection)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 1:52 PM EST, 16-08-2025
+**NAME:** THOMPSON-SEL-CODE (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** Cherry-pick `S1-COLOR-PIPE-M3` commit from core onto integration.
+
+**GUARD BLOCK:** Correct branch; clean working tree; idempotent merge-base guard.
+
+```bash
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+S1C_SHA=$(grep "KEY=S1-COLOR-PIPE-M3" "$LEDGER" | tail -n1 | sed -E 's/.*SHA=([a-f0-9]{7,40}).*/\1/')
+
+git -C /workspace/worktrees/canvas-latent-integration rev-parse --abbrev-ref HEAD | grep -E '^canvas-latent-integration$' || { echo "Wrong branch"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-integration status --porcelain | grep . && { echo "Dirty working tree"; exit 1; }
+git -C /workspace/worktrees/canvas-latent-integration fetch origin
+git -C /workspace/worktrees/canvas-latent-integration merge-base --is-ancestor "$S1C_SHA" HEAD || git -C /workspace/worktrees/canvas-latent-integration cherry-pick -x "$S1C_SHA"
+```
+
+---
+
+### [M3-S3-SEL-IMPL] - Stream 3 (Integration) - IMPLEMENTATION (Selection)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** NOW  
+**NAME:** THOMPSON-SEL (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** Implement click-to-select (color-only) on InstancedMesh with background-clear. Hit-test reliability: `mesh.updateMatrixWorld(true)` before raycast; ensure `computeBoundingSphere()` is called on build.
+
+**FILES:** `packages/canvas-latent/src/adapters/CanvasLatentAdapter.tsx`
+
+**GUARD BLOCK:**
+
+- Keep changes surgical; no edits to Stream 1/2 files.
+- Use `NodeAttributeManager.setColor()` + single `mgr.flush()` per frame.
+- Selection color: orange `0xffa500`; base color from nodeColor() or default.
+
+**SUCCESS CRITERIA:**
+
+- Click highlights instantly (≤1 frame); background click restores base color.
+- Camera stable; no console errors.
+
+```bash
+git -C /workspace/worktrees/canvas-latent-integration status --porcelain | cat
+git -C /workspace/worktrees/canvas-latent-integration add packages/canvas-latent/src/adapters/CanvasLatentAdapter.tsx
+git -C /workspace/worktrees/canvas-latent-integration commit -m "interact(select): reliable instanced raycast + orange highlight; background clear; frame-coalesced flush"
+git -C /workspace/worktrees/canvas-latent-integration push origin canvas-latent-integration
+```
+
+---
+
+### [M3-S3-SEL-DOCPUB] - Stream 3 (Integration) - DOC-PUBLISH (Selection)
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 2:01 PM EST, 16-08-2025
+**NAME:** THOMPSON-SEL-DOCPUB (Stream 3)  
+**BRANCH:** canvas-latent-integration  
+**TASK:** Append latest selection commit to ledger as `KEY=S3-SELECTION-M3` and push docs.
+
+```bash
+INTEG_SHA=$(git -C /workspace/worktrees/canvas-latent-integration rev-parse HEAD)
+DATE_STR=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+[ -f "$LEDGER" ] || printf "# SHA Ledger\n\n" > "$LEDGER"
+printf "[LEDGER] KEY=S3-SELECTION-M3 SHA=%s BRANCH=canvas-latent-integration DATE=%s MSG=\"Click-to-select (orange) + background-clear\"\n" "$INTEG_SHA" "$DATE_STR" >> "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$LEDGER"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(sha-ledger): record S3-SELECTION-M3 $INTEG_SHA"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+---
+
+### [M3-SMOKE-COLOR] - Docs - Smoke: Color Visible on First Paint
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** 2:05 PM EST, 16-08-2025
+**NAME:** ENGELBART-COLOR (Docs)  
+**BRANCH:** feat-pond-demo-aug14  
+**TASK:** Publish and run a quick smoke to confirm colors render immediately.
+
+**GUARD BLOCK:** Require `KEY=S1-COLOR-PIPE-M3` present.
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+grep -q "KEY=S1-COLOR-PIPE-M3" "$LEDGER" || { echo "WAIT: S1-COLOR-PIPE-M3 missing"; exit 1; }
+
+RUNBOOK=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/smoke-screen-tests/16-08-2025-#color-first-paint.md
+cat > "$RUNBOOK" << 'EOF'
+# Smoke: Color Visible on First Paint
+
+## Steps
+1) From integration worktree, start dev: `NEXT_PUBLIC_DEBUG_GRAPH=1 NEXT_PUBLIC_LATENT_TRACE=1 pnpm -C /workspace/worktrees/canvas-latent-integration -w dlx turbo run dev --filter=cryptic-vault-demo`
+2) Open the printed URL → /harness/latent
+3) Verify: nodes are colored (not black), no console errors.
+
+## Observations
+- Paste first 10 console lines; note color state.
+EOF
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$RUNBOOK"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(smoke): Color visible on first paint (M3)"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
+
+---
+
+### [M3-SMOKE-SELECT] - Docs - Smoke: Click-to-Select
+
+**Prompt:**
+
+**ULTRATHINK MODE**  
+**CURRENT DATE/TIME:** NOW  
+**NAME:** ENGELBART-SELECT (Docs)  
+**BRANCH:** feat-pond-demo-aug14  
+**TASK:** Publish and run a smoke for click-to-select highlighting.
+
+**GUARD BLOCK:** Require `KEY=S3-SELECTION-M3` present.
+
+```bash
+git -C /workspace/worktrees/feat-pond-demo-aug14 pull --ff-only origin feat-pond-demo-aug14
+LEDGER=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/guides/sha-ledger.md
+grep -q "KEY=S3-SELECTION-M3" "$LEDGER" || { echo "WAIT: S3-SELECTION-M3 missing"; exit 1; }
+
+RUNBOOK=/workspace/worktrees/feat-pond-demo-aug14/docs/pond-demo-aug14/smoke-screen-tests/16-08-2025-#select-click-highlight.md
+cat > "$RUNBOOK" << 'EOF'
+# Smoke: Click-to-Select (Highlight)
+
+## Steps
+1) With server running at /harness/latent, click any node → expect orange highlight within one frame.
+2) Click background → selection clears; node restores base color.
+3) Confirm camera stable; no new console errors.
+
+## Observations
+- Paste first 10 console lines; note selection behavior.
+EOF
+
+git -C /workspace/worktrees/feat-pond-demo-aug14 add "$RUNBOOK"
+git -C /workspace/worktrees/feat-pond-demo-aug14 commit -m "docs(smoke): Click-to-select highlight (M3)"
+git -C /workspace/worktrees/feat-pond-demo-aug14 push origin feat-pond-demo-aug14
+```
