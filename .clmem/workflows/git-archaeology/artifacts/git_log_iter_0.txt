@@ -1,0 +1,20 @@
+* d34f2847 docs: sync working-doc, prompts, smokes, scratchpads — preservation snapshot prep
+* 6d3b7cfa docs(smoke): Click-to-select highlight (M3)
+* 20099b18 docs(smoke): Color visible on first paint (M3)
+* 95db5c5d docs(sha-ledger): record S3-SELECTION-M3 8d24d540a2dae62f02345c70c6b03e0d396e3814
+* 4512dd61 docs(sha-ledger): record S1-COLOR-PIPE-M3 0a1aa1d3b06051f7b4cf34291ea1b6c9ecd3308d
+* 6d1e7271 16-08-2025 working doc update and baseline commit.
+* 7f36e56f docs(smoke-audit): review M3 visual audit; ledger S3-SMOKE-AUDIT-M3
+* 89843632 docs(smoke-audit): append M3 visual audit; ledger S3-SMOKE-AUDIT-M3
+* 7c63003a docs(status): Milestone 3 ready — redirect + harness verified; user ping recorded
+* 68043e21 docs(sha-ledger): record S3-SMOKE-PING-M3
+* 68357ddb docs(smoke): verify harness dev redirect; update baseline runbook
+* 6aa84544 docs(sha-ledger): record S3-DEV-REDIRECT-M3 76ef928b
+* 91d79b82 docs(smoke): baseline harness runbook and user ping
+* cd725806 docs(sha-ledger): record S3-HARNESS-SMOKE-A1 9d22a064fe6872701d73cbe11fe4a4e208f9168c
+* b7db00e0 update scratchpad
+* 0917b2c4 update scratchpad
+* 99b154e2 Update scratchpad and prompts
+* 7ce338b0 docs(sha-ledger): record S1-ATTRIBUTES-A1 0ddc7a9a4e2c3c034ffc1a9683499da19ee0519c
+* 3f4cdaed Update scratchpads
+* 7fcc111b docs(sha-ledger): record S2-TIMELINE-FADE-A1 dcbdc98e65fe3c2ab72cb8b1eb41cffaf48ff393
