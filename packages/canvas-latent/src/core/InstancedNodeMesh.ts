@@ -43,7 +43,9 @@ export class InstancedNodeMesh {
     const mesh = new THREE.InstancedMesh(geometry, material, count)
     // Ensure raycasting has valid bounds
     geometry.computeBoundingSphere()
-    try { geometry.computeBoundingBox() } catch {}
+    try {
+      geometry.computeBoundingBox()
+    } catch {}
 
     const aOpacity = new THREE.InstancedBufferAttribute(new Float32Array(count), 1)
 
