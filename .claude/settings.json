@@ -1,0 +1,14 @@
+{
+  "allowedTools": [
+    "Edit",
+    "Bash(ls:*)",
+    "Bash(cat:*)",
+    "Bash(rg:*)",
+    "Bash(grep:*)",
+    "Bash(find:*)",
+    "Bash(cloc:*)",
+    "Bash(git status:*)",
+    "Bash(git diff:*)"
+  ],
+  "notes": "Conservative allowlist to enable read-only discovery; expand incrementally as needed."
+}

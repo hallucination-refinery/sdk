@@ -21,12 +21,6 @@
 - Debugs errors through multiple attempts
 - Maintains state between operations within a session
 
-### Critical Information Gaps
-
-- Session state persistence between separate Claude Code invocations
-- Optimal prompt structure for code archaeology vs development
-- Parallelization capabilities (can multiple instances coordinate?)
-
 ### Hypothesis Formation
 
 **H1**: Claude Code's strength lies in systematic exploration when given clear discovery objectives
