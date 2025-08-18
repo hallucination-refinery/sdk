@@ -1,0 +1,113 @@
+{
+  "iteration": 3,
+  "predictions": {
+    "origin/canvas-latent-core": {
+      "value": 205.743,
+      "confidence": 0.50249,
+      "last_error": 97.51000000000002,
+      "last_updated": 3
+    },
+    "origin/canvas-latent-integration": {
+      "value": 209.685,
+      "confidence": 0.5,
+      "last_error": 100.44999999999999,
+      "last_updated": 3
+    },
+    "origin/canvas-latent-interaction": {
+      "value": 201.80100000000002,
+      "confidence": 0.50543,
+      "last_error": 94.57,
+      "last_updated": 3
+    },
+    "origin/cryptiq-mindmap-baseline": {
+      "value": 107.85,
+      "confidence": 0.5755,
+      "last_error": 24.5,
+      "last_updated": 3
+    },
+    "origin/cv-build": {
+      "value": 84.19800000000001,
+      "confidence": 0.59314,
+      "last_error": 6.859999999999999,
+      "last_updated": 3
+    }
+  },
+  "errors": [
+    {
+      "branch": "origin/canvas-latent-core",
+      "error": 199,
+      "iteration": 1
+    },
+    {
+      "branch": "origin/canvas-latent-integration",
+      "error": 205,
+      "iteration": 1
+    },
+    {
+      "branch": "origin/canvas-latent-interaction",
+      "error": 193,
+      "iteration": 1
+    },
+    {
+      "branch": "origin/cryptiq-mindmap-baseline",
+      "error": 50,
+      "iteration": 1
+    },
+    {
+      "branch": "origin/cv-build",
+      "error": 14,
+      "iteration": 1
+    },
+    {
+      "branch": "origin/canvas-latent-core",
+      "error": 139.3,
+      "iteration": 2
+    },
+    {
+      "branch": "origin/canvas-latent-integration",
+      "error": 143.5,
+      "iteration": 2
+    },
+    {
+      "branch": "origin/canvas-latent-interaction",
+      "error": 135.1,
+      "iteration": 2
+    },
+    {
+      "branch": "origin/cryptiq-mindmap-baseline",
+      "error": 35.0,
+      "iteration": 2
+    },
+    {
+      "branch": "origin/cv-build",
+      "error": 9.799999999999997,
+      "iteration": 2
+    },
+    {
+      "branch": "origin/canvas-latent-core",
+      "error": 97.51000000000002,
+      "iteration": 3
+    },
+    {
+      "branch": "origin/canvas-latent-integration",
+      "error": 100.44999999999999,
+      "iteration": 3
+    },
+    {
+      "branch": "origin/canvas-latent-interaction",
+      "error": 94.57,
+      "iteration": 3
+    },
+    {
+      "branch": "origin/cryptiq-mindmap-baseline",
+      "error": 24.5,
+      "iteration": 3
+    },
+    {
+      "branch": "origin/cv-build",
+      "error": 6.859999999999999,
+      "iteration": 3
+    }
+  ],
+  "learning_rate": 0.3
+}

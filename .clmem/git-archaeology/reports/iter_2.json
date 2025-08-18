@@ -1,0 +1,155 @@
+{
+  "iteration": 2,
+  "results": [
+    {
+      "branch": "origin/canvas-latent-core",
+      "prediction": {
+        "branch": "origin/canvas-latent-core",
+        "target": "commit_count",
+        "value": 134.7,
+        "confidence": 0.5,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:27.944018"
+      },
+      "observation": {
+        "branch": "origin/canvas-latent-core",
+        "target": "commit_count",
+        "observed": 274,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:27.971644"
+      },
+      "learning": {
+        "branch": "origin/canvas-latent-core",
+        "old_prediction": 134.7,
+        "new_prediction": 176.48999999999998,
+        "error": 139.3,
+        "learning_applied": 41.79
+      }
+    },
+    {
+      "branch": "origin/canvas-latent-integration",
+      "prediction": {
+        "branch": "origin/canvas-latent-integration",
+        "target": "commit_count",
+        "value": 136.5,
+        "confidence": 0.5,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:27.973040"
+      },
+      "observation": {
+        "branch": "origin/canvas-latent-integration",
+        "target": "commit_count",
+        "observed": 280,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:27.994550"
+      },
+      "learning": {
+        "branch": "origin/canvas-latent-integration",
+        "old_prediction": 136.5,
+        "new_prediction": 179.55,
+        "error": 143.5,
+        "learning_applied": 43.05
+      }
+    },
+    {
+      "branch": "origin/canvas-latent-interaction",
+      "prediction": {
+        "branch": "origin/canvas-latent-interaction",
+        "target": "commit_count",
+        "value": 132.9,
+        "confidence": 0.5,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:27.996433"
+      },
+      "observation": {
+        "branch": "origin/canvas-latent-interaction",
+        "target": "commit_count",
+        "observed": 268,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:28.018701"
+      },
+      "learning": {
+        "branch": "origin/canvas-latent-interaction",
+        "old_prediction": 132.9,
+        "new_prediction": 173.43,
+        "error": 135.1,
+        "learning_applied": 40.529999999999994
+      }
+    },
+    {
+      "branch": "origin/cryptiq-mindmap-baseline",
+      "prediction": {
+        "branch": "origin/cryptiq-mindmap-baseline",
+        "target": "commit_count",
+        "value": 90.0,
+        "confidence": 0.55,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:28.019930"
+      },
+      "observation": {
+        "branch": "origin/cryptiq-mindmap-baseline",
+        "target": "commit_count",
+        "observed": 125,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:28.027422"
+      },
+      "learning": {
+        "branch": "origin/cryptiq-mindmap-baseline",
+        "old_prediction": 90.0,
+        "new_prediction": 100.5,
+        "error": 35.0,
+        "learning_applied": 10.5
+      }
+    },
+    {
+      "branch": "origin/cv-build",
+      "prediction": {
+        "branch": "origin/cv-build",
+        "target": "commit_count",
+        "value": 79.2,
+        "confidence": 0.586,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:28.029174"
+      },
+      "observation": {
+        "branch": "origin/cv-build",
+        "target": "commit_count",
+        "observed": 89,
+        "iteration": 2,
+        "timestamp": "2025-08-17T19:02:28.048018"
+      },
+      "learning": {
+        "branch": "origin/cv-build",
+        "old_prediction": 79.2,
+        "new_prediction": 82.14,
+        "error": 9.799999999999997,
+        "learning_applied": 2.939999999999999
+      }
+    }
+  ],
+  "insights": [
+    {
+      "type": "high_error_branch",
+      "insight": "Branch 'origin/canvas-latent-integration' is hardest to predict (avg error: 174.2)",
+      "actionable": "This branch may have irregular development patterns worth investigating",
+      "evidence": {
+        "branch": "origin/canvas-latent-integration",
+        "avg_error": 174.25
+      }
+    },
+    {
+      "type": "stall_candidate",
+      "insight": "Branch 'origin/cv-build' has 82 commits and low prediction error",
+      "actionable": "Check if this branch has stalled (last updated: iteration 2)",
+      "evidence": {
+        "branch": "origin/cv-build",
+        "commits": 82.14,
+        "error": 9.799999999999997
+      }
+    }
+  ],
+  "metrics": {
+    "avg_error": 92.53999999999999,
+    "improvement": 0.3
+  }
+}

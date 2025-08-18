@@ -1,0 +1,145 @@
+{
+  "iteration": 1,
+  "results": [
+    {
+      "branch": "origin/canvas-latent-core",
+      "prediction": {
+        "branch": "origin/canvas-latent-core",
+        "target": "commit_count",
+        "value": 75,
+        "confidence": 0.5,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.742112"
+      },
+      "observation": {
+        "branch": "origin/canvas-latent-core",
+        "target": "commit_count",
+        "observed": 274,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.829807"
+      },
+      "learning": {
+        "branch": "origin/canvas-latent-core",
+        "old_prediction": 75,
+        "new_prediction": 134.7,
+        "error": 199,
+        "learning_applied": 59.699999999999996
+      }
+    },
+    {
+      "branch": "origin/canvas-latent-integration",
+      "prediction": {
+        "branch": "origin/canvas-latent-integration",
+        "target": "commit_count",
+        "value": 75,
+        "confidence": 0.5,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.832194"
+      },
+      "observation": {
+        "branch": "origin/canvas-latent-integration",
+        "target": "commit_count",
+        "observed": 280,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.870939"
+      },
+      "learning": {
+        "branch": "origin/canvas-latent-integration",
+        "old_prediction": 75,
+        "new_prediction": 136.5,
+        "error": 205,
+        "learning_applied": 61.5
+      }
+    },
+    {
+      "branch": "origin/canvas-latent-interaction",
+      "prediction": {
+        "branch": "origin/canvas-latent-interaction",
+        "target": "commit_count",
+        "value": 75,
+        "confidence": 0.5,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.872158"
+      },
+      "observation": {
+        "branch": "origin/canvas-latent-interaction",
+        "target": "commit_count",
+        "observed": 268,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.904645"
+      },
+      "learning": {
+        "branch": "origin/canvas-latent-interaction",
+        "old_prediction": 75,
+        "new_prediction": 132.9,
+        "error": 193,
+        "learning_applied": 57.9
+      }
+    },
+    {
+      "branch": "origin/cryptiq-mindmap-baseline",
+      "prediction": {
+        "branch": "origin/cryptiq-mindmap-baseline",
+        "target": "commit_count",
+        "value": 75,
+        "confidence": 0.5,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.905729"
+      },
+      "observation": {
+        "branch": "origin/cryptiq-mindmap-baseline",
+        "target": "commit_count",
+        "observed": 125,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.912783"
+      },
+      "learning": {
+        "branch": "origin/cryptiq-mindmap-baseline",
+        "old_prediction": 75,
+        "new_prediction": 90.0,
+        "error": 50,
+        "learning_applied": 15.0
+      }
+    },
+    {
+      "branch": "origin/cv-build",
+      "prediction": {
+        "branch": "origin/cv-build",
+        "target": "commit_count",
+        "value": 75,
+        "confidence": 0.5,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.913712"
+      },
+      "observation": {
+        "branch": "origin/cv-build",
+        "target": "commit_count",
+        "observed": 89,
+        "iteration": 1,
+        "timestamp": "2025-08-17T19:02:27.921812"
+      },
+      "learning": {
+        "branch": "origin/cv-build",
+        "old_prediction": 75,
+        "new_prediction": 79.2,
+        "error": 14,
+        "learning_applied": 4.2
+      }
+    }
+  ],
+  "insights": [
+    {
+      "type": "high_error_branch",
+      "insight": "Branch 'origin/canvas-latent-integration' is hardest to predict (avg error: 205.0)",
+      "actionable": "This branch may have irregular development patterns worth investigating",
+      "evidence": {
+        "branch": "origin/canvas-latent-integration",
+        "avg_error": 205.0
+      }
+    }
+  ],
+  "metrics": {
+    "avg_error": 132.2,
+    "improvement": 0.0
+  }
+}

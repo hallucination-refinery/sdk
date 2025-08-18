@@ -1,0 +1,43 @@
+{
+  "branch": "refactor/context-consolidation-aug17",
+  "total_files": 26520,
+  "packages": [
+    "canvas-latent",
+    "canvas-r3f",
+    "gesture-hands",
+    "graph-forge",
+    "ideanode",
+    "input-hub",
+    "interaction",
+    "ops",
+    "schema",
+    "sdk-core",
+    "shared",
+    "store",
+    "thinkable",
+    "view-three",
+    "widget-aperture",
+    "widget-hud"
+  ],
+  "apps": [
+    "cryptiq-mindmap-demo",
+    "legacy-import"
+  ],
+  "file_distribution": {
+    ".claude": 2,
+    ".clmem": 3,
+    ".cursor": 3,
+    ".devcontainer": 3,
+    "root": 20,
+    ".github": 2,
+    ".pnpm-store": 25908,
+    ".venv": 5,
+    ".worktrees": 3,
+    "__pycache__": 1,
+    "apps": 90,
+    "docs": 266,
+    "packages": 203,
+    "scripts": 6,
+    "tools": 5
+  }
+}

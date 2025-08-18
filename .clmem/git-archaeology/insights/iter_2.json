@@ -1,0 +1,21 @@
+[
+  {
+    "type": "high_error_branch",
+    "insight": "Branch 'origin/canvas-latent-integration' is hardest to predict (avg error: 174.2)",
+    "actionable": "This branch may have irregular development patterns worth investigating",
+    "evidence": {
+      "branch": "origin/canvas-latent-integration",
+      "avg_error": 174.25
+    }
+  },
+  {
+    "type": "stall_candidate",
+    "insight": "Branch 'origin/cv-build' has 82 commits and low prediction error",
+    "actionable": "Check if this branch has stalled (last updated: iteration 2)",
+    "evidence": {
+      "branch": "origin/cv-build",
+      "commits": 82.14,
+      "error": 9.799999999999997
+    }
+  }
+]

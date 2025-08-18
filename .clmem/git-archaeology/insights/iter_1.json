@@ -1,0 +1,11 @@
+[
+  {
+    "type": "high_error_branch",
+    "insight": "Branch 'origin/canvas-latent-integration' is hardest to predict (avg error: 205.0)",
+    "actionable": "This branch may have irregular development patterns worth investigating",
+    "evidence": {
+      "branch": "origin/canvas-latent-integration",
+      "avg_error": 205.0
+    }
+  }
+]
