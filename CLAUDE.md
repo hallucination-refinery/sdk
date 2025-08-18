@@ -18,8 +18,10 @@
 
 ## Allowed tools (must match settings)
 
-- `Edit`
-- `Bash(ls:*)`, `Bash(cat:*)`, `Bash(rg:*)`, `Bash(grep:*)`, `Bash(find:*)`, `Bash(cloc:*)`, `Bash(git status:*)`, `Bash(git diff:*)`
+- `Edit`, `Write`, `Read`, `MultiEdit`
+- `Bash(ls:*)`, `Bash(cat:*)`, `Bash(rg:*)`, `Bash(grep:*)`, `Bash(find:*)`, `Bash(cloc:*)`, `Bash(git status:*)`, `Bash(git diff:*)`, `Bash(mkdir:*)`
+- `Task` (for discovery workflows)
+- `Glob`, `Grep`, `LS`
 
 ## Target outputs
 
@@ -66,6 +68,64 @@ References: Claude Code best practices and sub-agents — https://www.anthropic.
 ## Slash-Command Workflows
 
 When the user types these commands, execute the following workflows:
+
+### Command: /discover-catalog
+
+**Purpose:** Comprehensive discovery using discovery-agent to create reusable data catalog
+**Required tools:** Write, Bash
+**Execute this workflow:**
+
+1. **Prepare workspace:**
+   - Create timestamp: `date +%Y%m%d-%H%M%S`
+   - Initialize log: `.clmem/workflows/session-[timestamp].log`
+2. **Invoke discovery agent:**
+   - Say: "Use the discovery-agent to comprehensively search the codebase and create a structured JSON catalog with all exported APIs, data models, configuration, error patterns, and architecture. Save to .clmem/discovery/catalog.json"
+3. **Create summary:**
+   - Read catalog.json and write brief summary to `.clmem/discovery/summary.md`
+4. **Log completion:**
+   - Update session log with completion status
+5. **Run meta-workflow agent:**
+   - Say: "Use the meta-workflow-agent to analyze the discovery execution and optimize for next run"
+6. **Recommend next:** /generate-docs
+
+### Command: /generate-docs
+
+**Purpose:** Generate all 5 documentation files from catalog.json
+**Required tools:** Read, Write, Bash
+**Execute this workflow:**
+
+1. **Prepare workspace:**
+   - Create timestamp: `date +%Y%m%d-%H%M%S`
+   - Initialize log: `.clmem/workflows/session-[timestamp].log`
+2. **Invoke synthesis agent:**
+   - Say: "Use the synthesis-agent to transform .clmem/discovery/catalog.json into all 5 documentation files in docs/context-consolidation/final-docs/"
+3. **Validate with spot-checks:**
+   - Pick 3 items per doc
+   - Verify against source files
+4. **Log completion:**
+   - Update session log with generation status
+5. **Run meta-workflow agent:**
+   - Say: "Use the meta-workflow-agent to analyze the synthesis execution and identify improvement opportunities"
+6. **Recommend next:** /audit-docs
+
+### Command: /audit-docs
+
+**Purpose:** Validate all documentation against source code
+**Required tools:** Read, Write, Bash
+**Execute this workflow:**
+
+1. **Prepare workspace:**
+   - Create timestamp: `date +%Y%m%d-%H%M%S`
+   - Initialize log: `.clmem/workflows/session-[timestamp].log`
+2. **Invoke audit agent:**
+   - Say: "Use the audit-agent to validate all documentation in docs/context-consolidation/final-docs/ against source code and generate audit report in .clmem/audits/"
+3. **Review report:**
+   - Read audit report and summarize findings
+4. **Log completion:**
+   - Update session log with audit results
+5. **Run meta-workflow agent:**
+   - Say: "Use the meta-workflow-agent to analyze the audit execution and track accuracy trends"
+6. **Recommend fixes if needed or mark complete**
 
 ### Command: /map-and-extract
 
