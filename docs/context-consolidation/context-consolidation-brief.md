@@ -210,25 +210,30 @@ Each step completes independently; outputs accumulate in `.clmem/` for traceabil
 ### Command Set (3 total)
 
 #### `/map-and-extract`
+
 **Purpose:** Single-pass discovery to gather all facts needed for documentation
-**Method:** 
+**Method:**
+
 - Use `find`, `ls`, `rg` to identify key files (configs, entry points, schemas)
 - Extract patterns directly without intermediate repo-inventory
 - Focus on actionable facts, not exhaustive mapping
-**Outputs:** Optional `.clmem/extraction-notes.md` (only if patterns are complex)
-**Time:** 30 min
+  **Outputs:** Optional `.clmem/extraction-notes.md` (only if patterns are complex)
+  **Time:** 30 min
 
 #### `/write-architecture-apis`
+
 **Purpose:** Draft the two critical docs that enable immediate decisions
 **Method:**
+
 - Write directly to `docs/context-consolidation/final-docs/architecture.md`
 - Write directly to `docs/context-consolidation/final-docs/apis.md`
 - Include TBDs with specific file:line references where verification needed
 - Each doc stays under 2 screens
-**Outputs:** Two draft documents with clear source alignment
-**Time:** 30 min
+  **Outputs:** Two draft documents with clear source alignment
+  **Time:** 30 min
 
 #### `/complete-remaining-docs`
+
 **Purpose:** Finish data-models, configuration, and errors-logging docs (if approved)
 **Method:** Same direct-write approach with TBD markers
 **Outputs:** Three additional docs completing the set
@@ -238,12 +243,14 @@ Each step completes independently; outputs accumulate in `.clmem/` for traceabil
 ### Execution Protocol
 
 **Start:**
+
 1. Run `/map-and-extract` using allowed read-only tools
 2. Immediately transition to `/write-architecture-apis` (no pause)
 3. Spot-check 3+ facts per doc against source
 4. **STOP** - Request review
 
 **Decision point:**
+
 - If docs sufficient → Done
 - If refinement needed → Address specific feedback
 - If remaining docs wanted → Run `/complete-remaining-docs`
@@ -251,12 +258,14 @@ Each step completes independently; outputs accumulate in `.clmem/` for traceabil
 ### Quality Gates
 
 **Per document:**
+
 - Length: ≤ 2 screens (~100 lines)
 - Facts: Every claim traces to source file:line
 - TBDs: Limited, specific, with exact verification path
 - Spot-checks: Minimum 3 items verified before marking draft-complete
 
 **Allowed operations:**
+
 - Read: `ls`, `cat`, `rg`, `grep`, `find`, `cloc`, `git status`, `git diff`
 - Write: Only to `docs/context-consolidation/` and `.clmem/`
 - No: Interactive commands, git push, rm, CI operations
