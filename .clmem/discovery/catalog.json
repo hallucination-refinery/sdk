@@ -1,0 +1,633 @@
+{
+  "timestamp": "2025-08-18T15:41:34-07:00",
+  "architecture": {
+    "entryPoints": [
+      {
+        "name": "monorepo-root",
+        "file": "/workspace/package.json",
+        "line": 1,
+        "type": "workspace",
+        "description": "Root monorepo package with turbo build orchestration"
+      },
+      {
+        "name": "@refinery/store",
+        "file": "/workspace/packages/store/src/index.ts",
+        "line": 1,
+        "type": "package",
+        "description": "Zustand-based state management for Refinery SDK"
+      },
+      {
+        "name": "@refinery/schema",
+        "file": "/workspace/packages/schema/src/index.ts",
+        "line": 1,
+        "type": "package",
+        "description": "Core domain types and schemas with Zod validation"
+      },
+      {
+        "name": "@refinery/graph-forge",
+        "file": "/workspace/packages/graph-forge/src/index.ts",
+        "line": 1,
+        "type": "package",
+        "description": "Deterministic graph layout generator"
+      },
+      {
+        "name": "cryptiq-mindmap-demo",
+        "file": "/workspace/apps/cryptiq-mindmap-demo/app/page.tsx",
+        "line": 1,
+        "type": "app",
+        "description": "Next.js demo application for mindmap visualization"
+      },
+      {
+        "name": "cryptic-vault-demo",
+        "file": "/workspace/apps/legacy-import/cryptic-vault-demo/app/page.tsx",
+        "line": 1,
+        "type": "app",
+        "description": "Legacy demo application for graph visualization"
+      }
+    ],
+    "mainComponents": [
+      {
+        "name": "packages",
+        "path": "/workspace/packages",
+        "type": "directory",
+        "description": "Core SDK packages (16 packages)"
+      },
+      {
+        "name": "apps",
+        "path": "/workspace/apps",
+        "type": "directory",
+        "description": "Demo applications and examples"
+      },
+      {
+        "name": "docs",
+        "path": "/workspace/docs",
+        "type": "directory",
+        "description": "Documentation and archived content"
+      },
+      {
+        "name": "scripts",
+        "path": "/workspace/scripts",
+        "type": "directory",
+        "description": "Build and maintenance scripts"
+      },
+      {
+        "name": "tools",
+        "path": "/workspace/tools",
+        "type": "directory",
+        "description": "Meta-workflow and development tools"
+      }
+    ],
+    "dependencies": [
+      {
+        "name": "turbo",
+        "version": "^2.3.3",
+        "type": "build",
+        "description": "Monorepo task orchestration"
+      },
+      {
+        "name": "typescript",
+        "version": "^5.7.2",
+        "type": "dev",
+        "description": "TypeScript compiler and types"
+      },
+      {
+        "name": "zustand",
+        "version": "^5.0.6",
+        "type": "runtime",
+        "description": "State management library"
+      },
+      {
+        "name": "zod",
+        "type": "runtime",
+        "description": "Schema validation (via @refinery/schema)"
+      },
+      {
+        "name": "three",
+        "version": "0.176.0",
+        "type": "runtime",
+        "description": "3D graphics library (pinned version)"
+      },
+      {
+        "name": "react",
+        "version": "19.1.0",
+        "type": "runtime",
+        "description": "UI framework (pinned version)"
+      }
+    ]
+  },
+  "apis": {
+    "functions": [
+      {
+        "name": "forgeGraph",
+        "signature": "forgeGraph(rawMemory: RawMemory, options?: ForgeOptions): ForgeResult",
+        "file": "/workspace/packages/graph-forge/src/forge.ts",
+        "line": 8,
+        "description": "Main graph layout generation function",
+        "exported": true
+      },
+      {
+        "name": "useRefineryStore",
+        "signature": "useRefineryStore: UseBoundStore<StoreApi<RefineryStore>>",
+        "file": "/workspace/packages/store/src/store.ts",
+        "line": 30,
+        "description": "Main Zustand store hook for graph state management",
+        "exported": true
+      },
+      {
+        "name": "useGraphStore",
+        "signature": "useGraphStore(): GraphStoreActions",
+        "file": "/workspace/packages/store/src/store.ts",
+        "line": 77,
+        "description": "Graph-specific store actions hook",
+        "exported": true
+      },
+      {
+        "name": "useUIStore",
+        "signature": "useUIStore(): UIStoreActions",
+        "file": "/workspace/packages/store/src/store.ts",
+        "line": 105,
+        "description": "UI state management hook",
+        "exported": true
+      },
+      {
+        "name": "useAsyncStore",
+        "signature": "useAsyncStore(): AsyncStoreActions",
+        "file": "/workspace/packages/store/src/store.ts",
+        "line": 143,
+        "description": "Async operations store hook",
+        "exported": true
+      },
+      {
+        "name": "serializeState",
+        "signature": "serializeState(state: RefineryStore): SerializedState",
+        "file": "/workspace/packages/store/src/persistence.ts",
+        "line": 53,
+        "description": "Convert store state to serializable format",
+        "exported": true
+      },
+      {
+        "name": "deserializeState",
+        "signature": "deserializeState(serialized: SerializedState): RefineryStore",
+        "file": "/workspace/packages/store/src/persistence.ts",
+        "line": 66,
+        "description": "Restore store state from serialized format",
+        "exported": true
+      }
+    ],
+    "classes": [
+      {
+        "name": "CommandQueue",
+        "signature": "export class CommandQueue",
+        "file": "/workspace/packages/store/src/command-queue.ts",
+        "line": 7,
+        "description": "Manages renderer command queue and execution",
+        "exported": true
+      },
+      {
+        "name": "GraphUtils",
+        "signature": "export class GraphUtils",
+        "file": "/workspace/packages/schema/src/core/graph.ts",
+        "line": 99,
+        "description": "Utility methods for graph operations",
+        "exported": true
+      },
+      {
+        "name": "SelectionUtils",
+        "signature": "export class SelectionUtils",
+        "file": "/workspace/packages/schema/src/core/selection.ts",
+        "line": 63,
+        "description": "Utility methods for selection operations",
+        "exported": true
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "RefineryStore",
+        "signature": "export type RefineryStore = GraphSlice & UISlice & AsyncSlice",
+        "file": "/workspace/packages/store/src/store.ts",
+        "line": 19,
+        "description": "Main store interface combining all slices",
+        "exported": true
+      },
+      {
+        "name": "ForgeResult",
+        "signature": "export interface ForgeResult",
+        "file": "/workspace/packages/graph-forge/src/forge.ts",
+        "line": 14,
+        "description": "Result type for graph forge operations",
+        "exported": true
+      },
+      {
+        "name": "SerializedState",
+        "signature": "export interface SerializedState",
+        "file": "/workspace/packages/store/src/persistence.ts",
+        "line": 10,
+        "description": "Serializable representation of store state",
+        "exported": true
+      },
+      {
+        "name": "GraphSlice",
+        "signature": "export interface GraphSlice extends GraphState",
+        "file": "/workspace/packages/store/src/slices/graph-slice.ts",
+        "line": 10,
+        "description": "Graph state management slice interface",
+        "exported": true
+      },
+      {
+        "name": "DialState",
+        "signature": "export interface DialState",
+        "file": "/workspace/apps/legacy-import/cryptic-vault-demo/store/app-slice.ts",
+        "line": 10,
+        "description": "UI dial control state interface",
+        "exported": true
+      },
+      {
+        "name": "AppState",
+        "signature": "export interface AppState",
+        "file": "/workspace/apps/legacy-import/cryptic-vault-demo/store/app-slice.ts",
+        "line": 15,
+        "description": "Legacy app state interface",
+        "exported": true
+      }
+    ],
+    "types": [
+      {
+        "name": "Vector3",
+        "signature": "export type Vector3 = z.infer<typeof Vector3Schema>",
+        "file": "/workspace/packages/schema/src/core/vectors.ts",
+        "line": 16,
+        "description": "3D vector type definition",
+        "exported": true
+      },
+      {
+        "name": "Vector2",
+        "signature": "export type Vector2 = z.infer<typeof Vector2Schema>",
+        "file": "/workspace/packages/schema/src/core/vectors.ts",
+        "line": 29,
+        "description": "2D vector type definition",
+        "exported": true
+      },
+      {
+        "name": "Intent",
+        "signature": "export type Intent = z.infer<typeof IntentEnum>",
+        "file": "/workspace/packages/schema/src/core/intent.ts",
+        "line": 32,
+        "description": "User intent enumeration type",
+        "exported": true
+      },
+      {
+        "name": "GestureInput",
+        "signature": "export type GestureInput = z.infer<typeof GestureInputSchema>",
+        "file": "/workspace/packages/schema/src/core/intent.ts",
+        "line": 48,
+        "description": "Gesture input type definition",
+        "exported": true
+      },
+      {
+        "name": "MultimodalInput",
+        "signature": "export type MultimodalInput = z.infer<typeof MultimodalInputSchema>",
+        "file": "/workspace/packages/schema/src/core/intent.ts",
+        "line": 66,
+        "description": "Union type for all input modalities",
+        "exported": true
+      },
+      {
+        "name": "RawMemory",
+        "signature": "export type RawMemory = z.infer<typeof RawMemorySchema>",
+        "file": "/workspace/packages/graph-forge/src/schemas.ts",
+        "line": 38,
+        "description": "Raw memory data structure for graph generation",
+        "exported": true
+      },
+      {
+        "name": "ForgeOptions",
+        "signature": "export type ForgeOptions = z.infer<typeof ForgeOptionsSchema>",
+        "file": "/workspace/packages/graph-forge/src/schemas.ts",
+        "line": 127,
+        "description": "Configuration options for graph forge process",
+        "exported": true
+      },
+      {
+        "name": "Lens",
+        "signature": "export type Lens = 'affinity' | 'causal' | 'temporal'",
+        "file": "/workspace/packages/canvas-latent/types/index.ts",
+        "line": 6,
+        "description": "Lens type determining graph layout strategy",
+        "exported": true
+      }
+    ]
+  },
+  "dataModels": {
+    "schemas": [
+      {
+        "name": "Vector3Schema",
+        "type": "zod",
+        "file": "/workspace/packages/schema/src/core/vectors.ts",
+        "line": 7,
+        "description": "Zod schema for 3D vectors with x, y, z coordinates",
+        "properties": ["x", "y", "z"]
+      },
+      {
+        "name": "Vector2Schema", 
+        "type": "zod",
+        "file": "/workspace/packages/schema/src/core/vectors.ts",
+        "line": 20,
+        "description": "Zod schema for 2D vectors with x, y coordinates",
+        "properties": ["x", "y"]
+      },
+      {
+        "name": "IntentEnum",
+        "type": "zod",
+        "file": "/workspace/packages/schema/src/core/intent.ts",
+        "line": 6,
+        "description": "Schema for user intent enumeration",
+        "properties": ["navigate", "select", "create", "edit", "delete", "search"]
+      },
+      {
+        "name": "GestureInputSchema",
+        "type": "zod",
+        "file": "/workspace/packages/schema/src/core/intent.ts",
+        "line": 35,
+        "description": "Schema for gesture-based input events",
+        "properties": ["type", "position", "timestamp", "confidence"]
+      },
+      {
+        "name": "RawMemorySchema",
+        "type": "zod",
+        "file": "/workspace/packages/graph-forge/src/schemas.ts",
+        "line": 7,
+        "description": "Schema for raw memory input to graph forge",
+        "properties": ["concepts", "relationships", "metadata"]
+      },
+      {
+        "name": "ForgeOptionsSchema",
+        "type": "zod",
+        "file": "/workspace/packages/graph-forge/src/schemas.ts",
+        "line": 80,
+        "description": "Schema for graph forge configuration options",
+        "properties": ["layoutType", "forceStrength", "iterations", "nodeSpacing"]
+      }
+    ],
+    "entities": [
+      {
+        "name": "IdeaNode",
+        "type": "interface",
+        "file": "/workspace/packages/schema/src/core/node.ts",
+        "line": 1,
+        "description": "Core node entity in the graph system",
+        "properties": ["id", "label", "position", "metadata", "type"]
+      },
+      {
+        "name": "Edge",
+        "type": "interface", 
+        "file": "/workspace/packages/schema/src/core/edge.ts",
+        "line": 1,
+        "description": "Core edge entity connecting nodes",
+        "properties": ["id", "source", "target", "weight", "type"]
+      },
+      {
+        "name": "GraphData",
+        "type": "interface",
+        "file": "/workspace/packages/canvas-latent/types/index.ts",
+        "line": 100,
+        "description": "Complete graph data structure",
+        "properties": ["nodes", "links", "metadata"]
+      },
+      {
+        "name": "NodeData",
+        "type": "interface",
+        "file": "/workspace/packages/canvas-latent/types/index.ts",
+        "line": 21,
+        "description": "Extended node data for visualization",
+        "properties": ["id", "label", "x", "y", "z", "color", "size", "cluster"]
+      },
+      {
+        "name": "LinkData",
+        "type": "interface",
+        "file": "/workspace/packages/canvas-latent/types/index.ts",
+        "line": 77,
+        "description": "Extended link data for visualization",
+        "properties": ["source", "target", "weight", "color", "opacity"]
+      }
+    ],
+    "models": [
+      {
+        "name": "GraphState",
+        "type": "interface",
+        "file": "/workspace/packages/store/src/types/state.ts",
+        "line": 1,
+        "description": "State model for graph data in store",
+        "properties": ["nodes", "edges", "nodeIdCounter", "edgeIdCounter"]
+      },
+      {
+        "name": "UIState",
+        "type": "interface",
+        "file": "/workspace/packages/store/src/types/state.ts",
+        "line": 1,
+        "description": "State model for UI interactions",
+        "properties": ["selectedNodeIds", "hoveredNodeId", "layout", "theme"]
+      },
+      {
+        "name": "AsyncState",
+        "type": "interface",
+        "file": "/workspace/packages/store/src/types/state.ts",
+        "line": 1,
+        "description": "State model for async operations",
+        "properties": ["isLoading", "error", "activeJobs"]
+      }
+    ]
+  },
+  "configuration": {
+    "envVars": [
+      {
+        "name": "ANTHROPIC_API_KEY",
+        "type": "string",
+        "default": "your_anthropic_api_key_here",
+        "file": "/workspace/.env",
+        "line": 2,
+        "description": "Required API key for Anthropic services"
+      },
+      {
+        "name": "NEXT_PUBLIC_GRAPH_SPAWN",
+        "type": "string",
+        "default": "origin",
+        "file": "/workspace/.env",
+        "line": 16,
+        "description": "Graph spawn mode: 'sphere' or 'origin' for animation"
+      },
+      {
+        "name": "NEXT_PUBLIC_DEBUG_GRAPH",
+        "type": "boolean",
+        "default": "false",
+        "file": "/workspace/.env",
+        "line": 17,
+        "description": "Enable graph debug logging"
+      },
+      {
+        "name": "NODE_ENV",
+        "type": "string",
+        "default": "development",
+        "file": "/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx",
+        "line": 88,
+        "description": "Node.js environment mode"
+      },
+      {
+        "name": "ELEVEN_LABS_API_KEY",
+        "type": "string",
+        "default": "your_eleven_labs_api_key_here",
+        "file": "/workspace/.env",
+        "line": 13,
+        "description": "Required for voice synthesis features"
+      }
+    ],
+    "configFiles": [
+      {
+        "name": "turbo.json",
+        "type": "json",
+        "file": "/workspace/turbo.json",
+        "description": "Turbo monorepo task configuration"
+      },
+      {
+        "name": "tsconfig.base.json",
+        "type": "json",
+        "file": "/workspace/tsconfig.base.json",
+        "description": "Base TypeScript configuration"
+      },
+      {
+        "name": "pnpm-workspace.yaml",
+        "type": "yaml",
+        "file": "/workspace/pnpm-workspace.yaml",
+        "description": "PNPM workspace configuration"
+      },
+      {
+        "name": "vitest.config.ts",
+        "type": "ts",
+        "file": "/workspace/vitest.config.ts",
+        "description": "Root test configuration"
+      },
+      {
+        "name": "eslint.config.js",
+        "type": "js",
+        "file": "/workspace/eslint.config.js",
+        "description": "ESLint configuration"
+      }
+    ],
+    "defaults": [
+      {
+        "name": "node_version",
+        "value": ">=20.0.0",
+        "file": "/workspace/package.json",
+        "line": 8,
+        "description": "Minimum Node.js version requirement"
+      },
+      {
+        "name": "pnpm_version",
+        "value": ">=9.0.0",
+        "file": "/workspace/package.json",
+        "line": 9,
+        "description": "Minimum PNPM version requirement"
+      },
+      {
+        "name": "three_version",
+        "value": "0.176.0",
+        "file": "/workspace/package.json",
+        "line": 47,
+        "description": "Pinned Three.js version"
+      },
+      {
+        "name": "react_version",
+        "value": "19.1.0",
+        "file": "/workspace/package.json",
+        "line": 48,
+        "description": "Pinned React version"
+      }
+    ]
+  },
+  "errorPatterns": {
+    "errorTypes": [
+      {
+        "pattern": "console.error",
+        "category": "logging",
+        "file": "/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx",
+        "line": 24,
+        "description": "React error boundary logging"
+      },
+      {
+        "pattern": "error.code !== 'ENOENT'",
+        "category": "filesystem",
+        "file": "/workspace/scripts/clean_fs.ts",
+        "line": 17,
+        "description": "File system error handling"
+      },
+      {
+        "pattern": "catch((error) => { console.error(...)",
+        "category": "async",
+        "file": "/workspace/apps/legacy-import/cryptic-vault-demo/scripts/verify.ts",
+        "line": 68,
+        "description": "Async operation error handling"
+      },
+      {
+        "pattern": "throw new Error",
+        "category": "validation",
+        "description": "Schema validation errors (inferred from Zod usage)"
+      }
+    ],
+    "loggingPatterns": [
+      {
+        "pattern": "console.log",
+        "category": "debug",
+        "description": "Standard debug logging throughout codebase",
+        "examples": [
+          "/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx:103",
+          "/workspace/scripts/clean_fs.ts:10"
+        ]
+      },
+      {
+        "pattern": "console.error",
+        "category": "error",
+        "description": "Error logging for exceptions and failures",
+        "examples": [
+          "/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx:24",
+          "/workspace/scripts/clean_fs.ts:18"
+        ]
+      },
+      {
+        "pattern": "process.env.NODE_ENV === 'development'",
+        "category": "conditional",
+        "description": "Development-only logging guards",
+        "examples": [
+          "/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx:88"
+        ]
+      }
+    ],
+    "monitoring": [
+      {
+        "name": "performance.now()",
+        "type": "performance",
+        "description": "Performance timing measurements (inferred from usage patterns)"
+      },
+      {
+        "name": "Error Boundaries",
+        "type": "react",
+        "file": "/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx",
+        "line": 24,
+        "description": "React error boundary for component error handling"
+      }
+    ]
+  },
+  "statistics": {
+    "totalFiles": 1018,
+    "codeLines": "estimated ~50k",
+    "languages": {
+      "TypeScript": "primary",
+      "JavaScript": "secondary", 
+      "JSON": "config",
+      "Markdown": "documentation",
+      "Python": "tooling"
+    },
+    "packages": 16,
+    "apps": 2,
+    "testFiles": "estimated ~50+",
+    "configFiles": 20
+  }
+}

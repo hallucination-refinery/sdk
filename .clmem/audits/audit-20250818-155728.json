@@ -1,0 +1,91 @@
+{
+  "timestamp": "2025-08-18T15:57:28Z",
+  "summary": {
+    "totalClaims": 67,
+    "passed": 54,
+    "failed": 9,
+    "warnings": 4,
+    "passRate": 0.81,
+    "failRate": 0.13,
+    "warningRate": 0.06
+  },
+  "documents": {
+    "architecture.md": {
+      "claimsChecked": 11,
+      "passed": 9,
+      "failed": 2,
+      "warnings": 0,
+      "accuracy": 0.82
+    },
+    "apis.md": {
+      "claimsChecked": 15,
+      "passed": 12,
+      "failed": 3,
+      "warnings": 0,
+      "accuracy": 0.80
+    },
+    "data-models.md": {
+      "claimsChecked": 18,
+      "passed": 15,
+      "failed": 3,
+      "warnings": 0,
+      "accuracy": 0.83
+    },
+    "configuration.md": {
+      "claimsChecked": 12,
+      "passed": 11,
+      "failed": 1,
+      "warnings": 0,
+      "accuracy": 0.92
+    },
+    "errors-logging.md": {
+      "claimsChecked": 11,
+      "passed": 7,
+      "failed": 0,
+      "warnings": 4,
+      "accuracy": 0.64
+    }
+  },
+  "criticalIssues": [
+    "Intent enum values completely different from documentation",
+    "RawMemorySchema structure mismatch",
+    "Package count discrepancy in architecture overview",
+    "Multiple fragile line number references"
+  ],
+  "filesVerified": [
+    "/workspace/packages/store/src/index.ts",
+    "/workspace/packages/schema/src/index.ts",
+    "/workspace/packages/graph-forge/src/index.ts",
+    "/workspace/apps/cryptiq-mindmap-demo/app/page.tsx",
+    "/workspace/package.json",
+    "/workspace/packages/graph-forge/src/forge.ts",
+    "/workspace/packages/store/src/store.ts",
+    "/workspace/packages/store/src/persistence.ts",
+    "/workspace/packages/schema/src/core/vectors.ts",
+    "/workspace/packages/schema/src/core/intent.ts",
+    "/workspace/packages/graph-forge/src/schemas.ts",
+    "/workspace/.env",
+    "/workspace/turbo.json",
+    "/workspace/pnpm-workspace.yaml",
+    "/workspace/scripts/clean_fs.ts",
+    "/workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx",
+    "/workspace/packages/store/src/command-queue.ts",
+    "/workspace/packages/schema/src/core/node.ts",
+    "/workspace/packages/schema/src/core/edge.ts",
+    "/workspace/packages/canvas-latent/types/index.ts",
+    "/workspace/packages/store/src/slices/graph-slice.ts",
+    "/workspace/packages/store/src/types/state.ts",
+    "/workspace/apps/legacy-import/cryptic-vault-demo/app/page.tsx",
+    "/workspace/packages/schema/src/core/graph.ts",
+    "/workspace/packages/schema/src/core/selection.ts",
+    "/workspace/apps/legacy-import/cryptic-vault-demo/scripts/verify.ts"
+  ],
+  "filesMissing": [],
+  "nextActions": [
+    "Fix Intent enum documentation",
+    "Update RawMemorySchema description", 
+    "Correct package count in architecture.md",
+    "Remove or update fragile line references",
+    "Add automated doc-code sync checks"
+  ]
+}

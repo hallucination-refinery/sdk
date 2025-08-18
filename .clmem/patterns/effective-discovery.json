@@ -1,0 +1,86 @@
+{
+  "timestamp": "2025-08-18T15:58:45Z",
+  "purpose": "Optimized discovery patterns learned from audit analysis",
+  "patterns": {
+    "zod_enums": {
+      "command": "rg \"export const \\w+Enum = z\\.enum\\(\\[\" -A 20 --type ts",
+      "purpose": "Extract actual Zod enum values, not descriptions",
+      "reliability": "high",
+      "common_failures": ["Using schema comments instead of values", "Missing multi-line enum arrays"]
+    },
+    "zod_schemas": {
+      "command": "rg \"z\\.object\\(\\{\" -A 30 --type ts | grep -E \"^\\s*\\w+:\"",
+      "purpose": "Get actual schema field definitions",
+      "reliability": "medium", 
+      "common_failures": ["Complex nested objects", "Conditional fields", "Extended schemas"]
+    },
+    "package_exports": {
+      "command": "rg \"^export (const|class|function|interface|type)\" --type ts --type js -g '!node_modules' -g '!dist'",
+      "purpose": "Find actual exports without line number dependencies",
+      "reliability": "high",
+      "common_failures": ["Re-exports", "Default exports", "Dynamic exports"]
+    },
+    "package_counting": {
+      "command": "find packages -maxdepth 1 -type d -not -name packages | wc -l",
+      "purpose": "Accurate package count excluding parent directory",
+      "reliability": "high",
+      "common_failures": ["Including parent directory", "Missing hidden directories"]
+    },
+    "stable_file_refs": {
+      "command": "find . -name \"index.ts\" -o -name \"*.config.*\" -o -name \"package.json\"",
+      "purpose": "Find stable files unlikely to have line number changes",
+      "reliability": "high",
+      "common_failures": ["Assuming all config files are stable", "Missing workspace configs"]
+    }
+  },
+  "exclusions": {
+    "always_exclude": [
+      "**/node_modules/**",
+      "**/dist/**", 
+      "**/build/**",
+      "**/.next/**",
+      "**/.git/**"
+    ],
+    "context_specific": [
+      "**/legacy-import/**",
+      "**/deprecated/**",
+      "**/archive/**"
+    ]
+  },
+  "validation_checks": {
+    "post_discovery": [
+      {
+        "check": "Verify enum values by parsing actual source",
+        "command": "cat {file} | grep -A 10 'z.enum'",
+        "critical": true
+      },
+      {
+        "check": "Count claimed vs actual packages",
+        "command": "ls packages | wc -l",
+        "critical": false
+      },
+      {
+        "check": "Verify schema field existence",
+        "command": "rg '{field_name}:' {schema_file}",
+        "critical": true
+      }
+    ]
+  },
+  "learned_fixes": {
+    "intent_enum_fix": {
+      "issue": "Catalog showed old enum values",
+      "solution": "Parse actual z.enum([...]) content, not comments",
+      "pattern": "rg \"IntentEnum = z\\.enum\\(\\[\" -A 15 /workspace/packages/schema/src/core/intent.ts"
+    },
+    "schema_structure_fix": {
+      "issue": "RawMemorySchema fields wrong",
+      "solution": "Extract field names from z.object definition",
+      "pattern": "rg \"RawMemorySchema = z\\.object\\(\\{\" -A 20 /workspace/packages/graph-forge/src/schemas.ts"
+    },
+    "line_reference_fix": {
+      "issue": "Specific line numbers become stale",
+      "solution": "Use function/class names as anchors",
+      "pattern": "Replace 'line X' with 'exported in {file}'"
+    }
+  }
+}
