@@ -2,6 +2,8 @@
 
 > **Purpose**: Treat this file as **authoritative system rules**. Produce a concise, decision-ready **SPEC-[##].md** and phased implementation plan for the **Cryptiq Mindmap** demo. This is an SDK-first, offline, physics-free experience with neurons anchored to a brain surface. (Claude Code reads CLAUDE.md as strict project rules.)
 
+> **Note:** [##] simply means number you increment (i.e SPEC-01.md or CLAUDE-01-scratchpad.md )
+
 ## WARNING
 
 1. **Every** tool call, file view, and action is automatically logged and cross-checked against the notes in your scratchpad. _Any_ divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the worst mistake and will trigger an immediate $10 000 fine plus disciplinary action. This outcome is **unacceptable.**
@@ -51,7 +53,7 @@ Create `docs/cryptiq-mindmap/spec-proposals/SPEC-[##].md` (3-5 pages) containing
 
 ## File Boundaries
 
-- **Safe to read**: SDK packages (@packages), current branch context (@docs/context-consolidation/final-docs), this @CLAUDE.md, PRD/brief materials (@)
+- **Safe to read**: SDK packages (@packages), current branch context (@docs/context-consolidation/final-docs), this @CLAUDE.md, PRD/brief materials (@docs/cryptiq-mindmap/cryptiq-mindmap-brief.md)
 - **Avoid unless necessary**: legacy/stalled docs; if referenced, treat as _unverified_ and list assumptions.
 - **Never**: modify build/CI, delete files, or introduce WebGPU/network dependencies in the plan.
 
@@ -59,5 +61,5 @@ Create `docs/cryptiq-mindmap/spec-proposals/SPEC-[##].md` (3-5 pages) containing
 
 1. Restate **context, task, constraints & acceptance bars** in your scratchpad.
 2. Make the required **judgment calls** above; justify clearly; list risks.
-3. Draft **SPEC.md** per the Required Output.
+3. Draft **SPEC-[##].md** per the Required Output.
 4. End with a detailed step by step **implementation plan & checklist** for M0 (brain canvas + minimal HUD + tiny fixture), then M1–M3.
