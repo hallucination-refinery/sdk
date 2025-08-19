@@ -2,10 +2,10 @@
 name: start-m05
 description: Prints M0.5 objectives, acceptance bars, and Session 1 kickoff
 args:
-  - scope        # e.g., session1-only | session1-2
-  - source_repo  # e.g., https://github.com/iamwallam/3dbrain.git
-  - ref          # e.g., master or a commit SHA
-  - source_path  # e.g., static/models/brain_vertex_low.obj
+  - scope # e.g., session1-only | session1-2
+  - source_repo # e.g., https://github.com/iamwallam/3dbrain.git
+  - ref # e.g., master or a commit SHA
+  - source_path # e.g., static/models/brain_vertex_low.obj
 defaults:
   scope: session1-only
   source_repo: https://github.com/iamwallam/3dbrain.git
