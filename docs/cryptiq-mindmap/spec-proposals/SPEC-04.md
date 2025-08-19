@@ -1,4 +1,4 @@
-# SPEC-03.md — Cryptiq Mindmap Implementation Specification
+# SPEC-04.md — Cryptiq Mindmap Implementation Specification
 
 ## Executive Summary
 

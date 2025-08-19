@@ -1,9 +1,9 @@
-# CLAUDE-03-scratchpad.md
+# CLAUDE-04-scratchpad.md
 
 ## Context Restatement
 
 ### Task
-Produce a concise, decision-ready SPEC-03.md and phased implementation plan for the Cryptiq Mindmap demo - an SDK-first, offline, physics-free experience with neurons anchored to a brain surface.
+Produce a concise, decision-ready SPEC-04.md and phased implementation plan for the Cryptiq Mindmap demo - an SDK-first, offline, physics-free experience with neurons anchored to a brain surface.
 
 ### Constraints
 - **SDK Architecture**: Must use Refinery SDK end-to-end (canvas • store • lens • intent)
@@ -82,7 +82,7 @@ Produce a concise, decision-ready SPEC-03.md and phased implementation plan for 
 
 ## Next Steps
 1. Review existing SPEC files for context
-2. Draft SPEC-03.md with these decisions
+2. Draft SPEC-04.md with these decisions
 3. Create detailed implementation plan
 
 ## Notes & Observations
