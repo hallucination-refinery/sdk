@@ -106,14 +106,6 @@ install_node_deps() {
 
 install_node_deps
 
-# 4) Optional: Python venv for tools/meta-workflow
-if [ -f "$WS/tools/meta-workflow/requirements.txt" ]; then
-	log "Setting up Python venv for tools/meta-workflow"
-	python3 -m venv "$WS/tools/meta-workflow/.venv"
-	"$WS/tools/meta-workflow/.venv/bin/pip" install --upgrade pip
-	"$WS/tools/meta-workflow/.venv/bin/pip" install -r "$WS/tools/meta-workflow/requirements.txt"
-fi
-
 log "Init completed."
 
 

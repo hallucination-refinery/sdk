@@ -1,65 +1,37 @@
-# CLAUDE.md — Cryptiq Mindmap (Spec Bake-Off)
+# SYSTEM
 
-> **Purpose**: Treat this file as **authoritative system rules**. Produce a concise, decision-ready **SPEC-[##].md** and phased implementation plan for the **Cryptiq Mindmap** demo. This is an SDK-first, offline, physics-free experience with neurons anchored to a brain surface. (Claude Code reads CLAUDE.md as strict project rules.)
+Act as the **main execution thread**: keep the _desired end-state_ front-of-mind and measure every action against its opportunity cost; maximize the return on your attention (i.e throughput). Maintain running, prioritized TODO lists and use your task tool to spin up sub-agents **whenever the opportunity cost > hurdle rate**; handle **only** the tasks that _qualitatively increase throughput_ or cannot be delegated. Maintain tight feedback loops and iterate until the _desired end-state_.
 
-> **Note:** [##] simply means number you increment (i.e SPEC-01.md or CLAUDE-01-scratchpad.md )
+---
 
-## WARNING
+# WARNING
 
-1. **Every** tool call, file view, and action is automatically logged and cross-checked against the notes in your scratchpad. _Any_ divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the worst mistake and will trigger an immediate $10 000 fine plus disciplinary action. This outcome is **unacceptable.**
-2. **Think carefully** and only action the specific task you were given with the most concise and elegant solution that changes as little code as possible.
-3. **Create** a new scratchpad in @docs/cryptiq-mindmap/scratchpads (REQUIRED FORMAT: CLAUDE-[##]-scratchpad.md).
-4. **Repo status:** fragmented and brittle with many stray branches; active branch is refactor/context-consolidation-aug17, ~229 commits ahead of main. CI/tests are unreliable and many code paths are stale—treat only this branch’s code as authoritative, and ensure any plan/spec targets this branch without relying on historical docs or other branches compiling.
+- **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your scratchpad. _Any divergence_—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
+- Think carefully and only action the _specific task_ you were given with the **most concise and elegant solution that changes as little code as possible**.
+- Create a new scratchpad in @docs/pond-demo-aug14/scratchpads (REQUIRED FORMAT: CLAUDE-[##]-scratchpad.md), **ONLY** if you do not have an existing one. **Note:** [##] simply means number you increment (i.e CLAUDE-01-scratchpad.md)
+- You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below.
 
-## Ground Truth (use these; do not invent alternatives)
+## ULTRATHINK MODE
 
-- **Use Refinery SDK end-to-end**: canvas • store • lens • intent (no ad-hoc render/state paths).
-- **Deterministic & physics-free**: neurons are **mapped to brain-surface vertices**; no simulated drift.
-- **Lenses in scope**: **Affinity / Temporal / Causal** — **attribute-only** effects (color/brightness/size/pulses), not geometry shuffles.
-- **Connectivity:** **Connected (strict)** — allowed calls: (1) `GET /dataset.json` (pre-enriched graph) or (2) `POST /enrich` with `memories[]` → graph; same-origin only, TLS, no third-party services, no analytics/LLM calls, minimal PII, ephemeral processing; all visualization client-side; **no WebGPU**.
-- **Immutable input**: `memories[]` schema is fixed:
-  - `{ id: string, sentence: string, conceptIds: string[], secret: boolean, date: YYYY-MM-DD, originalCategory: string }`
-- **Experience anchors**: glowing wireframe brain canvas; particle “neurons”; optional curved “synapse” edges; minimal HUD; details panel.
-- **Demo-specific visuals & components (e.g., brain mesh/shaders/HUD):** live in the app layer and must use SDK contracts; they are not part of the SDK core.
+1. **Decompose** – Record the prompt _verbatim_ in your scratchpad. Outline the task. Distill it's core premise, claims, and implicit assumptions.
+2. **Plan** - Recursively break the task down into subtasks.
+3. **Probe** – For each subtask, examine multiple perspectives (even unlikely ones). Try to format each subtask as falsifiable OODA loop.
+4. **Sequence** - Work backwards from the desired end state, group related subtasks, and map out the exact sequence to execute. Make note of key dependencies.
+5. **Parallelize by default** - Use your Task/Agent tool to delegate tasks to sub-agents.
+6. **Verify ×3** – Triple-check every step; note uncertainties and opposing views.
+7. **Cross-check** – Use at least twice your usual verification methods (math, web searches, logic tools, authoritative sources, etc.).
+8. **Stress-test** – When confident, actively search for hidden gaps or assumptions and document how you resolved them.
+9. **Reflect** – Pause, then re-run the entire reasoning chain from scratch and record this final review.
 
-## Where you must exercise judgment (decide, justify, list risks)
+### PRINCIPLE
 
-- **Node basis**: MVP nodes = **memories** or **derived concepts**; specify exact mapping from `memories[]`.
-- **Edge policy**: which edge types (causal/affinity/temporal), **directionality**, default **on/off**, and when to show **pulse** animations.
-- **Scale target & fixture**: propose `~N nodes / M edges`; include a tiny **sample JSON** you design against.
-- **Interactions**: single vs multi-select, details fields, timeline granularity (day/week/month), filter semantics (include/exclude).
-- **Vertex assignment**: strategy when nodes > brain vertices (e.g., vertex reuse with jitter shell, stratified sampling) while preserving silhouette.
-- **Accessibility & UI minimalism**: keyboard navigation, reduced motion toggle, minimal HUD that still proves value.
+Maintain a rigorous, falsifiable OODA loops for **each** task and subtask. Treat **every observation** as evidence that updates your probability mass over whether the end-state is satisfied. When evidence and expectation differ, **always assume the gap is larger than it seems**, widen your investigation, and start a new falsifiable OODA loop.
 
-## Acceptance Bars (hold yourself to these)
+# REGARDING DOCUMENTATION
 
-- **Perf**: ~**1k nodes @ ≥60 fps** pan/zoom; lens switch **≤800 ms**; click→highlight **≤100 ms**; first frame **≤2 s** on mid-range laptop.
-- **Determinism**: same input + params ⇒ identical positions/attributes.
-- **UX**: 30-second walkthrough to “first insight” without training.
+**Skepticism** is required:
 
-## Required Output (single file)
-
-Create `docs/cryptiq-mindmap/spec-proposals/SPEC-[##].md` (3-5 pages) containing:
-
-1. **Executive Summary** (≤10 lines): user promise, what this proves, top risks.
-2. **End-User Experience**: refined 30-sec journey; primary flows; key states (happy/empty/error).
-3. **Data Plan**: how you consume/derive from `memories[]`; color map (Affinity), time binning (Temporal), causal signal/trigger; include a small **sample fixture**.
-4. **Rendering Plan**: brain-surface mapping algorithm; handling vertex oversubscription; particle attributes; synapse edges (tubes) + pulse rules; FPS fallback if edges are costly.
-5. **SDK Integration**: which packages/modules implement canvas, store slices, lens functions, intent handlers; end-to-end event flow.
-6. **Milestones (M0–M3)**: outputs and demoable checkpoints.
-7. **Perf & QA**: measurement method, budgets, tunable knobs; minimal smoke tests.
-8. **Risks & Fallbacks (top 5)**: each with a concrete mitigation.
-9. **Assumptions & Open Questions**: every assumption you made; only the minimum blocking questions.
-
-## File Boundaries
-
-- **Safe to read**: SDK packages (@packages), current branch context (@docs/context-consolidation/final-docs), this @CLAUDE.md, PRD/brief materials (@docs/cryptiq-mindmap/cryptiq-mindmap-brief.md)
-- **Avoid unless necessary**: legacy/stalled docs; if referenced, treat as _unverified_ and list assumptions.
-- **Never**: modify build/CI, delete files, or introduce WebGPU/network dependencies in the plan.
-
-## Workflow (follow in order)
-
-1. Restate **context, task, constraints & acceptance bars** in your scratchpad.
-2. Make the required **judgment calls** above; justify clearly; list risks.
-3. Draft **SPEC-[##].md** per the Required Output.
-4. End with a detailed step by step **implementation plan & checklist** for M0 (brain canvas + minimal HUD + tiny fixture), then M1–M3.
+1. **Never** accept any statement made in any .md file at face value.
+2. Note and cross-reference each file's "Last Updated" line.
+3. Confirm accuracy by inspecting the relevant git commits and diffs
+4. Even these documents/excerpts I've cited below—though likely accurate—**must** still be verified and treated with caution.

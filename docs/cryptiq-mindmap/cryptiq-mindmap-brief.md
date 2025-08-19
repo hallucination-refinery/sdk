@@ -27,44 +27,14 @@ Cryptiq Mindmap is a self-contained, web-based Refinery SDK promotional demo mea
 - **Details Panel:** on selection shows preview, key fields, related nodes/edges.
 - **Visual Controls:** opacity for non-matches, pulse toggle, color legend.
 
-## UNORGANIZED
+## Clarification
 
-### Cryptiq Memories Data Structure
-
-We cannot **change** this.JSON object with: memories: array of items { id: string, sentence: string, conceptIds: string[], secret: boolean, date: YYYY-MM-DD, originalCategory: string }
-
-`json
-{
-  "memories": [
-    {
-      "id": "m_001",
-      "sentence": "This user values authenticity but is learning to balance honesty with sensitivity.",
-      "conceptIds": ["c_001", "c_004"],
-      "secret": false,
-      "date": "2025-06-21",
-      "originalCategory": "Relationships"
-    },
-    {
-      "id": "m_002",
-      "sentence": "This user uses AI to plan new ideas and reflects on their creative process.",
-      "conceptIds": ["c_015", "c_047"],
-      "secret": true,
-      "date": "2025-06-22",
-      "originalCategory": "About Me"
-    }
-  ]
-}
-`
-
-### Legacy Cryptiq Mindmap Demo Data Structure
-
-We can change this depending on implementation requirements:
-
-1. Node model: Each node represents a derived concept from memories with fields like id, title/full_title, type (e.g., value/goal/trait/outcome/catalyst), ring (0–2 for “distance”/grouping), cluster (theme/category), secret (boolean), firstDate/lastDate (for timeline), and createdFrom (array of memory IDs that birthed this concept).
-2. Edge model (per lens): Edges are partitioned by lens into edges_causal, edges_affinity, and edges_temporal; each edge has at least id, source, target and may carry weight/confidence; switching lenses swaps the active edge set while the node set stays the same.
-3. Clusters: Clusters are thematic groupings (e.g., Relationships, Anxiety & Coping) referenced by each node’s cluster field; they drive color-coding and filtering and may be backed by a cluster name/color map in the data.
-4. Relationships: Nodes link to the memories that created them via createdFrom; edges connect node ids, and timeline visibility is derived from node firstDate (edges only render if both endpoints are currently visible).
-5. Interaction across structures: Lens selection chooses the edge set; timeline and filters reduce the visible node/edge subset; cluster membership informs styling and category filters without changing topology.
+    •	Nodes in the visualization are derived concepts/themes, not individual memories; neurons on the brain represent concepts, and memories serve as provenance.
+    •	The immutable memories[] is input only; the enrichment pipeline must aggregate → derive concept nodes and edges, preserving createdFrom: MemoryID[] links for details.
+    •	Edges operate between concepts per lens (Affinity/Temporal/Causal), using memory-derived signals (e.g., co-occurrence, temporal co-evolution, inferred direction) but not connecting raw memories.
+    •	Timeline/filters modulate concept visibility/attributes via aggregated memory stats (firstDate/lastDate, counts, recency), while the layout remains deterministic and physics-free.
+    •	Any prior specs assuming 1:1 memory→node are incorrect for MVP and must be revised to concept-centric modeling.
+    •	“Freedom to change node/edge structures” is only to improve the experience; choices that degrade clarity (e.g., rendering all memories as nodes) are out of scope.
 
 ### Cryptiq Memories Data Structure
 
