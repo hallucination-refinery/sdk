@@ -1,5 +1,6 @@
 {
   "start_time": "2025-08-19T22:18:13Z",
+  "end_time": "2025-08-19T22:28:45Z",
   "initiative": "cryptiq-mindmap-mvp",
   "session": "03",
   "sessions": [
@@ -7,8 +8,8 @@
       "session_id": "03",
       "name": "Vertex Analysis & Bucketing",
       "start_time": "2025-08-19T22:18:13Z",
-      "end_time": "2025-08-19T22:27:50Z",
-      "duration_minutes": 9.6,
+      "end_time": "2025-08-19T22:28:45Z",
+      "duration_minutes": 10.5,
       "status": "completed",
       "validations": {
         "tests": {
@@ -21,5 +22,11 @@
       "files_created": 5,
       "files_modified": 2
     }
-  ]
+  ],
+  "totals": {
+    "duration_minutes": 10.5,
+    "sessions_completed": 1,
+    "tests_passed": 9,
+    "files_created": 5
+  }
 }
