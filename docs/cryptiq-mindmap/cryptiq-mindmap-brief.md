@@ -1,4 +1,4 @@
-**Last Updated:**
+**Last Updated:** 6:11 PM EST, 18-08-2025
 
 # Cryptiq Mindmap Alignment Brief
 
@@ -64,42 +64,7 @@ We can change this depending on implementation requirements:
 2. Edge model (per lens): Edges are partitioned by lens into edges_causal, edges_affinity, and edges_temporal; each edge has at least id, source, target and may carry weight/confidence; switching lenses swaps the active edge set while the node set stays the same.
 3. Clusters: Clusters are thematic groupings (e.g., Relationships, Anxiety & Coping) referenced by each node’s cluster field; they drive color-coding and filtering and may be backed by a cluster name/color map in the data.
 4. Relationships: Nodes link to the memories that created them via createdFrom; edges connect node ids, and timeline visibility is derived from node firstDate (edges only render if both endpoints are currently visible).
-   Interaction across structures: Lens selection chooses the edge set; timeline and filters reduce the visible node/edge subset; cluster membership informs styling and category filters without changing topology.
-
-### Three.js Brain Repo we are forking
-
-**Last Updated:**
-
-# Cryptiq Mindmap PRD
-
-## Vision & Purpose
-
-Cryptiq Mindmap is a self-contained, web-based Refinery SDK promotional demo meant to showcase the SDK’s range. It also represents a collaboration with Cryptiq, a privacy-first memory vault combining encrypted storage and bespoke AI tools. The experience enriches your Cryptiq memories by deriving structure—identifying entities, categories, and relationships—and renders them as a canvas/graph of nodes and edges. You then explore this enriched graph through multiple lenses (causal, affinity, temporal) to reveal connections, while timeline scrubbing, filters, and focused highlighting progressively surface patterns and gaps to support self-reflection, open-ended exploration, and discovery.
-
-## End-User Experience
-
-- **Arrive:** A glowing wireframe **brain** fills the canvas; thousands of particle “neurons” are anchored to its surface; a minimal HUD is visible.
-- **Focus:** Hover never moves nodes; click a neuron to highlight it and its **synaptic arcs**; a details panel opens.
-- **Refine:** Filters/tags and the **timeline** fade or reveal neurons/edges while positions stay fixed.
-- **Reframe:** Switching **Affinity / Temporal / Causal** changes color/size/brightness and edge pulses to expose patterns—the brain silhouette remains stable.
-
-## Features
-
-- Deterministic, **physics-free** layout; neurons mapped to **brain-surface vertices**; positions static (lenses animate attributes, not geometry).
-- **Synapse edges** (curved, glowing) with optional directional pulses; neighbor highlight on selection.
-- Lenses: **Affinity** (category→color), **Temporal** (time→brightness/visibility via slider), **Causal** (animated pulses along connected edges).
-- Search, tag/category filters, timeline scrub; pin/snapshot current view.
-
-## Interface
-
-- **HUD:** search, lens switcher, filter chips, **timeline**, edge toggle, snapshot.
-- **Canvas:** pan/zoom (optional box-select); stable brain silhouette between lens changes.
-- **Details Panel:** on selection shows preview, key fields, related nodes/edges.
-- **Visual Controls:** opacity for non-matches, pulse toggle, color legend.
-
-## UNORGANIZED
-
-###
+5. Interaction across structures: Lens selection chooses the edge set; timeline and filters reduce the visible node/edge subset; cluster membership informs styling and category filters without changing topology.
 
 ### Cryptiq Memories Data Structure
 

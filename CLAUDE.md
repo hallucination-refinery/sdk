@@ -1,194 +1,63 @@
-# CLAUDE.md
+# CLAUDE.md — Cryptiq Mindmap (Spec Bake-Off)
 
-## Objective
+> **Purpose**: Treat this file as **authoritative system rules**. Produce a concise, decision-ready **SPEC-[##].md** and phased implementation plan for the **Cryptiq Mindmap** demo. This is an SDK-first, offline, physics-free experience with neurons anchored to a brain surface. (Claude Code reads CLAUDE.md as strict project rules.)
 
-- Produce accurate, comprehensive documentation of the current codebase as autonomously as possible, with minimal supervision.
+## WARNING
 
-## Constraints
+1. **Every** tool call, file view, and action is automatically logged and cross-checked against the notes in your scratchpad. _Any_ divergence—whether factual, procedural, or contrary to the spirit of the task—counts as the worst mistake and will trigger an immediate $10 000 fine plus disciplinary action. This outcome is **unacceptable.**
+2. **Think carefully** and only action the specific task you were given with the most concise and elegant solution that changes as little code as possible.
+3. **Create** a new scratchpad in @docs/cryptiq-mindmap/scratchpads (REQUIRED FORMAT: CLAUDE-[##]-scratchpad.md).
+4. **Repo status:** fragmented and brittle with many stray branches; active branch is refactor/context-consolidation-aug17, ~229 commits ahead of main. CI/tests are unreliable and many code paths are stale—treat only this branch’s code as authoritative, and ensure any plan/spec targets this branch without relying on historical docs or other branches compiling.
 
-- Solo developer; messy repo; unreliable CI. Read-only discovery first; tiny, verifiable edits only. No CI/docs-site work.
-- Plan-only for this session: generate a proposal and append it to the brief; no execution.
-- Do not rely on prior inventory/branch-map outputs unless explicitly approved.
+## Ground Truth (use these; do not invent alternatives)
 
-## Safety & Rules
+- **Use Refinery SDK end-to-end**: canvas • store • lens • intent (no ad-hoc render/state paths).
+- **Deterministic & physics-free**: neurons are **mapped to brain-surface vertices**; no simulated drift.
+- **Lenses in scope**: **Affinity / Temporal / Causal** — **attribute-only** effects (color/brightness/size/pulses), not geometry shuffles.
+- **Connectivity:** **Connected (strict)** — allowed calls: (1) `GET /dataset.json` (pre-enriched graph) or (2) `POST /enrich` with `memories[]` → graph; same-origin only, TLS, no third-party services, no analytics/LLM calls, minimal PII, ephemeral processing; all visualization client-side; **no WebGPU**.
+- **Immutable input**: `memories[]` schema is fixed:
+  - `{ id: string, sentence: string, conceptIds: string[], secret: boolean, date: YYYY-MM-DD, originalCategory: string }`
+- **Experience anchors**: glowing wireframe brain canvas; particle “neurons”; optional curved “synapse” edges; minimal HUD; details panel.
+- **Demo-specific visuals & components (e.g., brain mesh/shaders/HUD):** live in the app layer and must use SDK contracts; they are not part of the SDK core.
 
-- Read-only first; non-interactive commands; avoid pagers (append `| cat` when unsure).
-- No destructive ops (no `rm -rf`, no publish, no `git push`).
-- Keep diffs small and isolated to outputs; use `/clear` between tasks.
+## Where you must exercise judgment (decide, justify, list risks)
 
-## Allowed tools (must match settings)
+- **Node basis**: MVP nodes = **memories** or **derived concepts**; specify exact mapping from `memories[]`.
+- **Edge policy**: which edge types (causal/affinity/temporal), **directionality**, default **on/off**, and when to show **pulse** animations.
+- **Scale target & fixture**: propose `~N nodes / M edges`; include a tiny **sample JSON** you design against.
+- **Interactions**: single vs multi-select, details fields, timeline granularity (day/week/month), filter semantics (include/exclude).
+- **Vertex assignment**: strategy when nodes > brain vertices (e.g., vertex reuse with jitter shell, stratified sampling) while preserving silhouette.
+- **Accessibility & UI minimalism**: keyboard navigation, reduced motion toggle, minimal HUD that still proves value.
 
-- `Edit`, `Write`, `Read`, `MultiEdit`
-- `Bash(ls:*)`, `Bash(cat:*)`, `Bash(rg:*)`, `Bash(grep:*)`, `Bash(find:*)`, `Bash(cloc:*)`, `Bash(git status:*)`, `Bash(git diff:*)`, `Bash(mkdir:*)`
-- `Task` (for discovery workflows)
-- `Glob`, `Grep`, `LS`
+## Acceptance Bars (hold yourself to these)
 
-## Target outputs
+- **Perf**: ~**1k nodes @ ≥60 fps** pan/zoom; lens switch **≤800 ms**; click→highlight **≤100 ms**; first frame **≤2 s** on mid-range laptop.
+- **Determinism**: same input + params ⇒ identical positions/attributes.
+- **UX**: 30-second walkthrough to “first insight” without training.
 
-- `docs/context-consolidation/final-docs/architecture.md`
-- `docs/context-consolidation/final-docs/apis.md`
-- `docs/context-consolidation/final-docs/data-models.md`
-- `docs/context-consolidation/final-docs/configuration.md`
-- `docs/context-consolidation/final-docs/errors-logging.md`
-- Meta: `.clmem/workflows/*`, `.clmem/git-archaeology/*`
+## Required Output (single file)
 
-This session's output: an appended section in `docs/context-consolidation/context-consolidation-brief.md` titled “Proposed Orchestration Plan”.
+Create `docs/cryptiq-mindmap/spec-proposals/SPEC-[##].md` (3-5 pages) containing:
 
-## Orchestration protocol
+1. **Executive Summary** (≤10 lines): user promise, what this proves, top risks.
+2. **End-User Experience**: refined 30-sec journey; primary flows; key states (happy/empty/error).
+3. **Data Plan**: how you consume/derive from `memories[]`; color map (Affinity), time binning (Temporal), causal signal/trigger; include a small **sample fixture**.
+4. **Rendering Plan**: brain-surface mapping algorithm; handling vertex oversubscription; particle attributes; synapse edges (tubes) + pulse rules; FPS fallback if edges are costly.
+5. **SDK Integration**: which packages/modules implement canvas, store slices, lens functions, intent handlers; end-to-end event flow.
+6. **Milestones (M0–M3)**: outputs and demoable checkpoints.
+7. **Perf & QA**: measurement method, budgets, tunable knobs; minimal smoke tests.
+8. **Risks & Fallbacks (top 5)**: each with a concrete mitigation.
+9. **Assumptions & Open Questions**: every assumption you made; only the minimum blocking questions.
 
-- Slash-commands are standardized, repeatable entry points that spin up an orchestrator-led workflow.
-- The orchestrator may delegate to predefined sub-agents and invoke scripts/tools to complete the commanded task.
-- Before finishing, the orchestrator runs a final audit-and-reflection protocol and recommends the next slash-command.
+## File Boundaries
 
-## Workflow proposal (what to write into the brief)
+- **Safe to read**: SDK packages (@packages), current branch context (@docs/context-consolidation/final-docs), this @CLAUDE.md, PRD/brief materials (@)
+- **Avoid unless necessary**: legacy/stalled docs; if referenced, treat as _unverified_ and list assumptions.
+- **Never**: modify build/CI, delete files, or introduce WebGPU/network dependencies in the plan.
 
-When appending the “Proposed Orchestration Plan”, include:
+## Workflow (follow in order)
 
-- Goals: the minimal outcomes needed to meet the brief.
-- Proposed slash-commands: name, purpose, inputs, outputs, and acceptance criteria.
-- Sub-agents: roles and handoff points (Discovery vs Synthesis).
-- Scripts/tools: any small helper scripts or one-liners and when to use them.
-- Safety: allowed tools needed per command; anything beyond the allowlist must be explicitly requested.
-- Execution order: a short, numbered sequence; each step completes within a short session.
-- Final check protocol: audit, reflect, recommend next command.
-
-## Sub-agents
-
-- A — Discovery (map-sources → extract-facts)
-- B — Synthesis (structure-docs → write-docs → normalize-links → spot-check → quality-check)
-
-## Final check protocol (per task)
-
-- Audit: verify outputs against source; list any TBDs with pointers.
-- Reflect: log what worked/blocked in `.clmem/workflows/`.
-- Recommend: propose the next slash-command and why.
-
-References: Claude Code best practices and sub-agents — https://www.anthropic.com/engineering/claude-code-best-practices, https://docs.anthropic.com/en/docs/claude-code/sub-agents
-
-## Slash-Command Workflows
-
-When the user types these commands, execute the following workflows:
-
-### Command: /discover-catalog
-
-**Purpose:** Comprehensive discovery using discovery-agent to create reusable data catalog
-**Required tools:** Write, Bash
-**Execute this workflow:**
-
-1. **Prepare workspace:**
-   - Create timestamp: `date +%Y%m%d-%H%M%S`
-   - Initialize log: `.clmem/workflows/session-[timestamp].log`
-2. **Invoke discovery agent:**
-   - Say: "Use the discovery-agent to comprehensively search the codebase and create a structured JSON catalog with all exported APIs, data models, configuration, error patterns, and architecture. Save to .clmem/discovery/catalog.json"
-3. **Create summary:**
-   - Read catalog.json and write brief summary to `.clmem/discovery/summary.md`
-4. **Log completion:**
-   - Update session log with completion status
-5. **Run meta-workflow agent:**
-   - Say: "Use the meta-workflow-agent to analyze the discovery execution and optimize for next run"
-6. **Recommend next:** /generate-docs
-
-### Command: /generate-docs
-
-**Purpose:** Generate all 5 documentation files from catalog.json
-**Required tools:** Read, Write, Bash
-**Execute this workflow:**
-
-1. **Prepare workspace:**
-   - Create timestamp: `date +%Y%m%d-%H%M%S`
-   - Initialize log: `.clmem/workflows/session-[timestamp].log`
-2. **Invoke synthesis agent:**
-   - Say: "Use the synthesis-agent to transform .clmem/discovery/catalog.json into all 5 documentation files in docs/context-consolidation/final-docs/"
-3. **Validate with spot-checks:**
-   - Pick 3 items per doc
-   - Verify against source files
-4. **Log completion:**
-   - Update session log with generation status
-5. **Run meta-workflow agent:**
-   - Say: "Use the meta-workflow-agent to analyze the synthesis execution and identify improvement opportunities"
-6. **Recommend next:** /audit-docs
-
-### Command: /audit-docs
-
-**Purpose:** Validate all documentation against source code
-**Required tools:** Read, Write, Bash
-**Execute this workflow:**
-
-1. **Prepare workspace:**
-   - Create timestamp: `date +%Y%m%d-%H%M%S`
-   - Initialize log: `.clmem/workflows/session-[timestamp].log`
-2. **Invoke audit agent:**
-   - Say: "Use the audit-agent to validate all documentation in docs/context-consolidation/final-docs/ against source code and generate audit report in .clmem/audits/"
-3. **Review report:**
-   - Read audit report and summarize findings
-4. **Log completion:**
-   - Update session log with audit results
-5. **Run meta-workflow agent:**
-   - Say: "Use the meta-workflow-agent to analyze the audit execution and track accuracy trends"
-6. **Recommend fixes if needed or mark complete**
-
-### Command: /map-and-extract
-
-**Purpose:** Single-pass discovery to gather all facts needed for documentation
-**Execute this workflow:**
-
-1. **Find entry points:**
-   - Run: `find . -type f \( -name "main.*" -o -name "index.*" -o -name "app.*" \) -not -path "*/node_modules/*" -not -path "*/dist/*" | head -20`
-2. **Locate configuration:**
-   - Run: `find . -type f \( -name "*.env*" -o -name "*config*" -o -name "*.yaml" -o -name "*.yml" \) -not -path "*/node_modules/*" | grep -E "(config|env|settings)" | head -20`
-3. **Extract APIs:**
-   - Run: `rg "^export (class|function|const|interface|type)" --type ts --type js -g '!node_modules' -g '!dist' --no-heading | head -30`
-4. **Find data models:**
-   - Run: `rg "(schema|model|entity|interface|type)\s+\w+\s*(=|\{)" --type ts --type js -g '!node_modules' --no-heading | head -20`
-5. **Get repo statistics:**
-   - Run: `cloc . --exclude-dir=node_modules,dist,build,.git --quiet`
-6. **Analyze findings and immediately continue to /write-architecture-apis**
-
-### Command: /write-architecture-apis
-
-**Purpose:** Draft the two critical docs that enable immediate decisions
-**Execute this workflow:**
-
-1. **Update architecture.md:**
-   - Read `docs/context-consolidation/final-docs/architecture.md`
-   - Fill in discovered components, dependencies, entry points
-   - Add file:line references for all findings
-   - Keep under 100 lines
-2. **Update apis.md:**
-   - Read `docs/context-consolidation/final-docs/apis.md`
-   - Document exported functions/classes found
-   - Include signatures and brief examples
-   - Add file:line references
-3. **Spot-check minimum 3 items per doc against source files**
-4. **Create audit log in `.clmem/workflows/` with timestamp**
-5. **STOP and inform user that drafts are ready for review**
-
-### Command: /complete-remaining-docs
-
-**Purpose:** Complete remaining documentation (only run after review)
-**Execute this workflow:**
-
-1. **Update data-models.md:**
-   - Document schemas and models found
-   - Include relationships and invariants
-   - Add file:line references
-2. **Update configuration.md:**
-   - List all env vars discovered
-   - Document config files and precedence
-   - Include defaults where found
-3. **Update errors-logging.md:**
-   - Categorize error patterns found
-   - Document logging conventions
-   - Note any monitoring setup
-4. **Spot-check minimum 3 items per doc**
-5. **Inform user all 5 docs are complete**
-
-## Workflow State Tracking
-
-When executing slash-commands, log progress to `.clmem/workflows/session-[timestamp].log`:
-
-- Command started
-- Steps completed
-- Files created/modified
-- Any blockers encountered
-- Next recommended action
+1. Restate **context, task, constraints & acceptance bars** in your scratchpad.
+2. Make the required **judgment calls** above; justify clearly; list risks.
+3. Draft **SPEC.md** per the Required Output.
+4. End with a detailed step by step **implementation plan & checklist** for M0 (brain canvas + minimal HUD + tiny fixture), then M1–M3.
