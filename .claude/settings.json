@@ -10,5 +10,36 @@
     "Bash(git status:*)",
     "Bash(git diff:*)"
   ],
-  "notes": "Conservative allowlist to enable read-only discovery; expand incrementally as needed."
+  "notes": "Conservative allowlist to enable read-only discovery; expand incrementally as needed.",
+  "permissions": {
+    "allow": [
+      "Read(**/*)",
+      "Grep(**/*)",
+      "Glob(**/*)",
+      "LS(**/*)",
+      "Edit(**/*)",
+      "MultiEdit(**/*)",
+      "Write(**/*)",
+      "Task",
+      "TodoWrite",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(pnpm:*)",
+      "Bash(npm run:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Write(./.env)",
+      "Write(./.env.*)",
+      "Write(./secrets/**)",
+      "WebFetch",
+      "WebSearch",
+      "Bash(curl:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": { "Bash": "pnpm -w -s format || npm run -s format || true" }
+  }
 }
