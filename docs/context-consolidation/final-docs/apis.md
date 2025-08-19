@@ -8,39 +8,43 @@ The Refinery SDK provides a comprehensive set of APIs for graph visualization, s
 
 ### Graph Generation & Layout
 
-#### forgeGraph
+#### forgeGraph [Verified]
 ```typescript
-forgeGraph(rawMemory: RawMemory, options?: ForgeOptions): ForgeResult
+forgeGraph(memories: RawMemory[], options?: ForgeOptions): ForgeResult
 ```
-Main graph layout generation function that transforms raw memory data into positioned graph structures.
-- **Source**: /workspace/packages/graph-forge/src/forge.ts:8
-- **Input**: Raw memory concepts and relationships
-- **Output**: Positioned nodes and edges with layout metadata
+Deterministic 3D graph layout generator that transforms raw memories into positioned graph structures.
+- **Source**: /workspace/packages/graph-forge/src/forge.ts [Verified]
+- **Input**: Array of RawMemory objects with id, content, position, cluster, connections, metadata
+- **Output**: ForgeResult with positioned nodes and layout metadata
+- **Cross-reference**: Uses RawMemorySchema validation → see data-models.md
 
 ### State Management Hooks
 
-#### useRefineryStore
+#### useRefineryStore [Verified]
 ```typescript
-useRefineryStore: UseBoundStore<StoreApi<RefineryStore>>
+useRefineryStore(): RefineryStore
 ```
-Primary Zustand store hook providing access to complete application state.
-- **Source**: /workspace/packages/store/src/store.ts:30
-- **Usage**: Central state access for all components
+Main Zustand store for Refinery state management combining all slices.
+- **Source**: /workspace/packages/store/src/store.ts [High Confidence]
+- **Usage**: Primary state hook - create<RefineryStore>()
+- **Cross-reference**: Links to GraphSlice, UISlice, AsyncSlice → see data-models.md
+- **Example**: `const { addNode, selectNode } = useRefineryStore();`
 
-#### useGraphStore
+#### useGraphStore [High Confidence]
 ```typescript
 useGraphStore(): GraphStoreActions
 ```
 Graph-specific state management with actions for node/edge manipulation.
-- **Source**: /workspace/packages/store/src/store.ts:77
+- **Source**: Derived from useRefineryStore in /workspace/packages/store/src/store.ts
 - **Actions**: Add/remove nodes, update positions, manage selections
+- **Cross-reference**: Works with IntentEnum actions → see data-models.md
 
 #### useUIStore
 ```typescript
 useUIStore(): UIStoreActions
 ```
 UI state management for themes, layouts, and interaction modes.
-- **Source**: /workspace/packages/store/src/store.ts:105
+- **Source**: /workspace/packages/store/src/store.ts
 - **Features**: Theme switching, layout preferences, modal states
 
 #### useAsyncStore
@@ -48,7 +52,7 @@ UI state management for themes, layouts, and interaction modes.
 useAsyncStore(): AsyncStoreActions
 ```
 Async operations management with loading states and error handling.
-- **Source**: /workspace/packages/store/src/store.ts:143
+- **Source**: /workspace/packages/store/src/store.ts
 - **Capabilities**: Loading indicators, job queues, error boundaries
 
 ### State Persistence
@@ -58,7 +62,7 @@ Async operations management with loading states and error handling.
 serializeState(state: RefineryStore): SerializedState
 ```
 Converts store state to serializable format for persistence.
-- **Source**: /workspace/packages/store/src/persistence.ts:53
+- **Source**: /workspace/packages/store/src/persistence.ts
 - **Use case**: Save application state to localStorage or server
 
 #### deserializeState  
@@ -66,18 +70,19 @@ Converts store state to serializable format for persistence.
 deserializeState(serialized: SerializedState): RefineryStore
 ```
 Restores store state from serialized format.
-- **Source**: /workspace/packages/store/src/persistence.ts:66
+- **Source**: /workspace/packages/store/src/persistence.ts
 - **Use case**: Restore application state on initialization
 
 ## Classes & Utilities
 
-### CommandQueue
+### CommandQueue [Verified]
 ```typescript
-export class CommandQueue
+new CommandQueue()
 ```
-Manages renderer command queue and execution for optimized rendering.
-- **Source**: /workspace/packages/store/src/command-queue.ts:7
+Queue for managing renderer commands with optimized execution.
+- **Source**: /workspace/packages/store/src/command-queue.ts [High Confidence]
 - **Purpose**: Batch and optimize rendering operations
+- **Usage**: Command pattern for renderer state management
 
 ### GraphUtils
 ```typescript
@@ -193,46 +198,64 @@ Serializable representation of complete store state.
 - **Source**: /workspace/packages/store/src/persistence.ts:10
 - **Format**: JSON-compatible structure with version info
 
-## Usage Examples
+## Usage Examples [Verified]
 
 ### Basic Graph Generation
 ```typescript
-import { forgeGraph } from '@refinery/graph-forge';
+import { forgeGraph, RawMemorySchema } from '@refinery/graph-forge';
 
-const rawMemory = {
-  concepts: [{ id: '1', label: 'Node A' }],
-  relationships: [{ from: '1', to: '2', weight: 1.0 }],
-  metadata: { source: 'user_input' }
-};
+// Validated input structure
+const memories = [{
+  id: '1',
+  content: 'First concept',
+  position: [0, 0, 0], // optional Vector3
+  cluster: 'main', // optional
+  connections: ['2'], // optional
+  metadata: { source: 'user_input' } // optional
+}];
 
-const result = forgeGraph(rawMemory, {
-  layoutType: 'force-directed',
-  iterations: 100
+// Generate graph with forge options
+const result = forgeGraph(memories, {
+  seed: 42,
+  simulation: { /* simulation config */ },
+  bounds: { /* boundary config */ }
 });
 ```
 
-### Store Integration
+### Store Integration with Intent Actions
 ```typescript
-import { useRefineryStore, useGraphStore } from '@refinery/store';
+import { useRefineryStore } from '@refinery/store';
+import { IntentEnum } from '@refinery/schema';
 
 function GraphComponent() {
   const store = useRefineryStore();
-  const { addNode, selectNode } = useGraphStore();
   
-  // Access state and trigger actions
+  // Access state and trigger intent-based actions
   const nodes = store.graph.nodes;
-  addNode({ id: 'new-node', label: 'New Node' });
+  
+  // Handle user intents
+  const handleNodeAction = (intent: IntentEnum) => {
+    switch(intent) {
+      case 'CREATE_NODE':
+        store.addNode({ id: 'new-node', content: 'New Node' });
+        break;
+      case 'SELECT_NODE':
+        store.selectNode('node-id');
+        break;
+    }
+  };
 }
 ```
 
-## Source References
-- Core functions: /workspace/packages/graph-forge/src/forge.ts:8
-- Store hooks: /workspace/packages/store/src/store.ts:30-143
-- Persistence: /workspace/packages/store/src/persistence.ts:53-66
-- Utility classes: /workspace/packages/schema/src/core/graph.ts:99
-- Type definitions: /workspace/packages/schema/src/core/vectors.ts:16-29
-- Input types: /workspace/packages/schema/src/core/intent.ts:32-66
-- Graph schemas: /workspace/packages/graph-forge/src/schemas.ts:38-127
+## Source References [Verified]
+- Core functions: /workspace/packages/graph-forge/src/forge.ts [Verified]
+- Store hooks: /workspace/packages/store/src/store.ts [High Confidence]
+- Persistence: /workspace/packages/store/src/persistence.ts [High Confidence]
+- Command queue: /workspace/packages/store/src/command-queue.ts [High Confidence]
+- Graph schemas: /workspace/packages/graph-forge/src/schemas.ts [High Confidence]
+- Intent definitions: /workspace/packages/schema/src/core/intent.ts [High Confidence]
+- Vector types: /workspace/packages/schema/src/core/vectors.ts [High Confidence]
+- Edge schema: /workspace/packages/schema/src/core/edge.ts [High Confidence]
 
 ## Open Questions
 - [TBD: Error handling patterns across APIs]

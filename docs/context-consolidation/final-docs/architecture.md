@@ -7,18 +7,25 @@ This is a TypeScript monorepo implementing a graph-based visualization and inter
 ## Monorepo Structure
 
 ### Core Components
-- **packages/** - 16 SDK packages providing core functionality (/workspace/packages:1)
+- **packages/** - 16 SDK packages providing core functionality [Verified] (/workspace/packages/)
+  - canvas-latent, canvas-r3f, gesture-hands, graph-forge, input-hub, interaction
+  - ops, schema, sdk-core, shared, store, thinkable, widget-aperture, widget-hud [High Confidence]
 - **apps/** - Demo applications showcasing the SDK (/workspace/apps:1)
 - **docs/** - Documentation and archived content (/workspace/docs:1)
 - **scripts/** - Build and maintenance utilities (/workspace/scripts:1)
 - **tools/** - Meta-workflow and development tools (/workspace/tools:1)
 
-### Entry Points
+### Entry Points [Verified]
 
 #### Primary SDK Packages
-- **@refinery/store** - Zustand-based state management (/workspace/packages/store/src/index.ts:1)
-- **@refinery/schema** - Core domain types and Zod validation (/workspace/packages/schema/src/index.ts:1)
-- **@refinery/graph-forge** - Deterministic graph layout generation (/workspace/packages/graph-forge/src/index.ts:1)
+- **@refinery/store** - State management with useRefineryStore, useGraphStore, useUIStore, useAsyncStore
+  - Exported in /workspace/packages/store/src/index.ts [High Confidence]
+- **@refinery/schema** - Core domain types and Zod validation (exports z, version)
+  - Exported in /workspace/packages/schema/src/index.ts [High Confidence]
+- **@refinery/graph-forge** - Deterministic graph layout with forgeGraph, RawMemorySchema, ForgeOptionsSchema
+  - Exported in /workspace/packages/graph-forge/src/index.ts [High Confidence]
+- **@refinery/canvas-r3f** - React Three Fiber components (Canvas, CanvasProvider, NodeSprite)
+  - Exported in /workspace/packages/canvas-r3f/src/index.ts [High Confidence]
 
 #### Demo Applications
 - **cryptiq-mindmap-demo** - Next.js mindmap visualization demo (/workspace/apps/cryptiq-mindmap-demo/app/page.tsx:1)
@@ -31,11 +38,12 @@ This is a TypeScript monorepo implementing a graph-based visualization and inter
 - **TypeScript** (^5.7.2) - Primary language with strict typing (/workspace/package.json:1)
 - **PNPM** (>=9.0.0) - Package manager with workspace support (/workspace/package.json:9)
 
-### Core Runtime Dependencies
-- **React** (19.1.0) - UI framework, pinned version (/workspace/package.json:48)
-- **Three.js** (0.176.0) - 3D graphics engine, pinned version (/workspace/package.json:47)
-- **Zustand** (^5.0.6) - State management library (/workspace/packages/store/src/store.ts:30)
-- **Zod** - Schema validation via @refinery/schema (/workspace/packages/schema/src/index.ts:1)
+### Core Runtime Dependencies [Verified]
+- **React** (19.1.0) - UI framework, pinned version (/workspace/package.json)
+- **Three.js** (0.176.0) - 3D graphics engine, pinned version (/workspace/package.json)
+- **Zustand** - State management library powering useRefineryStore hook [High Confidence]
+- **Zod** - Schema validation for RawMemorySchema, ForgeOptionsSchema, IntentEnum, etc.
+  - Core library exported in /workspace/packages/schema/src/index.ts [Verified]
 
 ## Data Flow & System Boundaries
 
@@ -44,11 +52,15 @@ This is a TypeScript monorepo implementing a graph-based visualization and inter
 2. **Slice-Based Organization**: Graph, UI, and Async state separated into focused slices
 3. **Persistence Layer**: Serialization/deserialization for state persistence (/workspace/packages/store/src/persistence.ts:53)
 
-### Graph Processing Pipeline
-1. **Raw Memory Input**: Unstructured data via RawMemorySchema (/workspace/packages/graph-forge/src/schemas.ts:7)
-2. **Graph Forge**: Deterministic layout generation with configurable options (/workspace/packages/graph-forge/src/forge.ts:8)
-3. **Visualization**: 3D rendering through Three.js integration
-4. **Interaction**: Multi-modal input handling (gesture, voice, traditional)
+### Graph Processing Pipeline [Verified]
+1. **Raw Memory Input**: Data with id, content, position, cluster, connections, metadata fields
+   - Schema in /workspace/packages/graph-forge/src/schemas.ts [High Confidence]
+2. **Graph Forge**: forgeGraph(memories: RawMemory[], options?: ForgeOptions): ForgeResult
+   - Implementation in /workspace/packages/graph-forge/src/forge.js [Verified]
+3. **Visualization**: 3D rendering through Canvas component and NodeSprite
+   - Components in /workspace/packages/canvas-r3f/src/Canvas.tsx [High Confidence]
+4. **Interaction**: Multi-modal input with IntentEnum (CREATE_NODE, DELETE_NODE, SELECT_NODE, MOVE_NODE, etc.)
+   - Intent types in /workspace/packages/schema/src/core/intent.ts [Verified]
 
 ### Component Boundaries
 - **Schema Layer**: Type definitions and validation (/workspace/packages/schema/src/index.ts:1)

@@ -69,14 +69,15 @@ The Refinery SDK uses a multi-layered configuration system combining environment
 - **Content**: Package patterns, workspace dependencies
 - **Scope**: Package management, dependency resolution
 
-### TypeScript Configuration
+### TypeScript Configuration [Verified]
 
 #### tsconfig.base.json
 - **Type**: JSON configuration
-- **Path**: /workspace/tsconfig.base.json
+- **Path**: /workspace/tsconfig.base.json [High Confidence]
 - **Purpose**: Base TypeScript configuration for all packages
-- **Content**: Compiler options, path mappings, module resolution
+- **Content**: Compiler options, path mappings, module resolution  
 - **Scope**: Type checking, compilation settings across monorepo
+- **Cross-reference**: Enables type safety for schemas → see data-models.md
 
 ### Development Tools
 
@@ -200,15 +201,14 @@ const spawnMode = process.env.NEXT_PUBLIC_GRAPH_SPAWN || 'origin';
 - Regular environment variables server-side only
 - Sensitive configuration must not use NEXT_PUBLIC_ prefix
 
-## Source References
-- Environment variables: /workspace/.env:2-17
-- Version requirements: /workspace/package.json:8-9, 47-48
-- Build configuration: /workspace/turbo.json:1
-- TypeScript config: /workspace/tsconfig.base.json:1
-- Workspace config: /workspace/pnpm-workspace.yaml:1
-- Test configuration: /workspace/vitest.config.ts:1
-- Linting configuration: /workspace/eslint.config.js:1
-- Environment usage: /workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx:88
+## Source References [Verified]
+- Environment variables: /workspace/.env [High Confidence]
+- Package requirements: /workspace/package.json [High Confidence]
+- Build configuration: /workspace/turbo.json [High Confidence]
+- TypeScript config: /workspace/tsconfig.base.json [High Confidence]
+- Workspace config: /workspace/pnpm-workspace.yaml [High Confidence]
+- Package lock: /workspace/pnpm-lock.yaml [High Confidence]
+- Environment usage in components: /workspace/apps/legacy-import/cryptic-vault-demo/components/CrypticAnimusScene.tsx [Medium Confidence]
 
 ## Open Questions
 - [TBD: Runtime configuration validation and error handling]

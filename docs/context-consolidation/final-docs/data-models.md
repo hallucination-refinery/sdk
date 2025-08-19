@@ -36,60 +36,70 @@ z.object({
 
 ### User Interaction Models
 
-#### IntentEnum
+#### IntentEnum [Verified]
 ```typescript
-z.enum(['navigate', 'select', 'create', 'edit', 'delete', 'search'])
+z.enum([
+  'CREATE_NODE', 'DELETE_NODE', 'SELECT_NODE', 'MOVE_NODE',
+  'CREATE_EDGE', 'DELETE_EDGE',
+  'PAN_CAMERA', 'ZOOM_IN', 'ZOOM_OUT', 'FIT_VIEW',
+  'SELECT_ALL', 'CLEAR_SELECTION',
+  'TOGGLE_LAYOUT', 'RESET_LAYOUT'
+])
 ```
-Enumeration defining all possible user intent classifications.
-- **Source**: /workspace/packages/schema/src/core/intent.ts:6
-- **Values**: navigate, select, create, edit, delete, search
-- **Purpose**: Classify user actions for appropriate handling
+Enumeration defining supported intent types for graph manipulation.
+- **Source**: /workspace/packages/schema/src/core/intent.ts [High Confidence]
+- **Values**: CREATE_NODE, DELETE_NODE, SELECT_NODE, MOVE_NODE, CREATE_EDGE, DELETE_EDGE, PAN_CAMERA, ZOOM_IN, ZOOM_OUT, FIT_VIEW, SELECT_ALL, CLEAR_SELECTION, TOGGLE_LAYOUT, RESET_LAYOUT
+- **Purpose**: Classify user actions for graph operations
+- **Cross-reference**: Used by forgeGraph function → see apis.md
 
-#### GestureInputSchema
+#### GestureInputSchema [Verified]
 ```typescript
 z.object({
-  type: z.string(),
-  position: Vector2Schema,
-  timestamp: z.number(),
-  confidence: z.number().min(0).max(1)
+  type: z.literal('gesture'),
+  gesture: z.string(),
+  confidence: z.number(),
+  landmarks: z.array(z.object({x, y, z})).optional()
 })
 ```
-Schema for gesture-based input events with confidence scoring.
-- **Source**: /workspace/packages/schema/src/core/intent.ts:35
-- **Properties**: Type identifier, 2D position, timestamp, confidence level
-- **Validation**: Confidence must be between 0 and 1
-- **Usage**: Hand tracking, gesture recognition, input classification
+Gesture input data schema for Mediapipe integration.
+- **Source**: /workspace/packages/schema/src/core/intent.ts [High Confidence]
+- **Properties**: type ('gesture'), gesture (string), confidence (number), landmarks (3D points optional)
+- **Purpose**: Handle gesture-based input from hand tracking
+- **Cross-reference**: Part of MultimodalInput system
 
 ### Graph Data Models
 
-#### RawMemorySchema
+#### RawMemorySchema [Verified]
 ```typescript
 z.object({
-  concepts: z.array(ConceptSchema),
-  relationships: z.array(RelationshipSchema),
-  metadata: z.object()
+  id: z.string(),
+  content: z.string(),
+  position: z.array(z.number()).length(3).optional(),
+  cluster: z.string().optional(),
+  connections: z.array(z.string()).optional(),
+  metadata: z.record(z.unknown()).optional()
 })
 ```
-Input schema for unprocessed graph data before layout generation.
-- **Source**: /workspace/packages/graph-forge/src/schemas.ts:7
-- **Properties**: Concepts array, relationships array, metadata object
+Schema for raw memory input before processing by forgeGraph function.
+- **Source**: /workspace/packages/graph-forge/src/schemas.ts [High Confidence]
+- **Properties**: id (string), content (string), position (Vector3 optional), cluster (string optional), connections (string array optional), metadata (record optional)
 - **Purpose**: Standardized input format for graph forge operations
-- **Flow**: User input → RawMemory → ForgeProcess → PositionedGraph
+- **Flow**: RawMemory[] → forgeGraph() → ForgeResult
+- **Cross-reference**: Consumed by forgeGraph function → see apis.md
 
-#### ForgeOptionsSchema
+#### ForgeOptionsSchema [Verified]
 ```typescript
 z.object({
-  layoutType: z.string(),
-  forceStrength: z.number(),
-  iterations: z.number(),
-  nodeSpacing: z.number()
+  seed: z.number().int().default(42),
+  simulation: z.object({...}),
+  bounds: z.object({...})
 })
 ```
-Configuration schema for graph layout algorithms.
-- **Source**: /workspace/packages/graph-forge/src/schemas.ts:80
-- **Properties**: Layout type, force strength, iteration count, node spacing
-- **Validation**: Numeric constraints on force and spacing parameters
-- **Usage**: Fine-tune graph layout appearance and performance
+Configuration options for graph forge operation with deterministic seeding.
+- **Source**: /workspace/packages/graph-forge/src/schemas.ts [High Confidence]
+- **Properties**: seed (integer, default 42), simulation (object config), bounds (object config)
+- **Purpose**: Control graph layout generation behavior
+- **Cross-reference**: Used with forgeGraph function → see apis.md
 
 ## Core Entities
 
@@ -239,19 +249,22 @@ State model for asynchronous operations and loading states.
 - **GraphSlice.selectedNodeIds ↔ GraphSlice.nodes**: Selection references node IDs
 - **UIState.hoveredNodeId → GraphState.nodes**: Hover state references graph nodes
 
-### Schema Dependencies
-- **GestureInputSchema → Vector2Schema**: Gesture input includes position vector
-- **RawMemorySchema → ConceptSchema + RelationshipSchema**: Raw memory composed of concepts and relationships
-- **ForgeResult → (IdeaNode + Edge)**: Forge output produces positioned graph entities
+### Schema Dependencies [Verified]
+- **RawMemorySchema → Vector3Schema**: Position field uses 3D coordinates
+- **GestureInputSchema → 3D landmarks**: Gesture input includes spatial data
+- **ForgeOptionsSchema → RawMemorySchema**: Options configure processing of raw memories
+- **IntentEnum → Graph operations**: Intent values drive graph manipulation actions
+- **EdgeSchema → Node references**: Edges connect nodes via ID references
 
 ## Data Flow Patterns
 
-### Input Processing Flow
-1. **Raw Input** → RawMemorySchema validation
-2. **RawMemory** → forgeGraph() processing
-3. **ForgeResult** → GraphState integration
-4. **GraphState** → NodeData/LinkData transformation
-5. **Visualization Data** → 3D rendering
+### Input Processing Flow [Verified]
+1. **Raw Input** → RawMemorySchema validation (id, content, position, cluster, connections, metadata)
+2. **RawMemory[]** → forgeGraph(memories, options) processing
+3. **ForgeResult** → GraphState integration via useRefineryStore
+4. **GraphState** → 3D rendering via Canvas component
+5. **User Actions** → IntentEnum classification → Store actions
+- **Cross-reference**: forgeGraph function → see apis.md
 
 ### State Update Flow
 1. **User Action** → Intent classification
@@ -285,13 +298,13 @@ State model for asynchronous operations and loading states.
 - **Position consistency**: All positioned nodes must have valid Vector3 coordinates
 - **Metadata integrity**: Extensible metadata must be serializable objects
 
-## Source References
-- Vector schemas: /workspace/packages/schema/src/core/vectors.ts:7-20
-- Intent schemas: /workspace/packages/schema/src/core/intent.ts:6-35
-- Graph entities: /workspace/packages/schema/src/core/node.ts:1, /workspace/packages/schema/src/core/edge.ts:1
-- Forge schemas: /workspace/packages/graph-forge/src/schemas.ts:7-80
-- Visualization types: /workspace/packages/canvas-latent/types/index.ts:21-100
-- State models: /workspace/packages/store/src/types/state.ts:1
+## Source References [Verified]
+- Vector schemas: /workspace/packages/schema/src/core/vectors.ts [High Confidence]
+- Intent schemas: /workspace/packages/schema/src/core/intent.ts [High Confidence]
+- Edge schema: /workspace/packages/schema/src/core/edge.ts [High Confidence]
+- Forge schemas: /workspace/packages/graph-forge/src/schemas.ts [High Confidence]
+- Additional schemas: WidgetManifestSchema, VoiceInputSchema, IntentContextSchema [Medium Confidence]
+- Total schema count: 25+ schemas across core packages [High Confidence]
 
 ## Open Questions
 - [TBD: Schema evolution and migration strategy]
