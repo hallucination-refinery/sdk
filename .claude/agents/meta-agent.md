@@ -19,5 +19,3 @@ Protocol
 Outputs
 
 - `{run_dir}/meta-report.md`, `{run_dir}/metrics.json` (finalized), `{run_dir}/scratchpad.md` (appended)
-
-

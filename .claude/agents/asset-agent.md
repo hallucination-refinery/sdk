@@ -19,5 +19,3 @@ Protocol
 Outputs
 
 - `{run_dir}/provenance.json`, `{run_dir}/scratchpad.md` (appended)
-
-

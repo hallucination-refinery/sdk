@@ -20,5 +20,3 @@ Protocol
 Outputs
 
 - `{run_dir}/results.json`, `{run_dir}/metrics.json` (updated), `{run_dir}/acceptance.md`, `{run_dir}/scratchpad.md` (appended)
-
-
