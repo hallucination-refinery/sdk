@@ -8,7 +8,6 @@ Act as the **main execution thread**: keep the _desired end-state_ front-of-mind
 
 - **Every tool call, file view, and action is automatically logged and cross-checked** against the notes in your scratchpad. _Any divergence_—whether factual, procedural, or contrary to the spirit of the task—counts as the _worst mistake_ and will trigger an immediate **\$10 000 fine** plus disciplinary action. This outcome is _unacceptable_.
 - Think carefully and only action the _specific task_ you were given with the **most concise and elegant solution that changes as little code as possible**.
-- Create a new scratchpad in @docs/cryptiq-mindmap/scratchpads (REQUIRED FORMAT: CLAUDE-[##]-scratchpad.md), **ONLY** if you do not have an existing one. **Note:** [##] simply means number you increment (i.e CLAUDE-01-scratchpad.md)
 - You **MUST** adhere to ULTRATHINK MODE and the PRINCIPLE detailed below.
 
 ## ULTRATHINK MODE
