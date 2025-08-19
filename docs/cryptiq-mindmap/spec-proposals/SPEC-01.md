@@ -1,14 +1,14 @@
-# SPEC-01.md — Cryptiq Mindmap Implementation Specification
+# SPEC-01: Cryptiq Mindmap Implementation Specification
 
-## Executive Summary
+## 1. Executive Summary
 
-**User Promise**: Transform your private memories into an explorable neural network, revealing hidden connections through time, causality, and affinity lenses.
+**User Promise**: Transform your encrypted memories into an explorable 3D brain visualization where neurons represent individual memories, revealing hidden patterns through affinity, temporal, and causal lenses.
 
-**What This Proves**: The Refinery SDK can deliver a deterministic, performant graph visualization that maintains visual stability while supporting rich, multi-dimensional data exploration.
+**What This Proves**: The Refinery SDK can deliver deterministic, performant graph visualizations at scale (1k+ nodes) using SDK-first patterns without physics simulation.
 
-**Top Risks**: (1) Brain vertex count limitations for large datasets, (2) Edge rendering performance at scale, (3) Lens computation cost for complex graphs.
+**Top Risks**: (1) Brain vertex count limitations when nodes exceed available surface vertices, (2) Edge rendering performance impact with dense connectivity graphs, (3) Lens computation cost for large memory datasets.
 
-## End-User Experience
+## 2. End-User Experience
 
 ### 30-Second Journey
 1. **0-5s**: Page loads, glowing wireframe brain appears with particles mapped to surface
@@ -29,7 +29,7 @@
 - **Empty State**: "Add your first memory" prompt with sample data option
 - **Error State**: "Unable to load memories" with retry button and offline mode fallback
 
-## Data Plan
+## 3. Data Plan
 
 ### Memory to Node Mapping
 - **Direct 1:1**: Each memory becomes exactly one node
@@ -98,7 +98,7 @@
 - Temporal: m1→m2→m3 (chronological)
 - Causal: m1→m2 (learning→performance)
 
-## Rendering Plan
+## 4. Rendering Plan
 
 ### Brain Surface Mapping Algorithm
 1. Load brain mesh vertices (~10k vertices)
@@ -129,7 +129,7 @@
 - **Vertex reuse**: Pool vertex buffers between lens switches
 - **Frame budget**: 16ms target, degrade quality if exceeded
 
-## SDK Integration
+## 5. SDK Integration
 
 ### Package Responsibilities
 
@@ -162,7 +162,7 @@
 4. Particles update attributes → `updateParticleColors(lens)`
 5. HUD reflects state → `<LensSelector active="temporal" />`
 
-## Milestones
+## 6. Milestones
 
 ### M0: Brain Canvas Foundation (Week 1)
 - [ ] Load and render wireframe brain mesh
@@ -192,7 +192,7 @@
 - [ ] Performance optimizations
 - **Demo**: Full experience at 60fps with 500+ nodes
 
-## Performance & QA
+## 7. Performance & QA
 
 ### Measurement Methods
 - Chrome DevTools Performance profiler
@@ -220,7 +220,7 @@
 4. Select all → deselect all
 5. Browser resize during interaction
 
-## Risks & Fallbacks
+## 8. Risks & Fallbacks
 
 ### 1. Brain Vertex Insufficiency
 **Risk**: 10k vertices < node count for large datasets
@@ -242,7 +242,7 @@
 **Risk**: WebGL unavailable or buggy
 **Mitigation**: Feature detection with 2D canvas fallback; reduced particle count mode; static image export
 
-## Assumptions & Open Questions
+## 9. Assumptions & Open Questions
 
 ### Assumptions Made
 - Brain mesh is pre-optimized (<50k vertices)

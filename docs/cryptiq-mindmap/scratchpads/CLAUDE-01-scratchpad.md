@@ -1,29 +1,50 @@
-# CLAUDE-01-scratchpad.md — Cryptiq Mindmap Spec Work
+# CLAUDE-01 Scratchpad - Cryptiq Mindmap Spec Development
 
-## 1. Context Restatement
+## CONTEXT RESTATEMENT
+
+### Purpose
+Produce a concise, decision-ready SPEC-01.md and phased implementation plan for the Cryptiq Mindmap demo - an SDK-first, offline, physics-free experience with neurons anchored to a brain surface.
 
 ### Task
-Produce a concise, decision-ready SPEC-01.md and phased implementation plan for the Cryptiq Mindmap demo.
+1. Create this scratchpad to track all decisions and reasoning
+2. Read safe documentation (SDK packages, context consolidation docs, PRD/brief)
+3. Make required judgment calls with justification and risks
+4. Draft SPEC-01.md (3-5 pages) with all required sections
+5. Create detailed implementation plan for milestones M0-M3
 
-### Core Constraints
-- **SDK-first approach**: Use Refinery SDK end-to-end (canvas • store • lens • intent)
-- **Deterministic & physics-free**: Neurons mapped to brain-surface vertices
-- **Lenses**: Affinity / Temporal / Causal — attribute-only effects (color/brightness/size/pulses)
-- **Connectivity**: Connected mode only — GET /dataset.json or POST /enrich, same-origin, TLS, no third-party
-- **Memory schema**: Fixed `{ id, sentence, conceptIds[], secret, date, originalCategory }`
-- **Visual anchors**: Glowing wireframe brain, particle neurons, optional curved synapse edges, minimal HUD
-- **No WebGPU**
+### Constraints (Ground Truth - Immutable)
+- **SDK Architecture**: Must use Refinery SDK end-to-end (canvas • store • lens • intent)
+- **Deterministic Rendering**: Neurons mapped to brain-surface vertices, no physics/drift
+- **Lenses**: Affinity/Temporal/Causal - attribute-only effects (color/brightness/size/pulses)
+- **Connectivity**: Connected mode only - GET /dataset.json or POST /enrich, same-origin, TLS, no third-party
+- **Input Schema**: Fixed memories[] schema: {id, sentence, conceptIds[], secret, date, originalCategory}
+- **Visual Anchors**: Glowing wireframe brain, particle neurons, optional curved synapse edges, minimal HUD
+- **No WebGPU**: All visualization client-side without WebGPU
 
 ### Acceptance Bars
-- **Performance**: ~1k nodes @ ≥60 fps pan/zoom; lens switch ≤800 ms; click→highlight ≤100 ms; first frame ≤2 s
+- **Performance**: 1k nodes @ 60fps pan/zoom, lens switch ≤800ms, click→highlight ≤100ms, first frame ≤2s
 - **Determinism**: Same input + params = identical positions/attributes
-- **UX**: 30-second walkthrough to "first insight"
+- **UX**: 30-second walkthrough to "first insight" without training
 
 ### Workflow Progress
+- [x] Create scratchpad
 - [x] Restate context, task, constraints & acceptance bars
-- [ ] Make required judgment calls with justifications and risks
-- [ ] Draft SPEC-01.md per Required Output format
-- [ ] Create implementation plan & checklist for M0-M3
+- [x] Read safe documentation
+- [x] Make required judgment calls with justifications and risks
+- [x] Draft SPEC-01.md per Required Output format (complete with implementation plan for M0-M3)
+
+## DOCUMENTATION READING LOG
+
+### Files Read:
+1. **cryptiq-mindmap-brief.md**: Vision for glowing brain mindmap with neurons on surface, lenses for exploring connections
+2. **architecture.md**: SDK packages structure - canvas-r3f, store (Zustand), schema (Zod), graph-forge
+3. **Package.json files**: Confirmed dependencies - Three.js 0.176.0, React 19.1.0, @react-three/fiber
+
+### Key SDK Components Identified:
+- **@refinery/canvas-r3f**: React Three Fiber components for 3D rendering
+- **@refinery/store**: Zustand-based state management with slices
+- **@refinery/schema**: Zod validation for data models
+- **@refinery/graph-forge**: Graph layout computation (deterministic)
 
 ## 2. Required Judgment Calls
 
@@ -181,3 +202,28 @@ Produce a concise, decision-ready SPEC-01.md and phased implementation plan for 
 - Pulse animations
 - Timeline controls
 - Performance optimizations
+
+## 7. Task Completion Summary
+
+### Deliverables Completed:
+1. **CLAUDE-01-scratchpad.md**: Created comprehensive scratchpad tracking all decisions and reasoning
+2. **SPEC-01.md**: Produced complete specification document with:
+   - Executive summary with user promise and risk assessment
+   - Detailed 30-second user journey
+   - Data plan with sample fixture
+   - Rendering plan with vertex mapping algorithm
+   - SDK integration architecture
+   - Four milestones (M0-M3) with clear deliverables
+   - Performance budgets and QA plan
+   - Risk mitigation strategies
+   - Detailed 20-day implementation plan with daily tasks
+
+### Key Decisions Made:
+- Direct memory-to-node mapping (1:1)
+- Three lens types with Affinity as default
+- Deterministic hash-based vertex assignment
+- 500 node / 2000 edge scale target
+- SDK-first approach using canvas-r3f, store, schema, and graph-forge packages
+
+### Implementation Ready:
+The spec provides a complete roadmap for building the Cryptiq Mindmap demo, with clear technical decisions, performance targets, and risk mitigations in place.
