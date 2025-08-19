@@ -412,4 +412,132 @@ pnpm build --filter @refinery/canvas-r3f
 
 ---
 
-*This proposal prioritizes the foundational brain surface mapping system as the critical path to success. All other features build upon this spatial foundation.*
+## Section G — Extensibility & Reuse
+
+### Extracting the Pattern
+
+This 13-session workflow for Cryptiq Mindmap demonstrates a **universal pattern** applicable to any complex project:
+
+#### The Pattern Discovered
+- **Original:** 13 sequential sessions = 13 × 45min = ~10 hours
+- **Optimized:** 4 parallel batches = 4 × 45min = ~3 hours  
+- **Speedup:** 3.3x faster through parallelization
+
+#### Parallel Batches Identified
+```yaml
+batch_1: [Session 1, 7, 9]     # Independent discovery/setup
+batch_2: [Session 2, 3, 4]     # Parallel algorithm work  
+batch_3: [Session 5, 6, 10]    # Component implementation
+batch_4: [Session 11, 12, 13]  # Integration and polish
+```
+
+### Making This Workflow Extensible
+
+#### 1. Parameterize the Domain
+Replace Cryptiq-specific terms with parameters:
+- `brain.obj` → `{BASE_MESH}`
+- `concepts` → `{DATA_POINTS}`
+- `vertices` → `{ATTACHMENT_POINTS}`
+- `50fps` → `{PERFORMANCE_TARGET}`
+
+#### 2. Abstract the Sessions
+Each session type is reusable:
+- **Sessions 1, 9:** Discovery pattern → `DISCOVERY` template
+- **Sessions 2-4:** Algorithm pattern → `IMPLEMENTATION` template
+- **Sessions 5-6:** System setup → `IMPLEMENTATION` template
+- **Sessions 10-12:** Testing pattern → `VALIDATION` template
+- **Session 13:** Documentation → `DOCUMENTATION` template
+
+#### 3. Create Your Own 10-Hour Workflow
+```yaml
+your_workflow:
+  domain: "Your Project"
+  
+  batch_1_discovery:
+    - Analyze existing system
+    - Gather requirements
+    - Create test data
+    
+  batch_2_algorithms:
+    - Core algorithm A
+    - Core algorithm B
+    - Data structures
+    
+  batch_3_implementation:
+    - Component 1
+    - Component 2
+    - State management
+    
+  batch_4_integration:
+    - Integration tests
+    - Performance validation
+    - Documentation
+```
+
+### Reusing for Other Domains
+
+#### Example 1: Data Pipeline (10 hours → 3 hours)
+```yaml
+batch_1: [Data source analysis, Schema discovery, Sample generation]
+batch_2: [Extractor, Transformer, Validator]
+batch_3: [Loader, Error handler, Monitor]
+batch_4: [Integration test, Performance test, Documentation]
+```
+
+#### Example 2: API Development (10 hours → 3 hours)
+```yaml
+batch_1: [Endpoint design, Database schema, Auth strategy]
+batch_2: [CRUD endpoints, Auth implementation, Validation]
+batch_3: [Business logic, External integrations, Caching]
+batch_4: [API tests, Load tests, API documentation]
+```
+
+#### Example 3: UI Component Library (10 hours → 3 hours)
+```yaml
+batch_1: [Design audit, Component inventory, Theming strategy]
+batch_2: [Atoms, Molecules, Organisms]
+batch_3: [Compositions, Animations, Responsive layouts]
+batch_4: [Storybook, Visual tests, Usage docs]
+```
+
+### Integration with Extensible Infrastructure
+
+This workflow connects to the broader automation infrastructure:
+
+1. **Use Session Templates** (`automation/EXTENSIBLE-SESSION-TEMPLATES.md`)
+   - Each of our 13 sessions maps to a template type
+   - Customize parameters for your domain
+
+2. **Apply Orchestration Pattern** (`.clmem/workflows/PARALLEL-ORCHESTRATION-PATTERN.md`)
+   - Identify your parallelizable work
+   - Create batches using the pattern
+
+3. **Follow the Playbook** (`automation/CLAUDE-CODE-ORCHESTRATION-PLAYBOOK.md`)
+   - Execute batches with Task agents
+   - Track with TodoWrite
+   - Validate between batches
+
+### Metrics for Reuse
+
+Track these when applying to new domains:
+- **Actual speedup:** Did you achieve 3x+ improvement?
+- **Batch efficiency:** How many sessions per batch?
+- **Error rate:** Which sessions needed retry?
+- **Reusability:** Which parts transferred directly?
+
+### Continuous Improvement
+
+After each application:
+1. Update session templates with new patterns
+2. Add domain-specific optimizations to .clmem/
+3. Share learnings back to this document
+4. Improve the base pattern
+
+**Key Insight:** The brain mesh → concepts mapping is just ONE instance of the pattern:
+`Complex Serial Work → Parallel Batches → 3x+ Speedup`
+
+This pattern works for ANY domain requiring multiple implementation sessions.
+
+---
+
+*This proposal prioritizes the foundational brain surface mapping system as the critical path to success. All other features build upon this spatial foundation. The workflow itself is designed for reuse across any complex 10-hour project.*
