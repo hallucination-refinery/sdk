@@ -4,8 +4,13 @@ export const version = '0.0.0'
 // Components
 export { Canvas } from './Canvas'
 export { CanvasProvider, useCanvas } from './CanvasProvider'
-export { NodeSprite, BrainMesh, BrainMeshWithFallback } from './components'
-export type { NodeSpriteProps, BrainMeshProps } from './components'
+export { NodeSprite, BrainMesh, BrainMeshWithFallback, BrainRegionDebug, BrainRegionStats } from './components'
+export type { NodeSpriteProps, BrainMeshProps, BrainRegionDebugProps } from './components'
+
+// Vertex mapping utilities
+export * from './VertexMapper'
+export { useBrainVertices } from './hooks/useBrainVertices'
+export type { BrainVerticesState } from './hooks/useBrainVertices'
 
 // Re-export types for convenience
 export type { RendererCommand } from '@refinery/store'
