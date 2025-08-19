@@ -1,4 +1,4 @@
-# SPEC-02: Cryptiq Mindmap Implementation
+# SPEC-03: Cryptiq Mindmap Implementation
 
 ## 1. Executive Summary
 
