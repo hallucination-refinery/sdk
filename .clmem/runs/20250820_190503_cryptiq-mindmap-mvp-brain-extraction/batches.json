@@ -1,0 +1,43 @@
+{
+  "sessions": ["brain-extraction-workflow"],
+  "dependencies": [
+    {
+      "session": "brain-extraction-workflow",
+      "steps": [
+        {
+          "id": "guard-isolation",
+          "name": "Guard isolation and record provenance",
+          "depends_on": []
+        },
+        {
+          "id": "install-deps", 
+          "name": "Install legacy dependencies (isolated)",
+          "depends_on": ["guard-isolation"]
+        },
+        {
+          "id": "compatibility-shim",
+          "name": "Compatibility shim (only if particles crash occurs)", 
+          "depends_on": ["install-deps"]
+        },
+        {
+          "id": "run-dev-server",
+          "name": "Run dev server (default port 8080)",
+          "depends_on": ["compatibility-shim"]
+        },
+        {
+          "id": "health-check",
+          "name": "Health check (basic success criteria)",
+          "depends_on": ["run-dev-server"]
+        }
+      ]
+    }
+  ],
+  "batches": [
+    {
+      "batch_id": 1,
+      "session_ids": ["brain-extraction-workflow"],
+      "parallel": false,
+      "description": "Single linear workflow with sequential step dependencies"
+    }
+  ]
+}
