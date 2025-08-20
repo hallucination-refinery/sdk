@@ -1,0 +1,2320 @@
+{
+  "concepts": [
+    {
+      "id": "concept_001",
+      "label": "Artificial Intelligence",
+      "content": "Detailed thoughts and knowledge about Artificial Intelligence",
+      "color": "#3498db",
+      "createdAt": "2023-08-28T12:25:40.998Z",
+      "updatedAt": "2023-09-25T14:52:31.025Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Read an article about Artificial Intelligence",
+          "Reflected on the implications of Artificial Intelligence",
+          "Reflected on the implications of Artificial Intelligence",
+          "Reflected on the implications of Artificial Intelligence",
+          "Discussed Artificial Intelligence with a team member"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2023-09-25T14:52:31.025Z"
+      }
+    },
+    {
+      "id": "concept_002",
+      "label": "Learning Theory",
+      "content": "Detailed thoughts and knowledge about Learning Theory",
+      "color": "#34495e",
+      "createdAt": "2023-09-27T02:00:23.492Z",
+      "updatedAt": "2023-10-03T21:16:31.335Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Read an article about Learning Theory",
+          "Watched a documentary about Learning Theory"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2023-10-03T21:16:31.335Z"
+      }
+    },
+    {
+      "id": "concept_003",
+      "label": "Community Building",
+      "content": "Detailed thoughts and knowledge about Community Building",
+      "color": "#e67e22",
+      "createdAt": "2024-08-15T11:38:22.225Z",
+      "updatedAt": "2024-08-26T20:04:34.740Z",
+      "metadata": {
+        "category": "Social",
+        "memories": [
+          "Had an insight about Community Building while exercising",
+          "Had an insight about Community Building while reading",
+          "Applied Community Building to solve a problem",
+          "Learned about Community Building during a conference"
+        ],
+        "tags": [
+          "social",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2024-08-26T20:04:34.740Z"
+      }
+    },
+    {
+      "id": "concept_004",
+      "label": "Entrepreneurship",
+      "content": "Detailed thoughts and knowledge about Entrepreneurship",
+      "color": "#f39c12",
+      "createdAt": "2023-09-09T00:47:40.569Z",
+      "updatedAt": "2023-09-30T03:31:07.742Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Applied Entrepreneurship to solve a problem",
+          "Learned about Entrepreneurship during a course"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2023-09-30T03:31:07.742Z"
+      }
+    },
+    {
+      "id": "concept_005",
+      "label": "Machine Learning",
+      "content": "Detailed thoughts and knowledge about Machine Learning",
+      "color": "#3498db",
+      "createdAt": "2024-11-06T07:43:58.183Z",
+      "updatedAt": "2024-11-16T00:16:47.028Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Reflected on the implications of Machine Learning",
+          "Discussed Machine Learning with an expert"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 1,
+        "lastAccessed": "2024-11-16T00:16:47.028Z"
+      }
+    },
+    {
+      "id": "concept_006",
+      "label": "Marketing Strategy",
+      "content": "Detailed thoughts and knowledge about Marketing Strategy",
+      "color": "#f39c12",
+      "createdAt": "2025-03-12T03:39:44.769Z",
+      "updatedAt": "2025-04-02T10:35:32.715Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Reflected on the implications of Marketing Strategy",
+          "Reflected on the implications of Marketing Strategy",
+          "Reflected on the implications of Marketing Strategy",
+          "Learned about Marketing Strategy during a conversation",
+          "Discussed Marketing Strategy with a friend"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2025-04-02T10:35:32.715Z"
+      }
+    },
+    {
+      "id": "concept_007",
+      "label": "Digital Art",
+      "content": "Detailed thoughts and knowledge about Digital Art",
+      "color": "#e74c3c",
+      "createdAt": "2025-01-06T16:29:28.406Z",
+      "updatedAt": "2025-01-07T14:46:39.085Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Attended a workshop on Digital Art",
+          "Connected Digital Art to previous knowledge",
+          "Watched a documentary about Digital Art",
+          "Attended a workshop on Digital Art"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2025-01-07T14:46:39.085Z"
+      }
+    },
+    {
+      "id": "concept_008",
+      "label": "Contemporary Painting",
+      "content": "Detailed thoughts and knowledge about Contemporary Painting",
+      "color": "#e74c3c",
+      "createdAt": "2024-02-22T12:05:50.385Z",
+      "updatedAt": "2024-03-04T09:26:22.067Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Watched a documentary about Contemporary Painting"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2024-03-04T09:26:22.067Z"
+      }
+    },
+    {
+      "id": "concept_009",
+      "label": "Sculpture",
+      "content": "Detailed thoughts and knowledge about Sculpture",
+      "color": "#e74c3c",
+      "createdAt": "2024-09-20T13:23:59.904Z",
+      "updatedAt": "2024-09-24T02:37:52.090Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Discussed Sculpture with a colleague",
+          "Reflected on the implications of Sculpture",
+          "Read an article about Sculpture",
+          "Experimented with Sculpture in practice"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 4,
+        "lastAccessed": "2024-09-24T02:37:52.090Z"
+      }
+    },
+    {
+      "id": "concept_010",
+      "label": "Mental Health",
+      "content": "Detailed thoughts and knowledge about Mental Health",
+      "color": "#1abc9c",
+      "createdAt": "2024-08-20T12:55:03.180Z",
+      "updatedAt": "2024-09-19T05:39:39.807Z",
+      "metadata": {
+        "category": "Health",
+        "memories": [
+          "Reflected on the implications of Mental Health",
+          "Discussed Mental Health with a colleague",
+          "Connected Mental Health to previous knowledge"
+        ],
+        "tags": [
+          "health",
+          "generated",
+          "test-data"
+        ],
+        "importance": 1,
+        "lastAccessed": "2024-09-19T05:39:39.807Z"
+      }
+    },
+    {
+      "id": "concept_011",
+      "label": "Nutrition",
+      "content": "Detailed thoughts and knowledge about Nutrition",
+      "color": "#1abc9c",
+      "createdAt": "2025-05-03T17:28:55.774Z",
+      "updatedAt": "2025-05-22T20:01:42.494Z",
+      "metadata": {
+        "category": "Health",
+        "memories": [
+          "Discussed Nutrition with a mentor",
+          "Discussed Nutrition with an expert",
+          "Watched a documentary about Nutrition"
+        ],
+        "tags": [
+          "health",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2025-05-22T20:01:42.494Z"
+      }
+    },
+    {
+      "id": "concept_012",
+      "label": "Financial Planning",
+      "content": "Detailed thoughts and knowledge about Financial Planning",
+      "color": "#f39c12",
+      "createdAt": "2024-10-22T15:06:48.133Z",
+      "updatedAt": "2024-11-07T14:22:47.575Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Discussed Financial Planning with a colleague",
+          "Discussed Financial Planning with a colleague",
+          "Read an article about Financial Planning"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2024-11-07T14:22:47.575Z"
+      }
+    },
+    {
+      "id": "concept_013",
+      "label": "Climate Change",
+      "content": "Detailed thoughts and knowledge about Climate Change",
+      "color": "#2ecc71",
+      "createdAt": "2024-07-19T01:49:17.659Z",
+      "updatedAt": "2024-08-18T00:44:15.046Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Discussed Climate Change with an expert",
+          "Learned about Climate Change during a conference",
+          "Watched a documentary about Climate Change",
+          "Discussed Climate Change with a mentor",
+          "Applied Climate Change to solve a problem"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 4,
+        "lastAccessed": "2024-08-18T00:44:15.046Z"
+      }
+    },
+    {
+      "id": "concept_014",
+      "label": "Gene Therapy",
+      "content": "Detailed thoughts and knowledge about Gene Therapy",
+      "color": "#2ecc71",
+      "createdAt": "2024-11-15T02:27:04.230Z",
+      "updatedAt": "2024-12-14T11:30:04.383Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Experimented with Gene Therapy in practice"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2024-12-14T11:30:04.383Z"
+      }
+    },
+    {
+      "id": "concept_015",
+      "label": "Leadership",
+      "content": "Detailed thoughts and knowledge about Leadership",
+      "color": "#f39c12",
+      "createdAt": "2025-02-23T03:44:24.662Z",
+      "updatedAt": "2025-03-05T23:57:08.941Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Reflected on the implications of Leadership",
+          "Had an insight about Leadership while meditating",
+          "Reflected on the implications of Leadership",
+          "Reflected on the implications of Leadership"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2025-03-05T23:57:08.941Z"
+      }
+    },
+    {
+      "id": "concept_016",
+      "label": "Blockchain",
+      "content": "Detailed thoughts and knowledge about Blockchain",
+      "color": "#3498db",
+      "createdAt": "2025-01-18T10:14:34.467Z",
+      "updatedAt": "2025-02-16T05:08:11.259Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Experimented with Blockchain in practice",
+          "Attended a workshop on Blockchain"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2025-02-16T05:08:11.259Z"
+      }
+    },
+    {
+      "id": "concept_017",
+      "label": "Cloud Computing",
+      "content": "Detailed thoughts and knowledge about Cloud Computing",
+      "color": "#3498db",
+      "createdAt": "2024-07-12T11:32:14.747Z",
+      "updatedAt": "2024-07-31T08:06:35.485Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Attended a workshop on Cloud Computing",
+          "Discussed Cloud Computing with a team member"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2024-07-31T08:06:35.485Z"
+      }
+    },
+    {
+      "id": "concept_018",
+      "label": "Innovation Management",
+      "content": "Detailed thoughts and knowledge about Innovation Management",
+      "color": "#f39c12",
+      "createdAt": "2024-01-26T01:27:05.261Z",
+      "updatedAt": "2024-02-10T07:04:26.970Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Had an insight about Innovation Management while reading",
+          "Read an article about Innovation Management",
+          "Had an insight about Innovation Management while writing",
+          "Read an article about Innovation Management",
+          "Experimented with Innovation Management in practice"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 1,
+        "lastAccessed": "2024-02-10T07:04:26.970Z"
+      }
+    },
+    {
+      "id": "concept_019",
+      "label": "Space Exploration",
+      "content": "Detailed thoughts and knowledge about Space Exploration",
+      "color": "#2ecc71",
+      "createdAt": "2024-10-16T20:21:46.496Z",
+      "updatedAt": "2024-10-26T14:47:31.734Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Experimented with Space Exploration in practice",
+          "Read an article about Space Exploration",
+          "Discussed Space Exploration with an expert"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 4,
+        "lastAccessed": "2024-10-26T14:47:31.734Z"
+      }
+    },
+    {
+      "id": "concept_020",
+      "label": "Renewable Energy",
+      "content": "Detailed thoughts and knowledge about Renewable Energy",
+      "color": "#2ecc71",
+      "createdAt": "2024-08-16T15:11:46.216Z",
+      "updatedAt": "2024-08-20T21:33:53.110Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Had an insight about Renewable Energy while writing"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 4,
+        "lastAccessed": "2024-08-20T21:33:53.110Z"
+      }
+    },
+    {
+      "id": "concept_021",
+      "label": "Ethics",
+      "content": "Detailed thoughts and knowledge about Ethics",
+      "color": "#9b59b6",
+      "createdAt": "2024-01-14T01:11:44.463Z",
+      "updatedAt": "2024-01-20T23:06:49.736Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Applied Ethics to solve a problem",
+          "Discussed Ethics with a team member"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2024-01-20T23:06:49.736Z"
+      }
+    },
+    {
+      "id": "concept_022",
+      "label": "Supply Chain",
+      "content": "Detailed thoughts and knowledge about Supply Chain",
+      "color": "#f39c12",
+      "createdAt": "2024-08-29T15:05:21.403Z",
+      "updatedAt": "2024-09-10T08:30:28.992Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Reflected on the implications of Supply Chain",
+          "Attended a workshop on Supply Chain",
+          "Read an article about Supply Chain",
+          "Watched a documentary about Supply Chain",
+          "Learned about Supply Chain during a research session"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2024-09-10T08:30:28.992Z"
+      }
+    },
+    {
+      "id": "concept_023",
+      "label": "Cybersecurity",
+      "content": "Detailed thoughts and knowledge about Cybersecurity",
+      "color": "#3498db",
+      "createdAt": "2023-11-09T13:33:49.508Z",
+      "updatedAt": "2023-11-18T05:16:52.810Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Applied Cybersecurity to solve a problem"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2023-11-18T05:16:52.810Z"
+      }
+    },
+    {
+      "id": "concept_024",
+      "label": "Customer Experience",
+      "content": "Detailed thoughts and knowledge about Customer Experience",
+      "color": "#f39c12",
+      "createdAt": "2024-11-23T15:35:51.591Z",
+      "updatedAt": "2024-12-05T00:22:50.447Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Experimented with Customer Experience in practice",
+          "Read an article about Customer Experience",
+          "Watched a documentary about Customer Experience",
+          "Attended a workshop on Customer Experience"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 4,
+        "lastAccessed": "2024-12-05T00:22:50.447Z"
+      }
+    },
+    {
+      "id": "concept_025",
+      "label": "Internet of Things",
+      "content": "Detailed thoughts and knowledge about Internet of Things",
+      "color": "#3498db",
+      "createdAt": "2025-04-16T16:16:12.842Z",
+      "updatedAt": "2025-04-24T00:53:38.628Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Applied Internet of Things to solve a problem",
+          "Watched a documentary about Internet of Things",
+          "Connected Internet of Things to previous knowledge"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2025-04-24T00:53:38.628Z"
+      }
+    },
+    {
+      "id": "concept_026",
+      "label": "Consciousness",
+      "content": "Detailed thoughts and knowledge about Consciousness",
+      "color": "#9b59b6",
+      "createdAt": "2023-11-10T18:10:11.234Z",
+      "updatedAt": "2023-12-05T14:46:51.047Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Learned about Consciousness during a research session",
+          "Had an insight about Consciousness while coding",
+          "Had an insight about Consciousness while coding"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 1,
+        "lastAccessed": "2023-12-05T14:46:51.047Z"
+      }
+    },
+    {
+      "id": "concept_027",
+      "label": "Virtual Reality",
+      "content": "Detailed thoughts and knowledge about Virtual Reality",
+      "color": "#3498db",
+      "createdAt": "2025-04-13T17:57:04.910Z",
+      "updatedAt": "2025-05-03T06:01:01.630Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Read an article about Virtual Reality",
+          "Had an insight about Virtual Reality while reading",
+          "Connected Virtual Reality to previous knowledge",
+          "Learned about Virtual Reality during a conference"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2025-05-03T06:01:01.630Z"
+      }
+    },
+    {
+      "id": "concept_028",
+      "label": "Photography",
+      "content": "Detailed thoughts and knowledge about Photography",
+      "color": "#e74c3c",
+      "createdAt": "2023-12-04T11:04:28.136Z",
+      "updatedAt": "2023-12-26T10:19:28.553Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Reflected on the implications of Photography"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2023-12-26T10:19:28.553Z"
+      }
+    },
+    {
+      "id": "concept_029",
+      "label": "Social Justice",
+      "content": "Detailed thoughts and knowledge about Social Justice",
+      "color": "#e67e22",
+      "createdAt": "2023-11-06T09:13:02.919Z",
+      "updatedAt": "2023-11-23T01:01:28.804Z",
+      "metadata": {
+        "category": "Social",
+        "memories": [
+          "Attended a workshop on Social Justice",
+          "Applied Social Justice to solve a problem",
+          "Reflected on the implications of Social Justice",
+          "Watched a documentary about Social Justice",
+          "Experimented with Social Justice in practice"
+        ],
+        "tags": [
+          "social",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2023-11-23T01:01:28.804Z"
+      }
+    },
+    {
+      "id": "concept_030",
+      "label": "Digital Transformation",
+      "content": "Detailed thoughts and knowledge about Digital Transformation",
+      "color": "#f39c12",
+      "createdAt": "2025-07-01T13:54:15.994Z",
+      "updatedAt": "2025-07-23T05:13:36.150Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Watched a documentary about Digital Transformation"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2025-07-23T05:13:36.150Z"
+      }
+    },
+    {
+      "id": "concept_031",
+      "label": "Quantum Computing",
+      "content": "Detailed thoughts and knowledge about Quantum Computing",
+      "color": "#3498db",
+      "createdAt": "2023-08-31T14:01:43.024Z",
+      "updatedAt": "2023-09-30T02:35:51.379Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Read an article about Quantum Computing",
+          "Applied Quantum Computing to solve a problem",
+          "Applied Quantum Computing to solve a problem"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2023-09-30T02:35:51.379Z"
+      }
+    },
+    {
+      "id": "concept_032",
+      "label": "Curriculum Design",
+      "content": "Detailed thoughts and knowledge about Curriculum Design",
+      "color": "#34495e",
+      "createdAt": "2025-06-18T09:46:26.051Z",
+      "updatedAt": "2025-06-29T18:56:33.185Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Read an article about Curriculum Design",
+          "Learned about Curriculum Design during a seminar",
+          "Discussed Curriculum Design with a friend"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2025-06-29T18:56:33.185Z"
+      }
+    },
+    {
+      "id": "concept_033",
+      "label": "Neuroscience",
+      "content": "Detailed thoughts and knowledge about Neuroscience",
+      "color": "#2ecc71",
+      "createdAt": "2025-04-27T23:31:32.145Z",
+      "updatedAt": "2025-05-21T22:45:59.724Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Learned about Neuroscience during a course",
+          "Learned about Neuroscience during a meeting",
+          "Connected Neuroscience to previous knowledge",
+          "Watched a documentary about Neuroscience",
+          "Connected Neuroscience to previous knowledge"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2025-05-21T22:45:59.724Z"
+      }
+    },
+    {
+      "id": "concept_034",
+      "label": "Mobile Development",
+      "content": "Detailed thoughts and knowledge about Mobile Development",
+      "color": "#3498db",
+      "createdAt": "2024-10-01T11:32:16.662Z",
+      "updatedAt": "2024-10-12T06:29:46.218Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Discussed Mobile Development with a colleague",
+          "Experimented with Mobile Development in practice",
+          "Attended a workshop on Mobile Development",
+          "Applied Mobile Development to solve a problem",
+          "Watched a documentary about Mobile Development"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2024-10-12T06:29:46.218Z"
+      }
+    },
+    {
+      "id": "concept_035",
+      "label": "Free Will",
+      "content": "Detailed thoughts and knowledge about Free Will",
+      "color": "#9b59b6",
+      "createdAt": "2023-10-23T21:30:26.831Z",
+      "updatedAt": "2023-11-02T06:39:00.744Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Applied Free Will to solve a problem",
+          "Learned about Free Will during a conference",
+          "Learned about Free Will during a research session",
+          "Connected Free Will to previous knowledge"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2023-11-02T06:39:00.744Z"
+      }
+    },
+    {
+      "id": "concept_036",
+      "label": "Data Science",
+      "content": "Detailed thoughts and knowledge about Data Science",
+      "color": "#3498db",
+      "createdAt": "2023-12-04T19:54:43.066Z",
+      "updatedAt": "2023-12-29T11:48:39.341Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Discussed Data Science with a team member"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2023-12-29T11:48:39.341Z"
+      }
+    },
+    {
+      "id": "concept_037",
+      "label": "DevOps",
+      "content": "Detailed thoughts and knowledge about DevOps",
+      "color": "#3498db",
+      "createdAt": "2024-09-17T18:59:08.638Z",
+      "updatedAt": "2024-10-08T20:25:19.477Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Connected DevOps to previous knowledge",
+          "Discussed DevOps with a team member"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2024-10-08T20:25:19.477Z"
+      }
+    },
+    {
+      "id": "concept_038",
+      "label": "Software Architecture",
+      "content": "Detailed thoughts and knowledge about Software Architecture",
+      "color": "#3498db",
+      "createdAt": "2025-06-06T02:17:24.835Z",
+      "updatedAt": "2025-06-08T09:20:01.920Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Experimented with Software Architecture in practice",
+          "Learned about Software Architecture during a meeting",
+          "Attended a workshop on Software Architecture"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2025-06-08T09:20:01.920Z"
+      }
+    },
+    {
+      "id": "concept_039",
+      "label": "Venture Capital",
+      "content": "Detailed thoughts and knowledge about Venture Capital",
+      "color": "#f39c12",
+      "createdAt": "2024-05-30T01:18:02.910Z",
+      "updatedAt": "2024-06-14T04:54:44.394Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Discussed Venture Capital with a team member"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2024-06-14T04:54:44.394Z"
+      }
+    },
+    {
+      "id": "concept_040",
+      "label": "Neural Networks",
+      "content": "Detailed thoughts and knowledge about Neural Networks",
+      "color": "#3498db",
+      "createdAt": "2025-03-03T23:53:24.143Z",
+      "updatedAt": "2025-03-28T01:49:16.948Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Watched a documentary about Neural Networks",
+          "Experimented with Neural Networks in practice"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 4,
+        "lastAccessed": "2025-03-28T01:49:16.948Z"
+      }
+    },
+    {
+      "id": "concept_041",
+      "label": "Performance Art",
+      "content": "Detailed thoughts and knowledge about Performance Art",
+      "color": "#e74c3c",
+      "createdAt": "2023-11-25T20:21:21.644Z",
+      "updatedAt": "2023-12-15T12:09:03.901Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Watched a documentary about Performance Art"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2023-12-15T12:09:03.901Z"
+      }
+    },
+    {
+      "id": "concept_042",
+      "label": "Particle Physics",
+      "content": "Detailed thoughts and knowledge about Particle Physics",
+      "color": "#2ecc71",
+      "createdAt": "2024-10-24T08:05:43.707Z",
+      "updatedAt": "2024-11-02T14:39:48.653Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Read an article about Particle Physics",
+          "Learned about Particle Physics during a research session"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 1,
+        "lastAccessed": "2024-11-02T14:39:48.653Z"
+      }
+    },
+    {
+      "id": "concept_043",
+      "label": "Exercise Physiology",
+      "content": "Detailed thoughts and knowledge about Exercise Physiology",
+      "color": "#1abc9c",
+      "createdAt": "2024-07-04T13:29:46.071Z",
+      "updatedAt": "2024-07-19T08:37:43.166Z",
+      "metadata": {
+        "category": "Health",
+        "memories": [
+          "Attended a workshop on Exercise Physiology"
+        ],
+        "tags": [
+          "health",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2024-07-19T08:37:43.166Z"
+      }
+    },
+    {
+      "id": "concept_044",
+      "label": "Installation Art",
+      "content": "Detailed thoughts and knowledge about Installation Art",
+      "color": "#e74c3c",
+      "createdAt": "2023-12-10T19:46:05.336Z",
+      "updatedAt": "2024-01-09T13:50:42.003Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Applied Installation Art to solve a problem"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2024-01-09T13:50:42.003Z"
+      }
+    },
+    {
+      "id": "concept_045",
+      "label": "Business Analytics",
+      "content": "Detailed thoughts and knowledge about Business Analytics",
+      "color": "#f39c12",
+      "createdAt": "2023-08-22T00:05:28.653Z",
+      "updatedAt": "2023-09-14T13:41:53.941Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Connected Business Analytics to previous knowledge"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2023-09-14T13:41:53.941Z"
+      }
+    },
+    {
+      "id": "concept_046",
+      "label": "Biotechnology",
+      "content": "Detailed thoughts and knowledge about Biotechnology",
+      "color": "#2ecc71",
+      "createdAt": "2024-07-15T21:07:42.988Z",
+      "updatedAt": "2024-07-25T20:06:10.781Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Watched a documentary about Biotechnology"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2024-07-25T20:06:10.781Z"
+      }
+    },
+    {
+      "id": "concept_047",
+      "label": "Materials Science",
+      "content": "Detailed thoughts and knowledge about Materials Science",
+      "color": "#2ecc71",
+      "createdAt": "2025-03-11T14:21:55.894Z",
+      "updatedAt": "2025-04-10T03:58:41.073Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Discussed Materials Science with a team member",
+          "Watched a documentary about Materials Science",
+          "Connected Materials Science to previous knowledge",
+          "Applied Materials Science to solve a problem"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2025-04-10T03:58:41.073Z"
+      }
+    },
+    {
+      "id": "concept_048",
+      "label": "Cultural Studies",
+      "content": "Detailed thoughts and knowledge about Cultural Studies",
+      "color": "#e67e22",
+      "createdAt": "2024-08-22T09:01:06.410Z",
+      "updatedAt": "2024-09-07T09:27:04.554Z",
+      "metadata": {
+        "category": "Social",
+        "memories": [
+          "Read an article about Cultural Studies"
+        ],
+        "tags": [
+          "social",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2024-09-07T09:27:04.554Z"
+      }
+    },
+    {
+      "id": "concept_049",
+      "label": "Product Management",
+      "content": "Detailed thoughts and knowledge about Product Management",
+      "color": "#f39c12",
+      "createdAt": "2024-06-07T09:43:49.712Z",
+      "updatedAt": "2024-06-23T01:36:33.363Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Reflected on the implications of Product Management",
+          "Applied Product Management to solve a problem",
+          "Learned about Product Management during a research session"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2024-06-23T01:36:33.363Z"
+      }
+    },
+    {
+      "id": "concept_050",
+      "label": "Human Rights",
+      "content": "Detailed thoughts and knowledge about Human Rights",
+      "color": "#e67e22",
+      "createdAt": "2023-11-17T03:55:22.214Z",
+      "updatedAt": "2023-11-22T14:38:47.925Z",
+      "metadata": {
+        "category": "Social",
+        "memories": [
+          "Learned about Human Rights during a course",
+          "Experimented with Human Rights in practice",
+          "Read an article about Human Rights",
+          "Applied Human Rights to solve a problem",
+          "Learned about Human Rights during a course"
+        ],
+        "tags": [
+          "social",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2023-11-22T14:38:47.925Z"
+      }
+    },
+    {
+      "id": "concept_051",
+      "label": "Sales Strategy",
+      "content": "Detailed thoughts and knowledge about Sales Strategy",
+      "color": "#f39c12",
+      "createdAt": "2025-03-01T09:10:14.329Z",
+      "updatedAt": "2025-03-19T14:50:29.069Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Watched a documentary about Sales Strategy",
+          "Had an insight about Sales Strategy while writing"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2025-03-19T14:50:29.069Z"
+      }
+    },
+    {
+      "id": "concept_052",
+      "label": "Entrepreneurship (2)",
+      "content": "Detailed thoughts and knowledge about Entrepreneurship (2)",
+      "color": "#f39c12",
+      "createdAt": "2024-01-28T18:35:59.266Z",
+      "updatedAt": "2024-02-22T20:41:54.954Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Watched a documentary about Entrepreneurship (2)",
+          "Had an insight about Entrepreneurship (2) while writing",
+          "Connected Entrepreneurship (2) to previous knowledge"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2024-02-22T20:41:54.954Z"
+      }
+    },
+    {
+      "id": "concept_053",
+      "label": "Automation",
+      "content": "Detailed thoughts and knowledge about Automation",
+      "color": "#3498db",
+      "createdAt": "2025-06-01T16:41:16.808Z",
+      "updatedAt": "2025-06-01T22:38:53.346Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Watched a documentary about Automation",
+          "Applied Automation to solve a problem",
+          "Had an insight about Automation while meditating",
+          "Applied Automation to solve a problem",
+          "Discussed Automation with a professor"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2025-06-01T22:38:53.346Z"
+      }
+    },
+    {
+      "id": "concept_054",
+      "label": "Video Art",
+      "content": "Detailed thoughts and knowledge about Video Art",
+      "color": "#e74c3c",
+      "createdAt": "2024-02-13T11:07:06.255Z",
+      "updatedAt": "2024-02-23T15:33:22.054Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Learned about Video Art during a conference",
+          "Applied Video Art to solve a problem"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2024-02-23T15:33:22.054Z"
+      }
+    },
+    {
+      "id": "concept_055",
+      "label": "Preventive Medicine",
+      "content": "Detailed thoughts and knowledge about Preventive Medicine",
+      "color": "#1abc9c",
+      "createdAt": "2025-05-13T23:05:12.250Z",
+      "updatedAt": "2025-05-21T10:34:14.043Z",
+      "metadata": {
+        "category": "Health",
+        "memories": [
+          "Watched a documentary about Preventive Medicine",
+          "Attended a workshop on Preventive Medicine"
+        ],
+        "tags": [
+          "health",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2025-05-21T10:34:14.043Z"
+      }
+    },
+    {
+      "id": "concept_056",
+      "label": "Graphic Design",
+      "content": "Detailed thoughts and knowledge about Graphic Design",
+      "color": "#e74c3c",
+      "createdAt": "2024-01-29T08:57:50.739Z",
+      "updatedAt": "2024-02-16T22:58:05.429Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Connected Graphic Design to previous knowledge",
+          "Read an article about Graphic Design",
+          "Reflected on the implications of Graphic Design",
+          "Attended a workshop on Graphic Design",
+          "Applied Graphic Design to solve a problem"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2024-02-16T22:58:05.429Z"
+      }
+    },
+    {
+      "id": "concept_057",
+      "label": "Moral Philosophy",
+      "content": "Detailed thoughts and knowledge about Moral Philosophy",
+      "color": "#9b59b6",
+      "createdAt": "2024-06-26T20:35:04.686Z",
+      "updatedAt": "2024-06-30T09:18:03.239Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Learned about Moral Philosophy during a research session",
+          "Reflected on the implications of Moral Philosophy",
+          "Connected Moral Philosophy to previous knowledge",
+          "Connected Moral Philosophy to previous knowledge",
+          "Experimented with Moral Philosophy in practice"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2024-06-30T09:18:03.239Z"
+      }
+    },
+    {
+      "id": "concept_058",
+      "label": "Social Psychology",
+      "content": "Detailed thoughts and knowledge about Social Psychology",
+      "color": "#e67e22",
+      "createdAt": "2024-07-18T01:41:25.646Z",
+      "updatedAt": "2024-07-27T20:55:56.512Z",
+      "metadata": {
+        "category": "Social",
+        "memories": [
+          "Attended a workshop on Social Psychology",
+          "Learned about Social Psychology during a course",
+          "Watched a documentary about Social Psychology",
+          "Attended a workshop on Social Psychology"
+        ],
+        "tags": [
+          "social",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2024-07-27T20:55:56.512Z"
+      }
+    },
+    {
+      "id": "concept_059",
+      "label": "Public Health",
+      "content": "Detailed thoughts and knowledge about Public Health",
+      "color": "#1abc9c",
+      "createdAt": "2025-01-09T15:58:11.581Z",
+      "updatedAt": "2025-02-04T13:56:30.454Z",
+      "metadata": {
+        "category": "Health",
+        "memories": [
+          "Discussed Public Health with a friend",
+          "Reflected on the implications of Public Health",
+          "Experimented with Public Health in practice",
+          "Reflected on the implications of Public Health"
+        ],
+        "tags": [
+          "health",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2025-02-04T13:56:30.454Z"
+      }
+    },
+    {
+      "id": "concept_060",
+      "label": "Robotics",
+      "content": "Detailed thoughts and knowledge about Robotics",
+      "color": "#3498db",
+      "createdAt": "2025-06-13T01:51:15.720Z",
+      "updatedAt": "2025-06-28T19:12:03.715Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Reflected on the implications of Robotics",
+          "Watched a documentary about Robotics",
+          "Connected Robotics to previous knowledge",
+          "Watched a documentary about Robotics",
+          "Reflected on the implications of Robotics"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2025-06-28T19:12:03.715Z"
+      }
+    },
+    {
+      "id": "concept_061",
+      "label": "Educational Technology",
+      "content": "Detailed thoughts and knowledge about Educational Technology",
+      "color": "#34495e",
+      "createdAt": "2024-07-30T13:55:57.080Z",
+      "updatedAt": "2024-08-24T23:10:42.023Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Discussed Educational Technology with a mentor",
+          "Read an article about Educational Technology",
+          "Watched a documentary about Educational Technology",
+          "Applied Educational Technology to solve a problem",
+          "Read an article about Educational Technology"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2024-08-24T23:10:42.023Z"
+      }
+    },
+    {
+      "id": "concept_062",
+      "label": "Assessment Methods",
+      "content": "Detailed thoughts and knowledge about Assessment Methods",
+      "color": "#34495e",
+      "createdAt": "2024-12-22T21:09:03.827Z",
+      "updatedAt": "2025-01-18T20:04:12.238Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Had an insight about Assessment Methods while writing",
+          "Experimented with Assessment Methods in practice",
+          "Watched a documentary about Assessment Methods",
+          "Attended a workshop on Assessment Methods"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 1,
+        "lastAccessed": "2025-01-18T20:04:12.238Z"
+      }
+    },
+    {
+      "id": "concept_063",
+      "label": "Marketing Strategy (2)",
+      "content": "Detailed thoughts and knowledge about Marketing Strategy (2)",
+      "color": "#f39c12",
+      "createdAt": "2025-02-14T02:15:24.912Z",
+      "updatedAt": "2025-03-03T22:13:56.947Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Reflected on the implications of Marketing Strategy (2)",
+          "Learned about Marketing Strategy (2) during a course",
+          "Reflected on the implications of Marketing Strategy (2)",
+          "Watched a documentary about Marketing Strategy (2)",
+          "Read an article about Marketing Strategy (2)"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2025-03-03T22:13:56.947Z"
+      }
+    },
+    {
+      "id": "concept_064",
+      "label": "Astrophysics",
+      "content": "Detailed thoughts and knowledge about Astrophysics",
+      "color": "#2ecc71",
+      "createdAt": "2024-02-22T15:10:34.527Z",
+      "updatedAt": "2024-03-09T00:47:08.344Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Learned about Astrophysics during a course",
+          "Connected Astrophysics to previous knowledge",
+          "Discussed Astrophysics with a team member"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2024-03-09T00:47:08.344Z"
+      }
+    },
+    {
+      "id": "concept_065",
+      "label": "Medical Technology",
+      "content": "Detailed thoughts and knowledge about Medical Technology",
+      "color": "#1abc9c",
+      "createdAt": "2025-02-02T14:12:12.778Z",
+      "updatedAt": "2025-02-13T01:22:18.766Z",
+      "metadata": {
+        "category": "Health",
+        "memories": [
+          "Experimented with Medical Technology in practice",
+          "Read an article about Medical Technology"
+        ],
+        "tags": [
+          "health",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2025-02-13T01:22:18.766Z"
+      }
+    },
+    {
+      "id": "concept_066",
+      "label": "Financial Planning (2)",
+      "content": "Detailed thoughts and knowledge about Financial Planning (2)",
+      "color": "#f39c12",
+      "createdAt": "2024-05-31T07:07:15.101Z",
+      "updatedAt": "2024-06-07T18:22:59.567Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Watched a documentary about Financial Planning (2)",
+          "Read an article about Financial Planning (2)"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2024-06-07T18:22:59.567Z"
+      }
+    },
+    {
+      "id": "concept_067",
+      "label": "Online Learning",
+      "content": "Detailed thoughts and knowledge about Online Learning",
+      "color": "#34495e",
+      "createdAt": "2024-05-02T13:11:48.490Z",
+      "updatedAt": "2024-05-20T05:30:36.016Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Had an insight about Online Learning while walking",
+          "Attended a workshop on Online Learning"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2024-05-20T05:30:36.016Z"
+      }
+    },
+    {
+      "id": "concept_068",
+      "label": "Existentialism",
+      "content": "Detailed thoughts and knowledge about Existentialism",
+      "color": "#9b59b6",
+      "createdAt": "2024-07-18T09:47:23.964Z",
+      "updatedAt": "2024-07-20T04:41:03.853Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Connected Existentialism to previous knowledge",
+          "Reflected on the implications of Existentialism",
+          "Watched a documentary about Existentialism"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2024-07-20T04:41:03.853Z"
+      }
+    },
+    {
+      "id": "concept_069",
+      "label": "Leadership (2)",
+      "content": "Detailed thoughts and knowledge about Leadership (2)",
+      "color": "#f39c12",
+      "createdAt": "2023-12-22T20:29:35.004Z",
+      "updatedAt": "2024-01-10T13:26:58.657Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Had an insight about Leadership (2) while coding",
+          "Learned about Leadership (2) during a research session"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2024-01-10T13:26:58.657Z"
+      }
+    },
+    {
+      "id": "concept_070",
+      "label": "Artificial Intelligence (2)",
+      "content": "Detailed thoughts and knowledge about Artificial Intelligence (2)",
+      "color": "#3498db",
+      "createdAt": "2024-06-13T05:12:18.732Z",
+      "updatedAt": "2024-07-09T01:20:23.562Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Read an article about Artificial Intelligence (2)",
+          "Read an article about Artificial Intelligence (2)"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2024-07-09T01:20:23.562Z"
+      }
+    },
+    {
+      "id": "concept_071",
+      "label": "Logic",
+      "content": "Detailed thoughts and knowledge about Logic",
+      "color": "#9b59b6",
+      "createdAt": "2025-08-11T09:28:11.024Z",
+      "updatedAt": "2025-08-24T22:58:22.787Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Read an article about Logic",
+          "Learned about Logic during a conference",
+          "Watched a documentary about Logic",
+          "Attended a workshop on Logic",
+          "Learned about Logic during a seminar"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2025-08-24T22:58:22.787Z"
+      }
+    },
+    {
+      "id": "concept_072",
+      "label": "Innovation Management (2)",
+      "content": "Detailed thoughts and knowledge about Innovation Management (2)",
+      "color": "#f39c12",
+      "createdAt": "2024-05-19T00:21:34.223Z",
+      "updatedAt": "2024-05-21T18:31:32.493Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Had an insight about Innovation Management (2) while exercising",
+          "Read an article about Innovation Management (2)",
+          "Had an insight about Innovation Management (2) while coding",
+          "Connected Innovation Management (2) to previous knowledge"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2024-05-21T18:31:32.493Z"
+      }
+    },
+    {
+      "id": "concept_073",
+      "label": "Metaphysics",
+      "content": "Detailed thoughts and knowledge about Metaphysics",
+      "color": "#9b59b6",
+      "createdAt": "2024-03-14T19:54:33.664Z",
+      "updatedAt": "2024-03-30T12:23:29.312Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Discussed Metaphysics with an expert",
+          "Attended a workshop on Metaphysics",
+          "Reflected on the implications of Metaphysics"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2024-03-30T12:23:29.312Z"
+      }
+    },
+    {
+      "id": "concept_074",
+      "label": "Inclusive Education",
+      "content": "Detailed thoughts and knowledge about Inclusive Education",
+      "color": "#34495e",
+      "createdAt": "2025-08-07T11:58:46.354Z",
+      "updatedAt": "2025-08-08T06:51:03.823Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Discussed Inclusive Education with a friend",
+          "Experimented with Inclusive Education in practice",
+          "Read an article about Inclusive Education",
+          "Discussed Inclusive Education with a professor"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2025-08-08T06:51:03.823Z"
+      }
+    },
+    {
+      "id": "concept_075",
+      "label": "Machine Learning (2)",
+      "content": "Detailed thoughts and knowledge about Machine Learning (2)",
+      "color": "#3498db",
+      "createdAt": "2025-07-21T04:22:56.339Z",
+      "updatedAt": "2025-08-11T18:20:59.850Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Experimented with Machine Learning (2) in practice"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2025-08-11T18:20:59.850Z"
+      }
+    },
+    {
+      "id": "concept_076",
+      "label": "Molecular Biology",
+      "content": "Detailed thoughts and knowledge about Molecular Biology",
+      "color": "#2ecc71",
+      "createdAt": "2023-10-31T06:28:23.679Z",
+      "updatedAt": "2023-11-29T16:08:03.629Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Watched a documentary about Molecular Biology",
+          "Applied Molecular Biology to solve a problem",
+          "Attended a workshop on Molecular Biology",
+          "Attended a workshop on Molecular Biology"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2023-11-29T16:08:03.629Z"
+      }
+    },
+    {
+      "id": "concept_077",
+      "label": "STEM Education",
+      "content": "Detailed thoughts and knowledge about STEM Education",
+      "color": "#34495e",
+      "createdAt": "2024-03-20T22:34:02.558Z",
+      "updatedAt": "2024-04-07T22:31:44.517Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Attended a workshop on STEM Education",
+          "Read an article about STEM Education",
+          "Applied STEM Education to solve a problem",
+          "Learned about STEM Education during a conference",
+          "Attended a workshop on STEM Education"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 3,
+        "lastAccessed": "2024-04-07T22:31:44.517Z"
+      }
+    },
+    {
+      "id": "concept_078",
+      "label": "Blockchain (2)",
+      "content": "Detailed thoughts and knowledge about Blockchain (2)",
+      "color": "#3498db",
+      "createdAt": "2024-01-03T14:04:54.433Z",
+      "updatedAt": "2024-01-27T17:26:24.765Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Read an article about Blockchain (2)"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2024-01-27T17:26:24.765Z"
+      }
+    },
+    {
+      "id": "concept_079",
+      "label": "Epistemology",
+      "content": "Detailed thoughts and knowledge about Epistemology",
+      "color": "#9b59b6",
+      "createdAt": "2024-07-21T23:41:33.005Z",
+      "updatedAt": "2024-08-17T20:59:29.600Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Discussed Epistemology with a friend"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2024-08-17T20:59:29.600Z"
+      }
+    },
+    {
+      "id": "concept_080",
+      "label": "Adult Learning",
+      "content": "Detailed thoughts and knowledge about Adult Learning",
+      "color": "#34495e",
+      "createdAt": "2023-10-10T00:47:34.725Z",
+      "updatedAt": "2023-10-19T06:27:31.226Z",
+      "metadata": {
+        "category": "Education",
+        "memories": [
+          "Connected Adult Learning to previous knowledge",
+          "Learned about Adult Learning during a seminar"
+        ],
+        "tags": [
+          "education",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2023-10-19T06:27:31.226Z"
+      }
+    },
+    {
+      "id": "concept_081",
+      "label": "Urban Planning",
+      "content": "Detailed thoughts and knowledge about Urban Planning",
+      "color": "#e67e22",
+      "createdAt": "2024-03-05T07:49:43.803Z",
+      "updatedAt": "2024-03-08T00:26:32.664Z",
+      "metadata": {
+        "category": "Social",
+        "memories": [
+          "Watched a documentary about Urban Planning",
+          "Attended a workshop on Urban Planning",
+          "Learned about Urban Planning during a conversation",
+          "Connected Urban Planning to previous knowledge"
+        ],
+        "tags": [
+          "social",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2024-03-08T00:26:32.664Z"
+      }
+    },
+    {
+      "id": "concept_082",
+      "label": "Chemistry",
+      "content": "Detailed thoughts and knowledge about Chemistry",
+      "color": "#2ecc71",
+      "createdAt": "2023-10-13T01:41:36.958Z",
+      "updatedAt": "2023-11-11T22:34:20.095Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Reflected on the implications of Chemistry",
+          "Had an insight about Chemistry while writing"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2023-11-11T22:34:20.095Z"
+      }
+    },
+    {
+      "id": "concept_083",
+      "label": "Supply Chain (2)",
+      "content": "Detailed thoughts and knowledge about Supply Chain (2)",
+      "color": "#f39c12",
+      "createdAt": "2025-07-19T23:27:05.569Z",
+      "updatedAt": "2025-07-29T05:23:26.054Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Attended a workshop on Supply Chain (2)",
+          "Attended a workshop on Supply Chain (2)"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2025-07-29T05:23:26.054Z"
+      }
+    },
+    {
+      "id": "concept_084",
+      "label": "Political Philosophy",
+      "content": "Detailed thoughts and knowledge about Political Philosophy",
+      "color": "#9b59b6",
+      "createdAt": "2023-09-29T08:58:33.118Z",
+      "updatedAt": "2023-10-28T15:59:06.785Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Reflected on the implications of Political Philosophy",
+          "Had an insight about Political Philosophy while walking",
+          "Read an article about Political Philosophy"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 8,
+        "lastAccessed": "2023-10-28T15:59:06.785Z"
+      }
+    },
+    {
+      "id": "concept_085",
+      "label": "Cloud Computing (2)",
+      "content": "Detailed thoughts and knowledge about Cloud Computing (2)",
+      "color": "#3498db",
+      "createdAt": "2024-11-18T11:39:25.886Z",
+      "updatedAt": "2024-11-27T00:52:55.049Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Had an insight about Cloud Computing (2) while coding",
+          "Attended a workshop on Cloud Computing (2)",
+          "Attended a workshop on Cloud Computing (2)",
+          "Watched a documentary about Cloud Computing (2)"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2024-11-27T00:52:55.049Z"
+      }
+    },
+    {
+      "id": "concept_086",
+      "label": "Aesthetics",
+      "content": "Detailed thoughts and knowledge about Aesthetics",
+      "color": "#9b59b6",
+      "createdAt": "2025-08-12T20:16:08.573Z",
+      "updatedAt": "2025-08-31T01:29:34.415Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Read an article about Aesthetics",
+          "Learned about Aesthetics during a conference",
+          "Watched a documentary about Aesthetics",
+          "Experimented with Aesthetics in practice"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2025-08-31T01:29:34.415Z"
+      }
+    },
+    {
+      "id": "concept_087",
+      "label": "Customer Experience (2)",
+      "content": "Detailed thoughts and knowledge about Customer Experience (2)",
+      "color": "#f39c12",
+      "createdAt": "2024-07-16T20:19:02.467Z",
+      "updatedAt": "2024-08-12T11:18:01.725Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Read an article about Customer Experience (2)",
+          "Watched a documentary about Customer Experience (2)",
+          "Discussed Customer Experience (2) with a mentor",
+          "Attended a workshop on Customer Experience (2)",
+          "Watched a documentary about Customer Experience (2)"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2024-08-12T11:18:01.725Z"
+      }
+    },
+    {
+      "id": "concept_088",
+      "label": "Digital Art (2)",
+      "content": "Detailed thoughts and knowledge about Digital Art (2)",
+      "color": "#e74c3c",
+      "createdAt": "2024-04-20T22:21:55.445Z",
+      "updatedAt": "2024-05-05T06:56:38.612Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Watched a documentary about Digital Art (2)"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2024-05-05T06:56:38.612Z"
+      }
+    },
+    {
+      "id": "concept_089",
+      "label": "Contemporary Painting (2)",
+      "content": "Detailed thoughts and knowledge about Contemporary Painting (2)",
+      "color": "#e74c3c",
+      "createdAt": "2024-11-26T02:11:43.556Z",
+      "updatedAt": "2024-12-18T06:38:46.419Z",
+      "metadata": {
+        "category": "Art",
+        "memories": [
+          "Read an article about Contemporary Painting (2)",
+          "Watched a documentary about Contemporary Painting (2)",
+          "Read an article about Contemporary Painting (2)",
+          "Applied Contemporary Painting (2) to solve a problem"
+        ],
+        "tags": [
+          "art",
+          "generated",
+          "test-data"
+        ],
+        "importance": 6,
+        "lastAccessed": "2024-12-18T06:38:46.419Z"
+      }
+    },
+    {
+      "id": "concept_090",
+      "label": "Ethics (2)",
+      "content": "Detailed thoughts and knowledge about Ethics (2)",
+      "color": "#9b59b6",
+      "createdAt": "2024-10-24T16:24:08.022Z",
+      "updatedAt": "2024-11-11T12:51:03.130Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Discussed Ethics (2) with a mentor"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 5,
+        "lastAccessed": "2024-11-11T12:51:03.130Z"
+      }
+    },
+    {
+      "id": "concept_091",
+      "label": "Cybersecurity (2)",
+      "content": "Detailed thoughts and knowledge about Cybersecurity (2)",
+      "color": "#3498db",
+      "createdAt": "2024-01-19T11:52:27.838Z",
+      "updatedAt": "2024-02-13T22:34:39.299Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Connected Cybersecurity (2) to previous knowledge"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 1,
+        "lastAccessed": "2024-02-13T22:34:39.299Z"
+      }
+    },
+    {
+      "id": "concept_092",
+      "label": "Internet of Things (2)",
+      "content": "Detailed thoughts and knowledge about Internet of Things (2)",
+      "color": "#3498db",
+      "createdAt": "2025-04-04T08:05:00.763Z",
+      "updatedAt": "2025-04-17T21:47:51.913Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Discussed Internet of Things (2) with a colleague",
+          "Learned about Internet of Things (2) during a conversation"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2025-04-17T21:47:51.913Z"
+      }
+    },
+    {
+      "id": "concept_093",
+      "label": "Digital Transformation (2)",
+      "content": "Detailed thoughts and knowledge about Digital Transformation (2)",
+      "color": "#f39c12",
+      "createdAt": "2025-03-01T22:00:57.775Z",
+      "updatedAt": "2025-03-13T21:46:49.299Z",
+      "metadata": {
+        "category": "Business",
+        "memories": [
+          "Connected Digital Transformation (2) to previous knowledge",
+          "Learned about Digital Transformation (2) during a conference",
+          "Had an insight about Digital Transformation (2) while reading",
+          "Watched a documentary about Digital Transformation (2)"
+        ],
+        "tags": [
+          "business",
+          "generated",
+          "test-data"
+        ],
+        "importance": 2,
+        "lastAccessed": "2025-03-13T21:46:49.299Z"
+      }
+    },
+    {
+      "id": "concept_094",
+      "label": "Consciousness (2)",
+      "content": "Detailed thoughts and knowledge about Consciousness (2)",
+      "color": "#9b59b6",
+      "createdAt": "2024-01-05T16:46:43.637Z",
+      "updatedAt": "2024-01-09T06:49:57.320Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Learned about Consciousness (2) during a course",
+          "Read an article about Consciousness (2)",
+          "Attended a workshop on Consciousness (2)",
+          "Reflected on the implications of Consciousness (2)",
+          "Discussed Consciousness (2) with a team member"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2024-01-09T06:49:57.320Z"
+      }
+    },
+    {
+      "id": "concept_095",
+      "label": "Virtual Reality (2)",
+      "content": "Detailed thoughts and knowledge about Virtual Reality (2)",
+      "color": "#3498db",
+      "createdAt": "2025-03-09T10:12:18.929Z",
+      "updatedAt": "2025-03-31T13:37:01.441Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Learned about Virtual Reality (2) during a meeting",
+          "Applied Virtual Reality (2) to solve a problem"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 7,
+        "lastAccessed": "2025-03-31T13:37:01.441Z"
+      }
+    },
+    {
+      "id": "concept_096",
+      "label": "Environmental Science",
+      "content": "Detailed thoughts and knowledge about Environmental Science",
+      "color": "#2ecc71",
+      "createdAt": "2024-01-12T22:19:47.004Z",
+      "updatedAt": "2024-01-30T12:28:50.088Z",
+      "metadata": {
+        "category": "Science",
+        "memories": [
+          "Attended a workshop on Environmental Science",
+          "Had an insight about Environmental Science while coding"
+        ],
+        "tags": [
+          "science",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2024-01-30T12:28:50.088Z"
+      }
+    },
+    {
+      "id": "concept_097",
+      "label": "Quantum Computing (2)",
+      "content": "Detailed thoughts and knowledge about Quantum Computing (2)",
+      "color": "#3498db",
+      "createdAt": "2024-06-18T11:09:38.624Z",
+      "updatedAt": "2024-06-19T07:27:13.701Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Reflected on the implications of Quantum Computing (2)",
+          "Experimented with Quantum Computing (2) in practice",
+          "Learned about Quantum Computing (2) during a meeting"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 10,
+        "lastAccessed": "2024-06-19T07:27:13.701Z"
+      }
+    },
+    {
+      "id": "concept_098",
+      "label": "Free Will (2)",
+      "content": "Detailed thoughts and knowledge about Free Will (2)",
+      "color": "#9b59b6",
+      "createdAt": "2024-10-07T04:09:23.794Z",
+      "updatedAt": "2024-11-04T11:24:11.100Z",
+      "metadata": {
+        "category": "Philosophy",
+        "memories": [
+          "Attended a workshop on Free Will (2)",
+          "Had an insight about Free Will (2) while walking",
+          "Experimented with Free Will (2) in practice",
+          "Discussed Free Will (2) with a friend",
+          "Attended a workshop on Free Will (2)"
+        ],
+        "tags": [
+          "philosophy",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2024-11-04T11:24:11.100Z"
+      }
+    },
+    {
+      "id": "concept_099",
+      "label": "Mobile Development (2)",
+      "content": "Detailed thoughts and knowledge about Mobile Development (2)",
+      "color": "#3498db",
+      "createdAt": "2023-11-12T18:03:45.699Z",
+      "updatedAt": "2023-11-23T01:13:34.573Z",
+      "metadata": {
+        "category": "Technology",
+        "memories": [
+          "Applied Mobile Development (2) to solve a problem",
+          "Discussed Mobile Development (2) with a friend",
+          "Connected Mobile Development (2) to previous knowledge",
+          "Experimented with Mobile Development (2) in practice",
+          "Discussed Mobile Development (2) with an expert"
+        ],
+        "tags": [
+          "technology",
+          "generated",
+          "test-data"
+        ],
+        "importance": 9,
+        "lastAccessed": "2023-11-23T01:13:34.573Z"
+      }
+    },
+    {
+      "id": "concept_100",
+      "label": "Wellness",
+      "content": "Detailed thoughts and knowledge about Wellness",
+      "color": "#1abc9c",
+      "createdAt": "2023-08-30T07:37:30.199Z",
+      "updatedAt": "2023-09-27T14:03:59.214Z",
+      "metadata": {
+        "category": "Health",
+        "memories": [
+          "Learned about Wellness during a course",
+          "Read an article about Wellness",
+          "Reflected on the implications of Wellness",
+          "Had an insight about Wellness while reading"
+        ],
+        "tags": [
+          "health",
+          "generated",
+          "test-data"
+        ],
+        "importance": 4,
+        "lastAccessed": "2023-09-27T14:03:59.214Z"
+      }
+    }
+  ],
+  "metadata": {
+    "generated": "2025-08-20T00:53:22.010Z",
+    "count": 100,
+    "session": "session_9",
+    "runId": "20250820_004036_ALL-ALL",
+    "categories": [
+      "Technology",
+      "Science",
+      "Philosophy",
+      "Art",
+      "Business",
+      "Health",
+      "Education",
+      "Social"
+    ],
+    "description": "Test fixture with 100 ConceptNodes distributed across 8 categories over 2 years"
+  }
+}

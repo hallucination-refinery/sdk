@@ -5,6 +5,8 @@ export const version = '0.0.0'
 export { Canvas } from './Canvas'
 export { CanvasProvider, useCanvas } from './CanvasProvider'
 export { NodeSprite, BrainMesh, BrainMeshWithFallback, BrainRegionDebug, BrainRegionStats } from './components'
+export { ConceptParticles } from './ConceptParticles'
+export type { ConceptParticlesProps } from './ConceptParticles'
 export type { NodeSpriteProps, BrainMeshProps, BrainRegionDebugProps } from './components'
 
 // Vertex mapping utilities
