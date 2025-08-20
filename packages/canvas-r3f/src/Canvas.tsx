@@ -226,6 +226,12 @@ export function Canvas({
           enablePan={true}
           enableZoom={true}
           enableRotate={true}
+          minDistance={5}
+          maxDistance={50}
+          minPolarAngle={Math.PI * 0.1}  // 18 degrees from top (no upside-down)
+          maxPolarAngle={Math.PI * 0.9}  // 162 degrees from top (no upside-down)
+          enableDamping={true}
+          dampingFactor={0.05}
           zoomSpeed={1}
           panSpeed={1}
           rotateSpeed={1}

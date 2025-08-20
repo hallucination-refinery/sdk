@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useLoader } from '@react-three/fiber'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
 import * as THREE from 'three'
 import {

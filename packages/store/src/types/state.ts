@@ -2,7 +2,7 @@
  * State type definitions for Zustand slices
  */
 
-import type { IdeaNode, Edge } from '@refinery/schema'
+import type { IdeaNode, Edge, Node, Vector3 } from '@refinery/schema'
 
 // Graph slice state
 export interface GraphState {
@@ -54,9 +54,36 @@ export interface AsyncJob {
   completedAt?: number
 }
 
+// Mindmap slice state
+export interface MindmapState {
+  /** Concepts loaded in the mindmap */
+  concepts: Map<string, Node>
+  /** Brain mesh vertices for positioning concepts */
+  vertices: Vector3[]
+  /** Currently selected concept IDs */
+  selectedConceptIds: Set<string>
+  /** Currently hovered concept ID */
+  hoveredConceptId: string | null
+  /** Concept to vertex mapping for deterministic positioning */
+  conceptPositions: Map<string, { vertexIndex: number; shell: number }>
+  /** Brain mesh loading state */
+  isBrainMeshLoaded: boolean
+  /** Concept-specific visual states */
+  conceptVisuals: Map<string, { scale: number; color: string; visible: boolean }>
+  /** Category filters */
+  visibleCategories: Set<string>
+  /** Performance metrics */
+  renderMetrics: {
+    lastRenderTime: number
+    frameRate: number
+    conceptCount: number
+  }
+}
+
 // Combined store state
 export interface StoreState {
   graph: GraphState
   ui: UIState
   async: AsyncState
+  mindmap: MindmapState
 }

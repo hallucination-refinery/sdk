@@ -1,0 +1,41 @@
+{
+  "validation_results": {
+    "run_id": "20250820_004036_ALL-ALL",
+    "timestamp": "2025-08-20T17:56:30Z",
+    "steps": [
+      {
+        "step": "lint",
+        "status": "FAIL",
+        "duration_ms": 2372,
+        "command": "pnpm lint --filter @refinery/canvas-r3f",
+        "errors": 10,
+        "warnings": 110,
+        "stderr_tail": "✖ 120 problems (10 errors, 110 warnings)\n  1 error and 0 warnings potentially fixable with the `--fix` option.\n ELIFECYCLE  Command failed with exit code 1."
+      },
+      {
+        "step": "type-check",
+        "status": "FAIL", 
+        "duration_ms": 3200,
+        "command": "tsc -p tsconfig.json",
+        "errors": 15,
+        "stderr_tail": "src/perf-probe.tsx(5,31): error TS6305: Output file '/workspace/packages/schema/dist/index.d.ts' has not been built from source file '/workspace/packages/schema/src/index.ts'.\n ELIFECYCLE  Command failed with exit code 2."
+      },
+      {
+        "step": "test", 
+        "status": "FAIL",
+        "duration_ms": 8340,
+        "command": "pnpm test --filter @refinery/canvas-r3f",
+        "tests_failed": 5,
+        "tests_passed": 19,
+        "stderr_tail": "Test Files  7 failed | 3 passed (10)\n     Tests  5 failed | 19 passed (24)\nERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @refinery/canvas-r3f@0.0.0 test: `vitest run`\nExit status 1"
+      }
+    ],
+    "overall_status": "FAIL",
+    "summary": {
+      "total_duration_ms": 13912,
+      "steps_completed": 3,
+      "steps_passed": 0,
+      "steps_failed": 3
+    }
+  }
+}
