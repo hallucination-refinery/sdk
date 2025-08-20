@@ -1,6 +1,31 @@
 {
   "start_time": "2025-08-20T19:05:03Z",
+  "end_time": "2025-08-20T19:12:25Z",
   "initiative": "cryptiq-mindmap-mvp",
   "session": "brain-extraction-workflow",
-  "sessions": ["brain-extraction-workflow"]
+  "sessions": ["brain-extraction-workflow"],
+  "validation_time": "2025-08-20T19:12:25Z",
+  "validation_duration_ms": 1580,
+  "validation_results": {
+    "isolation_maintained": true,
+    "dev_server_active": false,
+    "workspace_clean": true,
+    "overall_status": "partial_pass"
+  },
+  "totals": {
+    "total_duration_ms": 442000,
+    "workflow_steps": {
+      "completed": 4,
+      "total": 5,
+      "success_rate": 0.8
+    },
+    "acceptance_criteria": {
+      "met": 4,
+      "total": 5,
+      "success_rate": 0.8
+    },
+    "coverage_score": 0.8,
+    "critical_issues": 1,
+    "critical_issues_resolved": 1
+  }
 }

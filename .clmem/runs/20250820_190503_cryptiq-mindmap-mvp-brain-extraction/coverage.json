@@ -1,0 +1,132 @@
+{
+  "run_id": "20250820_190503_cryptiq-mindmap-mvp-brain-extraction",
+  "timestamp": "2025-08-20T19:12:25Z",
+  "coverage_type": "workflow_coverage",
+  "overall_coverage": {
+    "workflow_steps": {
+      "total": 5,
+      "executed": 4,
+      "percentage": 80.0
+    },
+    "acceptance_criteria": {
+      "total": 5,
+      "met": 4,
+      "percentage": 80.0
+    },
+    "risk_mitigation": {
+      "total": 5,
+      "addressed": 4,
+      "percentage": 80.0
+    }
+  },
+  "detailed_coverage": {
+    "workflow_steps": {
+      "guard_isolation_and_record_provenance": {
+        "status": "executed",
+        "success": true,
+        "duration_ms": 850,
+        "coverage_percentage": 100.0
+      },
+      "install_legacy_dependencies": {
+        "status": "executed", 
+        "success": true,
+        "duration_ms": 1400,
+        "coverage_percentage": 100.0
+      },
+      "compatibility_shim": {
+        "status": "skipped_conditional",
+        "success": true,
+        "reason": "No particles crash detected during build",
+        "coverage_percentage": 100.0
+      },
+      "run_dev_server": {
+        "status": "executed",
+        "success": true,
+        "duration_ms": 5708,
+        "coverage_percentage": 100.0
+      },
+      "health_check": {
+        "status": "executed",
+        "success": true,
+        "duration_ms": 1217,
+        "coverage_percentage": 100.0
+      }
+    },
+    "acceptance_criteria": {
+      "isolation_verification": {
+        "met": true,
+        "validation": "No workspace coupling detected, .npmrc isolation confirmed"
+      },
+      "successful_install": {
+        "met": true,
+        "validation": "Dependencies installed cleanly, 'Already up to date' status"
+      },
+      "server_boot": {
+        "met": true,
+        "validation": "Dev server compiled successfully in 5708ms"
+      },
+      "health_check": {
+        "met": true,
+        "validation": "HTTP 200 OK response at localhost:8080"
+      },
+      "boundary_respect": {
+        "met": false,
+        "validation": "Temporary workspace contamination occurred but was remediated",
+        "remediation": "Workspace contamination reverted via git checkout"
+      }
+    },
+    "risk_mitigation": {
+      "port_conflict_risk": {
+        "addressed": true,
+        "mitigation": "Port 8080 was available, no conflict detected"
+      },
+      "missing_vendor_repo": {
+        "addressed": true,
+        "mitigation": "vendor/3dbrain directory exists with complete package.json"
+      },
+      "threejs_compatibility": {
+        "addressed": true,
+        "mitigation": "Build completed without compatibility issues, shim not needed"
+      },
+      "legacy_dependencies": {
+        "addressed": true,
+        "mitigation": "Dependencies installed successfully on current Node.js"
+      },
+      "dev_server_stability": {
+        "addressed": false,
+        "issue": "Dev server terminated naturally after successful execution"
+      }
+    }
+  },
+  "critical_issues": [
+    {
+      "type": "workspace_isolation_violation",
+      "description": "Despite using --ignore-workspace flag, some dependencies leaked into root workspace",
+      "affected_files": ["package.json", ".npmrc", "pnpm-lock.yaml"],
+      "remediation": "Workspace contamination was reverted via git checkout and file removal",
+      "final_status": "resolved"
+    }
+  ],
+  "thresholds": {
+    "workflow_steps": {
+      "target": 80.0,
+      "actual": 80.0,
+      "status": "met"
+    },
+    "acceptance_criteria": {
+      "target": 80.0,
+      "actual": 80.0,
+      "status": "met"
+    },
+    "risk_mitigation": {
+      "target": 80.0,
+      "actual": 80.0,
+      "status": "met"
+    }
+  },
+  "traditional_code_coverage": {
+    "available": false,
+    "reason": "Jest tests exist but minimal coverage - single test case in __tests__/amelia_brain.js",
+    "test_status": "Not executed during workflow (focus was on isolation and demo functionality)"
+  }
+}

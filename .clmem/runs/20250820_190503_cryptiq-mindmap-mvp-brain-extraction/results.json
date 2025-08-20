@@ -1,0 +1,27 @@
+{
+  "validation_type": "vendor_isolation_workflow",
+  "timestamp": "2025-08-20T19:12:25Z",
+  "steps": {
+    "isolation_check": {
+      "status": "pass",
+      "duration_ms": 850,
+      "description": "Verified no modifications outside vendor/3dbrain directory",
+      "stderr_tail": ""
+    },
+    "dev_server_status": {
+      "status": "fail",
+      "duration_ms": 420,
+      "description": "Dev server no longer running, HTTP connection refused",
+      "stderr_tail": "curl: (7) Failed to connect to localhost port 8080: Connection refused"
+    },
+    "workspace_integrity": {
+      "status": "pass",
+      "duration_ms": 310,
+      "description": "No workspace contamination detected in git status",
+      "stderr_tail": ""
+    }
+  },
+  "overall_status": "partial_pass",
+  "total_duration_ms": 1580,
+  "summary": "Vendor isolation maintained, but demo service no longer active"
+}
