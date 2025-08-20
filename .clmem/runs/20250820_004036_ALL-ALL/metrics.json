@@ -9,7 +9,9 @@
       "estimated_duration": "30min",
       "batch": "batch_1",
       "dependencies": [],
-      "status": "pending"
+      "status": "completed",
+      "actual_duration": "8min",
+      "completed_at": "2025-08-20T00:48:36Z"
     },
     {
       "id": "session_2", 
@@ -57,7 +59,9 @@
       "estimated_duration": "45min",
       "batch": "batch_1",
       "dependencies": [],
-      "status": "pending"
+      "status": "completed",
+      "actual_duration": "25min",
+      "completed_at": "2025-08-20T17:49:00Z"
     },
     {
       "id": "session_8",
@@ -73,7 +77,9 @@
       "estimated_duration": "30min",
       "batch": "batch_1",
       "dependencies": [],
-      "status": "pending"
+      "status": "completed",
+      "actual_duration": "15min",
+      "completed_at": "2025-08-20T00:53:22Z"
     },
     {
       "id": "session_10",
@@ -117,5 +123,15 @@
     "Functional brain mesh with vertex extraction and wireframe rendering",
     "100 test concepts deterministically mapped to brain surface vertices", 
     "Camera controls with stable 50fps performance"
-  ]
+  ],
+  "validation_metrics": {
+    "timestamp": "2025-08-20T17:56:30Z",
+    "batch_1_validation": {
+      "lint_duration_ms": 2372,
+      "type_check_duration_ms": 3200,
+      "test_duration_ms": 8340,
+      "total_validation_ms": 13912,
+      "status": "FAIL"
+    }
+  }
 }

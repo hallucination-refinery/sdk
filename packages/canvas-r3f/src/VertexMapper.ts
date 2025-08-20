@@ -91,7 +91,7 @@ export function calculateRegionBoundaries(
   }
 ): RegionBoundaries {
   const analysis = analyzeVertexDistribution(vertices)
-  const { yMin, yMax, yRange } = analysis
+  const { yMin, yMax } = analysis
   
   const sortedVertices = [...vertices].sort((a, b) => b.y - a.y)
   
@@ -103,7 +103,6 @@ export function calculateRegionBoundaries(
   let frontalBoundary = yMax
   let parietalBoundary = yMax
   let temporalBoundary = yMax
-  let occipitalBoundary = yMin
   
   if (sortedVertices.length > frontalCount) {
     frontalBoundary = sortedVertices[frontalCount - 1].y

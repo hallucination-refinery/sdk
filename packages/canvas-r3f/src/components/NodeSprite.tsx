@@ -116,7 +116,7 @@ export function NodeSprite({
       visible={visible}
     >
       <spriteMaterial
-        map={texture}
+        map={texture as any}
         transparent={true}
         opacity={opacity}
         depthWrite={false}

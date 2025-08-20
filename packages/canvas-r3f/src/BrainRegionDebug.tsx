@@ -1,7 +1,7 @@
 import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
 import { useBrainVertices } from './hooks/useBrainVertices'
-import { getRegionVertices, getRegionColor, getRegionName } from './VertexMapper'
+import { getRegionVertices, getRegionColor } from './VertexMapper'
 
 export interface BrainRegionDebugProps {
   modelPath?: string
@@ -71,7 +71,7 @@ export function BrainRegionDebug({
   return (
     <group ref={groupRef} position={position} scale={meshScale} rotation={rotation}>
       {showRegions && regionGeometries.map(({ region, geometry, color }) => (
-        <points key={`region-${region}`} geometry={geometry}>
+        <points key={`region-${region}`} geometry={geometry as any}>
           <pointsMaterial
             color={color}
             size={3}
@@ -87,6 +87,7 @@ export function BrainRegionDebug({
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
+              args={[new Float32Array(vertices.flatMap(v => [v.x, v.y, v.z])), 3]}
               count={vertices.length}
               array={new Float32Array(vertices.flatMap(v => [v.x, v.y, v.z]))}
               itemSize={3}
@@ -104,7 +105,7 @@ export function BrainRegionDebug({
       
       {validation && !validation.valid && (
         <group position={[0, 2, 0]}>
-          {validation.errors.map((error, i) => (
+          {validation.errors.map((_, i) => (
             <mesh key={i} position={[0, -i * 0.3, 0]}>
               <planeGeometry args={[3, 0.2]} />
               <meshBasicMaterial color="#ff0000" />
@@ -147,8 +148,8 @@ export function BrainRegionStats({ modelPath = '/models/brain.obj' }: { modelPat
       {validation.errors.length > 0 && (
         <>
           <h4 style={{ margin: '10px 0 5px 0', color: '#ff6666' }}>Errors:</h4>
-          {validation.errors.map((error, i) => (
-            <div key={i} style={{ color: '#ff6666', fontSize: '11px' }}>{error}</div>
+          {validation.errors.map((err, i) => (
+            <div key={i} style={{ color: '#ff6666', fontSize: '11px' }}>{err}</div>
           ))}
         </>
       )}
