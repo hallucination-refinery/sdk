@@ -1,7 +1,8 @@
-import { useRef, useEffect, Suspense } from 'react'
+import { useRef, useEffect, Suspense, useState } from 'react'
 import { useLoader } from '@react-three/fiber'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
 import * as THREE from 'three'
+import { LoadingIndicator } from './LoadingIndicator'
 
 export interface BrainMeshProps {
   /** Path to the brain OBJ file */
@@ -22,6 +23,14 @@ export interface BrainMeshProps {
   visible?: boolean
   /** Callback when vertices are extracted from the mesh */
   onVerticesLoaded?: (vertices: THREE.Vector3[]) => void
+  /** Callback when loading state changes */
+  onLoadingChange?: (loading: boolean) => void
+  /** Callback when mesh loading starts */
+  onLoadStart?: () => void
+  /** Callback when mesh loading completes */
+  onLoadComplete?: () => void
+  /** Callback when loading error occurs */
+  onLoadError?: (error: Error) => void
 }
 
 function BrainMeshGeometry({
@@ -29,12 +38,33 @@ function BrainMeshGeometry({
   wireframeColor = '#00aaff',
   opacity = 0.9,
   lineWidth = 1,
-  onVerticesLoaded
-}: Pick<BrainMeshProps, 'modelPath' | 'wireframeColor' | 'opacity' | 'lineWidth' | 'onVerticesLoaded'>) {
+  onVerticesLoaded,
+  onLoadingChange,
+  onLoadStart,
+  onLoadComplete,
+  onLoadError
+}: Pick<BrainMeshProps, 'modelPath' | 'wireframeColor' | 'opacity' | 'lineWidth' | 'onVerticesLoaded' | 'onLoadingChange' | 'onLoadStart' | 'onLoadComplete' | 'onLoadError'>) {
   const meshRef = useRef<THREE.Group>(null)
+  const [loadingStarted, setLoadingStarted] = useState(false)
   
-  // Load the OBJ file
-  const obj = useLoader(OBJLoader, modelPath)
+  // Notify loading start
+  useEffect(() => {
+    if (!loadingStarted) {
+      setLoadingStarted(true)
+      onLoadStart?.()
+      onLoadingChange?.(true)
+    }
+  }, [loadingStarted, onLoadStart, onLoadingChange])
+  
+  // Load the OBJ file with error handling
+  let obj: THREE.Group
+  try {
+    obj = useLoader(OBJLoader, modelPath)
+  } catch (error) {
+    onLoadError?.(error instanceof Error ? error : new Error('Failed to load brain mesh'))
+    onLoadingChange?.(false)
+    throw error
+  }
   
   // Extract vertices from the loaded object and notify parent
   useEffect(() => {
@@ -60,8 +90,12 @@ function BrainMeshGeometry({
         }
       })
       onVerticesLoaded(vertices)
+      
+      // Notify that loading is complete
+      onLoadComplete?.()
+      onLoadingChange?.(false)
     }
-  }, [obj, onVerticesLoaded])
+  }, [obj, onVerticesLoaded, onLoadComplete, onLoadingChange])
   
   // Clone the object to avoid modifying the original
   const clonedObj = obj.clone()
@@ -94,7 +128,11 @@ export function BrainMesh({
   opacity = 0.9,
   lineWidth = 1,
   visible = true,
-  onVerticesLoaded
+  onVerticesLoaded,
+  onLoadingChange,
+  onLoadStart,
+  onLoadComplete,
+  onLoadError
 }: BrainMeshProps) {
   const groupRef = useRef<THREE.Group>(null)
   
@@ -118,6 +156,10 @@ export function BrainMesh({
           opacity={opacity}
           lineWidth={lineWidth}
           onVerticesLoaded={onVerticesLoaded}
+          onLoadingChange={onLoadingChange}
+          onLoadStart={onLoadStart}
+          onLoadComplete={onLoadComplete}
+          onLoadError={onLoadError}
         />
       </Suspense>
     </group>
@@ -125,10 +167,23 @@ export function BrainMesh({
 }
 
 // Export with error boundary wrapper for better error handling
-export function BrainMeshWithFallback(props: BrainMeshProps) {
+export function BrainMeshWithFallback(props: BrainMeshProps & { 
+  showLoadingIndicator?: boolean 
+  loadingMessage?: string
+}) {
+  const { showLoadingIndicator = true, loadingMessage = 'Loading brain mesh...', ...meshProps } = props
+  
   return (
-    <Suspense fallback={null}>
-      <BrainMesh {...props} />
+    <Suspense fallback={
+      showLoadingIndicator ? (
+        <LoadingIndicator 
+          message={loadingMessage}
+          position={meshProps.position}
+          scale={Array.isArray(meshProps.scale) ? meshProps.scale[0] : meshProps.scale}
+        />
+      ) : null
+    }>
+      <BrainMesh {...meshProps} />
     </Suspense>
   )
 }

@@ -507,7 +507,7 @@ export function analyzeConceptMapping(
       }
     } catch (error) {
       failedPlacements++
-      console.warn(`Failed to place concept ${conceptId}: ${error.message}`)
+      console.warn(`Failed to place concept ${conceptId}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
