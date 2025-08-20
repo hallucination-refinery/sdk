@@ -5,6 +5,17 @@ import '@testing-library/jest-dom'
 // Enable Immer MapSet plugin for Map and Set support
 enableMapSet()
 
+// Add ResizeObserver polyfill for R3F
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+if (typeof global.ResizeObserver === 'undefined') {
+  global.ResizeObserver = MockResizeObserver as any
+}
+
 // Mock localStorage for jsdom environment
 const localStorageData = new Map<string, string>()
 

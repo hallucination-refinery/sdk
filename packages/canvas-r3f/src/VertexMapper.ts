@@ -232,3 +232,182 @@ export function getRegionName(regionIndex: number): string {
   const names = ['frontal', 'parietal', 'temporal', 'occipital']
   return names[regionIndex] || 'unknown'
 }
+
+// Concept-to-vertex mapping functions (Session 4)
+
+/**
+ * djb2 hash function for deterministic string hashing
+ * Original implementation by Dan Bernstein
+ * Provides excellent distribution for concept IDs
+ */
+export function djb2Hash(str: string): number {
+  let hash = 5381
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i)
+  }
+  return hash
+}
+
+/**
+ * Maps a concept ID to a vertex index using djb2 hash
+ * Includes occupancy tracking to prevent collisions
+ */
+export function conceptToVertex(
+  conceptId: string,
+  vertices: THREE.Vector3[],
+  occupied: Set<number> = new Set(),
+  boundaries?: RegionBoundaries
+): {
+  vertexIndex: number
+  wasCollision: boolean
+  attempts: number
+} {
+  if (vertices.length === 0) {
+    throw new Error('Cannot map concept to empty vertex array')
+  }
+
+  const hash = djb2Hash(conceptId)
+  
+  // If no boundaries provided, use full vertex set
+  if (!boundaries) {
+    let attempts = 0
+    let vertexIndex = Math.abs(hash) % vertices.length
+    let wasCollision = false
+
+    // Linear probing for collision resolution
+    while (occupied.has(vertexIndex)) {
+      attempts++
+      wasCollision = true
+      vertexIndex = (vertexIndex + 1) % vertices.length
+      
+      // Prevent infinite loops
+      if (attempts >= vertices.length) {
+        throw new Error(`All ${vertices.length} vertices are occupied`)
+      }
+    }
+
+    occupied.add(vertexIndex)
+    return { vertexIndex, wasCollision, attempts }
+  }
+
+  // Region-based mapping using brain regions
+  const regionIndex = Math.abs(hash) % 4 // 0-3 for four brain regions
+  const regionVertexIndices = getRegionVertices(vertices, regionIndex, boundaries)
+  
+  if (regionVertexIndices.length === 0) {
+    throw new Error(`No vertices available in region ${regionIndex}`)
+  }
+
+  let attempts = 0
+  let localIndex = Math.abs(hash >> 2) % regionVertexIndices.length
+  let vertexIndex = regionVertexIndices[localIndex]
+  let wasCollision = false
+
+  // Linear probing within the region
+  while (occupied.has(vertexIndex)) {
+    attempts++
+    wasCollision = true
+    localIndex = (localIndex + 1) % regionVertexIndices.length
+    vertexIndex = regionVertexIndices[localIndex]
+    
+    // Prevent infinite loops
+    if (attempts >= regionVertexIndices.length) {
+      throw new Error(`All ${regionVertexIndices.length} vertices in region ${regionIndex} are occupied`)
+    }
+  }
+
+  occupied.add(vertexIndex)
+  return { vertexIndex, wasCollision, attempts }
+}
+
+/**
+ * Analyzes concept-to-vertex mapping distribution
+ * Tests collision rate, region distribution, and performance
+ */
+export function analyzeConceptMapping(
+  conceptIds: string[],
+  vertices: THREE.Vector3[],
+  boundaries?: RegionBoundaries
+): {
+  totalConcepts: number
+  totalCollisions: number
+  collisionRate: number
+  averageAttempts: number
+  regionDistribution: Record<number, number>
+  performanceMs: number
+} {
+  const startTime = performance.now()
+  const occupied = new Set<number>()
+  const regionCounts = { 0: 0, 1: 0, 2: 0, 3: 0 }
+  
+  let totalCollisions = 0
+  let totalAttempts = 0
+
+  for (const conceptId of conceptIds) {
+    const result = conceptToVertex(conceptId, vertices, occupied, boundaries)
+    
+    if (result.wasCollision) {
+      totalCollisions++
+    }
+    totalAttempts += result.attempts
+
+    // Determine which region this vertex belongs to
+    if (boundaries) {
+      for (let regionIndex = 0; regionIndex < 4; regionIndex++) {
+        const regionVertices = getRegionVertices(vertices, regionIndex, boundaries)
+        if (regionVertices.includes(result.vertexIndex)) {
+          regionCounts[regionIndex as keyof typeof regionCounts]++
+          break
+        }
+      }
+    }
+  }
+
+  const endTime = performance.now()
+  
+  return {
+    totalConcepts: conceptIds.length,
+    totalCollisions,
+    collisionRate: totalCollisions / conceptIds.length,
+    averageAttempts: totalAttempts / conceptIds.length,
+    regionDistribution: regionCounts,
+    performanceMs: endTime - startTime
+  }
+}
+
+/**
+ * Generates a visual distribution report for concept mapping
+ */
+export function generateDistributionReport(
+  analysis: ReturnType<typeof analyzeConceptMapping>,
+  vertices: THREE.Vector3[]
+): string {
+  const { totalConcepts, totalCollisions, collisionRate, averageAttempts, regionDistribution, performanceMs } = analysis
+  
+  const report = [
+    '=== Concept Mapping Distribution Report ===',
+    '',
+    `Total Concepts: ${totalConcepts}`,
+    `Total Vertices Available: ${vertices.length}`,
+    `Utilization: ${((totalConcepts / vertices.length) * 100).toFixed(2)}%`,
+    '',
+    '--- Collision Analysis ---',
+    `Total Collisions: ${totalCollisions}`,
+    `Collision Rate: ${(collisionRate * 100).toFixed(2)}%`,
+    `Average Attempts per Concept: ${averageAttempts.toFixed(2)}`,
+    '',
+    '--- Region Distribution ---',
+    `Frontal (0): ${regionDistribution[0]} concepts`,
+    `Parietal (1): ${regionDistribution[1]} concepts`,
+    `Temporal (2): ${regionDistribution[2]} concepts`,
+    `Occipital (3): ${regionDistribution[3]} concepts`,
+    '',
+    '--- Performance ---',
+    `Total Mapping Time: ${performanceMs.toFixed(2)}ms`,
+    `Average per Concept: ${(performanceMs / totalConcepts).toFixed(4)}ms`,
+    `Throughput: ${(totalConcepts / performanceMs * 1000).toFixed(0)} concepts/second`,
+    ''
+  ].join('\n')
+  
+  return report
+}

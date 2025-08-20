@@ -1,4 +1,4 @@
-import { useRef, Suspense } from 'react'
+import { useRef, useEffect, Suspense } from 'react'
 import { useLoader } from '@react-three/fiber'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
 import * as THREE from 'three'
@@ -16,19 +16,52 @@ export interface BrainMeshProps {
   wireframeColor?: string
   /** Opacity of the wireframe */
   opacity?: number
+  /** Line width for wireframe (may not work on all platforms) */
+  lineWidth?: number
   /** Whether the mesh is visible */
   visible?: boolean
+  /** Callback when vertices are extracted from the mesh */
+  onVerticesLoaded?: (vertices: THREE.Vector3[]) => void
 }
 
 function BrainMeshGeometry({
   modelPath = '/models/brain.obj',
-  wireframeColor = '#00ffff',
-  opacity = 0.8
-}: Pick<BrainMeshProps, 'modelPath' | 'wireframeColor' | 'opacity'>) {
+  wireframeColor = '#00aaff',
+  opacity = 0.9,
+  lineWidth = 1,
+  onVerticesLoaded
+}: Pick<BrainMeshProps, 'modelPath' | 'wireframeColor' | 'opacity' | 'lineWidth' | 'onVerticesLoaded'>) {
   const meshRef = useRef<THREE.Group>(null)
   
   // Load the OBJ file
   const obj = useLoader(OBJLoader, modelPath)
+  
+  // Extract vertices from the loaded object and notify parent
+  useEffect(() => {
+    if (onVerticesLoaded) {
+      const vertices: THREE.Vector3[] = []
+      obj.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const geometry = child.geometry
+          if (geometry instanceof THREE.BufferGeometry) {
+            const positions = geometry.attributes.position
+            if (positions) {
+              for (let i = 0; i < positions.count; i++) {
+                const vertex = new THREE.Vector3(
+                  positions.getX(i),
+                  positions.getY(i),
+                  positions.getZ(i)
+                )
+                vertex.applyMatrix4(child.matrixWorld)
+                vertices.push(vertex)
+              }
+            }
+          }
+        }
+      })
+      onVerticesLoaded(vertices)
+    }
+  }, [obj, onVerticesLoaded])
   
   // Clone the object to avoid modifying the original
   const clonedObj = obj.clone()
@@ -41,6 +74,10 @@ function BrainMeshGeometry({
         wireframe: true,
         transparent: true,
         opacity,
+        side: THREE.DoubleSide,    // Ensure wireframe is visible from both sides
+        wireframeLinewidth: lineWidth, // Explicit line width (may not work on all platforms)
+        depthTest: true,           // Proper depth testing for overlapping lines
+        depthWrite: true           // Write to depth buffer for proper rendering
       })
     }
   })
@@ -53,9 +90,11 @@ export function BrainMesh({
   position = [0, 0, 0],
   scale = 1,
   rotation = [0, 0, 0],
-  wireframeColor = '#00ffff',
-  opacity = 0.8,
-  visible = true
+  wireframeColor = '#00aaff',
+  opacity = 0.9,
+  lineWidth = 1,
+  visible = true,
+  onVerticesLoaded
 }: BrainMeshProps) {
   const groupRef = useRef<THREE.Group>(null)
   
@@ -77,6 +116,8 @@ export function BrainMesh({
           modelPath={modelPath}
           wireframeColor={wireframeColor}
           opacity={opacity}
+          lineWidth={lineWidth}
+          onVerticesLoaded={onVerticesLoaded}
         />
       </Suspense>
     </group>
