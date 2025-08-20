@@ -2,7 +2,7 @@
  * Renderer commands emitted by store actions for consumption by Canvas/UI layers
  */
 
-import type { IdeaNode, Edge } from '@refinery/schema'
+import type { IdeaNode, Edge, Node, Vector3 } from '@refinery/schema'
 
 export type RendererCommand =
   | NodeCommand
@@ -12,6 +12,7 @@ export type RendererCommand =
   | LayoutCommand
   | ThemeCommand
   | HighlightCommand
+  | MindmapCommand
 
 // Node-related commands
 export type NodeCommand =
@@ -63,3 +64,25 @@ export type HighlightCommand =
   | { type: 'HIGHLIGHT_NODES'; payload: { nodeIds: string[]; color?: string; intensity?: number } }
   | { type: 'HIGHLIGHT_EDGES'; payload: { edgeIds: string[]; color?: string; intensity?: number } }
   | { type: 'CLEAR_HIGHLIGHTS' }
+
+// Mindmap commands
+export type MindmapCommand =
+  | { type: 'LOAD_CONCEPTS'; payload: { concepts: Node[] } }
+  | { type: 'ADD_CONCEPT'; payload: { concept: Node } }
+  | { type: 'REMOVE_CONCEPT'; payload: { conceptId: string } }
+  | { type: 'UPDATE_CONCEPT'; payload: { conceptId: string; updates: Partial<Node> } }
+  | { type: 'CLEAR_CONCEPTS' }
+  | { type: 'SET_BRAIN_VERTICES'; payload: { vertices: Vector3[] } }
+  | { type: 'SET_BRAIN_MESH_LOADED'; payload: { loaded: boolean } }
+  | { type: 'SELECT_CONCEPTS'; payload: { conceptIds: string[]; mode: 'replace' | 'add' | 'toggle' } }
+  | { type: 'CLEAR_CONCEPT_SELECTION' }
+  | { type: 'SET_HOVERED_CONCEPT'; payload: { conceptId: string | null } }
+  | { type: 'SET_CONCEPT_POSITION'; payload: { conceptId: string; vertexIndex: number; shell?: number } }
+  | { type: 'CLEAR_CONCEPT_POSITIONS' }
+  | { type: 'UPDATE_CONCEPT_POSITIONS'; payload: { positions: Map<string, { vertexIndex: number; shell: number }> } }
+  | { type: 'SET_CONCEPT_VISUAL'; payload: { conceptId: string; visual: { scale?: number; color?: string; visible?: boolean } } }
+  | { type: 'RESET_CONCEPT_VISUALS' }
+  | { type: 'SET_VISIBLE_CATEGORIES'; payload: { categories: string[] } }
+  | { type: 'TOGGLE_CATEGORY'; payload: { category: string } }
+  | { type: 'SHOW_ALL_CATEGORIES' }
+  | { type: 'UPDATE_RENDER_METRICS'; payload: { metrics: { renderTime: number; frameRate: number } } }

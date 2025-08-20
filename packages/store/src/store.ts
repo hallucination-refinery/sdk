@@ -9,6 +9,7 @@ import { enableMapSet } from 'immer'
 import { createGraphSlice, GraphSlice } from './slices/graph-slice'
 import { createUISlice, UISlice } from './slices/ui-slice'
 import { createAsyncSlice, AsyncSlice } from './slices/async-slice'
+import { createMindmapSlice, MindmapSlice } from './slices/mindmapSlice'
 import { CommandQueue } from './command-queue'
 import type { RendererCommand } from './types/renderer-commands'
 
@@ -16,7 +17,7 @@ import type { RendererCommand } from './types/renderer-commands'
 enableMapSet()
 
 // Combined store type
-export type RefineryStore = GraphSlice & UISlice & AsyncSlice & {
+export type RefineryStore = GraphSlice & UISlice & AsyncSlice & MindmapSlice & {
   commandQueue: CommandQueue
   enqueueCommand: (command: RendererCommand) => void
   enqueueCommands: (commands: RendererCommand[]) => void
@@ -34,6 +35,7 @@ export const useRefineryStore = create<RefineryStore>()(
       ...createGraphSlice(set, get),
       ...createUISlice(set, get),
       ...createAsyncSlice(set, get),
+      ...createMindmapSlice(set, get),
       
       // Command queue integration
       commandQueue,
@@ -158,5 +160,53 @@ export const useAsyncStore = () => {
     getActiveJobs: store.getActiveJobs,
     getCompletedJobs: store.getCompletedJobs,
     getFailedJobs: store.getFailedJobs
+  }
+}
+
+export const useMindmapStore = () => {
+  const store = useRefineryStore()
+  return {
+    // State
+    concepts: store.concepts,
+    vertices: store.vertices,
+    selectedConceptIds: store.selectedConceptIds,
+    hoveredConceptId: store.hoveredConceptId,
+    conceptPositions: store.conceptPositions,
+    isBrainMeshLoaded: store.isBrainMeshLoaded,
+    conceptVisuals: store.conceptVisuals,
+    visibleCategories: store.visibleCategories,
+    renderMetrics: store.renderMetrics,
+    
+    // Actions
+    loadConcepts: withCommand(store.loadConcepts),
+    addConcept: withCommand(store.addConcept),
+    removeConcept: withCommand(store.removeConcept),
+    updateConcept: withCommand(store.updateConcept),
+    clearConcepts: withCommand(store.clearConcepts),
+    setBrainVertices: withCommand(store.setBrainVertices),
+    setBrainMeshLoaded: withCommand(store.setBrainMeshLoaded),
+    selectConcepts: withCommand(store.selectConcepts),
+    clearConceptSelection: withCommand(store.clearConceptSelection),
+    setHoveredConcept: withCommand(store.setHoveredConcept),
+    setConceptPosition: withCommand(store.setConceptPosition),
+    clearConceptPositions: withCommand(store.clearConceptPositions),
+    updateConceptPositions: withCommand(store.updateConceptPositions),
+    setConceptVisual: withCommand(store.setConceptVisual),
+    resetConceptVisuals: withCommand(store.resetConceptVisuals),
+    setVisibleCategories: withCommand(store.setVisibleCategories),
+    toggleCategory: withCommand(store.toggleCategory),
+    showAllCategories: withCommand(store.showAllCategories),
+    updateRenderMetrics: withCommand(store.updateRenderMetrics),
+    
+    // Queries
+    getConcept: store.getConcept,
+    getConceptsByCategory: store.getConceptsByCategory,
+    getVisibleConcepts: store.getVisibleConcepts,
+    isConceptSelected: store.isConceptSelected,
+    getSelectedConcepts: store.getSelectedConcepts,
+    getConceptPosition: store.getConceptPosition,
+    getConceptVisual: store.getConceptVisual,
+    getAllCategories: store.getAllCategories,
+    getConceptMetrics: store.getConceptMetrics
   }
 }
