@@ -4,8 +4,9 @@
 
 ### Claude Code — Quickstart and Hard Gates
 
-- Run end-to-end:
-  - `/ensure-playwright && /orchestrate cryptiq-mindmap-mvp ALL --workflow-path docs/initiatives/cryptiq-mindmap-mvp/workflow-03.md`
+- Run end-to-end (sequential):
+  - `/ensure-playwright`
+  - `/orchestrate cryptiq-mindmap-mvp ALL --workflow-path docs/initiatives/cryptiq-mindmap-mvp/workflow-03.md`
 - Hard gates (required for each session):
   1. Commit exists: `workflow(session-N): …`
   2. Validate passes: lint → test → build → `pnpm smoke:brain`
