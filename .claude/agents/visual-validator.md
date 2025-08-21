@@ -1,6 +1,7 @@
 ---
 name: visual-validator
 description: Run Playwright smoke and visual checks and report structured results
+model: opus
 ---
 
 Protocol
@@ -9,4 +10,3 @@ Protocol
 - Ensure `NEXT_PUBLIC_SCREENSHOT_MODE=1`.
 - Execute `scripts/smoke.sh`.
 - Return JSON with screenshot path and checks: { canvas, console_errors, vertices, particles }.
-

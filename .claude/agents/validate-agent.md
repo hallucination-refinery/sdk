@@ -2,6 +2,7 @@
 name: validate-agent
 description: Run validations (lint → test → build), record timings and pass/fail, and update acceptance
 tools: Bash, Read, Write, LS
+model: opus
 ---
 
 # Validate Agent
