@@ -447,17 +447,18 @@ export function BrainIntegrationTest({
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#1a1a1a' }}
       >
-        {/* Session 8: Camera Controls with Session 8 specifications */}
+        {/* Session 5: Camera Controls & Limits - smooth orbit controls with proper bounds */}
         <OrbitControls
           enablePan={true}
           enableZoom={true}
           enableRotate={true}
+          enableDamping={true}
+          dampingFactor={0.05}
           minDistance={5}
           maxDistance={200}
           minPolarAngle={Math.PI * 0.1}
           maxPolarAngle={Math.PI * 0.9}
-          enableDamping={true}
-          dampingFactor={0.05}
+          autoRotate={false}
         />
 
         {/* Lighting */}

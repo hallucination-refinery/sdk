@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const metrics = await request.json()
     
     // Create directory if it doesn't exist
-    const filePath = join(process.cwd(), '.clmem/artifacts/w02/acceptance/brain-acceptance.json')
+    const filePath = join(process.cwd(), '.clmem/artifacts/w03/acceptance/brain-acceptance.json')
     await mkdir(dirname(filePath), { recursive: true })
     
     // Write metrics to file

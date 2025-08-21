@@ -27,9 +27,9 @@ Behavior
   - After each session completes, make one atomic commit with message `workflow(session-<n>): <desc> [ok|needs-fix]`.
   - Run validations via `validate-agent` (lint → test → build → smoke), passing the session start timestamp.
   - Enforce per‑session checkpoint: do not proceed to the next session unless all of the following are true:
-    1) The commit for this session exists in `git log`.
-    2) `validate-agent` returned success.
-    3) Required artifacts for this session exist and are fresh (mtime ≥ session start), verified by `scripts/validate-artifacts.sh`.
+    1. The commit for this session exists in `git log`.
+    2. `validate-agent` returned success.
+    3. Required artifacts for this session exist and are fresh (mtime ≥ session start), verified by `scripts/validate-artifacts.sh`.
   - Record pass/fail and timings in `metrics.json` and `acceptance.md`. On failure of any gate or freshness check, stop the run, summarize in `scratchpad.md`, and exit non‑zero.
 
 - Meta pass and close‑out

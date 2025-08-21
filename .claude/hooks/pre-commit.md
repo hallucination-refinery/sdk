@@ -18,4 +18,3 @@ start_ms=$(jq -r '.start_time_ms // 0' "$RUN_DIR/metrics.json" 2>/dev/null || ec
 ```
 
 Configure via settings hooks `PreCommit` to run this script.
-

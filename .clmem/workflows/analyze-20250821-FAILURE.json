@@ -1,0 +1,67 @@
+{
+  "runId": "20250821_043821_cryptiq-mindmap-mvp-ALL",
+  "timestamp": "2025-08-21T05:30:00Z",
+  "status": "FAILED",
+  "trustIndex": 22.6,
+  "strict": true,
+  "failures": [
+    {
+      "check": "session_commits",
+      "required": 16,
+      "actual": 1,
+      "severity": "CRITICAL"
+    },
+    {
+      "check": "session_execution",
+      "required": 16,
+      "actual": 7,
+      "severity": "CRITICAL"
+    },
+    {
+      "check": "visual_parity_gate",
+      "required": true,
+      "actual": false,
+      "message": "Baseline missing, gate bypassed",
+      "severity": "CRITICAL"
+    },
+    {
+      "check": "new_screenshot",
+      "required": true,
+      "actual": false,
+      "message": "All screenshots predate run by 6-13 hours",
+      "severity": "CRITICAL"
+    },
+    {
+      "check": "first_frame_ms",
+      "required": 2000,
+      "actual": 8937,
+      "severity": "HIGH"
+    },
+    {
+      "check": "vertex_count",
+      "required": [35000, 50000],
+      "actual": 233487,
+      "severity": "HIGH"
+    }
+  ],
+  "artifacts": {
+    "server_log": true,
+    "curl_brain_html": true,
+    "acceptance_json": true,
+    "smoke_screenshot": false,
+    "visual_baseline": false,
+    "trace_zip": false
+  },
+  "metrics": {
+    "sessions_completed": 7,
+    "sessions_required": 16,
+    "commits_made": 1,
+    "commits_required": 16,
+    "first_frame_ms": 8937,
+    "vertex_count": 233487,
+    "smoke_screenshots": 0,
+    "stale_screenshots": 12
+  },
+  "verdict": "FALSE_POSITIVE",
+  "recommendation": "REJECT_AND_RERUN"
+}

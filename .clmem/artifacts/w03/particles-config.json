@@ -1,0 +1,112 @@
+{
+  "session": "Session 4 - Concept Particles (500 instances)",
+  "timestamp": "2025-08-21T04:38:21.000Z",
+  "configuration": {
+    "maxInstances": 500,
+    "particleGeometry": {
+      "type": "sphereGeometry",
+      "radius": 1,
+      "widthSegments": 8,
+      "heightSegments": 6
+    },
+    "material": {
+      "type": "meshBasicMaterial",
+      "vertexColors": true,
+      "transparent": true,
+      "opacity": 0.8,
+      "depthWrite": false,
+      "side": "DoubleSide"
+    },
+    "colorMapping": {
+      "categoryColors": [
+        "#FF6B6B",
+        "#4ECDC4", 
+        "#45B7D1",
+        "#96CEB4",
+        "#FFEAA7",
+        "#DDA0DD",
+        "#98D8C8",
+        "#F7DC6F",
+        "#BB8FCE",
+        "#85C1E9",
+        "#F8C471",
+        "#82E0AA"
+      ],
+      "grayFallback": "#888888",
+      "colorSources": [
+        "concept.color (explicit)",
+        "concept.category (hashed to palette)",
+        "concept.type (fallback, hashed to palette)",
+        "concept.id (stable hash to first 8 colors)",
+        "gray fallback (ultimate fallback)"
+      ]
+    },
+    "vertexMapping": {
+      "algorithm": "djb2Hash",
+      "source": "Session 3 VertexMapper",
+      "deterministic": true,
+      "collisionHandling": "managed by BrainIntegrationTest",
+      "positionSources": [
+        "concept.position (explicit)",
+        "djb2 hash mapping to brain vertices"
+      ]
+    },
+    "interactions": {
+      "hover": {
+        "enabled": true,
+        "scaleMultiplier": 1.5,
+        "callback": "onHover"
+      },
+      "click": {
+        "enabled": true,
+        "callback": "onClick"
+      },
+      "events": [
+        "onPointerMove",
+        "onPointerLeave", 
+        "onClick"
+      ]
+    },
+    "performance": {
+      "instancingEnabled": true,
+      "instancedMeshCount": 500,
+      "updateFrequency": "every frame (useFrame)",
+      "matrixUpdateStrategy": "per-instance transformation",
+      "colorUpdateStrategy": "per-instance vertex colors"
+    }
+  },
+  "gates": {
+    "render500Particles": {
+      "requirement": "Must render 500 particles when provided",
+      "implementation": "instancedMesh with args=[undefined, undefined, 500]",
+      "status": "implemented"
+    },
+    "nonzeroColors": {
+      "requirement": "Colors must be nonzero (visible)",
+      "implementation": "12 distinct category colors + ID-based fallback colors",
+      "validation": "All colors have non-zero RGB values",
+      "status": "implemented"
+    },
+    "eventHandlers": {
+      "requirement": "Event handlers must be registered",
+      "implementation": "onPointerMove, onPointerLeave, onClick handlers",
+      "hoverEffect": "1.5x scale on hover",
+      "status": "implemented"
+    }
+  },
+  "integration": {
+    "brainIntegrationTest": "Properly integrated with BrainIntegrationTest.tsx",
+    "vertexMapping": "Uses Session 3 VertexMapper utilities",
+    "fixtures": "Uses concepts-500.json fixture",
+    "acceptance": "Reports to /api/brain-acceptance endpoint"
+  },
+  "validationChecks": [
+    "500 instances created in instancedMesh",
+    "Category color palette has 12 distinct colors",
+    "Gray fallback color is #888888",
+    "Hover handlers scale particles to 1.5x",
+    "Click handlers trigger callbacks",
+    "Colors derived from concept ID are stable and nonzero",
+    "Vertex mapping uses djb2 hash for deterministic positioning"
+  ]
+}

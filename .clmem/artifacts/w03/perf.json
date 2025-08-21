@@ -1,0 +1,18 @@
+{
+  "session": 6,
+  "description": "Performance Baseline Hooks",
+  "implementation": {
+    "location": "/workspace/packages/canvas-r3f/src/BrainIntegrationTest.tsx",
+    "features": [
+      "testStartTime.current tracks component mount time",
+      "firstFrameMs calculated as Date.now() - testStartTime.current",
+      "Performance target: ≤2000ms for first frame",
+      "Metrics posted to /api/brain-acceptance endpoint"
+    ]
+  },
+  "gates": {
+    "firstFrameTarget": 2000,
+    "measurement": "browser-derived via Date.now()",
+    "reporting": "POST to acceptance endpoint"
+  }
+}
