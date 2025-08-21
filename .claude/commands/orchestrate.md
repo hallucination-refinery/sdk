@@ -4,6 +4,7 @@ description: Orchestrate a single session for an initiative end‑to‑end using
 args:
   - initiative # e.g., cryptiq-mindmap-mvp
   - session # e.g., 03 or ALL (to run all sessions sequentially)
+  - --workflow-path <path> # required absolute/relative path to workflow file (fails fast if unreadable)
 ---
 
 **ULTRATHINK MODE**
@@ -14,10 +15,10 @@ Behavior
   - Create run_id = UTC timestamp + `{initiative}-{session}` (use `ALL` if running every session); make `.clmem/runs/<run_id>/` and initialize: `scratchpad.md`, `plan.md` (empty), `todos.json` (empty array), `metrics.json` with `{ start_time, initiative, session, sessions: [] }`, `acceptance.md` (header only), and an empty `session.log`.
 
 - Context capture
-  - Read `docs/initiatives/{initiative}/workflow.md`. If `session != ALL`, extract that session section verbatim into `plan.md`. If `session == ALL`, snapshot Section E (all sessions) into `plan.md`. In `scratchpad.md`, restate the session goal(s), acceptance bars, and explicit unknowns/assumptions (1–2 lines each).
+  - Read `--workflow-path` (required). If `session != ALL`, extract that session section verbatim into `plan.md`. If `session == ALL`, snapshot Section E (all sessions) into `plan.md`. In `scratchpad.md`, restate the session goal(s), acceptance bars, and explicit unknowns/assumptions (1–2 lines each). If the file cannot be read or parsed, ABORT the run with a clear error.
 
 - Planning (plan-agent)
-  - Use Task to invoke `plan-agent` with `{ run_id, run_dir, initiative, session, workflow_path, scratchpad_path }` asking for: session list, dependencies (DAG), parallelizable batches, risks, and required validations per session. If `session == ALL`, the agent must enumerate all sessions from Section E and produce batches across them. The agent must append a “Plan” section to `scratchpad.md` and write `batches.json` into the run dir.
+  - Use Task to invoke `plan-agent` with `{ run_id, run_dir, initiative, session, workflow_path, scratchpad_path }` asking for: session list, dependencies (DAG), parallelizable batches, risks, and required validations per session. If `session == ALL`, the agent must enumerate all sessions from Section E and produce batches across them. The agent must append a “Plan” section to `scratchpad.md` and write `batches.json` into the run dir. If `plan.md` or `batches.json` is missing or empty after this step, ABORT the run.
 
 - Execution (Task sub‑agents)
   - For each batch in order: for each planned session (in parallel up to orchestrator limits), call the mapped sub‑agent with `{ run_id, run_dir, scratchpad_path, session_id, goals, acceptance, target_paths }`. Each sub‑agent must append a “Session <n>” entry to `scratchpad.md`, update `todos.json` if it creates tasks, and return a minimal changeset summary. Stay on the current working branch for the entire run.

@@ -6,12 +6,20 @@ const SMOKE_ROUTE = process.env.SMOKE_ROUTE || '/brain'
 export default defineConfig({
   testDir: 'tests',
   timeout: 60_000,
+  workers: 1,
+  retries: 1,
+  outputDir: '.clmem/artifacts/playwright',
   use: {
     headless: true,
-    screenshot: 'off',
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure',
+    baseURL: BASE_URL,
     viewport: {
       width: Number(process.env.VIEWPORT_W || 1280),
       height: Number(process.env.VIEWPORT_H || 800),
+    },
+    launchOptions: {
+      args: ['--no-sandbox', '--disable-dev-shm-usage'],
     },
   },
   projects: [

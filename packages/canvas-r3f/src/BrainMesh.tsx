@@ -42,11 +42,22 @@ function BrainMeshGeometry({
   onLoadingChange,
   onLoadStart,
   onLoadComplete,
-  onLoadError
-}: Pick<BrainMeshProps, 'modelPath' | 'wireframeColor' | 'opacity' | 'lineWidth' | 'onVerticesLoaded' | 'onLoadingChange' | 'onLoadStart' | 'onLoadComplete' | 'onLoadError'>) {
+  onLoadError,
+}: Pick<
+  BrainMeshProps,
+  | 'modelPath'
+  | 'wireframeColor'
+  | 'opacity'
+  | 'lineWidth'
+  | 'onVerticesLoaded'
+  | 'onLoadingChange'
+  | 'onLoadStart'
+  | 'onLoadComplete'
+  | 'onLoadError'
+>) {
   const meshRef = useRef<THREE.Group>(null)
   const [loadingStarted, setLoadingStarted] = useState(false)
-  
+
   // Notify loading start
   useEffect(() => {
     if (!loadingStarted) {
@@ -55,17 +66,10 @@ function BrainMeshGeometry({
       onLoadingChange?.(true)
     }
   }, [loadingStarted, onLoadStart, onLoadingChange])
-  
-  // Load the OBJ file with error handling
-  let obj: THREE.Group
-  try {
-    obj = useLoader(OBJLoader, modelPath)
-  } catch (error) {
-    onLoadError?.(error instanceof Error ? error : new Error('Failed to load brain mesh'))
-    onLoadingChange?.(false)
-    throw error
-  }
-  
+
+  // Load the OBJ file (suspends under React Suspense until ready)
+  const obj = useLoader(OBJLoader, modelPath)
+
   // Extract vertices from the loaded object and notify parent
   useEffect(() => {
     if (onVerticesLoaded) {
@@ -90,16 +94,16 @@ function BrainMeshGeometry({
         }
       })
       onVerticesLoaded(vertices)
-      
+
       // Notify that loading is complete
       onLoadComplete?.()
       onLoadingChange?.(false)
     }
   }, [obj, onVerticesLoaded, onLoadComplete, onLoadingChange])
-  
+
   // Clone the object to avoid modifying the original
   const clonedObj = obj.clone()
-  
+
   // Apply wireframe material to all meshes in the object
   clonedObj.traverse((child) => {
     if (child instanceof THREE.Mesh) {
@@ -108,14 +112,14 @@ function BrainMeshGeometry({
         wireframe: true,
         transparent: true,
         opacity,
-        side: THREE.DoubleSide,    // Ensure wireframe is visible from both sides
+        side: THREE.DoubleSide, // Ensure wireframe is visible from both sides
         wireframeLinewidth: lineWidth, // Explicit line width (may not work on all platforms)
-        depthTest: true,           // Proper depth testing for overlapping lines
-        depthWrite: true           // Write to depth buffer for proper rendering
+        depthTest: true, // Proper depth testing for overlapping lines
+        depthWrite: true, // Write to depth buffer for proper rendering
       })
     }
   })
-  
+
   return <primitive ref={meshRef} object={clonedObj} />
 }
 
@@ -132,15 +136,15 @@ export function BrainMesh({
   onLoadingChange,
   onLoadStart,
   onLoadComplete,
-  onLoadError
+  onLoadError,
 }: BrainMeshProps) {
   const groupRef = useRef<THREE.Group>(null)
-  
+
   // Calculate scale - ensure it's a tuple type
   const meshScale: [number, number, number] = Array.isArray(scale)
     ? [scale[0], scale[1], scale[2] ?? scale[1]]
     : [scale, scale, scale]
-  
+
   return (
     <group
       ref={groupRef}
@@ -167,22 +171,30 @@ export function BrainMesh({
 }
 
 // Export with error boundary wrapper for better error handling
-export function BrainMeshWithFallback(props: BrainMeshProps & { 
-  showLoadingIndicator?: boolean 
-  loadingMessage?: string
-}) {
-  const { showLoadingIndicator = true, loadingMessage = 'Loading brain mesh...', ...meshProps } = props
-  
+export function BrainMeshWithFallback(
+  props: BrainMeshProps & {
+    showLoadingIndicator?: boolean
+    loadingMessage?: string
+  }
+) {
+  const {
+    showLoadingIndicator = true,
+    loadingMessage = 'Loading brain mesh...',
+    ...meshProps
+  } = props
+
   return (
-    <Suspense fallback={
-      showLoadingIndicator ? (
-        <LoadingIndicator 
-          message={loadingMessage}
-          position={meshProps.position}
-          scale={Array.isArray(meshProps.scale) ? meshProps.scale[0] : meshProps.scale}
-        />
-      ) : null
-    }>
+    <Suspense
+      fallback={
+        showLoadingIndicator ? (
+          <LoadingIndicator
+            message={loadingMessage}
+            position={meshProps.position}
+            scale={Array.isArray(meshProps.scale) ? meshProps.scale[0] : meshProps.scale}
+          />
+        ) : null
+      }
+    >
       <BrainMesh {...meshProps} />
     </Suspense>
   )

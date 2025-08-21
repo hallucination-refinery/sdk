@@ -12,8 +12,10 @@ Inputs
 
 Protocol
 
-- Read {workflow_path}, extract {session} section; snapshot into `{run_dir}/plan.md`.
+- Read {workflow_path}. If the file cannot be read or is empty, ABORT with a clear error.
+- Extract {session} section; snapshot into `{run_dir}/plan.md`.
 - Produce `batches.json` with: sessions[], dependencies[], batches[][session_ids].
+- If sessions cannot be enumerated or either `plan.md` or `batches.json` would be empty, ABORT the run.
 - Append “Plan” section to `scratchpad.md` (goal, acceptance bars, unknowns, batches).
 - Initialize `todos.json` ([]) and seed `metrics.json` ({ start_time, initiative, session }).
 
