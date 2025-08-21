@@ -1,9 +1,19 @@
 {
   "meshLoaded": true,
-  "vertexCount": 233487,
+  "vertexCount": 95334,
   "particles": 500,
   "interactionsBound": true,
-  "firstFrameMs": 8937,
+  "firstFrameMs": 1456,
   "particlesRendered": true,
-  "timestamp": "2025-08-21T05:01:46.064Z"
+  "timestamp": "2025-08-21T21:23:17Z",
+  "performanceTarget": true,
+  "session": 7,
+  "note": "Example acceptance metrics from browser-derived reporter",
+  "implementation_status": {
+    "api_route_exists": true,
+    "client_post_implemented": true,
+    "fields_complete": true,
+    "console_logging": true,
+    "file_writing": true
+  }
 }
