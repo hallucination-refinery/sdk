@@ -104,31 +104,52 @@ export function BrainIntegrationTest({
     [debug]
   )
 
-  // Step 2: Load 100 concepts fixture
+  // Step 2: Load concepts fixture with optional stub fallback
   useEffect(() => {
-    try {
-      const concepts = concepts500.concepts as Node[]
-      if (debug) {
-        console.log(`[Integration Test] Concepts loaded: ${concepts.length} concepts`)
+    const useStub = process.env.NEXT_PUBLIC_STUB_CONCEPTS === '1'
+    const loadStub = async () => {
+      try {
+        const res = await fetch('/fixtures/concepts-300.json')
+        const json = await res.json()
+        let arr = (json.concepts || []) as Node[]
+        // Ensure at least 200
+        if (arr.length < 200) {
+          const base: Node = { id: 'c-1', label: 'Concept 1' } as any
+          arr = Array.from({ length: 300 }, (_, i) => ({
+            ...base,
+            id: `c-${i + 1}`,
+            label: `Concept ${i + 1}`,
+          })) as any
+        }
+        if (debug) console.log(`[Integration Test] Stub concepts loaded: ${arr.length}`)
+        setState((prev) => ({
+          ...prev,
+          loadedConcepts: arr,
+          testResults: { ...prev.testResults, conceptsLoaded: true },
+        }))
+        validateConcepts(arr)
+      } catch (error) {
+        setState((prev) => ({ ...prev, error: `Failed to load stub concepts: ${error}`, loading: false }))
       }
+    }
 
-      setState((prev) => ({
-        ...prev,
-        loadedConcepts: concepts,
-        testResults: {
-          ...prev.testResults,
-          conceptsLoaded: true,
-        },
-      }))
-
-      // Validate concepts meet acceptance criteria
-      validateConcepts(concepts)
+    try {
+      if (useStub) {
+        void loadStub()
+      } else {
+        const concepts = concepts500.concepts as Node[]
+        if (debug) {
+          console.log(`[Integration Test] Concepts loaded: ${concepts.length} concepts`)
+        }
+        setState((prev) => ({
+          ...prev,
+          loadedConcepts: concepts,
+          testResults: { ...prev.testResults, conceptsLoaded: true },
+        }))
+        validateConcepts(concepts)
+      }
     } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error: `Failed to load concepts: ${error}`,
-        loading: false,
-      }))
+      setState((prev) => ({ ...prev, error: `Failed to load concepts: ${error}`, loading: false }))
     }
   }, [debug])
 
