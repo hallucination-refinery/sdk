@@ -1,0 +1,16 @@
+{
+  "OrbitControls": {
+    "enablePan": true,
+    "enableZoom": true,
+    "enableRotate": true,
+    "minDistance": 5,
+    "maxDistance": 200,
+    "minPolarAngle": 0.314,
+    "maxPolarAngle": 2.827,
+    "enableDamping": true,
+    "dampingFactor": 0.05,
+    "autoRotate": false
+  },
+  "verified": true,
+  "location": "packages/canvas-r3f/src/BrainIntegrationTest.tsx:427-437"
+}

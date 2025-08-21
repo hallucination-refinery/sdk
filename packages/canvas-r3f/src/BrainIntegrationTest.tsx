@@ -341,8 +341,34 @@ export function BrainIntegrationTest({
       if (debug) {
         console.log('[Integration Test] All acceptance criteria PASSED! 🎉')
       }
+
+      // Report acceptance metrics to API endpoint
+      const metrics = {
+        meshLoaded: testResults.meshLoaded,
+        vertexCount: state.brainVertices.length,
+        particles: state.concepts.length,
+        interactionsBound: testResults.interactionsBound,
+        firstFrameMs: state.performanceMetrics.firstFrameTime || 0,
+        particlesRendered: testResults.particlesRendered,
+        timestamp: new Date().toISOString()
+      }
+
+      fetch('/api/brain-acceptance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metrics)
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (debug) {
+            console.log('[Acceptance Reporter] Metrics sent:', data)
+          }
+        })
+        .catch(error => {
+          console.error('[Acceptance Reporter] Failed to send metrics:', error)
+        })
     }
-  }, [state.testResults, debug])
+  }, [state.testResults, debug, state])
 
   const getAcceptanceStatus = (): string => {
     const { testResults } = state
