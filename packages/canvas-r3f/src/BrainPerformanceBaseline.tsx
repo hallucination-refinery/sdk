@@ -503,7 +503,7 @@ export function BrainPerformanceBaseline() {
         
         {/* Brain mesh */}
         <BrainMesh
-          modelPath="/models/brain.obj"
+          modelPath={process.env.NEXT_PUBLIC_BRAIN_MESH_URL || "/models/brain.obj"}
           onVerticesLoaded={handleVerticesLoaded}
           wireframeColor="#00aaff"
           opacity={0.3}

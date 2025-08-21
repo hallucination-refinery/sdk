@@ -34,7 +34,7 @@ export interface BrainMeshProps {
 }
 
 function BrainMeshGeometry({
-  modelPath = '/models/brain.obj',
+  modelPath = process.env.NEXT_PUBLIC_BRAIN_MESH_URL || '/models/brain.obj',
   wireframeColor = '#00aaff',
   opacity = 0.9,
   lineWidth = 1,
@@ -120,7 +120,7 @@ function BrainMeshGeometry({
 }
 
 export function BrainMesh({
-  modelPath = '/models/brain.obj',
+  modelPath = process.env.NEXT_PUBLIC_BRAIN_MESH_URL || '/models/brain.obj',
   position = [0, 0, 0],
   scale = 1,
   rotation = [0, 0, 0],

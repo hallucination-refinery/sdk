@@ -29,7 +29,7 @@ export interface BrainVerticesState {
   error: string | null
 }
 
-export function useBrainVertices(modelPath: string = '/models/brain.obj'): BrainVerticesState {
+export function useBrainVertices(modelPath: string = process.env.NEXT_PUBLIC_BRAIN_MESH_URL || '/models/brain.obj'): BrainVerticesState {
   const [state, setState] = useState<BrainVerticesState>({
     vertices: [],
     analysis: {
