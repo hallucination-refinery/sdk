@@ -1,0 +1,4004 @@
+{
+  "concepts": [
+    {
+      "id": "c001",
+      "label": "Memory",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.54
+      }
+    },
+    {
+      "id": "c002",
+      "label": "Language",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.58
+      }
+    },
+    {
+      "id": "c003",
+      "label": "Vision",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.62
+      }
+    },
+    {
+      "id": "c004",
+      "label": "Attention",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.66
+      }
+    },
+    {
+      "id": "c005",
+      "label": "Emotion",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.69
+      }
+    },
+    {
+      "id": "c006",
+      "label": "Planning",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.73
+      }
+    },
+    {
+      "id": "c007",
+      "label": "Motor Control",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.76
+      }
+    },
+    {
+      "id": "c008",
+      "label": "Spatial Awareness",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.79
+      }
+    },
+    {
+      "id": "c009",
+      "label": "Decision Making",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.81
+      }
+    },
+    {
+      "id": "c010",
+      "label": "Learning",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c011",
+      "label": "Reasoning",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c012",
+      "label": "Perception",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c013",
+      "label": "Consciousness",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c014",
+      "label": "Creativity",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c015",
+      "label": "Problem Solving",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c016",
+      "label": "Social Cognition",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c017",
+      "label": "Executive Function",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c018",
+      "label": "Working Memory",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c019",
+      "label": "Long-term Memory",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c020",
+      "label": "Sensory Processing",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c021",
+      "label": "Abstract Thinking",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c022",
+      "label": "Pattern Recognition",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c023",
+      "label": "Face Recognition",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.8
+      }
+    },
+    {
+      "id": "c024",
+      "label": "Object Recognition",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.77
+      }
+    },
+    {
+      "id": "c025",
+      "label": "Auditory Processing",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.74
+      }
+    },
+    {
+      "id": "c026",
+      "label": "Touch Sensation",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.71
+      }
+    },
+    {
+      "id": "c027",
+      "label": "Pain Processing",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.67
+      }
+    },
+    {
+      "id": "c028",
+      "label": "Temperature Sensing",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.63
+      }
+    },
+    {
+      "id": "c029",
+      "label": "Balance",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.6
+      }
+    },
+    {
+      "id": "c030",
+      "label": "Coordination",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.56
+      }
+    },
+    {
+      "id": "c031",
+      "label": "Cognition",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.52
+      }
+    },
+    {
+      "id": "c032",
+      "label": "Memory 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.48
+      }
+    },
+    {
+      "id": "c033",
+      "label": "Language 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.44
+      }
+    },
+    {
+      "id": "c034",
+      "label": "Vision 1",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.4
+      }
+    },
+    {
+      "id": "c035",
+      "label": "Attention 1",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.36
+      }
+    },
+    {
+      "id": "c036",
+      "label": "Emotion 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.32
+      }
+    },
+    {
+      "id": "c037",
+      "label": "Planning 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.29
+      }
+    },
+    {
+      "id": "c038",
+      "label": "Motor Control 1",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.26
+      }
+    },
+    {
+      "id": "c039",
+      "label": "Spatial Awareness 1",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c040",
+      "label": "Decision Making 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.2
+      }
+    },
+    {
+      "id": "c041",
+      "label": "Learning 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c042",
+      "label": "Reasoning 1",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c043",
+      "label": "Perception 1",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c044",
+      "label": "Consciousness 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c045",
+      "label": "Creativity 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c046",
+      "label": "Problem Solving 1",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c047",
+      "label": "Social Cognition 1",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c048",
+      "label": "Executive Function 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c049",
+      "label": "Working Memory 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c050",
+      "label": "Long-term Memory 1",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c051",
+      "label": "Sensory Processing 1",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c052",
+      "label": "Abstract Thinking 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c053",
+      "label": "Pattern Recognition 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c054",
+      "label": "Face Recognition 1",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.19
+      }
+    },
+    {
+      "id": "c055",
+      "label": "Object Recognition 1",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c056",
+      "label": "Auditory Processing 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.25
+      }
+    },
+    {
+      "id": "c057",
+      "label": "Touch Sensation 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.28
+      }
+    },
+    {
+      "id": "c058",
+      "label": "Pain Processing 1",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.31
+      }
+    },
+    {
+      "id": "c059",
+      "label": "Temperature Sensing 1",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.35
+      }
+    },
+    {
+      "id": "c060",
+      "label": "Balance 1",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.39
+      }
+    },
+    {
+      "id": "c061",
+      "label": "Coordination 1",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.43
+      }
+    },
+    {
+      "id": "c062",
+      "label": "Cognition 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.47
+      }
+    },
+    {
+      "id": "c063",
+      "label": "Memory 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.51
+      }
+    },
+    {
+      "id": "c064",
+      "label": "Language 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.55
+      }
+    },
+    {
+      "id": "c065",
+      "label": "Vision 2",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.59
+      }
+    },
+    {
+      "id": "c066",
+      "label": "Attention 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.62
+      }
+    },
+    {
+      "id": "c067",
+      "label": "Emotion 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.66
+      }
+    },
+    {
+      "id": "c068",
+      "label": "Planning 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.7
+      }
+    },
+    {
+      "id": "c069",
+      "label": "Motor Control 2",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.73
+      }
+    },
+    {
+      "id": "c070",
+      "label": "Spatial Awareness 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.76
+      }
+    },
+    {
+      "id": "c071",
+      "label": "Decision Making 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.79
+      }
+    },
+    {
+      "id": "c072",
+      "label": "Learning 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c073",
+      "label": "Reasoning 2",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c074",
+      "label": "Perception 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c075",
+      "label": "Consciousness 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c076",
+      "label": "Creativity 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c077",
+      "label": "Problem Solving 2",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c078",
+      "label": "Social Cognition 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c079",
+      "label": "Executive Function 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c080",
+      "label": "Working Memory 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c081",
+      "label": "Long-term Memory 2",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c082",
+      "label": "Sensory Processing 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c083",
+      "label": "Abstract Thinking 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c084",
+      "label": "Pattern Recognition 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c085",
+      "label": "Face Recognition 2",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c086",
+      "label": "Object Recognition 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.79
+      }
+    },
+    {
+      "id": "c087",
+      "label": "Auditory Processing 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.77
+      }
+    },
+    {
+      "id": "c088",
+      "label": "Touch Sensation 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.73
+      }
+    },
+    {
+      "id": "c089",
+      "label": "Pain Processing 2",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.7
+      }
+    },
+    {
+      "id": "c090",
+      "label": "Temperature Sensing 2",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.66
+      }
+    },
+    {
+      "id": "c091",
+      "label": "Balance 2",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.63
+      }
+    },
+    {
+      "id": "c092",
+      "label": "Coordination 2",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.59
+      }
+    },
+    {
+      "id": "c093",
+      "label": "Cognition 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.55
+      }
+    },
+    {
+      "id": "c094",
+      "label": "Memory 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.51
+      }
+    },
+    {
+      "id": "c095",
+      "label": "Language 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.47
+      }
+    },
+    {
+      "id": "c096",
+      "label": "Vision 3",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.43
+      }
+    },
+    {
+      "id": "c097",
+      "label": "Attention 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.39
+      }
+    },
+    {
+      "id": "c098",
+      "label": "Emotion 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.35
+      }
+    },
+    {
+      "id": "c099",
+      "label": "Planning 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.32
+      }
+    },
+    {
+      "id": "c100",
+      "label": "Motor Control 3",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.28
+      }
+    },
+    {
+      "id": "c101",
+      "label": "Spatial Awareness 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.25
+      }
+    },
+    {
+      "id": "c102",
+      "label": "Decision Making 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c103",
+      "label": "Learning 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.19
+      }
+    },
+    {
+      "id": "c104",
+      "label": "Reasoning 3",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c105",
+      "label": "Perception 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c106",
+      "label": "Consciousness 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c107",
+      "label": "Creativity 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c108",
+      "label": "Problem Solving 3",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c109",
+      "label": "Social Cognition 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c110",
+      "label": "Executive Function 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c111",
+      "label": "Working Memory 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c112",
+      "label": "Long-term Memory 3",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c113",
+      "label": "Sensory Processing 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c114",
+      "label": "Abstract Thinking 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c115",
+      "label": "Pattern Recognition 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c116",
+      "label": "Face Recognition 3",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c117",
+      "label": "Object Recognition 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.2
+      }
+    },
+    {
+      "id": "c118",
+      "label": "Auditory Processing 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c119",
+      "label": "Touch Sensation 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.25
+      }
+    },
+    {
+      "id": "c120",
+      "label": "Pain Processing 3",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.29
+      }
+    },
+    {
+      "id": "c121",
+      "label": "Temperature Sensing 3",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.32
+      }
+    },
+    {
+      "id": "c122",
+      "label": "Balance 3",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.36
+      }
+    },
+    {
+      "id": "c123",
+      "label": "Coordination 3",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.39
+      }
+    },
+    {
+      "id": "c124",
+      "label": "Cognition 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.43
+      }
+    },
+    {
+      "id": "c125",
+      "label": "Memory 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.47
+      }
+    },
+    {
+      "id": "c126",
+      "label": "Language 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.51
+      }
+    },
+    {
+      "id": "c127",
+      "label": "Vision 4",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.55
+      }
+    },
+    {
+      "id": "c128",
+      "label": "Attention 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.59
+      }
+    },
+    {
+      "id": "c129",
+      "label": "Emotion 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.63
+      }
+    },
+    {
+      "id": "c130",
+      "label": "Planning 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.67
+      }
+    },
+    {
+      "id": "c131",
+      "label": "Motor Control 4",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.7
+      }
+    },
+    {
+      "id": "c132",
+      "label": "Spatial Awareness 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.74
+      }
+    },
+    {
+      "id": "c133",
+      "label": "Decision Making 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.77
+      }
+    },
+    {
+      "id": "c134",
+      "label": "Learning 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.8
+      }
+    },
+    {
+      "id": "c135",
+      "label": "Reasoning 4",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c136",
+      "label": "Perception 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c137",
+      "label": "Consciousness 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c138",
+      "label": "Creativity 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c139",
+      "label": "Problem Solving 4",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c140",
+      "label": "Social Cognition 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c141",
+      "label": "Executive Function 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c142",
+      "label": "Working Memory 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c143",
+      "label": "Long-term Memory 4",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c144",
+      "label": "Sensory Processing 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c145",
+      "label": "Abstract Thinking 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c146",
+      "label": "Pattern Recognition 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c147",
+      "label": "Face Recognition 4",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c148",
+      "label": "Object Recognition 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c149",
+      "label": "Auditory Processing 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.79
+      }
+    },
+    {
+      "id": "c150",
+      "label": "Touch Sensation 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.76
+      }
+    },
+    {
+      "id": "c151",
+      "label": "Pain Processing 4",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.73
+      }
+    },
+    {
+      "id": "c152",
+      "label": "Temperature Sensing 4",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.69
+      }
+    },
+    {
+      "id": "c153",
+      "label": "Balance 4",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.66
+      }
+    },
+    {
+      "id": "c154",
+      "label": "Coordination 4",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.62
+      }
+    },
+    {
+      "id": "c155",
+      "label": "Cognition 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.58
+      }
+    },
+    {
+      "id": "c156",
+      "label": "Memory 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.54
+      }
+    },
+    {
+      "id": "c157",
+      "label": "Language 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.5
+      }
+    },
+    {
+      "id": "c158",
+      "label": "Vision 5",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.46
+      }
+    },
+    {
+      "id": "c159",
+      "label": "Attention 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.42
+      }
+    },
+    {
+      "id": "c160",
+      "label": "Emotion 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.38
+      }
+    },
+    {
+      "id": "c161",
+      "label": "Planning 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.35
+      }
+    },
+    {
+      "id": "c162",
+      "label": "Motor Control 5",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.31
+      }
+    },
+    {
+      "id": "c163",
+      "label": "Spatial Awareness 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.28
+      }
+    },
+    {
+      "id": "c164",
+      "label": "Decision Making 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.24
+      }
+    },
+    {
+      "id": "c165",
+      "label": "Learning 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c166",
+      "label": "Reasoning 5",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.19
+      }
+    },
+    {
+      "id": "c167",
+      "label": "Perception 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c168",
+      "label": "Consciousness 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.14
+      }
+    },
+    {
+      "id": "c169",
+      "label": "Creativity 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c170",
+      "label": "Problem Solving 5",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c171",
+      "label": "Social Cognition 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c172",
+      "label": "Executive Function 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c173",
+      "label": "Working Memory 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c174",
+      "label": "Long-term Memory 5",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c175",
+      "label": "Sensory Processing 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c176",
+      "label": "Abstract Thinking 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c177",
+      "label": "Pattern Recognition 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c178",
+      "label": "Face Recognition 5",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c179",
+      "label": "Object Recognition 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c180",
+      "label": "Auditory Processing 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.2
+      }
+    },
+    {
+      "id": "c181",
+      "label": "Touch Sensation 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.23
+      }
+    },
+    {
+      "id": "c182",
+      "label": "Pain Processing 5",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.26
+      }
+    },
+    {
+      "id": "c183",
+      "label": "Temperature Sensing 5",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.29
+      }
+    },
+    {
+      "id": "c184",
+      "label": "Balance 5",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.33
+      }
+    },
+    {
+      "id": "c185",
+      "label": "Coordination 5",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.36
+      }
+    },
+    {
+      "id": "c186",
+      "label": "Cognition 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.4
+      }
+    },
+    {
+      "id": "c187",
+      "label": "Memory 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.44
+      }
+    },
+    {
+      "id": "c188",
+      "label": "Language 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.48
+      }
+    },
+    {
+      "id": "c189",
+      "label": "Vision 6",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.52
+      }
+    },
+    {
+      "id": "c190",
+      "label": "Attention 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.56
+      }
+    },
+    {
+      "id": "c191",
+      "label": "Emotion 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.6
+      }
+    },
+    {
+      "id": "c192",
+      "label": "Planning 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.64
+      }
+    },
+    {
+      "id": "c193",
+      "label": "Motor Control 6",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.67
+      }
+    },
+    {
+      "id": "c194",
+      "label": "Spatial Awareness 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.71
+      }
+    },
+    {
+      "id": "c195",
+      "label": "Decision Making 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.74
+      }
+    },
+    {
+      "id": "c196",
+      "label": "Learning 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.77
+      }
+    },
+    {
+      "id": "c197",
+      "label": "Reasoning 6",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.8
+      }
+    },
+    {
+      "id": "c198",
+      "label": "Perception 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.83
+      }
+    },
+    {
+      "id": "c199",
+      "label": "Consciousness 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c200",
+      "label": "Creativity 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c201",
+      "label": "Problem Solving 6",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c202",
+      "label": "Social Cognition 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c203",
+      "label": "Executive Function 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c204",
+      "label": "Working Memory 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c205",
+      "label": "Long-term Memory 6",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c206",
+      "label": "Sensory Processing 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c207",
+      "label": "Abstract Thinking 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c208",
+      "label": "Pattern Recognition 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c209",
+      "label": "Face Recognition 6",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c210",
+      "label": "Object Recognition 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.83
+      }
+    },
+    {
+      "id": "c211",
+      "label": "Auditory Processing 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.81
+      }
+    },
+    {
+      "id": "c212",
+      "label": "Touch Sensation 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.78
+      }
+    },
+    {
+      "id": "c213",
+      "label": "Pain Processing 6",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.75
+      }
+    },
+    {
+      "id": "c214",
+      "label": "Temperature Sensing 6",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.72
+      }
+    },
+    {
+      "id": "c215",
+      "label": "Balance 6",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.69
+      }
+    },
+    {
+      "id": "c216",
+      "label": "Coordination 6",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.65
+      }
+    },
+    {
+      "id": "c217",
+      "label": "Cognition 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.61
+      }
+    },
+    {
+      "id": "c218",
+      "label": "Memory 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.58
+      }
+    },
+    {
+      "id": "c219",
+      "label": "Language 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.54
+      }
+    },
+    {
+      "id": "c220",
+      "label": "Vision 7",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.5
+      }
+    },
+    {
+      "id": "c221",
+      "label": "Attention 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.46
+      }
+    },
+    {
+      "id": "c222",
+      "label": "Emotion 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.42
+      }
+    },
+    {
+      "id": "c223",
+      "label": "Planning 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.38
+      }
+    },
+    {
+      "id": "c224",
+      "label": "Motor Control 7",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.34
+      }
+    },
+    {
+      "id": "c225",
+      "label": "Spatial Awareness 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.31
+      }
+    },
+    {
+      "id": "c226",
+      "label": "Decision Making 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.27
+      }
+    },
+    {
+      "id": "c227",
+      "label": "Learning 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.24
+      }
+    },
+    {
+      "id": "c228",
+      "label": "Reasoning 7",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.21
+      }
+    },
+    {
+      "id": "c229",
+      "label": "Perception 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.18
+      }
+    },
+    {
+      "id": "c230",
+      "label": "Consciousness 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.16
+      }
+    },
+    {
+      "id": "c231",
+      "label": "Creativity 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.14
+      }
+    },
+    {
+      "id": "c232",
+      "label": "Problem Solving 7",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c233",
+      "label": "Social Cognition 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c234",
+      "label": "Executive Function 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c235",
+      "label": "Working Memory 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c236",
+      "label": "Long-term Memory 7",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c237",
+      "label": "Sensory Processing 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c238",
+      "label": "Abstract Thinking 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c239",
+      "label": "Pattern Recognition 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c240",
+      "label": "Face Recognition 7",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.14
+      }
+    },
+    {
+      "id": "c241",
+      "label": "Object Recognition 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.16
+      }
+    },
+    {
+      "id": "c242",
+      "label": "Auditory Processing 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.18
+      }
+    },
+    {
+      "id": "c243",
+      "label": "Touch Sensation 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.2
+      }
+    },
+    {
+      "id": "c244",
+      "label": "Pain Processing 7",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.23
+      }
+    },
+    {
+      "id": "c245",
+      "label": "Temperature Sensing 7",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.26
+      }
+    },
+    {
+      "id": "c246",
+      "label": "Balance 7",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.3
+      }
+    },
+    {
+      "id": "c247",
+      "label": "Coordination 7",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.33
+      }
+    },
+    {
+      "id": "c248",
+      "label": "Cognition 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.37
+      }
+    },
+    {
+      "id": "c249",
+      "label": "Memory 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.41
+      }
+    },
+    {
+      "id": "c250",
+      "label": "Language 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.45
+      }
+    },
+    {
+      "id": "c251",
+      "label": "Vision 8",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.49
+      }
+    },
+    {
+      "id": "c252",
+      "label": "Attention 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.53
+      }
+    },
+    {
+      "id": "c253",
+      "label": "Emotion 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.57
+      }
+    },
+    {
+      "id": "c254",
+      "label": "Planning 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.61
+      }
+    },
+    {
+      "id": "c255",
+      "label": "Motor Control 8",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.64
+      }
+    },
+    {
+      "id": "c256",
+      "label": "Spatial Awareness 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.68
+      }
+    },
+    {
+      "id": "c257",
+      "label": "Decision Making 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.71
+      }
+    },
+    {
+      "id": "c258",
+      "label": "Learning 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.75
+      }
+    },
+    {
+      "id": "c259",
+      "label": "Reasoning 8",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.78
+      }
+    },
+    {
+      "id": "c260",
+      "label": "Perception 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.81
+      }
+    },
+    {
+      "id": "c261",
+      "label": "Consciousness 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.83
+      }
+    },
+    {
+      "id": "c262",
+      "label": "Creativity 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c263",
+      "label": "Problem Solving 8",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c264",
+      "label": "Social Cognition 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c265",
+      "label": "Executive Function 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c266",
+      "label": "Working Memory 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c267",
+      "label": "Long-term Memory 8",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c268",
+      "label": "Sensory Processing 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c269",
+      "label": "Abstract Thinking 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c270",
+      "label": "Pattern Recognition 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c271",
+      "label": "Face Recognition 8",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c272",
+      "label": "Object Recognition 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c273",
+      "label": "Auditory Processing 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.83
+      }
+    },
+    {
+      "id": "c274",
+      "label": "Touch Sensation 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.81
+      }
+    },
+    {
+      "id": "c275",
+      "label": "Pain Processing 8",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.78
+      }
+    },
+    {
+      "id": "c276",
+      "label": "Temperature Sensing 8",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.75
+      }
+    },
+    {
+      "id": "c277",
+      "label": "Balance 8",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.72
+      }
+    },
+    {
+      "id": "c278",
+      "label": "Coordination 8",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.68
+      }
+    },
+    {
+      "id": "c279",
+      "label": "Cognition 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.65
+      }
+    },
+    {
+      "id": "c280",
+      "label": "Memory 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.61
+      }
+    },
+    {
+      "id": "c281",
+      "label": "Language 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.57
+      }
+    },
+    {
+      "id": "c282",
+      "label": "Vision 9",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.53
+      }
+    },
+    {
+      "id": "c283",
+      "label": "Attention 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.49
+      }
+    },
+    {
+      "id": "c284",
+      "label": "Emotion 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.45
+      }
+    },
+    {
+      "id": "c285",
+      "label": "Planning 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.41
+      }
+    },
+    {
+      "id": "c286",
+      "label": "Motor Control 9",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.37
+      }
+    },
+    {
+      "id": "c287",
+      "label": "Spatial Awareness 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.33
+      }
+    },
+    {
+      "id": "c288",
+      "label": "Decision Making 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.3
+      }
+    },
+    {
+      "id": "c289",
+      "label": "Learning 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.27
+      }
+    },
+    {
+      "id": "c290",
+      "label": "Reasoning 9",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.23
+      }
+    },
+    {
+      "id": "c291",
+      "label": "Perception 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.21
+      }
+    },
+    {
+      "id": "c292",
+      "label": "Consciousness 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.18
+      }
+    },
+    {
+      "id": "c293",
+      "label": "Creativity 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.16
+      }
+    },
+    {
+      "id": "c294",
+      "label": "Problem Solving 9",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.14
+      }
+    },
+    {
+      "id": "c295",
+      "label": "Social Cognition 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c296",
+      "label": "Executive Function 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c297",
+      "label": "Working Memory 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c298",
+      "label": "Long-term Memory 9",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c299",
+      "label": "Sensory Processing 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c300",
+      "label": "Abstract Thinking 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c301",
+      "label": "Pattern Recognition 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c302",
+      "label": "Face Recognition 9",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c303",
+      "label": "Object Recognition 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.14
+      }
+    },
+    {
+      "id": "c304",
+      "label": "Auditory Processing 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.16
+      }
+    },
+    {
+      "id": "c305",
+      "label": "Touch Sensation 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.18
+      }
+    },
+    {
+      "id": "c306",
+      "label": "Pain Processing 9",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.21
+      }
+    },
+    {
+      "id": "c307",
+      "label": "Temperature Sensing 9",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.24
+      }
+    },
+    {
+      "id": "c308",
+      "label": "Balance 9",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.27
+      }
+    },
+    {
+      "id": "c309",
+      "label": "Coordination 9",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.3
+      }
+    },
+    {
+      "id": "c310",
+      "label": "Cognition 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.34
+      }
+    },
+    {
+      "id": "c311",
+      "label": "Memory 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.38
+      }
+    },
+    {
+      "id": "c312",
+      "label": "Language 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.41
+      }
+    },
+    {
+      "id": "c313",
+      "label": "Vision 10",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.45
+      }
+    },
+    {
+      "id": "c314",
+      "label": "Attention 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.49
+      }
+    },
+    {
+      "id": "c315",
+      "label": "Emotion 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.53
+      }
+    },
+    {
+      "id": "c316",
+      "label": "Planning 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.57
+      }
+    },
+    {
+      "id": "c317",
+      "label": "Motor Control 10",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.61
+      }
+    },
+    {
+      "id": "c318",
+      "label": "Spatial Awareness 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.65
+      }
+    },
+    {
+      "id": "c319",
+      "label": "Decision Making 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.69
+      }
+    },
+    {
+      "id": "c320",
+      "label": "Learning 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.72
+      }
+    },
+    {
+      "id": "c321",
+      "label": "Reasoning 10",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.75
+      }
+    },
+    {
+      "id": "c322",
+      "label": "Perception 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.78
+      }
+    },
+    {
+      "id": "c323",
+      "label": "Consciousness 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.81
+      }
+    },
+    {
+      "id": "c324",
+      "label": "Creativity 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.83
+      }
+    },
+    {
+      "id": "c325",
+      "label": "Problem Solving 10",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c326",
+      "label": "Social Cognition 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c327",
+      "label": "Executive Function 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c328",
+      "label": "Working Memory 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c329",
+      "label": "Long-term Memory 10",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c330",
+      "label": "Sensory Processing 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c331",
+      "label": "Abstract Thinking 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c332",
+      "label": "Pattern Recognition 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c333",
+      "label": "Face Recognition 10",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c334",
+      "label": "Object Recognition 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c335",
+      "label": "Auditory Processing 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c336",
+      "label": "Touch Sensation 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.83
+      }
+    },
+    {
+      "id": "c337",
+      "label": "Pain Processing 10",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.8
+      }
+    },
+    {
+      "id": "c338",
+      "label": "Temperature Sensing 10",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.77
+      }
+    },
+    {
+      "id": "c339",
+      "label": "Balance 10",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.74
+      }
+    },
+    {
+      "id": "c340",
+      "label": "Coordination 10",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.71
+      }
+    },
+    {
+      "id": "c341",
+      "label": "Cognition 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.68
+      }
+    },
+    {
+      "id": "c342",
+      "label": "Memory 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.64
+      }
+    },
+    {
+      "id": "c343",
+      "label": "Language 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.6
+      }
+    },
+    {
+      "id": "c344",
+      "label": "Vision 11",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.56
+      }
+    },
+    {
+      "id": "c345",
+      "label": "Attention 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.52
+      }
+    },
+    {
+      "id": "c346",
+      "label": "Emotion 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.48
+      }
+    },
+    {
+      "id": "c347",
+      "label": "Planning 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.44
+      }
+    },
+    {
+      "id": "c348",
+      "label": "Motor Control 11",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.4
+      }
+    },
+    {
+      "id": "c349",
+      "label": "Spatial Awareness 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.37
+      }
+    },
+    {
+      "id": "c350",
+      "label": "Decision Making 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.33
+      }
+    },
+    {
+      "id": "c351",
+      "label": "Learning 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.29
+      }
+    },
+    {
+      "id": "c352",
+      "label": "Reasoning 11",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.26
+      }
+    },
+    {
+      "id": "c353",
+      "label": "Perception 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.23
+      }
+    },
+    {
+      "id": "c354",
+      "label": "Consciousness 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.2
+      }
+    },
+    {
+      "id": "c355",
+      "label": "Creativity 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.18
+      }
+    },
+    {
+      "id": "c356",
+      "label": "Problem Solving 11",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c357",
+      "label": "Social Cognition 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.14
+      }
+    },
+    {
+      "id": "c358",
+      "label": "Executive Function 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c359",
+      "label": "Working Memory 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c360",
+      "label": "Long-term Memory 11",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c361",
+      "label": "Sensory Processing 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c362",
+      "label": "Abstract Thinking 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c363",
+      "label": "Pattern Recognition 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c364",
+      "label": "Face Recognition 11",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c365",
+      "label": "Object Recognition 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c366",
+      "label": "Auditory Processing 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.14
+      }
+    },
+    {
+      "id": "c367",
+      "label": "Touch Sensation 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.16
+      }
+    },
+    {
+      "id": "c368",
+      "label": "Pain Processing 11",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.19
+      }
+    },
+    {
+      "id": "c369",
+      "label": "Temperature Sensing 11",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.21
+      }
+    },
+    {
+      "id": "c370",
+      "label": "Balance 11",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.24
+      }
+    },
+    {
+      "id": "c371",
+      "label": "Coordination 11",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.27
+      }
+    },
+    {
+      "id": "c372",
+      "label": "Cognition 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.31
+      }
+    },
+    {
+      "id": "c373",
+      "label": "Memory 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.34
+      }
+    },
+    {
+      "id": "c374",
+      "label": "Language 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.38
+      }
+    },
+    {
+      "id": "c375",
+      "label": "Vision 12",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.42
+      }
+    },
+    {
+      "id": "c376",
+      "label": "Attention 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.46
+      }
+    },
+    {
+      "id": "c377",
+      "label": "Emotion 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.5
+      }
+    },
+    {
+      "id": "c378",
+      "label": "Planning 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.54
+      }
+    },
+    {
+      "id": "c379",
+      "label": "Motor Control 12",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.58
+      }
+    },
+    {
+      "id": "c380",
+      "label": "Spatial Awareness 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.62
+      }
+    },
+    {
+      "id": "c381",
+      "label": "Decision Making 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.66
+      }
+    },
+    {
+      "id": "c382",
+      "label": "Learning 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.69
+      }
+    },
+    {
+      "id": "c383",
+      "label": "Reasoning 12",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.73
+      }
+    },
+    {
+      "id": "c384",
+      "label": "Perception 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.76
+      }
+    },
+    {
+      "id": "c385",
+      "label": "Consciousness 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.79
+      }
+    },
+    {
+      "id": "c386",
+      "label": "Creativity 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.81
+      }
+    },
+    {
+      "id": "c387",
+      "label": "Problem Solving 12",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c388",
+      "label": "Social Cognition 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c389",
+      "label": "Executive Function 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.87
+      }
+    },
+    {
+      "id": "c390",
+      "label": "Working Memory 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c391",
+      "label": "Long-term Memory 12",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c392",
+      "label": "Sensory Processing 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c393",
+      "label": "Abstract Thinking 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c394",
+      "label": "Pattern Recognition 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c395",
+      "label": "Face Recognition 12",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c396",
+      "label": "Object Recognition 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c397",
+      "label": "Auditory Processing 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c398",
+      "label": "Touch Sensation 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.85
+      }
+    },
+    {
+      "id": "c399",
+      "label": "Pain Processing 12",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c400",
+      "label": "Temperature Sensing 12",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.8
+      }
+    },
+    {
+      "id": "c401",
+      "label": "Balance 12",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.77
+      }
+    },
+    {
+      "id": "c402",
+      "label": "Coordination 12",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.74
+      }
+    },
+    {
+      "id": "c403",
+      "label": "Cognition 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.71
+      }
+    },
+    {
+      "id": "c404",
+      "label": "Memory 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.67
+      }
+    },
+    {
+      "id": "c405",
+      "label": "Language 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.63
+      }
+    },
+    {
+      "id": "c406",
+      "label": "Vision 13",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.6
+      }
+    },
+    {
+      "id": "c407",
+      "label": "Attention 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.56
+      }
+    },
+    {
+      "id": "c408",
+      "label": "Emotion 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.52
+      }
+    },
+    {
+      "id": "c409",
+      "label": "Planning 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.48
+      }
+    },
+    {
+      "id": "c410",
+      "label": "Motor Control 13",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.44
+      }
+    },
+    {
+      "id": "c411",
+      "label": "Spatial Awareness 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.4
+      }
+    },
+    {
+      "id": "c412",
+      "label": "Decision Making 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.36
+      }
+    },
+    {
+      "id": "c413",
+      "label": "Learning 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.32
+      }
+    },
+    {
+      "id": "c414",
+      "label": "Reasoning 13",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.29
+      }
+    },
+    {
+      "id": "c415",
+      "label": "Perception 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.25
+      }
+    },
+    {
+      "id": "c416",
+      "label": "Consciousness 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c417",
+      "label": "Creativity 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.2
+      }
+    },
+    {
+      "id": "c418",
+      "label": "Problem Solving 13",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c419",
+      "label": "Social Cognition 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c420",
+      "label": "Executive Function 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c421",
+      "label": "Working Memory 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c422",
+      "label": "Long-term Memory 13",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c423",
+      "label": "Sensory Processing 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c424",
+      "label": "Abstract Thinking 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c425",
+      "label": "Pattern Recognition 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c426",
+      "label": "Face Recognition 13",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c427",
+      "label": "Object Recognition 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c428",
+      "label": "Auditory Processing 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c429",
+      "label": "Touch Sensation 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c430",
+      "label": "Pain Processing 13",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c431",
+      "label": "Temperature Sensing 13",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.19
+      }
+    },
+    {
+      "id": "c432",
+      "label": "Balance 13",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c433",
+      "label": "Coordination 13",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.25
+      }
+    },
+    {
+      "id": "c434",
+      "label": "Cognition 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.28
+      }
+    },
+    {
+      "id": "c435",
+      "label": "Memory 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.31
+      }
+    },
+    {
+      "id": "c436",
+      "label": "Language 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.35
+      }
+    },
+    {
+      "id": "c437",
+      "label": "Vision 14",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.39
+      }
+    },
+    {
+      "id": "c438",
+      "label": "Attention 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.43
+      }
+    },
+    {
+      "id": "c439",
+      "label": "Emotion 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.47
+      }
+    },
+    {
+      "id": "c440",
+      "label": "Planning 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.51
+      }
+    },
+    {
+      "id": "c441",
+      "label": "Motor Control 14",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.55
+      }
+    },
+    {
+      "id": "c442",
+      "label": "Spatial Awareness 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.59
+      }
+    },
+    {
+      "id": "c443",
+      "label": "Decision Making 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.62
+      }
+    },
+    {
+      "id": "c444",
+      "label": "Learning 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.66
+      }
+    },
+    {
+      "id": "c445",
+      "label": "Reasoning 14",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.7
+      }
+    },
+    {
+      "id": "c446",
+      "label": "Perception 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.73
+      }
+    },
+    {
+      "id": "c447",
+      "label": "Consciousness 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.76
+      }
+    },
+    {
+      "id": "c448",
+      "label": "Creativity 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.79
+      }
+    },
+    {
+      "id": "c449",
+      "label": "Problem Solving 14",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c450",
+      "label": "Social Cognition 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c451",
+      "label": "Executive Function 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c452",
+      "label": "Working Memory 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c453",
+      "label": "Long-term Memory 14",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c454",
+      "label": "Sensory Processing 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c455",
+      "label": "Abstract Thinking 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c456",
+      "label": "Pattern Recognition 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c457",
+      "label": "Face Recognition 14",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.9
+      }
+    },
+    {
+      "id": "c458",
+      "label": "Object Recognition 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.89
+      }
+    },
+    {
+      "id": "c459",
+      "label": "Auditory Processing 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.88
+      }
+    },
+    {
+      "id": "c460",
+      "label": "Touch Sensation 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.86
+      }
+    },
+    {
+      "id": "c461",
+      "label": "Pain Processing 14",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.84
+      }
+    },
+    {
+      "id": "c462",
+      "label": "Temperature Sensing 14",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.82
+      }
+    },
+    {
+      "id": "c463",
+      "label": "Balance 14",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.79
+      }
+    },
+    {
+      "id": "c464",
+      "label": "Coordination 14",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.76
+      }
+    },
+    {
+      "id": "c465",
+      "label": "Cognition 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.73
+      }
+    },
+    {
+      "id": "c466",
+      "label": "Memory 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.7
+      }
+    },
+    {
+      "id": "c467",
+      "label": "Language 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.66
+      }
+    },
+    {
+      "id": "c468",
+      "label": "Vision 15",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.63
+      }
+    },
+    {
+      "id": "c469",
+      "label": "Attention 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.59
+      }
+    },
+    {
+      "id": "c470",
+      "label": "Emotion 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.55
+      }
+    },
+    {
+      "id": "c471",
+      "label": "Planning 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.51
+      }
+    },
+    {
+      "id": "c472",
+      "label": "Motor Control 15",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.47
+      }
+    },
+    {
+      "id": "c473",
+      "label": "Spatial Awareness 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.43
+      }
+    },
+    {
+      "id": "c474",
+      "label": "Decision Making 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.39
+      }
+    },
+    {
+      "id": "c475",
+      "label": "Learning 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.35
+      }
+    },
+    {
+      "id": "c476",
+      "label": "Reasoning 15",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.32
+      }
+    },
+    {
+      "id": "c477",
+      "label": "Perception 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.28
+      }
+    },
+    {
+      "id": "c478",
+      "label": "Consciousness 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.25
+      }
+    },
+    {
+      "id": "c479",
+      "label": "Creativity 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c480",
+      "label": "Problem Solving 15",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.19
+      }
+    },
+    {
+      "id": "c481",
+      "label": "Social Cognition 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c482",
+      "label": "Executive Function 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c483",
+      "label": "Working Memory 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c484",
+      "label": "Long-term Memory 15",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c485",
+      "label": "Sensory Processing 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c486",
+      "label": "Abstract Thinking 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c487",
+      "label": "Pattern Recognition 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c488",
+      "label": "Face Recognition 15",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.1
+      }
+    },
+    {
+      "id": "c489",
+      "label": "Object Recognition 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.11
+      }
+    },
+    {
+      "id": "c490",
+      "label": "Auditory Processing 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.12
+      }
+    },
+    {
+      "id": "c491",
+      "label": "Touch Sensation 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.13
+      }
+    },
+    {
+      "id": "c492",
+      "label": "Pain Processing 15",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.15
+      }
+    },
+    {
+      "id": "c493",
+      "label": "Temperature Sensing 15",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.17
+      }
+    },
+    {
+      "id": "c494",
+      "label": "Balance 15",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.2
+      }
+    },
+    {
+      "id": "c495",
+      "label": "Coordination 15",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.22
+      }
+    },
+    {
+      "id": "c496",
+      "label": "Cognition 16",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.25
+      }
+    },
+    {
+      "id": "c497",
+      "label": "Memory 16",
+      "group": "parietal",
+      "properties": {
+        "weight": 0.29
+      }
+    },
+    {
+      "id": "c498",
+      "label": "Language 16",
+      "group": "temporal",
+      "properties": {
+        "weight": 0.32
+      }
+    },
+    {
+      "id": "c499",
+      "label": "Vision 16",
+      "group": "occipital",
+      "properties": {
+        "weight": 0.36
+      }
+    },
+    {
+      "id": "c500",
+      "label": "Attention 16",
+      "group": "frontal",
+      "properties": {
+        "weight": 0.4
+      }
+    }
+  ]
+}

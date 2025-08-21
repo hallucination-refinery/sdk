@@ -15,7 +15,7 @@ import {
 } from './VertexMapper'
 
 // Import test fixtures
-import concepts100 from '../fixtures/concepts-100.json'
+import concepts500 from '../fixtures/concepts-500.json'
 
 export interface BrainIntegrationTestProps {
   /** Whether to show performance overlay */
@@ -107,7 +107,7 @@ export function BrainIntegrationTest({
   // Step 2: Load 100 concepts fixture
   useEffect(() => {
     try {
-      const concepts = concepts100.concepts as Node[]
+      const concepts = concepts500.concepts as Node[]
       if (debug) {
         console.log(`[Integration Test] Concepts loaded: ${concepts.length} concepts`)
       }

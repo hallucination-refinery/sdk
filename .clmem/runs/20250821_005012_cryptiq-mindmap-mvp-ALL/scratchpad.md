@@ -136,6 +136,29 @@ Time: 00:52:40 UTC
 
 ---
 
+## Session 5 Results
+Status: ✅ COMPLETED
+Time: 00:54:00 UTC
+
+### Actions Taken:
+- Verified deterministic mapping using djb2Hash function
+- Generated 500-concept fixture file
+- Updated BrainIntegrationTest to use 500 concepts
+- Confirmed collision handling with linear probing/spiral search
+- Verified position reproducibility across reloads
+
+### Gates:
+✅ 500 nodes mapped deterministically
+✅ Hash-based vertex selection
+✅ Collision resolution implemented
+✅ Stable indices between runs
+
+### Artifacts:
+- .clmem/artifacts/w02/session5/distribution-stats.json
+- packages/canvas-r3f/fixtures/concepts-500.json
+
+---
+
 ## Plan
 
 ### Goal
