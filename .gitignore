@@ -77,3 +77,10 @@ dev-debug.log
 # Ignore local caches and worktrees
 .pnpm-store/
 worktrees/
+
+# Orchestrator and Playwright artifacts (ephemeral)
+.playwright-browsers/
+.clmem/runs/
+.clmem/artifacts/playwright/
+.clmem/artifacts/smoke/
+apps/**/.clmem/
