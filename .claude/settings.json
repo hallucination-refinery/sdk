@@ -32,6 +32,10 @@
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post_bash_artifacts.py",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "pnpm -w -s format || npm run -s format || true"
           }
         ]
       }
@@ -47,10 +51,7 @@
         ]
       }
     ]
-  }
-}
-
-{
+  },
   "allowedTools": [
     "Edit",
     "Bash(ls:*)",
@@ -90,8 +91,5 @@
       "WebSearch",
       "Bash(curl:*)"
     ]
-  },
-  "hooks": {
-    "PostToolUse": { "Bash": "pnpm -w -s format || npm run -s format || true" }
   }
 }
