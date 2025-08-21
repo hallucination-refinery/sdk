@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stats } from '@react-three/drei'
 import * as THREE from 'three'
@@ -467,13 +467,15 @@ export function BrainIntegrationTest({
         <directionalLight position={[10, 10, 5]} intensity={0.8} />
 
         {/* Session 2: Brain Mesh with Session 1 BrainUVs.obj */}
-        <BrainMesh
-          modelPath="/models/brain.obj"
-          wireframeColor="#00aaff"
-          opacity={0.9}
-          onVerticesLoaded={handleVerticesLoaded}
-          visible={true}
-        />
+        <Suspense fallback={null}>
+          <BrainMesh
+            modelPath="/models/brain.obj"
+            wireframeColor="#00aaff"
+            opacity={0.9}
+            onVerticesLoaded={handleVerticesLoaded}
+            visible={true}
+          />
+        </Suspense>
 
         {/* Session 7: Concept Particles with Session 3-6 vertex mapping */}
         {state.brainVertices.length > 0 && state.loadedConcepts.length > 0 && (
