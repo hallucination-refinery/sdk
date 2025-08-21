@@ -42,7 +42,7 @@ function BrainMeshGeometry({
   onLoadingChange,
   onLoadStart,
   onLoadComplete,
-  onLoadError,
+  onLoadError: _onLoadError,
 }: Pick<
   BrainMeshProps,
   | 'modelPath'

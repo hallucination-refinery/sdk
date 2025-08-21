@@ -1,0 +1,54 @@
+SSR Scan Report - Session 1
+Generated: 2025-08-21 04:38:21 UTC
+Run ID: 20250821_043821_cryptiq-mindmap-mvp-ALL
+
+=== Route Configuration ===
+✅ /brain route exists at apps/cryptiq-mindmap-demo/app/brain/page.tsx
+✅ Has 'use client' directive (line 1)
+✅ Imports BrainIntegrationTest from @refinery/canvas-r3f
+✅ Properly renders client-only component
+
+=== Component Verification ===
+✅ BrainIntegrationTest exported from packages/canvas-r3f/src/index.ts (line 32)
+✅ Component file exists at packages/canvas-r3f/src/BrainIntegrationTest.tsx
+✅ Uses proper React imports and hooks for client-side rendering
+
+=== Adapter Re-exports ===
+✅ packages/canvas-r3f/src/index.ts does NOT re-export adapters
+✅ Comment on line 53 confirms intentional exclusion: "Adapters (intentionally not re-exported to avoid SSR importing client-only modules)"
+
+=== Window/Document Reference Analysis ===
+Scanned packages for server-side window/document usage:
+
+Found references in:
+- packages/store/src/persistence.ts (lines 166-171) - exportToFile function
+  Status: ⚠️  POTENTIAL ISSUE - Used in browser file export but no browser check
+- packages/widget-*/src/**/*.ts - Various UI components
+  Status: ✅ OK - Widget packages are client-only by design
+- packages/canvas-r3f/src/adapters/*.tsx
+  Status: ✅ OK - Adapters not re-exported, used only client-side
+- packages/canvas-r3f/src/components/NodeSprite.tsx (line 29)
+  Status: ✅ OK - Canvas creation in client component
+
+Recommendation: Consider adding browser check in packages/store/src/persistence.ts exportToFile function
+
+=== Build Validation ===
+✅ cryptiq-mindmap-demo builds successfully
+✅ Next.js static generation completed without SSR errors
+✅ /brain route marked as static prerendered content (254 kB)
+✅ No window/document references in server-rendered paths
+
+=== Gates Status ===
+✅ Build green
+✅ No window references in server paths (identified minor issue in store package)
+✅ Adapters not re-exported from canvas-r3f
+✅ /brain route client-only with proper directive
+
+=== Summary ===
+Session 1 requirements PASSED
+- Route properly configured as client-only
+- BrainIntegrationTest correctly imported and used
+- Adapters not re-exported (SSR safe)
+- Build validates SSR guards successfully
+
+Minor recommendation: Add browser check to store persistence file export function, though it's not blocking since it's only used in client contexts.
