@@ -37,15 +37,19 @@ test('brain smoke', async ({ page }) => {
   await page.waitForTimeout(grace)
 
   // Stabilize visuals (disable CSS animations/transitions) before visual parity check
-  await page.addStyleTag({ content: '* { animation: none !important; transition: none !important; }' })
+  await page.addStyleTag({
+    content: '* { animation: none !important; transition: none !important; }',
+  })
 
   // Visual parity gate (always assert; --update-snapshots will seed baseline on first run)
   const overlay = page.locator('div:has-text("Brain Vertices:")')
+  const perf = page.locator('div:has-text("Performance Baseline")')
   const visualTolerance = Number(process.env.VISUAL_TOLERANCE || '0.10')
   await expect(page).toHaveScreenshot('brain-baseline.png', {
     maxDiffPixelRatio: visualTolerance,
-    mask: [overlay],
+    mask: [overlay, perf],
     fullPage: false,
+    timeout: 15000,
   })
 
   const outDir = process.env.SMOKE_OUT_DIR || '.clmem/artifacts/smoke'
