@@ -341,14 +341,16 @@ export function BrainIntegrationTest({
       }
 
       // Report acceptance metrics to API endpoint
+      const firstFrameMs = Date.now() - testStartTime.current
       const metrics = {
         meshLoaded: testResults.brainMeshLoaded,
         vertexCount: state.brainVertices.length,
         particles: state.loadedConcepts.length,
         interactionsBound: testResults.interactionsTested,
-        firstFrameMs: Date.now() - testStartTime.current,
+        firstFrameMs,
         particlesRendered: testResults.particlesRendered,
         timestamp: new Date().toISOString(),
+        performanceTarget: firstFrameMs <= 2000, // ≤2s target validation
       }
 
       fetch('/api/brain-acceptance', {
@@ -423,21 +425,26 @@ export function BrainIntegrationTest({
         </div>
       </div>
 
-      {/* Performance Monitoring - Session 11 integration */}
+      {/* Performance Monitoring - Session 6 integration */}
       {showPerformance && (
         <div
           style={{
             position: 'absolute',
             top: '10px',
             right: '10px',
-            background: 'rgba(0,0,0,0.8)',
+            background: state.testResults.acceptancePassed 
+              ? (Date.now() - testStartTime.current <= 2000 ? 'rgba(0,128,0,0.8)' : 'rgba(255,140,0,0.8)')
+              : 'rgba(0,0,0,0.8)',
             color: 'white',
-            padding: '5px',
+            padding: '8px',
             borderRadius: '3px',
-            fontSize: '10px',
+            fontSize: '11px',
+            fontFamily: 'monospace',
           }}
         >
-          Performance: Session 11 BrainPerformanceBaseline integration ready
+          <div>Performance Baseline</div>
+          <div>First Frame: {((Date.now() - testStartTime.current) / 1000).toFixed(2)}s</div>
+          <div>Target: ≤2.0s {Date.now() - testStartTime.current <= 2000 ? '✅' : '⚠️'}</div>
         </div>
       )}
 

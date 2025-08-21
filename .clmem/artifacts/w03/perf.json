@@ -7,12 +7,37 @@
       "testStartTime.current tracks component mount time",
       "firstFrameMs calculated as Date.now() - testStartTime.current",
       "Performance target: ≤2000ms for first frame",
-      "Metrics posted to /api/brain-acceptance endpoint"
-    ]
+      "Metrics posted to /api/brain-acceptance endpoint",
+      "Real-time performance overlay with visual indicators",
+      "Color-coded performance status (green=pass, orange=exceed)",
+      "Target validation included in acceptance metrics"
+    ],
+    "overlay": {
+      "location": "Top-right corner of canvas",
+      "displays": [
+        "Performance Baseline title",
+        "Real-time First Frame timing",
+        "Target validation (≤2.0s with ✅/⚠️ indicators)",
+        "Color-coded background based on performance"
+      ]
+    },
+    "measurement_points": {
+      "start": "Component mount (testStartTime ref initialization)",
+      "end": "All acceptance criteria passed (acceptancePassed state)",
+      "calculation": "Date.now() - testStartTime.current"
+    }
   },
   "gates": {
     "firstFrameTarget": 2000,
+    "unit": "milliseconds",
     "measurement": "browser-derived via Date.now()",
-    "reporting": "POST to acceptance endpoint"
-  }
+    "reporting": "POST to acceptance endpoint with performanceTarget boolean",
+    "validation": "≤2s target enforced in overlay and acceptance metrics"
+  },
+  "status": {
+    "implementation": "✅ COMPLETE",
+    "build": "✅ GREEN",
+    "hooks": "✅ ACTIVE"
+  },
+  "timestamp": "2025-08-21T06:43:00.000Z"
 }
