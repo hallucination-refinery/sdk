@@ -24,7 +24,13 @@ Behavior
   - For each batch in order: for each planned session (in parallel up to orchestrator limits), call the mapped sub‑agent with `{ run_id, run_dir, scratchpad_path, session_id, goals, acceptance, target_paths }`. Each sub‑agent must append a “Session <n>” entry to `scratchpad.md`, update `todos.json` if it creates tasks, and return a minimal changeset summary. Stay on the current working branch for the entire run.
 
 - Commits and gates
-  - After each session completes, make one atomic commit with message `workflow(session-<n>): <desc> [ok|needs-fix]`, then run validations (lint → test → build) via `validate-agent`; record pass/fail and timings in `metrics.json` and `acceptance.md`. Next, run `coverage-audit-agent` to capture coverage metrics and enforce thresholds if provided. On failure of any gate, stop the run, summarize in `scratchpad.md`, and exit non‑zero.
+  - After each session completes, make one atomic commit with message `workflow(session-<n>): <desc> [ok|needs-fix]`.
+  - Run validations via `validate-agent` (lint → test → build → smoke), passing the session start timestamp.
+  - Enforce per‑session checkpoint: do not proceed to the next session unless all of the following are true:
+    1) The commit for this session exists in `git log`.
+    2) `validate-agent` returned success.
+    3) Required artifacts for this session exist and are fresh (mtime ≥ session start), verified by `scripts/validate-artifacts.sh`.
+  - Record pass/fail and timings in `metrics.json` and `acceptance.md`. On failure of any gate or freshness check, stop the run, summarize in `scratchpad.md`, and exit non‑zero.
 
 - Meta pass and close‑out
   - When all batches pass, run `meta-agent` with `{ run_id, run_dir }` to produce a short `meta-report.md` (key timings, failure rates, reuse ideas); then write `{ end_time, totals }` into `metrics.json`, append a brief “Retrace” checklist to `scratchpad.md`, and perform a final commit with a single‑line summary referencing the run_id.

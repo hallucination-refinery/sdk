@@ -16,6 +16,8 @@ Protocol
 - Read `metrics.json`, `results.json`, `batches.json`, and `acceptance.md`; compute totals and bottlenecks.
 - Write `{run_dir}/meta-report.md` (≤1 screen: timings, failures, reuse opportunities).
 - Update `{run_dir}/metrics.json` with { end_time, totals }; append a “Retrace” checklist to `scratchpad.md`.
+- Cross-check `{run_dir}/session-manifest.json`: for each session ensure a matching git commit exists and all required artifacts exist with mtime ≥ session start.
+- Refuse to assign a Trust Index or PASS status if any session is missing its commit or required artifacts, or if any artifact is stale.
 
 Outputs
 

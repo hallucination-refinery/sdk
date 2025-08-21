@@ -23,3 +23,11 @@ Protocol
 Outputs
 
 - `{run_dir}/plan.md`, `{run_dir}/batches.json`, `{run_dir}/scratchpad.md` (appended), `{run_dir}/todos.json`, `{run_dir}/metrics.json` (seeded)
+
+Session manifest
+
+- Write `{run_dir}/session-manifest.json` listing each session id with required outputs:
+  - expected_commit_message_prefix
+  - required_artifacts[] (paths)
+  - requires_smoke (bool)
+  - requires_visual_parity (bool)

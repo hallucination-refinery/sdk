@@ -19,3 +19,5 @@ Notes
 
 - Requires pnpm to be available and internet access for the first install.
 - Subsequent runs are idempotent and fast due to cached browsers.
+- If `tests/brain.smoke.spec.ts` lacks a local baseline and `VISUAL_BASELINE_AUTO=1`, run:
+  `pnpm exec playwright test tests/brain.smoke.spec.ts --update-snapshots` to seed the baseline automatically.
