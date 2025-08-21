@@ -43,11 +43,12 @@ test('brain smoke', async ({ page }) => {
 
   // Hide small overlays so we don't mask the whole viewport by accident
   await page.evaluate(() => {
-    const findDiv = (text: string) => Array.from(document.querySelectorAll('div')).find(d => (d.textContent || '').includes(text));
-    const status = findDiv('Session 12: Integration Testing');
-    const perf = findDiv('Performance Baseline');
-    if (status) (status as HTMLElement).style.visibility = 'hidden';
-    if (perf) (perf as HTMLElement).style.visibility = 'hidden';
+    const findDiv = (text: string) =>
+      Array.from(document.querySelectorAll('div')).find((d) => (d.textContent || '').includes(text))
+    const status = findDiv('Session 12: Integration Testing')
+    const perf = findDiv('Performance Baseline')
+    if (status) (status as HTMLElement).style.visibility = 'hidden'
+    if (perf) (perf as HTMLElement).style.visibility = 'hidden'
   })
   // Visual parity gate (always assert; --update-snapshots will seed baseline on first run)
   const visualTolerance = Number(process.env.VISUAL_TOLERANCE || '0.10')
@@ -64,7 +65,8 @@ test('brain smoke', async ({ page }) => {
   await page.screenshot({ path: outPath, fullPage: false })
 
   const stat = fs.statSync(outPath)
-  expect(stat.size).toBeGreaterThan(10_000)
+  const minBytes = Number(process.env.MIN_SMOKE_BYTES || '10000')
+  expect(stat.size).toBeGreaterThan(minBytes)
 
   const failOnConsole = (process.env.FAIL_ON_CONSOLE_ERRORS || 'true') === 'true'
   if (failOnConsole) {
