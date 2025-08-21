@@ -28,7 +28,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
+  webServer: process.env.CI || process.env.BASE_URL ? undefined : {
     command: 'pnpm -C apps/cryptiq-mindmap-demo dev -p 3000',
     url: `${BASE_URL}${SMOKE_ROUTE}`,
     timeout: 120_000,
