@@ -26,13 +26,19 @@ case "$CMD" in
     require_state
     # Build and start production server on a free port
     PORT=$(pick_port)
-    (cd apps/cryptiq-mindmap-demo && pnpm build > "$run_dir/server.log" 2>&1)
+    mkdir -p "$run_dir"
+    pnpm --filter cryptiq-mindmap-demo build >> "$run_dir/server.log" 2>&1 || true
     (PORT=$PORT pnpm --filter cryptiq-mindmap-demo start >> "$run_dir/server.log" 2>&1 & echo $! > "$run_dir/pid")
     PID=$(cat "$run_dir/pid")
     (
       flock -w 5 9 || { echo "lock timeout" >&2; exit 1; }
       jq --argjson port $PORT --argjson pid $PID '.port=$port | .pid=$pid' "$run_dir/state.json" > "$run_dir/state.tmp" && mv "$run_dir/state.tmp" "$run_dir/state.json"
     ) 9>.clmem/locks/state.lock
+    # Wait for health
+    for i in $(seq 1 20); do
+      if curl -sf "http://localhost:$PORT/brain" >/dev/null; then echo "HEALTHY" >> "$run_dir/server.log"; break; fi
+      sleep 1
+    done
     echo "PORT=$PORT PID=$PID"
     ;;
   stop)
