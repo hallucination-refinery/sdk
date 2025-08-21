@@ -6,6 +6,8 @@ args:
   - session # e.g., 03 or ALL (to run all sessions sequentially)
 ---
 
+**ULTRATHINK MODE**
+
 Behavior
 
 - Run bootstrap

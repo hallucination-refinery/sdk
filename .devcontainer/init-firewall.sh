@@ -60,6 +60,11 @@ done < <(echo "$gh_ranges" | jq -r '((.web // []) + (.api // []) + (.git // []))
 for domain in \
     "registry.npmjs.org" \
     "api.github.com" \
+    "github.com" \
+    "codeload.github.com" \
+    "objects.githubusercontent.com" \
+    "raw.githubusercontent.com" \
+    "github-cloud.s3.amazonaws.com" \
     "api.anthropic.com" \
     "sentry.io" \
     "statsig.anthropic.com" \
