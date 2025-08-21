@@ -72,6 +72,7 @@ Each session includes: Goal • Edits/Targets • Commands • Gates • Artifac
 - Edits/Targets: `apps/cryptiq-mindmap-demo/app/brain/page.tsx` has `'use client'` and renders `BrainIntegrationTest`; `packages/canvas-r3f/src/index.ts` does not re‑export adapters.
 - Commands: `pnpm -r build`
 - Gates: build green; grep shows no `window` in server paths; adapters not re‑exported.
+- Validation scope: ["cryptiq-mindmap-demo", "canvas-r3f"]
 - Artifacts: `.clmem/artifacts/w03/ssr-scan.txt`
 - Commit: `workflow(session-1): route wiring & ssr guards [ok]`
 
@@ -144,6 +145,7 @@ Each session includes: Goal • Edits/Targets • Commands • Gates • Artifac
   - `bash scripts/smoke.sh`
   - First-time baseline: `pnpm exec playwright test tests/brain.smoke.spec.ts --update-snapshots`
 - Gates: 1 canvas visible; overlay shows Brain Vertices > 0; screenshot size > 10k; zero console errors; visual parity passes (≤10% diff) when baseline exists.
+- Validation scope: ["cryptiq-mindmap-demo", "canvas-r3f"]
 - Artifacts: `.clmem/artifacts/smoke/brain-*.png`; Playwright artifacts under `.clmem/artifacts/playwright/` (trace on fail).
 - Commit: `workflow(session-9): playwright smoke & baseline [ok]`
 

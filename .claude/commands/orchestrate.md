@@ -25,7 +25,7 @@ Behavior
 
 - Commits and gates
   - After each session completes, make one atomic commit with message `workflow(session-<n>): <desc> [ok|needs-fix]`.
-  - Run validations via `validate-agent` (lint → test → build → smoke), passing the session start timestamp.
+  - Run validations via `validate-agent` (lint → test → build → smoke), passing the session start timestamp and validation_scope from session-manifest.json if present.
   - Enforce per‑session checkpoint: do not proceed to the next session unless all of the following are true:
     1. The commit for this session exists in `git log`.
     2. `validate-agent` returned success.

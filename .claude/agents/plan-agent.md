@@ -31,3 +31,4 @@ Session manifest
   - required_artifacts[] (paths)
   - requires_smoke (bool)
   - requires_visual_parity (bool)
+  - validation_scope[] (optional: package names to validate, omit for monorepo-wide)

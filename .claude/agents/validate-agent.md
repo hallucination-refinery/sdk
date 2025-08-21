@@ -9,11 +9,14 @@ model: opus
 
 Inputs
 
-- run_id, run_dir, scratchpad_path, steps (ordered subset of: lint, test, build), session_start_epoch_ms
+- run_id, run_dir, scratchpad_path, steps (ordered subset of: lint, test, build), session_start_epoch_ms, scope (optional: array of package names to validate, defaults to all)
 
 Protocol
 
-- Run steps sequentially (e.g., `pnpm -r lint`, `pnpm -r test`, `pnpm -r build`), measure durations.
+- Run steps sequentially with scope filtering:
+  - If scope provided: use `pnpm --filter <package> lint/test/build` for each package in scope
+  - If no scope: use `pnpm -r lint`, `pnpm -r test`, `pnpm -r build` (monorepo-wide)
+  - Measure durations for each step
 - Then run a hard browser gate: `BASE_URL=http://localhost:3000 pnpm smoke:brain`.
 - After smoke, run freshness checks: `scripts/validate-artifacts.sh "$run_dir" "$session_start_epoch_ms"`.
 - Write `{run_dir}/results.json` with per-step { status, duration_ms, stderr_tail } and `artifact_fresh: true|false`.

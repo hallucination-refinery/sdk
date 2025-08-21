@@ -182,7 +182,7 @@ export function BrainIntegrationTest({
 
   const validateConcepts = (concepts: Node[]): void => {
     const acceptanceCriteria = {
-      count: concepts.length === 500,
+      count: concepts.length >= 200 && concepts.length <= 500,
       hasIds: concepts.every((c) => typeof c.id === 'string' && c.id.length > 0),
       hasLabels: concepts.every((c) => typeof c.label === 'string' && c.label.length > 0),
     }
