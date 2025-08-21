@@ -1,43 +1,41 @@
 {
   "session": 6,
-  "description": "Performance Baseline Hooks",
-  "implementation": {
-    "location": "/workspace/packages/canvas-r3f/src/BrainIntegrationTest.tsx",
-    "features": [
-      "testStartTime.current tracks component mount time",
-      "firstFrameMs calculated as Date.now() - testStartTime.current",
-      "Performance target: ≤2000ms for first frame",
-      "Metrics posted to /api/brain-acceptance endpoint",
-      "Real-time performance overlay with visual indicators",
-      "Color-coded performance status (green=pass, orange=exceed)",
-      "Target validation included in acceptance metrics"
-    ],
-    "overlay": {
-      "location": "Top-right corner of canvas",
-      "displays": [
-        "Performance Baseline title",
-        "Real-time First Frame timing",
-        "Target validation (≤2.0s with ✅/⚠️ indicators)",
-        "Color-coded background based on performance"
-      ]
-    },
-    "measurement_points": {
-      "start": "Component mount (testStartTime ref initialization)",
-      "end": "All acceptance criteria passed (acceptancePassed state)",
-      "calculation": "Date.now() - testStartTime.current"
-    }
+  "name": "Performance Baseline Hooks",
+  "timestamp": "2025-08-21T21:22:14Z",
+  "performance_hooks_implemented": {
+    "firstFrameMs_measurement": true,
+    "testStartTime_ref": true,
+    "overlay_displays_perf": true,
+    "target_2s_validation": true,
+    "browser_derived_metrics": true
   },
-  "gates": {
-    "firstFrameTarget": 2000,
-    "unit": "milliseconds",
-    "measurement": "browser-derived via Date.now()",
-    "reporting": "POST to acceptance endpoint with performanceTarget boolean",
-    "validation": "≤2s target enforced in overlay and acceptance metrics"
+  "implementation_details": {
+    "testStartTime_location": "BrainIntegrationTest.tsx:83",
+    "firstFrameMs_calculation": "Date.now() - testStartTime.current",
+    "performance_overlay_location": "BrainIntegrationTest.tsx:450-470",
+    "target_validation": "firstFrameMs <= 2000",
+    "acceptance_reporting": "POST /api/brain-acceptance with metrics"
   },
-  "status": {
-    "implementation": "✅ COMPLETE",
-    "build": "✅ GREEN",
-    "hooks": "✅ ACTIVE"
+  "metrics_captured": [
+    "meshLoaded",
+    "vertexCount", 
+    "particles",
+    "interactionsBound",
+    "firstFrameMs",
+    "particlesRendered",
+    "timestamp",
+    "performanceTarget"
+  ],
+  "acceptance_criteria": {
+    "firstFrameMs_target": "≤2000ms",
+    "display_in_overlay": true,
+    "browser_measurement": true,
+    "post_to_api": true
   },
-  "timestamp": "2025-08-21T06:43:00.000Z"
+  "notes": {
+    "measurement_approach": "Browser-derived timing from testStartTime ref",
+    "overlay_shows": "First Frame time and ≤2.0s target validation",
+    "api_endpoint": "/api/brain-acceptance posts metrics to acceptance.json",
+    "performance_validation": "Visual indicator (✅/⚠️) based on 2s target"
+  }
 }
