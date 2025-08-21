@@ -1,11 +1,35 @@
 {
   "start_time": "2025-08-21T00:50:12Z",
+  "end_time": "2025-08-21T00:57:00Z",
   "initiative": "cryptiq-mindmap-mvp",
   "session": "ALL",
   "run_id": "20250821_005012_cryptiq-mindmap-mvp-ALL",
   "workflow": "workflow-02",
   "total_sessions": 11,
-  "sessions_completed": 0,
-  "current_batch": null,
-  "status": "planned"
+  "sessions_completed": 11,
+  "sessions_passed": 11,
+  "sessions_failed": 0,
+  "total_runtime_seconds": 408,
+  "status": "completed",
+  "acceptance_passed": true,
+  "performance_metrics": {
+    "first_frame_ms": 1800,
+    "vertex_count": 39410,
+    "particles_rendered": 500,
+    "mesh_loaded": true,
+    "interactions_bound": true
+  },
+  "batches_executed": 8,
+  "parallelization_savings_estimated_seconds": 40,
+  "critical_path_sessions": ["session_0", "session_2", "session_5", "session_8", "session_9"],
+  "longest_session_seconds": 30,
+  "bottlenecks": ["surface_mapping", "server_launch", "acceptance_collection"],
+  "totals": {
+    "runtime_minutes": 6.8,
+    "success_rate_percent": 100,
+    "gates_passed": 33,
+    "gates_failed": 0,
+    "artifacts_created": 8,
+    "reusable_assets": 4
+  }
 }
