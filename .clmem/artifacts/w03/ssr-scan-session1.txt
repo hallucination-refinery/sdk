@@ -1,0 +1,32 @@
+SSR Guard Scan Results - Session 1
+============================================
+
+Scan Date: 2025-08-21
+Target: cryptiq-mindmap-demo route & SSR guards
+
+RESULTS:
+✅ PASS - No 'window' usage found in server-side paths:
+  - /workspace/apps/cryptiq-mindmap-demo/app (0 matches)
+  - /workspace/apps/cryptiq-mindmap-demo/app/api (0 matches)
+
+✅ PASS - Client-only routes properly marked:
+  - /brain route has 'use client' directive in page.tsx
+  - BrainIntegrationTest component properly rendered
+
+✅ PASS - Package exports safe for SSR:
+  - packages/canvas-r3f/src/index.ts explicitly does NOT re-export adapters
+  - Comment indicates intentional SSR safety: "Adapters (intentionally not re-exported to avoid SSR importing client-only modules)"
+
+✅ PASS - Build verification:
+  - cryptiq-mindmap-demo builds successfully
+  - /brain route marked as ○ (Static) in build output
+  - Route size: 254 kB (appropriate for 3D client application)
+
+WINDOW USAGE ANALYSIS:
+- All 'window' usage found in client-only contexts:
+  - Test setup files (vitest.setup.ts, test-setup.ts)
+  - React hooks with proper typeof window !== 'undefined' guards
+  - Client-side adapter tests and implementations
+  - Demo utilities with proper environment checks
+
+CONCLUSION: SSR guards are properly implemented. No server-side window access detected.
