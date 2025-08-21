@@ -468,7 +468,7 @@ export function BrainIntegrationTest({
 
         {/* Session 2: Brain Mesh with Session 1 BrainUVs.obj */}
         <BrainMesh
-          modelPath={process.env.NEXT_PUBLIC_BRAIN_MESH_URL || "/models/brain.obj"}
+          modelPath="/models/brain.obj"
           wireframeColor="#00aaff"
           opacity={0.9}
           onVerticesLoaded={handleVerticesLoaded}

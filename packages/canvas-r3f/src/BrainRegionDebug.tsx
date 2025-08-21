@@ -14,7 +14,7 @@ export interface BrainRegionDebugProps {
 }
 
 export function BrainRegionDebug({
-  modelPath = process.env.NEXT_PUBLIC_BRAIN_MESH_URL || '/models/brain.obj',
+  modelPath = '/models/brain.obj',
   showRegions = true,
   showWireframe = true,
   regionOpacity = 0.6,
