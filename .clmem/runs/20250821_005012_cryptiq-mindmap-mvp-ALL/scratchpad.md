@@ -223,6 +223,36 @@ Time: 00:57:00 UTC
 
 ---
 
+## Failed Predictions & Reflection (2025-08-21)
+
+### Predictions Made:
+1. **WRONG**: Predicted acceptance reporter would fire with particles=500
+2. **WRONG**: Predicted first frame time would exceed 2000ms in real browser
+3. **WRONG**: Predicted vertex count validation would pass but warn about performance
+4. **WRONG**: Predicted particles would render as black/dark gray, not colored
+5. **WRONG**: Predicted acceptance file would have incomplete interaction data
+
+### What This Reveals About My Uncertainty:
+
+**Overconfidence in Code Analysis**: I assumed the code changes (concepts500.json) were fully integrated and would behave as written. Reality: The system may still be using concepts-100.json, or the 500-concept fixture may not be properly loaded.
+
+**Misunderstood System State**: I treated the orchestrator run as if it reflected real browser behavior. The simulated acceptance metrics were not predictive of actual runtime behavior.
+
+**Failed to Account for Caching/State**: The server logs show multiple successful /brain requests (115ms, 184ms) suggesting the app is running fine with fast response times, contradicting my performance predictions.
+
+**Incorrect Assumptions About Visual Rendering**: My prediction about black particles was based on old context that may have already been fixed. The actual rendering state is unknown without visual verification.
+
+**Gap in Understanding Integration**: The acceptance reporter integration may work differently than I analyzed - perhaps it doesn't fire at all, fires multiple times, or sends different data than expected.
+
+### Key Lesson:
+Static code analysis without runtime verification creates false confidence. The gap between "what the code says" and "what actually happens" is larger than I estimated. Need to:
+1. Verify actual fixture being loaded
+2. Check real browser network tab for API calls  
+3. Understand why predictions failed so completely
+4. Recognize that orchestrator-only runs don't predict browser behavior
+
+---
+
 ## Retrace Checklist
 ✅ Run directory created with proper structure
 ✅ All 11 sessions executed successfully
