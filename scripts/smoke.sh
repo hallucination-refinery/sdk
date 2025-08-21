@@ -9,16 +9,21 @@ state="$run_dir/state.json"
 
 BASE_URL="http://localhost:$(jq -r '.port' "$state")"
 export BASE_URL
+export NEXT_PUBLIC_SCREENSHOT_MODE=1
 
 # Run the smoke test
 pnpm smoke:brain
 
-# Stamp the latest screenshot if exists
+# Stamp the latest screenshot if exists and record checkpoint
 png=$(ls -1t .clmem/artifacts/smoke/brain-*.png 2>/dev/null | head -1 || true)
 if [[ -n "${png:-}" ]]; then
   port=$(jq -r '.port' "$state")
-  "$CLAUDE_PROJECT_DIR/scripts/stamp-artifact.sh" "$run_dir" 9 "$port" "$png" || true
+  "$CLAUDE_PROJECT_DIR/scripts/stamp-artifact.sh" "$run_dir" 9 "$port" "$png"
 fi
+
+# Write checkpoint
+mkdir -p "$run_dir/checkpoints"
+echo '{"milestones":["started","smoke_passed","screenshot_stamped"]}' > "$run_dir/checkpoints/session-9.progress.json"
 
 echo "done"
 
