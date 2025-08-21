@@ -41,8 +41,10 @@ Constraints: Deterministic concept nodes anchored to brain‑surface vertices; a
 - Hooks: pre‑execution Playwright preflight; post‑session artifact collector; block merges on failed gates.
 - Bash scripts (recommended under `scripts/`):
   - `ensure-playwright.sh`: install to workspace cache; create symlink; echo versions.
-  - `collect-artifacts.sh`: copy smoke screenshot, curl HTML, server logs, and acceptance JSON into run artifacts.
-  - `port-pick.sh`: find free port; echo chosen port.
+  - `bootstrap-run.sh`: create `.clmem/current_run_id` and run `state.json` with timestamps.
+  - `server.sh`: start|stop|status with free port + PID discipline; writes to run `state.json` and `server.log`.
+  - `smoke.sh`: reads `state.json` BASE_URL, runs Playwright smoke, stamps screenshot sidecar.
+  - `stamp-artifact.sh`: deterministic artifact rename + sidecar (run_id/session/port/sha256/utc_created).
 - Artifact normalization: under `.clmem/runs/<run_id>/artifacts/` store `server.log`, `curl-brain.html`, `smoke.png` (symlink to latest), `trace.zip` (on fail), `acceptance.json` (browser‑derived only).
 - Trust Index (0–100): computed by `meta-agent` from presence/size of artifacts, smoke pass, clean server logs, and absence of "Simulated" markers. Runs <80 are “yellow”.
 
@@ -110,7 +112,7 @@ Each session includes: Goal • Edits/Targets • Commands • Gates • Artifac
 
 ### Session 6 — Performance Baseline Hooks (15–20m)
 
-- Goal: firstFrameMs measurement; overlay displays perf note; ≤2s target on dev.
+- Goal: firstFrameMs measurement; overlay displays perf note; ≤2s target on production (next start).
 - Edits/Targets: `BrainIntegrationTest` uses `testStartTime`; records `firstFrameMs` upon acceptance.
 - Gates: firstFrameMs ≤ 2000ms observed in smoke (reported in acceptance JSON).
 - Artifacts: `.clmem/artifacts/w03/perf.json`
@@ -128,10 +130,10 @@ Each session includes: Goal • Edits/Targets • Commands • Gates • Artifac
 
 - Goal: boot server; curl `/brain`; clean logs after first render.
 - Commands:
-  - `PORT=3000 pnpm --filter cryptiq-mindmap-demo dev > .clmem/artifacts/w03/server.log 2>&1 &`
-  - `sleep 3 && curl -sf http://localhost:3000/brain > .clmem/artifacts/w03/curl-brain.html`
-- Gates: HTTP 200; server logs show no "error" after first navigation.
-- Artifacts: `server.log`, `curl-brain.html`
+  - `bash scripts/server.sh start`
+  - `curl -sf "http://localhost:$(jq -r '.port' .clmem/runs/$(cat .clmem/current_run_id)/state.json)/brain" > .clmem/artifacts/w03/curl-brain.html`
+- Gates: HTTP 200; server logs show no "error" after first navigation; `state.json` records non-null `port` and `pid`.
+- Artifacts: run `server.log` (in run dir), `curl-brain.html`
 - Commit: `workflow(session-8): dev server & health [ok]`
 
 ### Session 9 — Playwright Smoke & Visual Baseline (20–30m)
@@ -139,7 +141,7 @@ Each session includes: Goal • Edits/Targets • Commands • Gates • Artifac
 - Goal: headless smoke proves canvas ready and overlays nonzero vertices; visual parity check against baseline for close aesthetic match.
 - Edits/Targets: ensure `tests/brain.smoke.spec.ts` includes `expect(page).toHaveScreenshot('brain-baseline.png', { maxDiffPixelRatio: ≤0.10, mask: [overlay] })` with animations disabled; config stable viewport and container flags.
 - Commands:
-  - `BASE_URL=http://localhost:3000 pnpm smoke:brain`
+  - `bash scripts/smoke.sh`
   - First-time baseline: `pnpm exec playwright test tests/brain.smoke.spec.ts --update-snapshots`
 - Gates: 1 canvas visible; overlay shows Brain Vertices > 0; screenshot size > 10k; zero console errors; visual parity passes (≤10% diff) when baseline exists.
 - Artifacts: `.clmem/artifacts/smoke/brain-*.png`; Playwright artifacts under `.clmem/artifacts/playwright/` (trace on fail).
