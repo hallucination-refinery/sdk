@@ -41,13 +41,18 @@ test('brain smoke', async ({ page }) => {
     content: '* { animation: none !important; transition: none !important; }',
   })
 
+  // Hide small overlays so we don't mask the whole viewport by accident
+  await page.evaluate(() => {
+    const findDiv = (text: string) => Array.from(document.querySelectorAll('div')).find(d => (d.textContent || '').includes(text));
+    const status = findDiv('Session 12: Integration Testing');
+    const perf = findDiv('Performance Baseline');
+    if (status) (status as HTMLElement).style.visibility = 'hidden';
+    if (perf) (perf as HTMLElement).style.visibility = 'hidden';
+  })
   // Visual parity gate (always assert; --update-snapshots will seed baseline on first run)
-  const overlay = page.locator('div:has-text("Brain Vertices:")')
-  const perf = page.locator('div:has-text("Performance Baseline")')
   const visualTolerance = Number(process.env.VISUAL_TOLERANCE || '0.10')
   await expect(page).toHaveScreenshot('brain-baseline.png', {
     maxDiffPixelRatio: visualTolerance,
-    mask: [overlay, perf],
     fullPage: false,
     timeout: 15000,
   })
