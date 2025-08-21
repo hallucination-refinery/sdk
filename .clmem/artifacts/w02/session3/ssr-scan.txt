@@ -1,0 +1,4 @@
+SSR Guard Check Results:
+- index.ts does not re-export adapters ✅
+- ForceGraph only exists in adapters/ directory (4 files)
+- Adapters are not exposed to server-side code ✅
