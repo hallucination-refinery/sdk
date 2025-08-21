@@ -14,7 +14,7 @@ require_state() {
 pick_port() {
   local base=3000
   for p in $(seq $base $((base+20))); do
-    if ! lsof -iTCP -sTCP:LISTEN -P | awk '{print $9}' | grep -q ":$p$"; then
+    if ! (bash -lc "</dev/tcp/127.0.0.1/$p") 2>/dev/null; then
       echo $p; return 0
     fi
   done
