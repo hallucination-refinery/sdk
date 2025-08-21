@@ -2,6 +2,7 @@
 name: meta-agent
 description: Summarize the run (timings, failures, reuse), recommend improvements, and close out metrics
 tools: Read, Write, Grep, LS
+model: opus
 ---
 
 # Meta Agent

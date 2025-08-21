@@ -2,6 +2,7 @@
 name: plan-agent
 description: Parse initiative spec for a session, produce sessions+DAG+parallel batches, and prime the run
 tools: Read, Write, Grep, Glob, LS
+model: opus
 ---
 
 # Plan Agent

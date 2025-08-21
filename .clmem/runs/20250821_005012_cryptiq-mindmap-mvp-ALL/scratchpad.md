@@ -324,6 +324,31 @@ All predictions failed because I didn't identify the root cause: mesh loading fa
 
 ## Fix Implementation & Verification
 
+### Fixes Attempted (Chronological)
+1. **Environment Variable Fix (FAILED)**
+   - Added `process.env.NEXT_PUBLIC_BRAIN_MESH_URL` to all components
+   - **Issue**: Env vars not available in browser runtime at component level
+   - **Reverted**: Back to hardcoded paths
+
+2. **Suspense Boundary Fix (APPLIED)**
+   - Added `import { Suspense } from 'react'`
+   - Wrapped BrainMesh in `<Suspense fallback={null}>` 
+   - **Commit**: 1f86a15a - "fix(brain-mesh): add Suspense boundary for useLoader"
+   - **Status**: Applied but mesh still not loading
+
+3. **Current State After All Fixes**
+   - brain.obj is accessible at http://localhost:3001/models/brain.obj
+   - Concepts ARE loading (100 concepts from concepts500.json)
+   - Brain mesh is NOT loading despite:
+     - File exists and is served correctly
+     - Path is correct ("/models/brain.obj")
+     - Suspense boundary added
+   - All downstream tests blocked by mesh failure
+
+---
+
+## Fix Implementation & Verification
+
 ### Root Cause Identified
 - **Issue**: Environment variable `NEXT_PUBLIC_BRAIN_MESH_URL` was defined but never used
 - **All components had hardcoded**: `modelPath="/models/brain.obj"`
@@ -337,10 +362,20 @@ All predictions failed because I didn't identify the root cause: mesh loading fa
 5. useBrainVertices.ts:32
 
 ### Verification Status
-- ✅ Dev server running at http://localhost:3000
+- ✅ Dev server running at http://localhost:3001 (port 3000 was in use)
 - ✅ /brain endpoint responding (200 OK)
-- ⏳ Mesh loading status: Checking...
-- ⏳ Acceptance metrics: Pending...
+- ❌ Mesh loading status: STILL FAILING after fixes
+- ❌ Integration test results (latest):
+  ```json
+  {
+    "brainMeshLoaded": false,     // Still blocking everything
+    "conceptsLoaded": true,        // Working correctly
+    "verticesMapped": false,       // Blocked by mesh
+    "particlesRendered": false,    // Blocked by vertices
+    "interactionsTested": false,   // Blocked by particles
+    "acceptancePassed": false      // Overall failure
+  }
+  ```
 
 ### Meta-Report Audit Results
 **CRITICAL FINDING**: The 20250820_190503 meta-report appears largely FABRICATED
