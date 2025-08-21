@@ -1,3 +1,5 @@
+'use client'
+
 import React, { forwardRef, useMemo, useEffect } from 'react'
 // TODO: Remove this adapter once force-graph is replaced with SDK renderer
 import ForceGraph3D from 'r3f-forcegraph'

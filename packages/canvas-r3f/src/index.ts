@@ -4,7 +4,13 @@ export const version = '0.0.0'
 // Components
 export { Canvas } from './Canvas'
 export { CanvasProvider, useCanvas } from './CanvasProvider'
-export { NodeSprite, BrainMesh, BrainMeshWithFallback, BrainRegionDebug, BrainRegionStats } from './components'
+export {
+  NodeSprite,
+  BrainMesh,
+  BrainMeshWithFallback,
+  BrainRegionDebug,
+  BrainRegionStats,
+} from './components'
 export { ConceptParticles } from './ConceptParticles'
 export type { ConceptParticlesProps } from './ConceptParticles'
 export type { NodeSpriteProps, BrainMeshProps, BrainRegionDebugProps } from './components'
@@ -22,14 +28,26 @@ export { PerfProbe } from './perf-probe'
 export { BrainPerformanceBaseline } from './BrainPerformanceBaseline'
 
 // Session 12: Integration Testing
-export { default as BrainIntegrationTest, BasicIntegrationTest, StressIntegrationTest, EdgeCaseIntegrationTest } from './BrainIntegrationTest'
+export {
+  default as BrainIntegrationTest,
+  BasicIntegrationTest,
+  StressIntegrationTest,
+  EdgeCaseIntegrationTest,
+} from './BrainIntegrationTest'
 export type { BrainIntegrationTestProps } from './BrainIntegrationTest'
 
 // Session 13: Demo & Documentation - Enhanced UI Components
 export { LoadingIndicator, LoadingText } from './LoadingIndicator'
-export { Canvas3DErrorBoundary, UIErrorBoundary, withErrorBoundary, useErrorHandler, BrainMeshLoadError, ConceptMappingError, PerformanceError } from './ErrorBoundary'
+export {
+  Canvas3DErrorBoundary,
+  UIErrorBoundary,
+  withErrorBoundary,
+  useErrorHandler,
+  BrainMeshLoadError,
+  ConceptMappingError,
+  PerformanceError,
+} from './ErrorBoundary'
 export type { LoadingIndicatorProps } from './LoadingIndicator'
 export type { ErrorBoundaryProps, ErrorBoundaryState } from './ErrorBoundary'
 
-// Adapters
-export * from './adapters'
+// Adapters (intentionally not re-exported to avoid SSR importing client-only modules)

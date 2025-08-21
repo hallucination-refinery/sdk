@@ -28,16 +28,22 @@ iptables -A OUTPUT -o lo -j ACCEPT
 ipset create allowed-domains hash:net
 
 # Fetch GitHub meta information and aggregate + add their IP ranges
-echo "Fetching GitHub IP ranges..."
-gh_ranges=$(curl -s https://api.github.com/meta)
-if [ -z "$gh_ranges" ]; then
-    echo "ERROR: Failed to fetch GitHub IP ranges"
-    exit 1
-fi
+if [ "${SKIP_GH_META:-0}" = "1" ] || [ -f /workspace/.devcontainer/SKIP_GH_META ]; then
+    echo "Skipping GitHub meta fetch (SKIP_GH_META=1)"
+    gh_ranges='{}'
+else
+    echo "Fetching GitHub IP ranges..."
+    # Use IPv4 and a short timeout to avoid hangs; continue on failure
+    gh_ranges=$(curl -4 -sS --connect-timeout 5 --max-time 10 https://api.github.com/meta || true)
+    if [ -z "$gh_ranges" ]; then
+        echo "WARN: Failed to fetch GitHub IP ranges, proceeding without CIDR allowlist"
+        gh_ranges='{}'
+    fi
 
-if ! echo "$gh_ranges" | jq -e '.web and .api and .git' >/dev/null; then
-    echo "ERROR: GitHub API response missing required fields"
-    exit 1
+    if ! echo "$gh_ranges" | jq -e '.web and .api and .git' >/dev/null 2>&1; then
+        echo "WARN: GitHub meta missing expected fields, skipping CIDR allowlist"
+        gh_ranges='{}'
+    fi
 fi
 
 echo "Processing GitHub IPs..."
@@ -48,15 +54,18 @@ while read -r cidr; do
     fi
     echo "Adding GitHub range $cidr"
     ipset add allowed-domains "$cidr"
-done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
+done < <(echo "$gh_ranges" | jq -r '((.web // []) + (.api // []) + (.git // []))[]' | aggregate -q)
 
 # Resolve and add other allowed domains
 for domain in \
     "registry.npmjs.org" \
+    "api.github.com" \
     "api.anthropic.com" \
     "sentry.io" \
     "statsig.anthropic.com" \
-    "statsig.com"; do
+    "statsig.com" \
+    "cdn.playwright.dev" \
+    "playwright.download.prss.microsoft.com"; do
     echo "Resolving $domain..."
     ips=$(dig +short A "$domain")
     if [ -z "$ips" ]; then

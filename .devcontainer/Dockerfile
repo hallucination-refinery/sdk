@@ -19,7 +19,33 @@ RUN apt update && apt install -y less \
   iproute2 \
   dnsutils \
   aggregate \
-  jq
+  jq \
+  ca-certificates \
+  wget \
+  # Playwright/Chromium runtime deps
+  libnspr4 \
+  libnss3 \
+  libdbus-1-3 \
+  libatk1.0-0 \
+  libatspi2.0-0 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxfixes3 \
+  libxrandr2 \
+  libgbm1 \
+  libxkbcommon0 \
+  libasound2 \
+  # Common extras for headless rendering stability
+  libxshmfence1 \
+  libx11-6 \
+  libxext6 \
+  libxrender1 \
+  libxi6 \
+  libxtst6 \
+  libpangocairo-1.0-0 \
+  libpango-1.0-0 \
+  libcairo2 \
+  fonts-liberation
 
 # Ensure default node user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
@@ -54,8 +80,8 @@ USER node
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
 ENV PATH=$PATH:/usr/local/share/npm-global/bin
 
-# Install pnpm
-RUN npm install -g pnpm@9.15.1
+# Install pnpm and Playwright test (browsers installed postCreate)
+RUN npm install -g pnpm@9.15.1 @playwright/test@1.55.0
 
 # Set the default shell to zsh rather than sh
 ENV SHELL=/bin/zsh
