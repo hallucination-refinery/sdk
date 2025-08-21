@@ -1,0 +1,106 @@
+# Orchestration Scratchpad
+## Run ID: 20250821_005012_cryptiq-mindmap-mvp-ALL
+## Initiative: cryptiq-mindmap-mvp
+## Session: ALL
+
+### Goals (from Workflow 02)
+- Deliver baseline brain visualization on `/brain` with deterministic concept particles and smooth camera controls
+- Execute fully by Orchestrator without Playwright
+- Visual verification via in-app acceptance reporter endpoint and server logs
+
+### Acceptance Bars
+- OBJ served at `/models/brain.obj` (HTTP 200)
+- Vertex count within 35-50k (else auto-swap to fallback asset)
+- Client emits acceptance: meshLoaded=true, vertexCount=[35k..50k], particles=500, interactionsBound=true
+- Server logs contain zero "error" level lines after first render
+- Response time from first navigation until acceptance report ≤2s
+
+### Unknowns/Assumptions
+- Brain mesh asset may need vertex count adjustment
+- SSR guards may need client-only directive enforcement
+- Acceptance reporter endpoint needs to be created
+
+---
+
+## Session 0 Results
+Status: ✅ COMPLETED
+Start: 00:51:20 UTC
+End: 00:51:45 UTC
+
+### Actions Taken:
+- Verified pnpm 9.15.1 already installed
+- Ran `pnpm install --frozen-lockfile` - dependencies up to date (2s)
+- Built @refinery/canvas-r3f package - succeeded with no TypeScript errors
+
+### Gates:
+✅ Dependencies installed
+✅ No TypeScript errors
+✅ Build succeeds
+
+### Artifacts:
+- .clmem/artifacts/w02/session0/install.log
+- .clmem/artifacts/w02/session0/build.log
+
+---
+
+## Plan
+
+### Goal
+Execute all 11 sessions (0-10) of Workflow 02 to deliver a baseline brain visualization with deterministic concept particles and smooth camera controls, using orchestrator-only execution without Playwright.
+
+### Acceptance Bars
+- All sessions complete successfully with green gates
+- Brain mesh loads in ≤2s with 35-50k vertices
+- 500 concept particles render deterministically on brain surface
+- Acceptance reporter writes green metrics to disk
+- Vendor demo remains isolated
+- Server logs contain no errors after first render
+
+### Unknowns
+- Current brain mesh vertex count - may require asset swap in Session 2
+- SSR import issues - may require client directive fixes in Session 3
+- Acceptance reporter implementation - new API endpoint needed in Session 6
+- Performance on current hardware - 2s load time target may need optimization
+
+### Execution Batches
+
+**Batch 1: Initial Setup** (Sequential)
+- Session 0: Sanity, Clean Install, Typecheck
+- Critical: Must complete before any other work
+
+**Batch 2: Parallel Verification** (Parallel after Batch 1)
+- Session 1: Route Wiring Confirmation
+- Session 2: Mesh Asset Check & Swap  
+- Session 3: SSR Guard & Adapter Isolation
+- Can run concurrently as they touch different components
+
+**Batch 3: Vendor Check** (Independent)
+- Session 7: Vendor Demo Isolation Check
+- Independent verification, can run anytime
+
+**Batch 4: Controls & Reporter** (Parallel after Sessions 1,3)
+- Session 4: Camera Controls & Limits
+- Session 6: Acceptance Reporter
+- Both need route confirmed but can run in parallel
+
+**Batch 5: Surface Mapping** (Sequential after Sessions 2,4)
+- Session 5: Deterministic Surface Mapping
+- Requires mesh asset verified and camera controls ready
+
+**Batch 6: Server Launch** (Sequential after all components)
+- Session 8: Dev Server Launch & Health
+- Must wait for all components (Sessions 1-7) to be ready
+
+**Batch 7: Acceptance Collection** (Sequential after Session 8)
+- Session 9: Acceptance Collection & Packaging
+- Requires server running and reporter endpoint ready
+
+**Batch 8: Documentation** (Sequential after Session 9)
+- Session 10: Documentation & Next-Step Gates
+- Final cleanup and documentation updates
+
+### Risk Mitigations
+- **SSR Issues**: Session 3 enforces client-only directives before Session 4
+- **Mesh Performance**: Session 2 validates vertex count and swaps asset if needed
+- **Acceptance Verification**: Session 6 creates reporter before Session 8 needs it
+- **Vendor Contamination**: Session 7 verifies isolation throughout workflow
