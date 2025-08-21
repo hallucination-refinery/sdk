@@ -39,20 +39,14 @@ test('brain smoke', async ({ page }) => {
   // Stabilize visuals (disable CSS animations/transitions) before visual parity check
   await page.addStyleTag({ content: '* { animation: none !important; transition: none !important; }' })
 
-  // Visual parity gate (baseline optional on first run; becomes hard gate once baseline exists)
+  // Visual parity gate (always assert; --update-snapshots will seed baseline on first run)
   const overlay = page.locator('div:has-text("Brain Vertices:")')
   const visualTolerance = Number(process.env.VISUAL_TOLERANCE || '0.10')
-  const baselinePath = test.info().snapshotPath('brain-baseline.png')
-  if (fs.existsSync(baselinePath)) {
-    await expect(page).toHaveScreenshot('brain-baseline.png', {
-      maxDiffPixelRatio: visualTolerance,
-      mask: [overlay],
-      fullPage: false,
-    })
-  } else {
-    // Note: first run without baseline will skip parity check; create baseline via --update-snapshots
-    console.warn(`[SMOKE] Baseline missing; skipping visual parity gate. Expected at: ${baselinePath}`)
-  }
+  await expect(page).toHaveScreenshot('brain-baseline.png', {
+    maxDiffPixelRatio: visualTolerance,
+    mask: [overlay],
+    fullPage: false,
+  })
 
   const outDir = process.env.SMOKE_OUT_DIR || '.clmem/artifacts/smoke'
   const runId = process.env.RUN_ID || `${Date.now()}`
