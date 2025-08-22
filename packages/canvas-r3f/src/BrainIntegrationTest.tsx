@@ -13,6 +13,7 @@ import {
   calculateRegionBoundaries,
   analyzeConceptMapping,
   generateDistributionReport,
+  getRegionVertices,
 } from './VertexMapper'
 
 // Import test fixtures
@@ -34,6 +35,7 @@ interface IntegrationState {
   hoveredConcept: string | null
   loading: boolean
   error: string | null
+  mappedIndices: number[]
   testResults: {
     brainMeshLoaded: boolean
     conceptsLoaded: boolean
@@ -65,9 +67,10 @@ export function BrainIntegrationTest({
   scenario = 'basic',
 }: BrainIntegrationTestProps) {
   // Hide overlay in screenshot mode
-  const isScreenshotMode = typeof window !== 'undefined' && 
-    (process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1' || 
-     window.location.search.includes('screenshot'))
+  const isScreenshotMode =
+    typeof window !== 'undefined' &&
+    (process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1' ||
+      window.location.search.includes('screenshot'))
   const showOverlay = !isScreenshotMode && showPerformance
   const [state, setState] = useState<IntegrationState>({
     brainVertices: [],
@@ -76,6 +79,7 @@ export function BrainIntegrationTest({
     hoveredConcept: null,
     loading: true,
     error: null,
+    mappedIndices: [],
     testResults: {
       brainMeshLoaded: false,
       conceptsLoaded: false,
@@ -136,7 +140,11 @@ export function BrainIntegrationTest({
         }))
         validateConcepts(arr)
       } catch (error) {
-        setState((prev) => ({ ...prev, error: `Failed to load stub concepts: ${error}`, loading: false }))
+        setState((prev) => ({
+          ...prev,
+          error: `Failed to load stub concepts: ${error}`,
+          loading: false,
+        }))
       }
     }
 
@@ -211,12 +219,71 @@ export function BrainIntegrationTest({
     try {
       const { brainVertices, loadedConcepts } = state
 
-      // Use Session 3 vertex analysis
+      // Use Session 3 vertex analysis on filtered surface vertices
       const boundaries = calculateRegionBoundaries(brainVertices)
 
-      // Use Session 4 concept mapping with Session 5 collision resolution
+      // Use Session 4 concept mapping with Session 5 collision resolution (analysis only)
       const conceptIds = loadedConcepts.map((c) => c.id)
       const analysis = analyzeConceptMapping(conceptIds, brainVertices, boundaries)
+
+      // Minimal implementation order: even sampling of anchors with region quotas
+      // 1) Deterministic shuffle helper (mulberry32)
+      const hashSeed = (s: string): number => {
+        let h = 1779033703 ^ s.length
+        for (let i = 0; i < s.length; i++) {
+          h = Math.imul(h ^ s.charCodeAt(i), 3432918353)
+          h = (h << 13) | (h >>> 19)
+        }
+        return h >>> 0
+      }
+      const mulberry32 = (aInit: number) => {
+        let a = aInit >>> 0
+        return () => {
+          a += 0x6d2b79f5
+          let t = Math.imul(a ^ (a >>> 15), 1 | a)
+          t ^= t + Math.imul(t ^ (t >>> 7), 61 | t)
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+        }
+      }
+      const shuffleDeterministic = <T,>(arr: T[], seed: string): T[] => {
+        const rnd = mulberry32(hashSeed(seed))
+        const a = arr.slice()
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(rnd() * (i + 1))
+          ;[a[i], a[j]] = [a[j], a[i]]
+        }
+        return a
+      }
+
+      // 2) Compute region indices and quotas
+      const R0 = getRegionVertices(brainVertices, 0, boundaries)
+      const R1 = getRegionVertices(brainVertices, 1, boundaries)
+      const R2 = getRegionVertices(brainVertices, 2, boundaries)
+      const R3 = getRegionVertices(brainVertices, 3, boundaries)
+
+      const N = loadedConcepts.length
+      const q0 = Math.max(0, Math.floor(N * 0.3))
+      const q1 = Math.max(0, Math.floor(N * 0.25))
+      const q2 = Math.max(0, Math.floor(N * 0.25))
+      const q3 = Math.max(0, N - (q0 + q1 + q2))
+
+      // 3) Deterministically shuffle each region and pick first quota
+      const anchors0 = shuffleDeterministic(R0, 'anchors-0').slice(0, Math.min(q0, R0.length))
+      const anchors1 = shuffleDeterministic(R1, 'anchors-1').slice(0, Math.min(q1, R1.length))
+      const anchors2 = shuffleDeterministic(R2, 'anchors-2').slice(0, Math.min(q2, R2.length))
+      const anchors3 = shuffleDeterministic(R3, 'anchors-3').slice(0, Math.min(q3, R3.length))
+      let anchorPool = [...anchors0, ...anchors1, ...anchors2, ...anchors3]
+      // If we are short (e.g., due to filtering), top up uniformly from full set
+      if (anchorPool.length < N) {
+        const remainder = N - anchorPool.length
+        const allIndices = brainVertices.map((_, i) => i)
+        anchorPool = anchorPool.concat(
+          shuffleDeterministic(allIndices, 'anchors-all').slice(0, remainder)
+        )
+      }
+
+      // 4) Map concepts deterministically to anchor pool order
+      const mappedIndices: number[] = conceptIds.map((_, i) => anchorPool[i % anchorPool.length])
 
       // Generate Session 4 distribution report
       const report = generateDistributionReport(analysis, brainVertices)
@@ -240,6 +307,9 @@ export function BrainIntegrationTest({
           ...prev.testResults,
           verticesMapped: mappingValid && positionsReproducible,
         },
+        // Stash mapped indices and vertices for rendering
+        brainVertices: brainVertices,
+        mappedIndices,
         loading: false,
       }))
     } catch (error) {
@@ -465,8 +535,10 @@ export function BrainIntegrationTest({
             position: 'absolute',
             top: '10px',
             right: '10px',
-            background: state.testResults.acceptancePassed 
-              ? (firstFrameMs && firstFrameMs <= 2000 ? 'rgba(0,128,0,0.8)' : 'rgba(255,140,0,0.8)')
+            background: state.testResults.acceptancePassed
+              ? firstFrameMs && firstFrameMs <= 2000
+                ? 'rgba(0,128,0,0.8)'
+                : 'rgba(255,140,0,0.8)'
               : 'rgba(0,0,0,0.8)',
             color: 'white',
             padding: '8px',
@@ -477,23 +549,23 @@ export function BrainIntegrationTest({
         >
           <div>Performance Baseline</div>
           <div>
-            First Frame: {
-              firstFrameMs 
-                ? `${(firstFrameMs / 1000).toFixed(2)}s` 
-                : `${((Date.now() - testStartTime.current) / 1000).toFixed(2)}s`
-            }
+            First Frame:{' '}
+            {firstFrameMs
+              ? `${(firstFrameMs / 1000).toFixed(2)}s`
+              : `${((Date.now() - testStartTime.current) / 1000).toFixed(2)}s`}
           </div>
           <div>
-            Target: ≤2.0s {
-              firstFrameMs 
-                ? (firstFrameMs <= 2000 ? '✅' : '⚠️') 
-                : (Date.now() - testStartTime.current <= 2000 ? '✅' : '⚠️')
-            }
+            Target: ≤2.0s{' '}
+            {firstFrameMs
+              ? firstFrameMs <= 2000
+                ? '✅'
+                : '⚠️'
+              : Date.now() - testStartTime.current <= 2000
+                ? '✅'
+                : '⚠️'}
           </div>
           {firstFrameMs && (
-            <div style={{ fontSize: '10px', marginTop: '2px' }}>
-              Measured: {firstFrameMs}ms
-            </div>
+            <div style={{ fontSize: '10px', marginTop: '2px' }}>Measured: {firstFrameMs}ms</div>
           )}
         </div>
       )}
@@ -539,10 +611,12 @@ export function BrainIntegrationTest({
 
       {/* Main 3D Scene */}
       <Canvas
-        camera={{ position: [10, 1, 2], fov: 25 }}
+        camera={{ position: [0, 80, 360], fov: 45 }}
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#000' }}
       >
+        {/* Debug helper to ensure we can see orientation at the origin */}
+        <axesHelper args={[50]} />
         {/* Session 5: Camera Controls & Limits - smooth orbit controls with proper bounds */}
         <OrbitControls
           enablePan={true}
@@ -550,8 +624,8 @@ export function BrainIntegrationTest({
           enableRotate={true}
           enableDamping={true}
           dampingFactor={0.05}
-          minDistance={5}
-          maxDistance={50}
+          minDistance={0.1}
+          maxDistance={2000}
           minPolarAngle={Math.PI * 0.1}
           maxPolarAngle={Math.PI * 0.9}
           autoRotate={false}
@@ -566,10 +640,11 @@ export function BrainIntegrationTest({
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor="#1a3a52"
-            opacity={0.7}
-            wireframe={false}
-            scale={8}
+            wireframeColor="#00aaff"
+            opacity={1}
+            wireframe={true}
+            depthWrite={false}
+            scale={1}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
           />
@@ -580,11 +655,13 @@ export function BrainIntegrationTest({
           <ConceptParticles
             concepts={state.loadedConcepts}
             vertices={state.brainVertices}
-            particleSize={5}
+            particleSize={3}
             visible={true}
             onHover={handleParticleHover}
             onClick={handleParticleClick}
             activeLens="affinity"
+            mappedIndices={state.mappedIndices}
+            surfaceOffset={1.0}
           />
         )}
 

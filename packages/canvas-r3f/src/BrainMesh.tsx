@@ -19,6 +19,8 @@ export interface BrainMeshProps {
   opacity?: number
   /** Line width for wireframe (may not work on all platforms) */
   lineWidth?: number
+  /** Whether depth writes are enabled on the material (set false for debug wireframe visibility) */
+  depthWrite?: boolean
   /** Whether the mesh is visible */
   visible?: boolean
   /** Whether to render as wireframe (true) or solid (false) */
@@ -41,6 +43,7 @@ function BrainMeshGeometry({
   opacity = 0.9,
   lineWidth = 1,
   wireframe = true,
+  depthWrite = true,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -53,6 +56,7 @@ function BrainMeshGeometry({
   | 'opacity'
   | 'lineWidth'
   | 'wireframe'
+  | 'depthWrite'
   | 'onVerticesLoaded'
   | 'onLoadingChange'
   | 'onLoadStart'
@@ -77,28 +81,73 @@ function BrainMeshGeometry({
   // Extract vertices from the loaded object and notify parent
   useEffect(() => {
     if (onVerticesLoaded) {
-      const vertices: THREE.Vector3[] = []
+      const allVertices: { position: THREE.Vector3; normal: THREE.Vector3 }[] = []
+
       obj.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           const geometry = child.geometry
           if (geometry instanceof THREE.BufferGeometry) {
+            // Ensure normals exist
+            if (!geometry.attributes.normal) {
+              geometry.computeVertexNormals()
+            }
+
             const positions = geometry.attributes.position
-            if (positions) {
+            const normals = geometry.attributes.normal
+            if (positions && normals) {
+              // Prepare normal matrix to transform normals into world space
+              const normalMatrix = new THREE.Matrix3().getNormalMatrix(child.matrixWorld)
+
               for (let i = 0; i < positions.count; i++) {
-                const vertex = new THREE.Vector3(
+                const p = new THREE.Vector3(
                   positions.getX(i),
                   positions.getY(i),
                   positions.getZ(i)
-                )
-                vertex.applyMatrix4(child.matrixWorld)
-                vertices.push(vertex)
+                ).applyMatrix4(child.matrixWorld)
+
+                const n = new THREE.Vector3(normals.getX(i), normals.getY(i), normals.getZ(i))
+                  .applyMatrix3(normalMatrix)
+                  .normalize()
+
+                allVertices.push({ position: p, normal: n })
               }
             }
           }
         }
       })
-      // Always use the loaded vertices - no fallback needed
-      onVerticesLoaded(vertices)
+
+      // Compute centroid
+      const centroid = allVertices
+        .reduce((acc, v) => acc.add(v.position), new THREE.Vector3())
+        .multiplyScalar(1 / Math.max(1, allVertices.length))
+
+      // Filter to outward-facing surface vertices and deduplicate by rounding
+      const outwardThreshold = 0.4 // cos(theta) threshold; higher → more strictly outward
+      const quantize = (v: THREE.Vector3) => `${v.x.toFixed(2)}|${v.y.toFixed(2)}|${v.z.toFixed(2)}`
+
+      const seen = new Set<string>()
+      const surfaceVertices: THREE.Vector3[] = []
+
+      for (const { position, normal } of allVertices) {
+        const radial = position.clone().sub(centroid)
+        const radialLen = radial.length()
+        if (radialLen === 0) continue
+        radial.normalize()
+        const score = normal.dot(radial)
+        if (score >= outwardThreshold) {
+          const key = quantize(position)
+          if (!seen.has(key)) {
+            seen.add(key)
+            surfaceVertices.push(position)
+          }
+        }
+      }
+
+      // Fallback: if filtering was too aggressive, use original positions
+      const resultVertices =
+        surfaceVertices.length >= 35000 ? surfaceVertices : allVertices.map((v) => v.position)
+
+      onVerticesLoaded(resultVertices)
 
       // Notify that loading is complete
       onLoadComplete?.()
@@ -121,7 +170,7 @@ function BrainMeshGeometry({
           side: THREE.DoubleSide,
           wireframeLinewidth: lineWidth,
           depthTest: true,
-          depthWrite: true,
+          depthWrite,
         })
       } else {
         // Solid surface with proper lighting
@@ -133,7 +182,7 @@ function BrainMeshGeometry({
           shininess: 30,
           specular: 0x222222,
           depthTest: true,
-          depthWrite: true,
+          depthWrite,
         })
       }
     }
@@ -151,6 +200,7 @@ export function BrainMesh({
   opacity = 0.9,
   lineWidth = 1,
   wireframe = true,
+  depthWrite = true,
   visible = true,
   onVerticesLoaded,
   onLoadingChange,
@@ -180,6 +230,7 @@ export function BrainMesh({
           opacity={opacity}
           lineWidth={lineWidth}
           wireframe={wireframe}
+          depthWrite={depthWrite}
           onVerticesLoaded={onVerticesLoaded}
           onLoadingChange={onLoadingChange}
           onLoadStart={onLoadStart}
