@@ -86,6 +86,7 @@ export function BrainIntegrationTest({
   })
 
   const testStartTime = useRef<number>(Date.now())
+  const [firstFrameMs, setFirstFrameMs] = useState<number | null>(null)
 
   // Step 1: Load brain mesh and extract vertices
   const handleVerticesLoaded = useCallback(
@@ -354,6 +355,10 @@ export function BrainIntegrationTest({
     const allPassed = Object.values(others).every(Boolean)
 
     if (allPassed && !testResults.acceptancePassed) {
+      // Calculate firstFrameMs precisely when acceptance is achieved
+      const calculatedFirstFrameMs = Date.now() - testStartTime.current
+      setFirstFrameMs(calculatedFirstFrameMs)
+
       setState((prev) => ({
         ...prev,
         testResults: {
@@ -364,10 +369,11 @@ export function BrainIntegrationTest({
 
       if (debug) {
         console.log('[Integration Test] All acceptance criteria PASSED! 🎉')
+        console.log(`[Integration Test] First Frame Time: ${calculatedFirstFrameMs}ms`)
       }
 
       // Report acceptance metrics to API endpoint
-      const firstFrameMs = Date.now() - testStartTime.current
+      const firstFrameMs = calculatedFirstFrameMs
       const metrics = {
         meshLoaded: testResults.brainMeshLoaded,
         vertexCount: state.brainVertices.length,
@@ -459,7 +465,7 @@ export function BrainIntegrationTest({
             top: '10px',
             right: '10px',
             background: state.testResults.acceptancePassed 
-              ? (Date.now() - testStartTime.current <= 2000 ? 'rgba(0,128,0,0.8)' : 'rgba(255,140,0,0.8)')
+              ? (firstFrameMs && firstFrameMs <= 2000 ? 'rgba(0,128,0,0.8)' : 'rgba(255,140,0,0.8)')
               : 'rgba(0,0,0,0.8)',
             color: 'white',
             padding: '8px',
@@ -469,8 +475,25 @@ export function BrainIntegrationTest({
           }}
         >
           <div>Performance Baseline</div>
-          <div>First Frame: {((Date.now() - testStartTime.current) / 1000).toFixed(2)}s</div>
-          <div>Target: ≤2.0s {Date.now() - testStartTime.current <= 2000 ? '✅' : '⚠️'}</div>
+          <div>
+            First Frame: {
+              firstFrameMs 
+                ? `${(firstFrameMs / 1000).toFixed(2)}s` 
+                : `${((Date.now() - testStartTime.current) / 1000).toFixed(2)}s`
+            }
+          </div>
+          <div>
+            Target: ≤2.0s {
+              firstFrameMs 
+                ? (firstFrameMs <= 2000 ? '✅' : '⚠️') 
+                : (Date.now() - testStartTime.current <= 2000 ? '✅' : '⚠️')
+            }
+          </div>
+          {firstFrameMs && (
+            <div style={{ fontSize: '10px', marginTop: '2px' }}>
+              Measured: {firstFrameMs}ms
+            </div>
+          )}
         </div>
       )}
 

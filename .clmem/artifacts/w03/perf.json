@@ -1,20 +1,23 @@
 {
   "session": 6,
   "name": "Performance Baseline Hooks",
-  "timestamp": "2025-08-21T21:22:14Z",
+  "timestamp": "2025-08-22T15:55:10Z",
   "performance_hooks_implemented": {
     "firstFrameMs_measurement": true,
     "testStartTime_ref": true,
     "overlay_displays_perf": true,
     "target_2s_validation": true,
-    "browser_derived_metrics": true
+    "browser_derived_metrics": true,
+    "precise_recording": true
   },
   "implementation_details": {
-    "testStartTime_location": "BrainIntegrationTest.tsx:83",
+    "testStartTime_location": "BrainIntegrationTest.tsx:88",
+    "firstFrameMs_state": "useState<number | null>(null)",
     "firstFrameMs_calculation": "Date.now() - testStartTime.current",
-    "performance_overlay_location": "BrainIntegrationTest.tsx:450-470",
+    "performance_overlay_location": "BrainIntegrationTest.tsx:461-498",
     "target_validation": "firstFrameMs <= 2000",
-    "acceptance_reporting": "POST /api/brain-acceptance with metrics"
+    "acceptance_reporting": "POST /api/brain-acceptance with metrics",
+    "precise_measurement": "Recorded when acceptance criteria passed"
   },
   "metrics_captured": [
     "meshLoaded",
@@ -30,11 +33,18 @@
     "firstFrameMs_target": "≤2000ms",
     "display_in_overlay": true,
     "browser_measurement": true,
-    "post_to_api": true
+    "post_to_api": true,
+    "measured_on_acceptance": true
+  },
+  "enhancements": {
+    "state_tracking": "Added firstFrameMs useState for precise recording",
+    "overlay_improvements": "Shows actual measured time when available",
+    "timing_precision": "Records exact moment when acceptance criteria met",
+    "visual_feedback": "Enhanced display with measured milliseconds"
   },
   "notes": {
-    "measurement_approach": "Browser-derived timing from testStartTime ref",
-    "overlay_shows": "First Frame time and ≤2.0s target validation",
+    "measurement_approach": "Browser-derived timing from testStartTime ref, recorded on acceptance",
+    "overlay_shows": "First Frame time, ≤2.0s target validation, and measured ms",
     "api_endpoint": "/api/brain-acceptance posts metrics to acceptance.json",
     "performance_validation": "Visual indicator (✅/⚠️) based on 2s target"
   }

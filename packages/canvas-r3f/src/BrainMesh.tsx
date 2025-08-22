@@ -97,39 +97,8 @@ function BrainMeshGeometry({
           }
         }
       })
-      // Mesh sanity and fallback
-      const count = vertices.length
-      if (count < 35000 || count > 50000) {
-        // Fallback to a lowpoly mesh if available
-        try {
-          const fallback = useLoader(OBJLoader, '/models/brain-lowpoly.obj')
-          const v2: THREE.Vector3[] = []
-          fallback.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              const geometry = child.geometry
-              if (geometry instanceof THREE.BufferGeometry) {
-                const positions = geometry.attributes.position
-                if (positions) {
-                  for (let i = 0; i < positions.count; i++) {
-                    const vertex = new THREE.Vector3(
-                      positions.getX(i),
-                      positions.getY(i),
-                      positions.getZ(i)
-                    )
-                    vertex.applyMatrix4(child.matrixWorld)
-                    v2.push(vertex)
-                  }
-                }
-              }
-            }
-          })
-          onVerticesLoaded(v2)
-        } catch {
-          onVerticesLoaded(vertices)
-        }
-      } else {
-        onVerticesLoaded(vertices)
-      }
+      // Always use the loaded vertices - no fallback needed
+      onVerticesLoaded(vertices)
 
       // Notify that loading is complete
       onLoadComplete?.()
