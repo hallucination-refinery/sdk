@@ -1,19 +1,17 @@
 {
-  "testTimestamp": "2025-08-22T15:50:03.560Z",
-  "testDurationMs": 125,
   "totalConcepts": 500,
-  "totalVertices": 1000,
-  "collisionRate": 0.024,
-  "collisionRatePercent": 2.4,
-  "averageAttempts": 1.028,
+  "totalVertices": 39410,
+  "collisionRate": 0,
+  "averageAttempts": 0,
   "regionDistribution": {
-    "0": 147,
-    "1": 126,
-    "2": 124,
-    "3": 103
+    "0": 124,
+    "1": 127,
+    "2": 125,
+    "3": 124
   },
-  "performanceMs": 87.3,
-  "reproducible": true,
-  "passesCollisionThreshold": true,
-  "notes": "djb2 hash with 30/25/25/20 region distribution provides excellent dispersion with minimal collisions"
+  "performanceMs": 406.4651249999997,
+  "spiralSearchUsed": true,
+  "searchRadius": 5,
+  "timestamp": "2025-08-22T16:39:33.281Z",
+  "testRun": "session-3-deterministic-mapping"
 }

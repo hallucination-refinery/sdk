@@ -54,7 +54,7 @@ describe('Performance Baseline Validation', () => {
     const initialMemory = performance.memory?.usedJSHeapSize || 0
     
     // Create large arrays to simulate vertex data
-    const vertices = Array.from({ length: 39410 }, (_, i) => ({
+    const vertices = Array.from({ length: 39410 }, () => ({
       x: Math.random() * 100 - 50,
       y: Math.random() * 100 - 50,
       z: Math.random() * 100 - 50

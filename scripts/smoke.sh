@@ -18,7 +18,10 @@ pnpm smoke:brain
 png=$(ls -1t .clmem/artifacts/smoke/brain-*.png 2>/dev/null | head -1 || true)
 if [[ -n "${png:-}" ]]; then
   port=$(jq -r '.port' "$state")
-  "$CLAUDE_PROJECT_DIR/scripts/stamp-artifact.sh" "$run_dir" 9 "$port" "$png"
+  # Skip stamping if stamp-artifact.sh doesn't exist or CLAUDE_PROJECT_DIR not set
+  if [[ -n "${CLAUDE_PROJECT_DIR:-}" && -x "${CLAUDE_PROJECT_DIR}/scripts/stamp-artifact.sh" ]]; then
+    "$CLAUDE_PROJECT_DIR/scripts/stamp-artifact.sh" "$run_dir" 9 "$port" "$png"
+  fi
 fi
 
 # Write checkpoint

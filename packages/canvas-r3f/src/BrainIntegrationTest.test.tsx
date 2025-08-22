@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { render, screen, waitFor } from '@testing-library/react'
 import * as THREE from 'three'
 
 import BrainIntegrationTest, { 
@@ -264,7 +263,8 @@ describe('Session 12: Integration Testing', () => {
   describe('Edge Cases and Error Handling', () => {
     it('should handle missing brain mesh gracefully', async () => {
       // Mock failed mesh loading
-      vi.mocked(require('@react-three/fiber').useLoader).mockImplementationOnce(() => {
+      const fiber = await import('@react-three/fiber')
+      vi.mocked(fiber.useLoader).mockImplementationOnce(() => {
         throw new Error('Failed to load brain.obj')
       })
 
