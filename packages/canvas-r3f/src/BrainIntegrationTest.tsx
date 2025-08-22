@@ -7,6 +7,7 @@ import { Node } from '@refinery/schema'
 // Import all Session components
 import { BrainMesh } from './BrainMesh'
 import { ConceptParticles } from './ConceptParticles'
+import { EdgeRenderer } from './EdgeRenderer'
 import {
   conceptToVertex,
   calculateRegionBoundaries,
@@ -584,6 +585,20 @@ export function BrainIntegrationTest({
             onHover={handleParticleHover}
             onClick={handleParticleClick}
             activeLens="affinity"
+          />
+        )}
+
+        {/* Session 14: Edge Renderer - Causal Path Pulses & Edges (selection only) */}
+        {state.brainVertices.length > 0 && state.loadedConcepts.length > 0 && (
+          <EdgeRenderer
+            concepts={state.loadedConcepts}
+            vertices={state.brainVertices}
+            selectedConcepts={state.selectedConcepts}
+            maxEdges={100}
+            enablePulse={true}
+            edgeColor={0x00ffff}
+            opacity={0.6}
+            visible={state.selectedConcepts.size > 0} // Only visible when concepts are selected
           />
         )}
 
