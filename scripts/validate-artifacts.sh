@@ -13,8 +13,8 @@ fi
 fail=0
 while read -r path; do
   # strip quotes
-  file="${path%"}"
-  file="${file#"}"
+  file="${path%\"}"
+  file="${file#\"}"
   if [[ ! -f "$file" ]]; then
     echo "Missing artifact: $file" >&2
     fail=1
@@ -28,4 +28,3 @@ while read -r path; do
 done < <(jq -r '[.sessions[]?.required_artifacts[]?] | unique[]' "$manifest" 2>/dev/null || echo "")
 
 exit $fail
-
