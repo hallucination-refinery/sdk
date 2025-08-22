@@ -1,0 +1,56 @@
+{
+  "session": "session-12",
+  "lens": "affinity",
+  "description": "Category→color mapping for Affinity lens with 8+ hues and gray overflow",
+  "implementation": {
+    "colorPalette": {
+      "name": "AFFINITY_CATEGORY_COLORS",
+      "colors": [
+        {"index": 0, "hex": "#FF6B6B", "description": "Red - Technology/Engineering"},
+        {"index": 1, "hex": "#4ECDC4", "description": "Teal - Science/Research"},
+        {"index": 2, "hex": "#45B7D1", "description": "Blue - Business/Finance"},
+        {"index": 3, "hex": "#96CEB4", "description": "Green - Health/Medicine"},
+        {"index": 4, "hex": "#FFEAA7", "description": "Yellow - Education/Learning"},
+        {"index": 5, "hex": "#DDA0DD", "description": "Plum - Arts/Creative"},
+        {"index": 6, "hex": "#98D8C8", "description": "Mint - Social/Community"},
+        {"index": 7, "hex": "#F7DC6F", "description": "Light Yellow - Environment/Nature"},
+        {"index": 8, "hex": "#BB8FCE", "description": "Light Purple - Philosophy/Ideas"},
+        {"index": 9, "hex": "#85C1E9", "description": "Light Blue - Data/Analytics"},
+        {"index": 10, "hex": "#F8C471", "description": "Orange - Communication/Media"},
+        {"index": 11, "hex": "#82E0AA", "description": "Light Green - Innovation/Research"}
+      ],
+      "overflowColor": {"hex": "#888888", "description": "Gray - overflow categories"}
+    },
+    "mappingLogic": {
+      "primaryKey": "concept.metadata.category",
+      "fallbackKey": "concept.metadata.type",
+      "hashFunction": "djb2-style: (hash << 5) - hash + char.charCodeAt(i)",
+      "indexCalculation": "Math.abs(hash) % AFFINITY_CATEGORY_COLORS.length",
+      "finalFallback": "concept.id-based hash % 8 (first 8 colors only)",
+      "ultimateFallback": "GRAY_FALLBACK (#888888)"
+    }
+  },
+  "requirements": {
+    "colorCount": "12 distinct colors (exceeds 8+ requirement)",
+    "overflowBehavior": "Gray fallback for unmapped categories",
+    "attributeOnly": "Color changes only - positions remain unchanged",
+    "deterministic": "Consistent colors for same category across reloads"
+  },
+  "features": {
+    "categoryMapping": "Maps concept categories to distinct visual hues",
+    "semanticColors": "Colors chosen to match domain semantics (e.g., red for technology)",
+    "fallbackChain": "category → type → id-hash → gray",
+    "lensIntegration": "Works with lens system (affinity/causal/temporal)"
+  },
+  "validation": {
+    "colorDistinction": "All 12 colors are visually distinct",
+    "accessibilityNote": "Colors chosen for good contrast and distinguishability",
+    "performanceNote": "Hash calculations are O(n) where n is category string length"
+  },
+  "usage": {
+    "component": "ConceptParticles",
+    "prop": "activeLens='affinity'",
+    "function": "getAffinityColor(concept: Node)",
+    "triggers": "Lens change triggers color recalculation"
+  }
+}
