@@ -63,6 +63,11 @@ export function BrainIntegrationTest({
   debug = false,
   scenario = 'basic',
 }: BrainIntegrationTestProps) {
+  // Hide overlay in screenshot mode
+  const isScreenshotMode = typeof window !== 'undefined' && 
+    (process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1' || 
+     window.location.search.includes('screenshot'))
+  const showOverlay = !isScreenshotMode && showPerformance
   const [state, setState] = useState<IntegrationState>({
     brainVertices: [],
     loadedConcepts: [],
@@ -447,7 +452,7 @@ export function BrainIntegrationTest({
       </div>
 
       {/* Performance Monitoring - Session 6 integration */}
-      {showPerformance && (
+      {showOverlay && (
         <div
           style={{
             position: 'absolute',
@@ -471,9 +476,9 @@ export function BrainIntegrationTest({
 
       {/* Main 3D Scene */}
       <Canvas
-        camera={{ position: [0, 0, 30], fov: 75 }}
+        camera={{ position: [10, 1, 2], fov: 25 }}
         gl={{ antialias: true, alpha: false }}
-        style={{ background: '#1a1a1a' }}
+        style={{ background: '#000' }}
       >
         {/* Session 5: Camera Controls & Limits - smooth orbit controls with proper bounds */}
         <OrbitControls
@@ -483,10 +488,11 @@ export function BrainIntegrationTest({
           enableDamping={true}
           dampingFactor={0.05}
           minDistance={5}
-          maxDistance={200}
+          maxDistance={50}
           minPolarAngle={Math.PI * 0.1}
           maxPolarAngle={Math.PI * 0.9}
           autoRotate={false}
+          target={[0, 0, 0]}
         />
 
         {/* Lighting */}
@@ -497,8 +503,10 @@ export function BrainIntegrationTest({
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor="#00aaff"
-            opacity={0.9}
+            wireframeColor="#1a3a52"
+            opacity={0.7}
+            wireframe={false}
+            scale={8}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
           />
@@ -517,7 +525,7 @@ export function BrainIntegrationTest({
         )}
 
         {/* Performance monitoring */}
-        {showPerformance && <Stats showPanel={0} />}
+        {showOverlay && <Stats showPanel={0} />}
       </Canvas>
 
       {/* Debug Information */}

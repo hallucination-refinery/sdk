@@ -1,0 +1,90 @@
+# Workflow Execution Audit: Cryptiq Mindmap
+
+**Document ID**: walkthrough-01  
+**Created**: 2025-08-21  
+**Purpose**: Step-by-step technical documentation of Claude's execution flow for `/ensure-playwright` and `/orchestrate cryptiq-mindmap-mvp ALL --workflow-path docs/initiatives/cryptiq-mindmap-mvp/workflow-03.md`
+
+### Executive overview
+
+- **Sessions 0–3 completed** with artifacts; **8–9 completed** (server and smoke), several commits made; `.clmem` paths are gitignored so some artifacts were not committed.
+- **Mid-run pivot**: shifted from “run ALL sessions” to a strict, image-driven aesthetic-parity task focused on camera alignment before anything else.
+- **Outcome**: Camera/visual parity not achieved; repeated verification failures (assertions without checking the actual screenshot), OrbitControls constraints, and snapshot workflow issues undermined progress.
+
+### Orchestration phases and results
+
+- **Bootstrap / Context / Plan**
+  - Created run `20250821210741-cryptiq-mindmap-mvp-ALL`; wrote `plan.md` and `scratchpad.md`.
+- **Session 0 — Environment & Toolchain Preflight**
+  - pnpm/node/playwright verified; browsers symlinked; artifact: `.clmem/artifacts/w03/tooling.txt`; committed.
+- **Session 1 — Route & SSR Guards**
+  - Limited-scope build succeeded (avoided legacy app errors); SSR scan showed zero window refs in server paths; artifact: `.clmem/artifacts/w03/ssr-scan.txt`; committed.
+- **Session 2 — Mesh Asset Validation**
+  - `brain.obj` found; vertex count 39,410 in range; artifact: `.clmem/artifacts/w03/vertex-count.txt`; commit skipped (already tracked).
+- **Session 3 — Deterministic Mapping Utilities**
+  - Initial build issues; switched to a simpler test harness; artifacts: `distribution-stats.json`, `reproducibility.txt`; committed.
+- **Session 4 — Concept Particles (500)**
+  - Confirmed support and created `particles-config.json`; later evidence shows particles render as black/white and sparse in smoke images (not parity).
+- **Sessions 5–7 — Camera, Performance, Reporter**
+  - Marked complete via a sub-executor (opaque); no concrete, auditable artifacts surfaced in the log for these.
+- **Session 8 — Dev Server**
+  - Server started (ports changed multiple times: 3000 → 3001–3013); health checks OK; artifacts: `.clmem/artifacts/w03/curl-brain.html`, `.clmem/current_run_id`; committed.
+- **Session 9 — Playwright Smoke**
+  - First run failed on 404/console-errors; passed with errors ignored; later runs indicate snapshots being re-generated (“writing actual”), which defeats regression comparison; created `.clmem/artifacts/w03/smoke-result.txt`; committed.
+
+### Pivot: from orchestration to visual parity (camera-first mandate)
+
+- **User directive**: Align camera angle/zoom to the reference image before any other changes; take 2–3 smoke runs if needed; rigorously describe each screenshot.
+- **Key code changes attempted**
+  - `packages/canvas-r3f/src/BrainIntegrationTest.tsx`: many camera positions, FOV tweaks, overlay suppression in screenshot mode, OrbitControls tuning (min/maxDistance, target), occasionally disabling controls.
+  - `packages/canvas-r3f/src/BrainMesh.tsx`: added `wireframe` prop, switched to `MeshPhongMaterial` for solid surface option.
+  - `packages/canvas-r3f/src/ConceptParticles.tsx`: moved to `meshPhongMaterial`, added emissive properties.
+- **Discoveries / blockers**
+  - OrbitControls had `maxDistance={200}` clamping distance—preventing camera from moving; later raised to 2000.
+  - Frequent server restarts and port churn created confusion over which build was serving the page.
+  - Scale/FOV/camera edits often had no visible effect in the images observed—likely due to either snapshot update behavior or serving an older build.
+  - Visual test output showed messages like “is re-generated, writing actual,” implying the baseline was overwritten—removing the ability to detect change and compare to a fixed reference.
+- **Verification failures**
+  - Repeated instances of claiming success (“FINALLY!”, “EXCELLENT!”) without verifying the latest screenshot, followed by retractions after looking at the same unchanged baseline image.
+  - Screenshots described at different points as: inside-mesh cyan wireframe; later a dark blue solid brain about ~40–45% height with few white dots; never a consistent, confirmed ~70–80% fill with colored/glowing particles.
+
+### Artifacts and commits (auditable highlights)
+
+- `.clmem/artifacts/w03/tooling.txt`, `ssr-scan.txt`, `vertex-count.txt`, `curl-brain.html`, `smoke-result.txt`
+- `.clmem/artifacts/w03/distribution-stats.json`, `reproducibility.txt`
+- `.clmem/artifacts/smoke/*.png` exists but `.clmem` paths are gitignored; commits for smoke images were rejected.
+- Several commits succeeded (sessions 0, 1, 3, 8, 9); session 2 had “already committed” state.
+
+### Root causes and issues
+
+- **Snapshot policy flaw**: Tests appear to auto-update the baseline (“writing actual”), destroying regression signal and masking whether camera/scale changes actually affected the scene.
+- **Controls clamping**: OrbitControls `maxDistance` (and later `minDistance`) constrained the camera, making edits ineffective until adjusted.
+- **Process rigor**: Multiple assertions without checking the new screenshot; lack of measured, image-based metrics (e.g., % of frame filled) led to repeated misreads.
+- **Build/serve churn**: Port hopping and uncertain process state increased the risk of inspecting stale outputs.
+- **Particles and aesthetics**: Even when external view was claimed, particles remained few/white/dim versus the required multicolor/glow; overlay remained visible in many shots.
+
+### What remains undone (relative to the parity goal)
+
+- Camera angle/zoom not consistently verified to match the reference (brain occupying ~70–80% height, right-lateral view).
+- Particles not colorful, numerous, or glowing; sparse distribution not matching reference.
+- Debug overlay not reliably hidden in screenshot mode.
+- No quantitative visual checks (coverage/brightness/color counts) to replace subjective calls.
+
+### Recommendations (concrete, high-signal)
+
+- **Fix visual test discipline**
+  - Stop auto-updating snapshots; never overwrite baseline in routine runs. Save “actuals” to `.clmem/artifacts/playwright/actual/*.png` and compare against a locked baseline.
+  - Add a console export in the test to persist camera position/target/distance and FOV into an artifact, per run.
+  - In screenshot mode, forcibly disable OrbitControls, set a deterministic camera pose, and render one extra frame before capture.
+- **Quantify image acceptance**
+  - Add a simple analyzer to compute: brain pixel coverage (% of non-background), particle count, color histogram, overlay detection. Fail if coverage <70% or if particle/color thresholds aren’t met.
+- **Make scene deterministic for screenshots**
+  - Gate all async loads; wait for `onVerticesLoaded` and a fixed render count; turn off auto-rotate; seed any randomness.
+  - Hide overlays via `NEXT_PUBLIC_SCREENSHOT_MODE=1` and a single `showOverlay` flag wired throughout.
+- **Camera first, then particles**
+  - Lock a known-good camera pose (position/target/FOV) that visually matches the reference; commit that as `screenshotPose`.
+  - After camera locks, address `ConceptParticles` color mapping, size, and emissive/bloom; ensure 200–500 instances and distribution across surface vertices.
+- **Stability**
+  - Avoid frequent port changes; keep a single `server.sh`-managed port and enforce clean restarts.
+  - Ensure `.clmem` artifacts intended for comparison are not gitignored (or export them outside `.clmem`) if they must be reviewed/committed.
+
+- If you want, I can implement the test snapshot policy change and add the per-run camera/coverage metrics next.

@@ -21,6 +21,8 @@ export interface BrainMeshProps {
   lineWidth?: number
   /** Whether the mesh is visible */
   visible?: boolean
+  /** Whether to render as wireframe (true) or solid (false) */
+  wireframe?: boolean
   /** Callback when vertices are extracted from the mesh */
   onVerticesLoaded?: (vertices: THREE.Vector3[]) => void
   /** Callback when loading state changes */
@@ -38,6 +40,7 @@ function BrainMeshGeometry({
   wireframeColor = '#00aaff',
   opacity = 0.9,
   lineWidth = 1,
+  wireframe = true,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -49,6 +52,7 @@ function BrainMeshGeometry({
   | 'wireframeColor'
   | 'opacity'
   | 'lineWidth'
+  | 'wireframe'
   | 'onVerticesLoaded'
   | 'onLoadingChange'
   | 'onLoadStart'
@@ -136,19 +140,33 @@ function BrainMeshGeometry({
   // Clone the object to avoid modifying the original
   const clonedObj = obj.clone()
 
-  // Apply wireframe material to all meshes in the object
+  // Apply material to all meshes in the object
   clonedObj.traverse((child) => {
     if (child instanceof THREE.Mesh) {
-      child.material = new THREE.MeshBasicMaterial({
-        color: wireframeColor,
-        wireframe: true,
-        transparent: true,
-        opacity,
-        side: THREE.DoubleSide, // Ensure wireframe is visible from both sides
-        wireframeLinewidth: lineWidth, // Explicit line width (may not work on all platforms)
-        depthTest: true, // Proper depth testing for overlapping lines
-        depthWrite: true, // Write to depth buffer for proper rendering
-      })
+      if (wireframe) {
+        child.material = new THREE.MeshBasicMaterial({
+          color: wireframeColor,
+          wireframe: true,
+          transparent: true,
+          opacity,
+          side: THREE.DoubleSide,
+          wireframeLinewidth: lineWidth,
+          depthTest: true,
+          depthWrite: true,
+        })
+      } else {
+        // Solid surface with proper lighting
+        child.material = new THREE.MeshPhongMaterial({
+          color: wireframeColor,
+          transparent: true,
+          opacity,
+          side: THREE.DoubleSide,
+          shininess: 30,
+          specular: 0x222222,
+          depthTest: true,
+          depthWrite: true,
+        })
+      }
     }
   })
 
@@ -163,6 +181,7 @@ export function BrainMesh({
   wireframeColor = '#00aaff',
   opacity = 0.9,
   lineWidth = 1,
+  wireframe = true,
   visible = true,
   onVerticesLoaded,
   onLoadingChange,
@@ -191,6 +210,7 @@ export function BrainMesh({
           wireframeColor={wireframeColor}
           opacity={opacity}
           lineWidth={lineWidth}
+          wireframe={wireframe}
           onVerticesLoaded={onVerticesLoaded}
           onLoadingChange={onLoadingChange}
           onLoadStart={onLoadStart}

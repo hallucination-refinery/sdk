@@ -249,11 +249,13 @@ export function ConceptParticles({
       {/* Simple sphere geometry for particles */}
       <sphereGeometry args={[1, 8, 6]} />
 
-      {/* Material optimized for instanced rendering */}
-      <meshBasicMaterial
+      {/* Material optimized for glowing particles */}
+      <meshPhongMaterial
         vertexColors={true}
         transparent={true}
-        opacity={0.8}
+        opacity={0.9}
+        emissive={0xffffff}
+        emissiveIntensity={0.3}
         depthWrite={false}
         side={THREE.DoubleSide}
       />
