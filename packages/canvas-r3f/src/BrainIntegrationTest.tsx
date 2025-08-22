@@ -497,6 +497,45 @@ export function BrainIntegrationTest({
         </div>
       )}
 
+      {/* Timeline Slider (Session 13 stub) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10px',
+          left: '10px',
+          right: '10px',
+          zIndex: 1000,
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          fontFamily: 'monospace',
+          fontSize: '11px',
+        }}
+      >
+        <div style={{ marginBottom: '5px' }}>
+          <strong>Temporal Lens</strong> - Recency → Brightness (0.3-1.0)
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>2 years ago</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="100"
+            style={{ flexGrow: 1 }}
+            onChange={() => {
+              // Stub implementation - timeline control will be implemented in future sessions
+              console.log('[Timeline] Slider moved (stub)')
+            }}
+          />
+          <span>Now</span>
+        </div>
+        <div style={{ fontSize: '10px', marginTop: '3px', color: '#aaa' }}>
+          Brightness range: newest concepts (1.0) → oldest concepts (0.3)
+        </div>
+      </div>
+
       {/* Main 3D Scene */}
       <Canvas
         camera={{ position: [10, 1, 2], fov: 25 }}
@@ -544,6 +583,7 @@ export function BrainIntegrationTest({
             visible={true}
             onHover={handleParticleHover}
             onClick={handleParticleClick}
+            activeLens="affinity"
           />
         )}
 

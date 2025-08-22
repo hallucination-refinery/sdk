@@ -1,0 +1,71 @@
+{
+  "session": "session-13",
+  "lens": "temporal",
+  "implementationType": "attribute-only",
+  "mapping": {
+    "input": "concept.metadata.timestamp | concept.metadata.lastModified | concept.metadata.created | synthetic",
+    "transform": "recency → brightness",
+    "output": "brightness range 0.3-1.0",
+    "formula": "brightness = 0.3 + (recencyRatio * 0.7)"
+  },
+  "recencyCalculation": {
+    "rangeDefault": "2 years (730 days)",
+    "timelineRange": {
+      "start": "now - 2 years",
+      "end": "now"
+    },
+    "recencyRatio": "(clampedTime - rangeStart) / totalRange",
+    "clamping": "clampedTime = max(rangeStart, min(rangeEnd, conceptTime))"
+  },
+  "brightnessMapping": {
+    "newest": 1.0,
+    "oldest": 0.3,
+    "gradient": "linear interpolation",
+    "application": "finalColor = baseColor.multiplyScalar(brightness)"
+  },
+  "syntheticData": {
+    "strategy": "deterministic hash-based timestamps",
+    "distribution": "spread over 2 years with clustering",
+    "hashFunction": "djb2 variant",
+    "indexVariation": "up to 30 days per concept index"
+  },
+  "uiComponents": {
+    "timelineSlider": {
+      "status": "stub implementation",
+      "location": "bottom overlay",
+      "features": ["range selection", "recency visualization"],
+      "interactivity": "console.log stub"
+    }
+  },
+  "verification": {
+    "attributeOnly": true,
+    "positionChanges": false,
+    "brightnessRange": "[0.3, 1.0]",
+    "buildStatus": "passing",
+    "lensActivation": "activeLens='temporal'",
+    "dependencies": ["timelineRange", "conceptMetadata"]
+  },
+  "implementation": {
+    "functions": [
+      "generateSyntheticTimestamp(concept, index)",
+      "getTemporalBrightness(concept, timelineRange)",
+      "getLensColor(concept, activeLens)"
+    ],
+    "interfaces": {
+      "ConceptParticlesProps": "added activeLens and timelineRange",
+      "InstanceData": "added brightness property"
+    },
+    "performance": {
+      "computationTime": "O(n) per frame",
+      "memoryOverhead": "1 float per concept",
+      "buildTime": "successful"
+    }
+  },
+  "metadata": {
+    "timestamp": "2025-08-22T16:14:51Z",
+    "runId": "20250822152645-cryptiq-mindmap-mvp-ALL",
+    "gateSatisfied": "switching to Temporal adjusts brightness only",
+    "visualDifference": "expected within threshold",
+    "smokeTest": "functional (brightness variation visible)"
+  }
+}

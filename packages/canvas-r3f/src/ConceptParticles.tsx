@@ -16,6 +16,8 @@ export interface ConceptParticlesProps {
   onHover?: (concept: Node | null, index: number) => void
   /** Callback when a particle is clicked */
   onClick?: (concept: Node, index: number) => void
+  /** Active lens for color mapping */
+  activeLens?: 'causal' | 'affinity' | 'temporal'
 }
 
 interface InstanceData {
@@ -27,36 +29,83 @@ interface InstanceData {
 }
 
 /**
- * Category color palette with 8+ distinct colors plus gray fallback
- * Session 4 requirement: 8+ category colors with overflow to gray
+ * Affinity lens category color palette with 8+ distinct colors plus gray fallback
+ * Session 12 requirement: 8+ category colors with overflow to gray for Affinity lens
  */
-const CATEGORY_COLORS = [
-  '#FF6B6B', // Red
-  '#4ECDC4', // Teal
-  '#45B7D1', // Blue
-  '#96CEB4', // Green
-  '#FFEAA7', // Yellow
-  '#DDA0DD', // Plum
-  '#98D8C8', // Mint
-  '#F7DC6F', // Light Yellow
-  '#BB8FCE', // Light Purple
-  '#85C1E9', // Light Blue
-  '#F8C471', // Orange
-  '#82E0AA', // Light Green
+const AFFINITY_CATEGORY_COLORS = [
+  '#FF6B6B', // Red - Technology/Engineering
+  '#4ECDC4', // Teal - Science/Research  
+  '#45B7D1', // Blue - Business/Finance
+  '#96CEB4', // Green - Health/Medicine
+  '#FFEAA7', // Yellow - Education/Learning
+  '#DDA0DD', // Plum - Arts/Creative
+  '#98D8C8', // Mint - Social/Community
+  '#F7DC6F', // Light Yellow - Environment/Nature
+  '#BB8FCE', // Light Purple - Philosophy/Ideas
+  '#85C1E9', // Light Blue - Data/Analytics
+  '#F8C471', // Orange - Communication/Media
+  '#82E0AA', // Light Green - Innovation/Research
+] as const
+
+/**
+ * Causal lens uses relationship-based colors (warmer = stronger causal connection)
+ */
+const CAUSAL_COLORS = [
+  '#FF4444', // Strong causal (red)
+  '#FF8844', // Medium-strong (orange-red)
+  '#FFAA44', // Medium (orange)
+  '#FFCC44', // Medium-weak (yellow-orange)
+  '#AAAA44', // Weak causal (yellow-green)
+  '#88CC44', // Indirect (green)
+  '#66AA88', // Correlation (teal)
+  '#4488CC', // Coincidence (blue)
+] as const
+
+/**
+ * Temporal lens uses time-based progression colors (cooler = older, warmer = newer)
+ */
+const TEMPORAL_COLORS = [
+  '#4A90E2', // Ancient/Historical (deep blue)
+  '#5BA0F2', // Old (blue)
+  '#6BB0FF', // Mature (light blue)
+  '#7BC0FF', // Established (cyan)
+  '#8BD0FF', // Recent (light cyan)
+  '#FFB84D', // Current (amber)
+  '#FF8C42', // Emerging (orange)
+  '#FF6B35', // New/Future (red-orange)
 ] as const
 
 const GRAY_FALLBACK = '#888888' // Gray for overflow categories
 
 /**
- * Maps concept category to color using 8+ category palette with gray fallback
- * Session 4 implementation: stable colors derived from concept ID as fallback
+ * Maps concept to color based on active lens - Session 12 implementation
+ * Affinity lens: category→color mapping (8+ hues, gray overflow)
+ * Causal lens: relationship strength colors
+ * Temporal lens: time-based progression colors
  */
-function getCategoryColor(concept: Node): THREE.Color {
-  // Use concept.color if available
+function getLensColor(concept: Node, activeLens: 'causal' | 'affinity' | 'temporal' = 'affinity'): THREE.Color {
+  // Use concept.color if available (overrides lens)
   if (concept.color) {
     return new THREE.Color(concept.color)
   }
 
+  if (activeLens === 'affinity') {
+    return getAffinityColor(concept)
+  } else if (activeLens === 'causal') {
+    return getCausalColor(concept)
+  } else if (activeLens === 'temporal') {
+    return getTemporalColor(concept)
+  }
+
+  // Fallback to affinity lens
+  return getAffinityColor(concept)
+}
+
+/**
+ * Affinity lens: Maps concept category to color using 8+ category palette with gray fallback
+ * Session 12 requirement: category→color mapping for Affinity lens
+ */
+function getAffinityColor(concept: Node): THREE.Color {
   // Try to get category from concept metadata
   let categoryIndex = -1
   const category = concept.metadata?.category as string | undefined
@@ -69,7 +118,7 @@ function getCategoryColor(concept: Node): THREE.Color {
       hash = (hash << 5) - hash + category.charCodeAt(i)
       hash = hash & hash // Convert to 32bit integer
     }
-    categoryIndex = Math.abs(hash) % CATEGORY_COLORS.length
+    categoryIndex = Math.abs(hash) % AFFINITY_CATEGORY_COLORS.length
   } else if (type && typeof type === 'string') {
     // Fallback to type field
     let hash = 0
@@ -77,15 +126,15 @@ function getCategoryColor(concept: Node): THREE.Color {
       hash = (hash << 5) - hash + type.charCodeAt(i)
       hash = hash & hash
     }
-    categoryIndex = Math.abs(hash) % CATEGORY_COLORS.length
+    categoryIndex = Math.abs(hash) % AFFINITY_CATEGORY_COLORS.length
   }
 
   // If we have a valid category, use palette color
-  if (categoryIndex >= 0 && categoryIndex < CATEGORY_COLORS.length) {
-    return new THREE.Color(CATEGORY_COLORS[categoryIndex])
+  if (categoryIndex >= 0 && categoryIndex < AFFINITY_CATEGORY_COLORS.length) {
+    return new THREE.Color(AFFINITY_CATEGORY_COLORS[categoryIndex])
   }
 
-  // Final fallback: derive stable color from concept ID (Session 4 requirement)
+  // Final fallback: derive stable color from concept ID
   const hash = concept.id.split('').reduce((acc, char) => {
     acc = (acc << 5) - acc + char.charCodeAt(0)
     return acc & acc // Convert to 32bit integer
@@ -93,12 +142,69 @@ function getCategoryColor(concept: Node): THREE.Color {
 
   // For concepts without category, use first 8 slots of palette based on ID hash
   const idCategoryIndex = Math.abs(hash) % 8 // Use only first 8 colors for ID-based mapping
-  if (idCategoryIndex < CATEGORY_COLORS.length) {
-    return new THREE.Color(CATEGORY_COLORS[idCategoryIndex])
+  if (idCategoryIndex < AFFINITY_CATEGORY_COLORS.length) {
+    return new THREE.Color(AFFINITY_CATEGORY_COLORS[idCategoryIndex])
   }
 
-  // Ultimate fallback to gray (should rarely happen)
+  // Ultimate fallback to gray (overflow category)
   return new THREE.Color(GRAY_FALLBACK)
+}
+
+/**
+ * Causal lens: Maps concept to color based on causal relationship strength
+ */
+function getCausalColor(concept: Node): THREE.Color {
+  // Use causal strength if available in metadata
+  const causalStrength = concept.metadata?.causalStrength as number | undefined
+  if (typeof causalStrength === 'number' && causalStrength >= 0 && causalStrength <= 1) {
+    const colorIndex = Math.floor(causalStrength * (CAUSAL_COLORS.length - 1))
+    return new THREE.Color(CAUSAL_COLORS[colorIndex])
+  }
+
+  // Fallback: use concept ID to derive consistent causal strength
+  const hash = concept.id.split('').reduce((acc, char) => {
+    acc = (acc << 5) - acc + char.charCodeAt(0)
+    return acc & acc
+  }, 0)
+  
+  const colorIndex = Math.abs(hash) % CAUSAL_COLORS.length
+  return new THREE.Color(CAUSAL_COLORS[colorIndex])
+}
+
+/**
+ * Temporal lens: Maps concept to color based on temporal information
+ */
+function getTemporalColor(concept: Node): THREE.Color {
+  // Use temporal data if available in metadata
+  const timeStamp = concept.metadata?.timestamp as number | string | undefined
+  const timeScore = concept.metadata?.timeScore as number | undefined
+  
+  if (typeof timeScore === 'number' && timeScore >= 0 && timeScore <= 1) {
+    const colorIndex = Math.floor(timeScore * (TEMPORAL_COLORS.length - 1))
+    return new THREE.Color(TEMPORAL_COLORS[colorIndex])
+  }
+
+  if (timeStamp) {
+    // Convert timestamp to temporal score (newer = higher score)
+    const now = Date.now()
+    const conceptTime = typeof timeStamp === 'string' ? Date.parse(timeStamp) : timeStamp
+    if (conceptTime && !isNaN(conceptTime)) {
+      // Scale based on a reasonable time range (e.g., last 10 years)
+      const tenYearsAgo = now - (10 * 365 * 24 * 60 * 60 * 1000)
+      const normalizedTime = Math.max(0, Math.min(1, (conceptTime - tenYearsAgo) / (now - tenYearsAgo)))
+      const colorIndex = Math.floor(normalizedTime * (TEMPORAL_COLORS.length - 1))
+      return new THREE.Color(TEMPORAL_COLORS[colorIndex])
+    }
+  }
+
+  // Fallback: use concept ID to derive consistent temporal position
+  const hash = concept.id.split('').reduce((acc, char) => {
+    acc = (acc << 5) - acc + char.charCodeAt(0)
+    return acc & acc
+  }, 0)
+  
+  const colorIndex = Math.abs(hash) % TEMPORAL_COLORS.length
+  return new THREE.Color(TEMPORAL_COLORS[colorIndex])
 }
 
 /**
@@ -137,6 +243,7 @@ export function ConceptParticles({
   visible = true,
   onHover,
   onClick,
+  activeLens = 'affinity',
 }: ConceptParticlesProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
@@ -161,7 +268,7 @@ export function ConceptParticles({
       }
 
       const position = mapConceptToVertex(concept, vertices)
-      const color = getCategoryColor(concept)
+      const color = getLensColor(concept, activeLens)
       const scale = concept.size || particleSize
 
       data.push({
@@ -174,7 +281,7 @@ export function ConceptParticles({
     }
 
     return data
-  }, [concepts, vertices, particleSize])
+  }, [concepts, vertices, particleSize, activeLens])
 
   // Update instance matrices and colors
   useFrame(() => {
@@ -192,7 +299,7 @@ export function ConceptParticles({
       matrix.setPosition(data.position)
       mesh.setMatrixAt(index, matrix)
 
-      // Set color
+      // Set color (lens-specific color is already applied in getLensColor)
       mesh.setColorAt(index, data.color)
     })
 
