@@ -641,7 +641,7 @@ export function BrainIntegrationTest({
 
       {/* Main 3D Scene */}
       <Canvas
-        camera={{ position: [0, 80, 215], fov: 45 }}
+        camera={{ position: [0, 80, 220], fov: 45 }}
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#000' }}
       >
