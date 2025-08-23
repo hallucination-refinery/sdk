@@ -599,21 +599,22 @@ export function BrainIntegrationTest({
       )}
 
       {/* Timeline Slider (Session 13 stub) */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '10px',
-          left: '10px',
-          right: '10px',
-          zIndex: 1000,
-          background: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '10px',
-          borderRadius: '5px',
-          fontFamily: 'monospace',
-          fontSize: '11px',
-        }}
-      >
+      {showOverlay && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            left: '10px',
+            right: '10px',
+            zIndex: 1000,
+            background: 'rgba(0,0,0,0.8)',
+            color: 'white',
+            padding: '10px',
+            borderRadius: '5px',
+            fontFamily: 'monospace',
+            fontSize: '11px',
+          }}
+        >
         <div style={{ marginBottom: '5px' }}>
           <strong>Temporal Lens</strong> - Recency → Brightness (0.3-1.0)
         </div>
@@ -636,15 +637,16 @@ export function BrainIntegrationTest({
           Brightness range: newest concepts (1.0) → oldest concepts (0.3)
         </div>
       </div>
+      )}
 
       {/* Main 3D Scene */}
       <Canvas
-        camera={{ position: [0, 80, 360], fov: 45 }}
+        camera={{ position: [0, 80, 215], fov: 45 }}
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#000' }}
       >
         {/* Debug helper to ensure we can see orientation at the origin */}
-        <axesHelper args={[50]} />
+        {showOverlay && <axesHelper args={[50]} />}
         {/* Session 5: Camera Controls & Limits - smooth orbit controls with proper bounds */}
         <OrbitControls
           enablePan={true}
