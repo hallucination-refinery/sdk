@@ -1,5 +1,5 @@
-import { useRef, useMemo, useCallback, useState, useEffect } from 'react'
-import {} from '@react-three/fiber'
+import { useRef, useMemo, useState, useEffect } from 'react'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Node } from '@refinery/schema'
 
@@ -22,6 +22,10 @@ export interface ConceptParticlesProps {
   mappedIndices?: number[]
   /** Optional outward offset along radial direction from centroid to avoid embedding */
   surfaceOffset?: number
+  /** Render mode for particles: points (2D) or spheres (3D glow orbs) */
+  renderMode?: 'points' | 'spheres'
+  /** Camera for size calculations in screenshot mode */
+  camera?: THREE.Camera
 }
 
 interface InstanceData {
@@ -251,17 +255,23 @@ export function ConceptParticles({
   vertices = [],
   particleSize = 2,
   visible = true,
-  onHover,
-  onClick,
+  onHover: _onHover,
+  onClick: _onClick,
   activeLens = 'affinity',
   mappedIndices,
   surfaceOffset = 0,
+  renderMode = 'points',
+  camera,
 }: ConceptParticlesProps) {
   const pointsRef = useRef<THREE.Points>(null)
+  const instancedMeshRef = useRef<THREE.InstancedMesh>(null)
   const geometryRef = useRef<THREE.BufferGeometry>(null)
-  const [hoveredIndex] = useState<number | null>(null)
+  const [_hoveredIndex] = useState<number | null>(null)
   const positions = useMemo(() => new Float32Array(500 * 3), [])
   const colors = useMemo(() => new Float32Array(500 * 3), [])
+  const tempMatrix = useMemo(() => new THREE.Matrix4(), [])
+  const tempColor = useMemo(() => new THREE.Color(), [])
+  const sphereGeometry = useMemo(() => new THREE.SphereGeometry(1, 8, 6), [])
 
   // Create instance data for up to 500 concepts
   const instanceData = useMemo<InstanceData[]>(() => {
@@ -353,14 +363,127 @@ export function ConceptParticles({
     geo?.computeBoundingSphere?.()
   }, [instanceData, positions, colors])
 
+  // Glow orb shader material for spheres mode
+  const glowMaterial = useMemo(() => {
+    if (renderMode !== 'spheres') return null
+    
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec3 vColor;
+        
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+          vColor = instanceColor;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec3 vColor;
+        
+        void main() {
+          vec3 viewDirection = normalize(-vPosition);
+          float fresnel = 1.0 - max(0.0, dot(vNormal, viewDirection));
+          
+          // Core glow (emissive center)
+          float coreGlow = 0.6;
+          
+          // Rim glow (Fresnel effect)
+          float rimGlow = pow(fresnel, 2.0) * 1.2;
+          
+          // Combined glow intensity
+          float glowIntensity = coreGlow + rimGlow;
+          
+          // Apply color with glow
+          vec3 glowColor = vColor * glowIntensity;
+          
+          gl_FragColor = vec4(glowColor, 0.8);
+        }
+      `,
+      transparent: true,
+      depthTest: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+  }, [renderMode])
+
+  // Calculate world units per pixel for size stability
+  const worldUnitsPerPixel = useMemo(() => {
+    if (!camera || renderMode !== 'spheres') return 1
+    
+    // Assume anchor depth around center of brain mesh
+    const anchorDepth = vertices.length > 0 ? 
+      vertices.reduce((sum, v) => sum + v.length(), 0) / vertices.length : 50
+    
+    if (camera instanceof THREE.PerspectiveCamera) {
+      const fovRadians = (camera.fov * Math.PI) / 180
+      const height = 2 * anchorDepth * Math.tan(fovRadians / 2)
+      return height / window.innerHeight
+    } else if (camera instanceof THREE.OrthographicCamera) {
+      return (camera.top - camera.bottom) / window.innerHeight
+    }
+    
+    return 1
+  }, [camera, renderMode, vertices])
+
+  // Update instanced mesh matrices and colors
+  useFrame(() => {
+    if (renderMode !== 'spheres' || !instancedMeshRef.current) return
+    
+    const mesh = instancedMeshRef.current
+    const targetPixelSize = 15 // 12-18px range, using 15px target
+    const worldRadius = worldUnitsPerPixel * targetPixelSize * 0.5
+    
+    for (let i = 0; i < 500; i++) {
+      const data = instanceData[i]
+      if (!data || !data.concept.id) {
+        // Hide unused instances
+        tempMatrix.makeScale(0, 0, 0)
+        tempMatrix.setPosition(10000, 10000, 10000)
+        tempColor.setHex(0x000000)
+      } else {
+        // Set scale for target pixel size
+        tempMatrix.makeScale(worldRadius, worldRadius, worldRadius)
+        tempMatrix.setPosition(data.position.x, data.position.y, data.position.z)
+        tempColor.copy(data.color)
+      }
+      
+      mesh.setMatrixAt(i, tempMatrix)
+      mesh.setColorAt(i, tempColor)
+    }
+    
+    mesh.instanceMatrix.needsUpdate = true
+    if (mesh.instanceColor) {
+      mesh.instanceColor.needsUpdate = true
+    }
+  })
+
   // Pointer handlers disabled for Points-based audit mode
+
+  if (renderMode === 'spheres') {
+    return (
+      <instancedMesh
+        ref={instancedMeshRef}
+        args={[sphereGeometry, glowMaterial!, 500]}
+        visible={visible}
+      />
+    )
+  }
 
   return (
     // Switch to Points for fixed pixel size (~2px)
     <points ref={pointsRef as any} visible={visible}>
       <bufferGeometry ref={geometryRef as any}>
-        <bufferAttribute attach="attributes-position" count={500} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-color" count={500} array={colors} itemSize={3} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} count={500} />
+        <bufferAttribute attach="attributes-color" args={[colors, 3]} count={500} />
       </bufferGeometry>
       <pointsMaterial
         size={15}

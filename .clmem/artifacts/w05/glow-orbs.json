@@ -1,0 +1,56 @@
+{
+  "session": "1",
+  "workflow": "W05",
+  "feature": "Glow Orbs",
+  "timestamp": "2025-08-23T03:03:21Z",
+  "implementation": {
+    "renderMode": {
+      "points": "Original 2D points with fixed pixel size",
+      "spheres": "3D instanced spheres with glow shader"
+    },
+    "geometry": {
+      "type": "SphereGeometry",
+      "segments": {
+        "horizontal": 8,
+        "vertical": 6
+      },
+      "instances": 500
+    },
+    "shader": {
+      "type": "ShaderMaterial",
+      "features": [
+        "Emissive core glow (0.6 intensity)",
+        "Fresnel rim lighting (power 2.0, 1.2 intensity)",
+        "Additive blending for glow effect"
+      ],
+      "uniforms": {
+        "time": "Unused (reserved for future animation)"
+      }
+    },
+    "material_properties": {
+      "transparent": true,
+      "depthTest": true,
+      "depthWrite": false,
+      "blending": "AdditiveBlending"
+    },
+    "size_stability": {
+      "target_pixel_size": 15,
+      "range": "12-18px apparent size",
+      "calculation": "worldUnitsPerPixel * targetPixelSize * 0.5",
+      "update_frequency": "Every frame via useFrame"
+    }
+  },
+  "props": {
+    "renderMode": "'points' | 'spheres'",
+    "camera": "THREE.Camera (for size calculations)"
+  },
+  "acceptance_criteria": {
+    "sphere_count": 500,
+    "z_fighting": "Prevented by depthTest=true, depthWrite=false",
+    "embedded_orbs": "Prevented by existing surfaceOffset logic",
+    "apparent_size": "12-18px at default camera pose"
+  },
+  "files_modified": [
+    "packages/canvas-r3f/src/ConceptParticles.tsx"
+  ]
+}
