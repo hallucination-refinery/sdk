@@ -267,11 +267,39 @@ export function BrainIntegrationTest({
       const q2 = Math.max(0, Math.floor(N * 0.25))
       const q3 = Math.max(0, N - (q0 + q1 + q2))
 
-      // 3) Deterministically shuffle each region and pick first quota
-      const anchors0 = shuffleDeterministic(R0, 'anchors-0').slice(0, Math.min(q0, R0.length))
-      const anchors1 = shuffleDeterministic(R1, 'anchors-1').slice(0, Math.min(q1, R1.length))
-      const anchors2 = shuffleDeterministic(R2, 'anchors-2').slice(0, Math.min(q2, R2.length))
-      const anchors3 = shuffleDeterministic(R3, 'anchors-3').slice(0, Math.min(q3, R3.length))
+      // 3) Region-wise farthest-point sampling for even spacing
+      const farthestSample = (indices: number[], k: number, seed: string): number[] => {
+        if (indices.length === 0 || k <= 0) return []
+        const rnd = mulberry32(hashSeed(seed))
+        const picked: number[] = []
+        // start with a random point
+        picked.push(indices[Math.floor(rnd() * indices.length)])
+        while (picked.length < Math.min(k, indices.length)) {
+          let bestIndex = -1
+          let bestDist = -1
+          for (const idx of indices) {
+            let minD = Infinity
+            const p = brainVertices[idx]
+            for (const sel of picked) {
+              const q = brainVertices[sel]
+              const d = p.distanceToSquared(q)
+              if (d < minD) minD = d
+            }
+            if (minD > bestDist) {
+              bestDist = minD
+              bestIndex = idx
+            }
+          }
+          if (bestIndex === -1) break
+          picked.push(bestIndex)
+        }
+        return picked
+      }
+
+      const anchors0 = farthestSample(R0, q0, 'fp-0')
+      const anchors1 = farthestSample(R1, q1, 'fp-1')
+      const anchors2 = farthestSample(R2, q2, 'fp-2')
+      const anchors3 = farthestSample(R3, q3, 'fp-3')
       let anchorPool = [...anchors0, ...anchors1, ...anchors2, ...anchors3]
       // If we are short (e.g., due to filtering), top up uniformly from full set
       if (anchorPool.length < N) {
@@ -661,7 +689,7 @@ export function BrainIntegrationTest({
             onClick={handleParticleClick}
             activeLens="affinity"
             mappedIndices={state.mappedIndices}
-            surfaceOffset={1.0}
+            surfaceOffset={1.6}
           />
         )}
 

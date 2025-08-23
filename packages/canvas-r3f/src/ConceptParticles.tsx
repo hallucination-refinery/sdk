@@ -1,5 +1,5 @@
-import { useRef, useMemo, useCallback, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useRef, useMemo, useCallback, useState, useEffect } from 'react'
+import {} from '@react-three/fiber'
 import * as THREE from 'three'
 import { Node } from '@refinery/schema'
 
@@ -249,7 +249,7 @@ function mapConceptToVertex(concept: Node, vertices: THREE.Vector3[]): THREE.Vec
 export function ConceptParticles({
   concepts = [],
   vertices = [],
-  particleSize = 5,
+  particleSize = 2,
   visible = true,
   onHover,
   onClick,
@@ -257,8 +257,11 @@ export function ConceptParticles({
   mappedIndices,
   surfaceOffset = 0,
 }: ConceptParticlesProps) {
-  const meshRef = useRef<THREE.InstancedMesh>(null)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const pointsRef = useRef<THREE.Points>(null)
+  const geometryRef = useRef<THREE.BufferGeometry>(null)
+  const [hoveredIndex] = useState<number | null>(null)
+  const positions = useMemo(() => new Float32Array(500 * 3), [])
+  const colors = useMemo(() => new Float32Array(500 * 3), [])
 
   // Create instance data for up to 500 concepts
   const instanceData = useMemo<InstanceData[]>(() => {
@@ -319,90 +322,55 @@ export function ConceptParticles({
     return data
   }, [concepts, vertices, particleSize, activeLens, mappedIndices, surfaceOffset])
 
-  // Update instance matrices and colors
-  useFrame(() => {
-    if (!meshRef.current) return
-
-    const mesh = meshRef.current
-    const matrix = new THREE.Matrix4()
-
-    instanceData.forEach((data, index) => {
-      // Apply hover scaling (1.5x when hovered)
-      const scale = hoveredIndex === index ? data.originalScale * 1.5 : data.originalScale
-
-      // Set matrix for position and scale
-      matrix.makeScale(scale, scale, scale)
-      matrix.setPosition(data.position)
-      mesh.setMatrixAt(index, matrix)
-
-      // Set color (lens-specific color is already applied in getLensColor)
-      mesh.setColorAt(index, data.color)
-    })
-
-    mesh.instanceMatrix.needsUpdate = true
-    if (mesh.instanceColor) {
-      mesh.instanceColor.needsUpdate = true
+  // Update buffer attributes once per data change
+  useEffect(() => {
+    for (let i = 0; i < 500; i++) {
+      const d = instanceData[i]
+      const pi = i * 3
+      if (d && d.concept && d.concept.id) {
+        positions[pi + 0] = d.position.x
+        positions[pi + 1] = d.position.y
+        positions[pi + 2] = d.position.z
+        colors[pi + 0] = d.color.r
+        colors[pi + 1] = d.color.g
+        colors[pi + 2] = d.color.b
+      } else {
+        positions[pi + 0] = 10000
+        positions[pi + 1] = 10000
+        positions[pi + 2] = 10000
+        colors[pi + 0] = 0
+        colors[pi + 1] = 0
+        colors[pi + 2] = 0
+      }
     }
-  })
+    const geo = geometryRef.current as any
+    if (geo?.attributes?.position) {
+      geo.attributes.position.needsUpdate = true
+    }
+    if (geo?.attributes?.color) {
+      geo.attributes.color.needsUpdate = true
+    }
+    geo?.computeBoundingSphere?.()
+  }, [instanceData, positions, colors])
 
-  // Handle pointer events for hover/click interaction
-  const handlePointerMove = useCallback(
-    (event: any) => {
-      if (!meshRef.current || typeof event.instanceId !== 'number') return
-
-      const instanceId = event.instanceId
-      const concept = instanceData[instanceId]?.concept
-
-      if (concept && concept.id) {
-        setHoveredIndex(instanceId)
-        onHover?.(concept, instanceId)
-      }
-    },
-    [instanceData, onHover]
-  )
-
-  const handlePointerLeave = useCallback(() => {
-    setHoveredIndex(null)
-    onHover?.(null, -1)
-  }, [onHover])
-
-  const handleClick = useCallback(
-    (event: any) => {
-      if (!meshRef.current || typeof event.instanceId !== 'number') return
-
-      const instanceId = event.instanceId
-      const concept = instanceData[instanceId]?.concept
-
-      if (concept && concept.id) {
-        onClick?.(concept, instanceId)
-      }
-    },
-    [instanceData, onClick]
-  )
+  // Pointer handlers disabled for Points-based audit mode
 
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[undefined, undefined, 500]} // 500 instances per acceptance spec
-      visible={visible}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      onClick={handleClick}
-    >
-      {/* Simple sphere geometry for particles */}
-      <sphereGeometry args={[1, 8, 6]} />
-
-      {/* Material optimized for glowing particles */}
-      <meshPhongMaterial
-        vertexColors={true}
-        transparent={true}
-        opacity={0.9}
-        emissive={0xffffff}
-        emissiveIntensity={0.3}
+    // Switch to Points for fixed pixel size (~2px)
+    <points ref={pointsRef as any} visible={visible}>
+      <bufferGeometry ref={geometryRef as any}>
+        <bufferAttribute attach="attributes-position" count={500} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={500} array={colors} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial
+        size={15}
+        sizeAttenuation={false}
+        vertexColors
+        transparent
+        opacity={0.95}
         depthWrite={false}
-        side={THREE.DoubleSide}
       />
-    </instancedMesh>
+    </points>
   )
 }
 

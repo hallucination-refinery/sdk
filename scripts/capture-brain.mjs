@@ -22,5 +22,3 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000'
   await browser.close()
   if (fs.existsSync(outPath)) console.log(`Saved ${outPath}`)
 })()
-
-

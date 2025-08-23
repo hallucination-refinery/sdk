@@ -122,7 +122,7 @@ function BrainMeshGeometry({
         .multiplyScalar(1 / Math.max(1, allVertices.length))
 
       // Filter to outward-facing surface vertices and deduplicate by rounding
-      const outwardThreshold = 0.4 // cos(theta) threshold; higher → more strictly outward
+      const outwardThreshold = 0.65 // cos(theta) threshold; higher → more strictly outward
       const quantize = (v: THREE.Vector3) => `${v.x.toFixed(2)}|${v.y.toFixed(2)}|${v.z.toFixed(2)}`
 
       const seen = new Set<string>()

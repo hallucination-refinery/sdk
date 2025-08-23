@@ -125,18 +125,21 @@ Each session includes: Goal • Edits/Targets • Commands • Gates • Artifac
 Safe defaults:
 
 1. Preflight
+
 ```
 pnpm install --frozen-lockfile
 PLAYWRIGHT_BROWSERS_PATH=/workspace/.playwright-browsers pnpm exec playwright install chromium
 ```
 
 2. Dev server
+
 ```
 PORT=3000 pnpm --filter cryptiq-mindmap-demo dev > .clmem/artifacts/w05/server.log 2>&1 &
 sleep 3 && curl -sf http://localhost:3000/brain | head -c 200 | cat
 ```
 
 3. One‑shot capture + metrics
+
 ```
 export RUN_ID=$(date +%Y%m%d-%H%M%S)_W05
 bash scripts/w05-run.sh "$RUN_ID"
@@ -161,35 +164,41 @@ bash scripts/w05-run.sh "$RUN_ID"
 - Notes: (tbd)
 
 ### Session Completion Summary
+
 - Completed Sessions: (tbd)
 - All Gates: (tbd)
 - Artifacts: (tbd)
 
 ### Deviations from Plan
+
 - (tbd)
 
 ---
 
 ## Appendix — Glow Orbs Implementation Plan (Detail)
 
-1) Renderer
+1. Renderer
+
 - Add `renderMode` prop with `'points'|'spheres'`; default to `'spheres'` in non‑screenshot mode, `'points'` optional for audits.
 - Use a single `instancedMesh(sphereGeometry(8–12 seg), ShaderMaterial, N)`.
 
-2) Shader
+2. Shader
+
 - Vertex: instance transforms; rim term `pow(1.0 - dot(normal, viewDir), rimPower)`.
 - Fragment: emissive core + rim; additive blending; alpha from rim/core mix.
 
-3) Depth & Blend
+3. Depth & Blend
+
 - `depthTest=true`, `depthWrite=false`, `blending=THREE.AdditiveBlending`.
 
-4) Apparent Size
+4. Apparent Size
+
 - Compute worldUnitsPerPixel at anchor depth and scale instance matrices to achieve ≈15 px (clamp 12–18 px).
 
-5) Placement
+5. Placement
+
 - Keep surface‑filtered vertices, region quotas, farthest‑point sampling; outward offset δ=1.6–2.0.
 
-6) Determinism
+6. Determinism
+
 - Freeze time in `NEXT_PUBLIC_SCREENSHOT_MODE`; disable auto‑rotate; render one extra frame before capture.
-
-
