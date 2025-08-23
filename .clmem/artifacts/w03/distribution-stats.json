@@ -9,9 +9,9 @@
     "2": 125,
     "3": 124
   },
-  "performanceMs": 252.0710420000005,
+  "performanceMs": 368.3756249999997,
   "spiralSearchUsed": true,
   "searchRadius": 5,
-  "timestamp": "2025-08-22T17:53:48.715Z",
+  "timestamp": "2025-08-23T02:02:53.567Z",
   "testRun": "session-3-deterministic-mapping"
 }
