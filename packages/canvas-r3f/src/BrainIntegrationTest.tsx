@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Stats } from '@react-three/drei'
 import * as THREE from 'three'
 import { Node } from '@refinery/schema'
@@ -72,6 +72,13 @@ export function BrainIntegrationTest({
     (process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1' ||
       window.location.search.includes('screenshot'))
   const showOverlay = !isScreenshotMode && showPerformance
+  const targetCoverage: number = (() => {
+    if (typeof window === 'undefined') return 0.75
+    const raw = new URLSearchParams(window.location.search).get('targetCoverage')
+    const v = raw ? parseFloat(raw) : NaN
+    if (!isFinite(v)) return 0.75
+    return Math.min(0.9, Math.max(0.5, v))
+  })()
   const [state, setState] = useState<IntegrationState>({
     brainVertices: [],
     loadedConcepts: [],
@@ -92,6 +99,42 @@ export function BrainIntegrationTest({
 
   const testStartTime = useRef<number>(Date.now())
   const [firstFrameMs, setFirstFrameMs] = useState<number | null>(null)
+
+  function CameraFitter({
+    vertices,
+    enabled,
+    target,
+  }: {
+    vertices: THREE.Vector3[]
+    enabled: boolean
+    target: number
+  }) {
+    const { camera } = useThree()
+    useEffect(() => {
+      if (!enabled || vertices.length === 0) return
+      const centroid = vertices
+        .reduce((acc, v) => acc.add(v), new THREE.Vector3())
+        .multiplyScalar(1 / vertices.length)
+      let maxR = 0
+      for (const v of vertices) {
+        const d = v.distanceTo(centroid)
+        if (d > maxR) maxR = d
+      }
+      if (camera instanceof THREE.PerspectiveCamera) {
+        const fovRadians = (camera.fov * Math.PI) / 180
+        const z = maxR / (target * Math.tan(fovRadians / 2))
+        camera.position.set(0, 80, z)
+        camera.lookAt(0, 0, 0)
+        camera.updateProjectionMatrix()
+      }
+    }, [enabled, vertices, target, camera])
+    return null
+  }
+
+  function ParticlesWithCamera(props: any) {
+    const { camera } = useThree()
+    return <ConceptParticles {...props} camera={camera as any} />
+  }
 
   // Step 1: Load brain mesh and extract vertices
   const handleVerticesLoaded = useCallback(
@@ -615,28 +658,28 @@ export function BrainIntegrationTest({
             fontSize: '11px',
           }}
         >
-        <div style={{ marginBottom: '5px' }}>
-          <strong>Temporal Lens</strong> - Recency → Brightness (0.3-1.0)
+          <div style={{ marginBottom: '5px' }}>
+            <strong>Temporal Lens</strong> - Recency → Brightness (0.3-1.0)
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>2 years ago</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value="100"
+              style={{ flexGrow: 1 }}
+              onChange={() => {
+                // Stub implementation - timeline control will be implemented in future sessions
+                console.log('[Timeline] Slider moved (stub)')
+              }}
+            />
+            <span>Now</span>
+          </div>
+          <div style={{ fontSize: '10px', marginTop: '3px', color: '#aaa' }}>
+            Brightness range: newest concepts (1.0) → oldest concepts (0.3)
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span>2 years ago</span>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value="100"
-            style={{ flexGrow: 1 }}
-            onChange={() => {
-              // Stub implementation - timeline control will be implemented in future sessions
-              console.log('[Timeline] Slider moved (stub)')
-            }}
-          />
-          <span>Now</span>
-        </div>
-        <div style={{ fontSize: '10px', marginTop: '3px', color: '#aaa' }}>
-          Brightness range: newest concepts (1.0) → oldest concepts (0.3)
-        </div>
-      </div>
       )}
 
       {/* Main 3D Scene */}
@@ -645,6 +688,11 @@ export function BrainIntegrationTest({
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#000' }}
       >
+        <CameraFitter
+          vertices={state.brainVertices}
+          enabled={isScreenshotMode}
+          target={targetCoverage}
+        />
         {/* Debug helper to ensure we can see orientation at the origin */}
         {showOverlay && <axesHelper args={[50]} />}
         {/* Session 5: Camera Controls & Limits - smooth orbit controls with proper bounds */}
@@ -670,10 +718,10 @@ export function BrainIntegrationTest({
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor="#00aaff"
-            opacity={1}
-            wireframe={true}
-            depthWrite={false}
+            wireframeColor={isScreenshotMode ? '#303649' : '#00aaff'}
+            opacity={isScreenshotMode ? 0.4 : 1}
+            wireframe={!isScreenshotMode}
+            depthWrite={isScreenshotMode ? false : false}
             scale={1}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
@@ -682,7 +730,7 @@ export function BrainIntegrationTest({
 
         {/* Session 7: Concept Particles with Session 3-6 vertex mapping */}
         {state.brainVertices.length > 0 && state.loadedConcepts.length > 0 && (
-          <ConceptParticles
+          <ParticlesWithCamera
             concepts={state.loadedConcepts}
             vertices={state.brainVertices}
             particleSize={3}
@@ -691,7 +739,8 @@ export function BrainIntegrationTest({
             onClick={handleParticleClick}
             activeLens="affinity"
             mappedIndices={state.mappedIndices}
-            surfaceOffset={1.8}
+            surfaceOffset={2.0}
+            renderMode={isScreenshotMode ? 'spheres' : 'points'}
           />
         )}
 

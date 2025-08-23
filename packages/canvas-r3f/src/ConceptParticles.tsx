@@ -1,5 +1,5 @@
 import { useRef, useMemo, useState, useEffect } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Node } from '@refinery/schema'
 
@@ -366,7 +366,7 @@ export function ConceptParticles({
   // Glow orb shader material for spheres mode
   const glowMaterial = useMemo(() => {
     if (renderMode !== 'spheres') return null
-    
+
     return new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
@@ -409,39 +409,44 @@ export function ConceptParticles({
         }
       `,
       transparent: true,
-      depthTest: true,
+      depthTest: false,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     })
   }, [renderMode])
 
   // Calculate world units per pixel for size stability
+  const r3fCamera = useThree((s) => s.camera)
+  const effectiveCamera = camera ?? (r3fCamera as THREE.Camera)
   const worldUnitsPerPixel = useMemo(() => {
-    if (!camera || renderMode !== 'spheres') return 1
-    
-    // Assume anchor depth around center of brain mesh
-    const anchorDepth = vertices.length > 0 ? 
-      vertices.reduce((sum, v) => sum + v.length(), 0) / vertices.length : 50
-    
-    if (camera instanceof THREE.PerspectiveCamera) {
-      const fovRadians = (camera.fov * Math.PI) / 180
+    if (!effectiveCamera || renderMode !== 'spheres') return 1
+
+    // Approximate anchor depth around average distance from origin
+    const anchorDepth =
+      vertices.length > 0 ? vertices.reduce((sum, v) => sum + v.length(), 0) / vertices.length : 50
+
+    if (effectiveCamera instanceof THREE.PerspectiveCamera) {
+      const fovRadians = (effectiveCamera.fov * Math.PI) / 180
       const height = 2 * anchorDepth * Math.tan(fovRadians / 2)
-      return height / window.innerHeight
-    } else if (camera instanceof THREE.OrthographicCamera) {
-      return (camera.top - camera.bottom) / window.innerHeight
+      return height / (typeof window !== 'undefined' ? window.innerHeight : 800)
+    } else if (effectiveCamera instanceof THREE.OrthographicCamera) {
+      return (
+        (effectiveCamera.top - effectiveCamera.bottom) /
+        (typeof window !== 'undefined' ? window.innerHeight : 800)
+      )
     }
-    
+
     return 1
-  }, [camera, renderMode, vertices])
+  }, [effectiveCamera, renderMode, vertices])
 
   // Update instanced mesh matrices and colors
   useFrame(() => {
     if (renderMode !== 'spheres' || !instancedMeshRef.current) return
-    
+
     const mesh = instancedMeshRef.current
-    const targetPixelSize = 15 // 12-18px range, using 15px target
+    const targetPixelSize = 18 // 12-18px range, using 18px target for readability
     const worldRadius = worldUnitsPerPixel * targetPixelSize * 0.5
-    
+
     for (let i = 0; i < 500; i++) {
       const data = instanceData[i]
       if (!data || !data.concept.id) {
@@ -455,11 +460,11 @@ export function ConceptParticles({
         tempMatrix.setPosition(data.position.x, data.position.y, data.position.z)
         tempColor.copy(data.color)
       }
-      
+
       mesh.setMatrixAt(i, tempMatrix)
       mesh.setColorAt(i, tempColor)
     }
-    
+
     mesh.instanceMatrix.needsUpdate = true
     if (mesh.instanceColor) {
       mesh.instanceColor.needsUpdate = true
@@ -474,6 +479,7 @@ export function ConceptParticles({
         ref={instancedMeshRef}
         args={[sphereGeometry, glowMaterial!, 500]}
         visible={visible}
+        renderOrder={1}
       />
     )
   }
