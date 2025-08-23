@@ -372,9 +372,7 @@ export function ConceptParticles({
         time: { value: 0 },
       },
       vertexShader: `
-        attribute mat4 instanceMatrix;
-        attribute vec3 instanceColor;
-        
+        // instanceMatrix and instanceColor are provided by three.js for InstancedMesh
         varying vec3 vNormal;
         varying vec3 vPosition;
         varying vec3 vColor;
