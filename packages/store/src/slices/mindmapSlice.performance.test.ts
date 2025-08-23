@@ -254,7 +254,7 @@ describe('MindmapSlice Performance', () => {
       
       await new Promise(resolve => queueMicrotask(resolve))
       
-      const afterOpsMemory = process.memoryUsage()
+      const _afterOpsMemory = process.memoryUsage()
       
       // Clear and check cleanup
       store.clearConcepts()
@@ -289,7 +289,7 @@ describe('MindmapSlice Performance', () => {
       
       await new Promise(resolve => queueMicrotask(resolve))
       
-      let state = get()
+      const _state = get()
       
       // Test Set operations (selection)
       const selectionIds = concepts.slice(0, 100).map(c => c.id)

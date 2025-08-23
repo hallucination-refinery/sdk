@@ -689,7 +689,7 @@ export function BrainIntegrationTest({
             onClick={handleParticleClick}
             activeLens="affinity"
             mappedIndices={state.mappedIndices}
-            surfaceOffset={1.6}
+            surfaceOffset={1.8}
           />
         )}
 

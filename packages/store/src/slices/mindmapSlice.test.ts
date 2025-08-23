@@ -66,11 +66,11 @@ const mockVertices: Vector3[] = [
 describe('MindmapSlice', () => {
   let store: TestStore
   let get: () => TestStore
-  let set: (fn: (state: TestStore) => void) => void
+  let _set: (fn: (state: TestStore) => void) => void
 
   beforeEach(() => {
     const testStore = create<TestStore>((setFn, getFn) => {
-      set = setFn
+      _set = setFn
       get = getFn
       return createMindmapSlice(setFn, getFn)
     })
