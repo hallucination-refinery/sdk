@@ -372,15 +372,23 @@ export function ConceptParticles({
         time: { value: 0 },
       },
       vertexShader: `
+        attribute mat4 instanceMatrix;
+        attribute vec3 instanceColor;
+        
         varying vec3 vNormal;
         varying vec3 vPosition;
         varying vec3 vColor;
         
         void main() {
-          vNormal = normalize(normalMatrix * normal);
-          vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+          // Transform normal by instance matrix then by scene normalMatrix
+          vec3 n = normalize(mat3(instanceMatrix) * normal);
+          vNormal = normalize(normalMatrix * n);
+          
+          // Compute model-view position with instance transform
+          vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+          vPosition = mvPosition.xyz;
           vColor = instanceColor;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
         }
       `,
       fragmentShader: `
@@ -394,10 +402,10 @@ export function ConceptParticles({
           float fresnel = 1.0 - max(0.0, dot(vNormal, viewDirection));
           
           // Core glow (emissive center)
-          float coreGlow = 0.6;
+          float coreGlow = 1.0;
           
           // Rim glow (Fresnel effect)
-          float rimGlow = pow(fresnel, 2.0) * 1.2;
+          float rimGlow = pow(fresnel, 2.5) * 1.2;
           
           // Combined glow intensity
           float glowIntensity = coreGlow + rimGlow;
