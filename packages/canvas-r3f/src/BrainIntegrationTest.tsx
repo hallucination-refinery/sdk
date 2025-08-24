@@ -719,8 +719,8 @@ export function BrainIntegrationTest({
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={isScreenshotMode ? '#0B1630' : '#00aaff'}
-            opacity={isScreenshotMode ? 0.5 : 1}
+            wireframeColor={isScreenshotMode ? '#0A0A20' : '#00aaff'}
+            opacity={isScreenshotMode ? 0.4 : 1}
             wireframe={!isScreenshotMode}
             depthWrite={isScreenshotMode ? false : false}
             scale={1}

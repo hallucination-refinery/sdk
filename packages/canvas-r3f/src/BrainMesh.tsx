@@ -181,8 +181,8 @@ function BrainMeshGeometry({
           side: THREE.DoubleSide,
           shininess: 30,
           specular: 0x222222,
-          emissive: new THREE.Color(0x1ea7ff),
-          emissiveIntensity: 0.5,
+          emissive: new THREE.Color(0x000000),
+          emissiveIntensity: 0.0,
           depthTest: true,
           depthWrite,
         })
