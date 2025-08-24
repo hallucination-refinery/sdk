@@ -713,14 +713,14 @@ export function BrainIntegrationTest({
         {/* Lighting */}
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
-        <directionalLight position={[-8, 6, -4]} intensity={0.3} color={0x2bc7ff} />
+        <directionalLight position={[-8, 6, -4]} intensity={0.35} color={0x2bc7ff} />
 
         {/* Session 2: Brain Mesh with Session 1 BrainUVs.obj */}
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
             wireframeColor={isScreenshotMode ? '#0B1630' : '#00aaff'}
-            opacity={isScreenshotMode ? 0.4 : 1}
+            opacity={isScreenshotMode ? 0.5 : 1}
             wireframe={!isScreenshotMode}
             depthWrite={isScreenshotMode ? false : false}
             scale={1}
