@@ -711,18 +711,21 @@ export function BrainIntegrationTest({
         />
 
         {/* Lighting */}
-        <ambientLight intensity={0.6} />
+        <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
-        <directionalLight position={[-8, 6, -4]} intensity={0.35} color={0x2bc7ff} />
+        <directionalLight position={[-8, 6, -4]} intensity={0.3} color={0x3eb4ff} />
 
         {/* Session 2: Brain Mesh with Session 1 BrainUVs.obj */}
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={isScreenshotMode ? '#0A0A20' : '#00aaff'}
-            opacity={isScreenshotMode ? 0.3 : 1}
+            wireframeColor={isScreenshotMode ? '#0A1A30' : '#3eb4ff'}
+            opacity={isScreenshotMode ? 1 : 1}
             wireframe={!isScreenshotMode}
             depthWrite={isScreenshotMode ? false : false}
+            usePhysical={isScreenshotMode}
+            physicalTransmission={0.65}
+            physicalThickness={0.8}
             scale={1}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
@@ -740,7 +743,7 @@ export function BrainIntegrationTest({
             onClick={handleParticleClick}
             activeLens="affinity"
             mappedIndices={state.mappedIndices}
-            surfaceOffset={2.0}
+            surfaceOffset={1.0}
             renderMode={isScreenshotMode ? 'spheres' : 'points'}
           />
         )}
