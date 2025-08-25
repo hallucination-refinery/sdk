@@ -12,13 +12,15 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@react-three/drei": "^10.4.2",
+    "@react-three/fiber": "^9.1.2",
     "@refinery/graph-forge": "workspace:*",
     "@refinery/sdk-core": "workspace:*",
     "@refinery/widget-aperture": "workspace:*",
     "next": "15.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "three": "^0.173.0"
+    "three": "0.176.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
