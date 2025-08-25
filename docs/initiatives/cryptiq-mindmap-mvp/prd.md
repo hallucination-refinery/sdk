@@ -31,17 +31,17 @@
 
 ### 3) Core Experience Pillars
 
-- 6–12 rapid questions (image choices, forced choices, sliders), visible progress.
-- Immediate narrative result: “archetype” + 2–3 lines + call‑to‑action + share.
-- Instant brain morph: answers map to concept updates (create/update weights/categories) rendered on the brain.
-- Repeat loop: offer daily prompt/new pack after result.
+- Branded landing (Cryptiq Mindmap · Cryptiq × Refinery), then a particle intro: scattered points assemble into the brain silhouette, orbs glow on settle (reduced‑motion fallback).
+- Bottom‑right HUD slides in: “Import your Cryptiq memories (Coming soon)” or “Start” a fast 10‑question run.
+- 10 rapid questions (images/choices/sliders) feed an analysis bar to 100%; each answer live‑updates concepts (size/halo; category color) on the brain.
+- Composite result: up to 3–5 archetypes (not a single label) with 2–3 lines of insight and share; replay loop to try another pack.
 
 ---
 
 ### 4) IA & User Flows
 
-- Landing → Quiz (≤12 questions) → Result card → Share → Try another.
-- Result page: headline, 2–3 lines, highlight chips (top concepts/categories), share buttons.
+- Landing → branded hero → particle intro → HUD (Import Coming Soon / Start) → 10‑question quiz → composite result card → share → try another.
+- Result page: headline + composite archetype stack, short insight, top concept/category chips, share buttons, “play again.”
 - Desktop‑first: keyboard/mouse navigation, clear focus states, responsive layout for laptop/desktop breakpoints.
 
 ---
@@ -61,10 +61,16 @@
   - `questions[]`: `{ id, type: 'choice'|'image-choice'|'slider', prompt, options[] }`.
   - `options[]`: `{ id, label|image, tags: string[], effects: ConceptDelta[] }`.
   - `ConceptDelta`: `{ conceptKey, deltaWeight (0..1), category?, label? }`.
-  - `resultMapping`: rules to compute top archetype (e.g., sum of tag weights).
+  - `resultMapping`: rules to compute composite archetypes (sum/normalize tag weights; top 3–5 with thresholds).
+  - `archetypes[]`: `{ key, label, group: 'Passion'|'Morals'|'Methods'|'Judgment'|'Daring', description }` (inspired by Refind Self groupings).
 - Mapping to visualization
   - Deterministic vertex assignment uses `id` hashing; weights modulate size/halo (no position changes).
   - Maintain silhouette with a decorative ambient particle layer (non‑interactive) to avoid “sparse” look.
+
+#### Intro animation & reduced‑motion
+
+- Sequence: scatter field → converge to brain silhouette (1–2s) → subtle glow pulse on orbs (0.5s); then unlock HUD.
+- Respect `prefers-reduced-motion`: skip scatter/converge; fade‑in brain and show HUD immediately.
 
 ---
 
@@ -79,9 +85,10 @@
 
 ### 7) Result and Sharing
 
-- Result card: `archetype`, 2–3 line copy, top 3 concept chips, CTA (try another / copy link).
+- Result card: composite profile (top 3–5 archetypes with short lines), 2–3 line summary, top 3 concept chips, CTA (try another / copy link).
 - OG/Twitter cards: 1200×630 static image with title + brand; dynamic OG endpoint for result URLs.
 - Social validators in CI: Facebook Sharing Debugger, Twitter Card Validator.
+- Optional (flagged): comparison link accepts a friend’s result ID and displays side‑by‑side archetype stacks.
 
 ---
 
@@ -89,7 +96,7 @@
 
 - Accessibility: WCAG 2.2 AA; alt text for images; focus styles; semantic buttons; keyboard navigation; color contrast checked.
 - Performance: Core Web Vitals targets — LCP ≤ 2.5s, INP ≤ 200ms, CLS < 0.1.
-- Delivery: critical JS/CSS ≤ 100KB; preconnect fonts; lazy‑load non‑critical media; preload quiz pack JSON.
+- Delivery: critical JS/CSS ≤ 100KB; preconnect fonts; lazy‑load non‑critical media; preload quiz pack JSON; reduced‑motion path avoids animation cost.
 
 ---
 
@@ -106,6 +113,7 @@
 - Visual sparsity with few concepts → Use decorative ambient layer; scale halos/size by weight for readability.
 - Overfitting archetypes → Keep results falsifiable and specific; avoid Barnum copy; iterate via analytics.
 - Desktop perf spikes → Limit shaders, cap instances at 500, defer edges; measure with stats overlay on dev only.
+- Intro animation jank → Gate with reduced‑motion; cap particles; allow skip after 1.5s.
 
 ---
 
@@ -116,8 +124,8 @@
   - Extend `conceptSlice` to accept live concept upserts from `quizSlice`.
   - Quiz packs as JSON under `apps/cryptiq-mindmap-demo/public/packs/*.json` (static, cacheable).
 - UI (apps/cryptiq-mindmap-demo)
-  - Routes: `/` (landing), `/quiz/[slug]` (play), `/result/[id]` (result card), `/api/og` (OG image).
-  - Components: `QuizRunner`, `ProgressBar`, `ChoiceGrid`, `ResultCard`, `ShareButtons`.
+  - Routes: `/` (landing + intro), `/quiz/[slug]` (play), `/result/[id]` (result card), `/compare` (flagged), `/api/og` (OG image).
+  - Components: `BrandHeader`, `IntroParticles`, `HUDPrompt` (Import Coming Soon / Start), `QuizRunner`, `AnalysisBar`, `ChoiceGrid`, `ResultComposite`, `ShareButtons`, `ComparePanel` (flagged).
   - Analytics events: `quiz_start`, `answer_select`, `quiz_complete`, `share_click`.
 - Canvas integration (`packages/canvas-r3f`)
   - Expose `ConceptParticles` props to accept live `concepts` from store; size/halo from `weight`.
@@ -132,11 +140,12 @@
 ### 12) MVP Scope Checklist
 
 - [ ] Pack 1 (Archetype, 8 types, 8–10 questions) with images and choices.
-- [ ] Quiz flow with progress and instant feedback animation on the brain.
+- [ ] Quiz flow with analysis bar to 100% and instant feedback animation on the brain.
 - [ ] Live concept generation (weights/categories) and deterministic mapping.
 - [ ] Affinity lens + minimal details panel (top 3 “made by” answers).
-- [ ] Result card + share; dynamic OG.
+- [ ] Composite result card (top 3–5 archetypes) + share; dynamic OG.
 - [ ] Desktop perf pass and accessibility pass.
+- [ ] Particle intro with reduced‑motion fallback; HUD prompt (Import Coming Soon / Start).
 
 ---
 
@@ -145,6 +154,7 @@
 - Daily prompt/new pack rotation; lightweight notification opt‑ins.
 - Temporal lens; simple “related concepts” panel; optional minimal edges when focused.
 - Pack builder tooling for fast authoring; translation/localization.
+- Compare mode (friend code/ID), per‑archetype explainers, replay insights (“what changed this run”).
 
 ---
 
@@ -153,6 +163,8 @@
 - How many concepts should be visible at rest for best readability on desktop (200 vs 500)?
 - Do we time‑gate packs (daily) or let users freely browse sets at launch?
 - Do we support result permalink without storing PII (encode scoreboard in URL hash)?
+- Composite size: cap at top 3 vs top 5 archetypes for clarity?
+- Should we allow “Import memories” placeholder to collect email for notification (compliant opt‑in)?
 
 ---
 
@@ -161,3 +173,4 @@
 - End‑to‑end: user completes a pack in ≤60s, sees a result card, shares a link, and the brain reflects their answers in real time.
 - Metrics fire for start/answers/complete/share; OG cards render correctly on major platforms.
 - Accessibility and performance budgets pass on a standard desktop/laptop device.
+- Intro animation respects reduced‑motion and completes or can be skipped within 2s before HUD appears.

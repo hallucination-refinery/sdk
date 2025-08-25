@@ -1,0 +1,338 @@
+{
+  "id": "archetype-01",
+  "title": "Mentor Energy",
+  "slug": "mentor-energy",
+  "theme": "archetype",
+  "archetypes": [
+    {
+      "key": "passion_muse",
+      "label": "Muse",
+      "group": "Passion",
+      "description": "You energize others with taste and inspiration."
+    },
+    {
+      "key": "morals_steward",
+      "label": "Steward",
+      "group": "Morals",
+      "description": "You prize care, continuity, and responsibility."
+    },
+    {
+      "key": "methods_maker",
+      "label": "Maker",
+      "group": "Methods",
+      "description": "You learn by building; bias to action."
+    },
+    {
+      "key": "judgment_editor",
+      "label": "Editor",
+      "group": "Judgment",
+      "description": "You refine, focus, and improve signal."
+    },
+    {
+      "key": "daring_explorer",
+      "label": "Explorer",
+      "group": "Daring",
+      "description": "You try paths few consider; playful risk."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "type": "image-choice",
+      "prompt": "Pick a workspace you’d thrive in",
+      "options": [
+        {
+          "id": "q1_o1",
+          "image": "/img/workspaces/studio.jpg",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "creativity", "deltaWeight": 0.15, "category": "values" }]
+        },
+        {
+          "id": "q1_o2",
+          "image": "/img/workspaces/library.jpg",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "focus", "deltaWeight": 0.15, "category": "traits" }]
+        },
+        {
+          "id": "q1_o3",
+          "image": "/img/workspaces/outdoors.jpg",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "exploration", "deltaWeight": 0.15, "category": "coping" }]
+        },
+        {
+          "id": "q1_o4",
+          "image": "/img/workspaces/atelier.jpg",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "aesthetics", "deltaWeight": 0.15, "category": "values" }]
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "type": "choice",
+      "prompt": "When a friend is stuck, you…",
+      "options": [
+        {
+          "id": "q2_o1",
+          "label": "Prototype something small",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "maker_habit", "deltaWeight": 0.12, "category": "traits" }]
+        },
+        {
+          "id": "q2_o2",
+          "label": "Offer context + options",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "framing", "deltaWeight": 0.12, "category": "methods" }]
+        },
+        {
+          "id": "q2_o3",
+          "label": "Spark excitement with references",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "inspiration", "deltaWeight": 0.12, "category": "values" }]
+        },
+        {
+          "id": "q2_o4",
+          "label": "Take them somewhere different",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "novelty", "deltaWeight": 0.12, "category": "coping" }]
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "type": "choice",
+      "prompt": "Pick a constraint you enjoy",
+      "options": [
+        {
+          "id": "q3_o1",
+          "label": "Tight deadline",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "momentum", "deltaWeight": 0.1, "category": "traits" }]
+        },
+        {
+          "id": "q3_o2",
+          "label": "One paragraph only",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "precision", "deltaWeight": 0.1, "category": "methods" }]
+        },
+        {
+          "id": "q3_o3",
+          "label": "Moodboard first",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "taste", "deltaWeight": 0.1, "category": "values" }]
+        },
+        {
+          "id": "q3_o4",
+          "label": "Field trip",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "fieldwork", "deltaWeight": 0.1, "category": "methods" }]
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "type": "choice",
+      "prompt": "Your energy on a new idea",
+      "options": [
+        {
+          "id": "q4_o1",
+          "label": "Start building",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "prototyping", "deltaWeight": 0.1, "category": "methods" }]
+        },
+        {
+          "id": "q4_o2",
+          "label": "Outline constraints",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "scoping", "deltaWeight": 0.1, "category": "methods" }]
+        },
+        {
+          "id": "q4_o3",
+          "label": "Collect references",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "reference_bank", "deltaWeight": 0.1, "category": "values" }]
+        },
+        {
+          "id": "q4_o4",
+          "label": "Explore adjacent spaces",
+          "tags": ["daring_explorer"],
+          "effects": [
+            { "conceptKey": "adjacent_possible", "deltaWeight": 0.1, "category": "values" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "type": "choice",
+      "prompt": "What feels satisfying?",
+      "options": [
+        {
+          "id": "q5_o1",
+          "label": "Shipping v1",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "ship_it", "deltaWeight": 0.1, "category": "traits" }]
+        },
+        {
+          "id": "q5_o2",
+          "label": "Cutting to essence",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "essence", "deltaWeight": 0.1, "category": "values" }]
+        },
+        {
+          "id": "q5_o3",
+          "label": "Lighting people up",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "spark", "deltaWeight": 0.1, "category": "values" }]
+        },
+        {
+          "id": "q5_o4",
+          "label": "Going off‑map",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "offroad", "deltaWeight": 0.1, "category": "traits" }]
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "type": "choice",
+      "prompt": "Your default collaboration move",
+      "options": [
+        {
+          "id": "q6_o1",
+          "label": "Make a demo",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "demo_first", "deltaWeight": 0.08, "category": "methods" }]
+        },
+        {
+          "id": "q6_o2",
+          "label": "Edit the brief",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "clarify", "deltaWeight": 0.08, "category": "methods" }]
+        },
+        {
+          "id": "q6_o3",
+          "label": "Mood set / vibes",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "tone", "deltaWeight": 0.08, "category": "values" }]
+        },
+        {
+          "id": "q6_o4",
+          "label": "Scout references",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "scout", "deltaWeight": 0.08, "category": "methods" }]
+        }
+      ]
+    },
+    {
+      "id": "q7",
+      "type": "choice",
+      "prompt": "Pick a constraint to break",
+      "options": [
+        {
+          "id": "q7_o1",
+          "label": "Do it live",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "live_fire", "deltaWeight": 0.08, "category": "traits" }]
+        },
+        {
+          "id": "q7_o2",
+          "label": "Remove fluff",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "unfluff", "deltaWeight": 0.08, "category": "methods" }]
+        },
+        {
+          "id": "q7_o3",
+          "label": "Raise the bar",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "raise_bar", "deltaWeight": 0.08, "category": "values" }]
+        },
+        {
+          "id": "q7_o4",
+          "label": "Flip the script",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "flip", "deltaWeight": 0.08, "category": "traits" }]
+        }
+      ]
+    },
+    {
+      "id": "q8",
+      "type": "choice",
+      "prompt": "What do people thank you for?",
+      "options": [
+        {
+          "id": "q8_o1",
+          "label": "Getting it working",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "unblock", "deltaWeight": 0.08, "category": "traits" }]
+        },
+        {
+          "id": "q8_o2",
+          "label": "Making it clear",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "clarity", "deltaWeight": 0.08, "category": "values" }]
+        },
+        {
+          "id": "q8_o3",
+          "label": "Making it exciting",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "excitement", "deltaWeight": 0.08, "category": "values" }]
+        },
+        {
+          "id": "q8_o4",
+          "label": "Taking them somewhere new",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "adventure", "deltaWeight": 0.08, "category": "values" }]
+        }
+      ]
+    },
+    {
+      "id": "q9",
+      "type": "choice",
+      "prompt": "Choose a motto",
+      "options": [
+        {
+          "id": "q9_o1",
+          "label": "Make to learn",
+          "tags": ["methods_maker"],
+          "effects": [{ "conceptKey": "do_to_know", "deltaWeight": 0.08, "category": "values" }]
+        },
+        {
+          "id": "q9_o2",
+          "label": "Less but better",
+          "tags": ["judgment_editor"],
+          "effects": [{ "conceptKey": "less_better", "deltaWeight": 0.08, "category": "values" }]
+        },
+        {
+          "id": "q9_o3",
+          "label": "Make it sing",
+          "tags": ["passion_muse"],
+          "effects": [{ "conceptKey": "sing", "deltaWeight": 0.08, "category": "values" }]
+        },
+        {
+          "id": "q9_o4",
+          "label": "Seek the edges",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "edges", "deltaWeight": 0.08, "category": "values" }]
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "type": "slider",
+      "prompt": "Pick your comfort with uncertainty",
+      "options": [
+        {
+          "id": "q10_o1",
+          "label": "Low → High",
+          "tags": ["daring_explorer"],
+          "effects": [{ "conceptKey": "ambiguity", "deltaWeight": 0.1, "category": "traits" }]
+        }
+      ]
+    }
+  ],
+  "resultMapping": {
+    "compositeTop": 5,
+    "threshold": 0.15
+  }
+}
