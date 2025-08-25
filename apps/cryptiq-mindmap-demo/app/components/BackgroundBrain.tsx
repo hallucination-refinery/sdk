@@ -14,8 +14,8 @@ export default function BackgroundBrain() {
   const conceptArray = useMemo(() => (concepts as Node[]) || [], [concepts])
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }} aria-hidden>
-      <Canvas camera={{ position: [0, 80, 220], fov: 45 }} gl={{ antialias: true, alpha: false }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }} aria-hidden>
+      <Canvas camera={{ position: [0, 80, 220], fov: 45 }} gl={{ antialias: true, alpha: true }}>
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
@@ -54,5 +54,3 @@ export default function BackgroundBrain() {
     </div>
   )
 }
-
-

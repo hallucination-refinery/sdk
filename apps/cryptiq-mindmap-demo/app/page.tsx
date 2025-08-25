@@ -86,9 +86,12 @@ export default function Home() {
     // telemetry stub
     console.log('[Landing] viewed')
   }, [])
-  const BackgroundBrain = useMemo(() => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }), [])
+  const BackgroundBrain = useMemo(
+    () => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }),
+    []
+  )
   return (
-    <main style={{ position: 'relative', width: '100vw', height: '100vh', background: '#010c2a' }}>
+    <main style={{ position: 'relative', width: '100vw', height: '100vh', background: '#010c2a', overflow: 'hidden' }}>
       <BackgroundBrain />
       <IntroParticles />
       <HUDPrompt />

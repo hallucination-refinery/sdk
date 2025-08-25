@@ -86,6 +86,7 @@ export default function ResultPage() {
         background: '#010c2a',
         color: '#cfe8ff',
         fontFamily: 'system-ui,sans-serif',
+        overflow: 'hidden',
       }}
     >
       {dynamic(() => import('../../components/BackgroundBrain'), { ssr: false }) as any}
