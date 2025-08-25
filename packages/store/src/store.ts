@@ -10,6 +10,7 @@ import { createGraphSlice, GraphSlice } from './slices/graph-slice'
 import { createUISlice, UISlice } from './slices/ui-slice'
 import { createAsyncSlice, AsyncSlice } from './slices/async-slice'
 import { createMindmapSlice, MindmapSlice } from './slices/mindmapSlice'
+import { createQuizSlice, QuizSlice } from './slices/quiz-slice'
 import { CommandQueue } from './command-queue'
 import type { RendererCommand } from './types/renderer-commands'
 
@@ -17,7 +18,7 @@ import type { RendererCommand } from './types/renderer-commands'
 enableMapSet()
 
 // Combined store type
-export type RefineryStore = GraphSlice & UISlice & AsyncSlice & MindmapSlice & {
+export type RefineryStore = GraphSlice & UISlice & AsyncSlice & MindmapSlice & QuizSlice & {
   commandQueue: CommandQueue
   enqueueCommand: (command: RendererCommand) => void
   enqueueCommands: (commands: RendererCommand[]) => void
@@ -36,6 +37,7 @@ export const useRefineryStore = create<RefineryStore>()(
       ...createUISlice(set, get),
       ...createAsyncSlice(set, get),
       ...createMindmapSlice(set, get),
+      ...createQuizSlice(set, get),
       
       // Command queue integration
       commandQueue,
