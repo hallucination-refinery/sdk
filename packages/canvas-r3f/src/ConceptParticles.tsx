@@ -26,6 +26,10 @@ export interface ConceptParticlesProps {
   renderMode?: 'points' | 'spheres'
   /** Camera for size calculations in screenshot mode */
   camera?: THREE.Camera
+  /** Optional intro animation toggle (scatter → assemble → glow) */
+  intro?: boolean
+  /** Intro duration in milliseconds (default 1200) */
+  introDurationMs?: number
 }
 
 interface InstanceData {
@@ -262,6 +266,8 @@ export function ConceptParticles({
   surfaceOffset = 0,
   renderMode = 'points',
   camera,
+  intro = false,
+  introDurationMs = 1200,
 }: ConceptParticlesProps) {
   const pointsRef = useRef<THREE.Points>(null)
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null)
@@ -272,6 +278,11 @@ export function ConceptParticles({
   const tempMatrix = useMemo(() => new THREE.Matrix4(), [])
   const tempColor = useMemo(() => new THREE.Color(), [])
   const sphereGeometry = useMemo(() => new THREE.SphereGeometry(1, 8, 6), [])
+  // Reduced motion preference
+  const reduceMotion = useMemo(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
 
   // Create instance data for up to 500 concepts
   const instanceData = useMemo<InstanceData[]>(() => {
@@ -370,6 +381,7 @@ export function ConceptParticles({
     return new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
+        pulse: { value: 0 },
       },
       vertexShader: `
         // instanceMatrix and instanceColor are provided by three.js for InstancedMesh
@@ -391,6 +403,7 @@ export function ConceptParticles({
       `,
       fragmentShader: `
         uniform float time;
+        uniform float pulse;
         varying vec3 vNormal;
         varying vec3 vPosition;
         varying vec3 vColor;
@@ -408,8 +421,8 @@ export function ConceptParticles({
           // Combined glow intensity
           float glowIntensity = coreGlow + rimGlow;
           
-          // Apply color with glow
-          vec3 glowColor = vColor * glowIntensity;
+          // Apply color with glow and pulse
+          vec3 glowColor = vColor * glowIntensity * (1.0 + pulse);
           
           gl_FragColor = vec4(glowColor, 0.8);
         }
@@ -445,6 +458,29 @@ export function ConceptParticles({
     return 1
   }, [effectiveCamera, renderMode, vertices])
 
+  // Intro animation data (scatter → assemble → glow)
+  const introStartRef = useRef<number | null>(null)
+  const introDoneRef = useRef<boolean>(false)
+  const pulseStartRef = useRef<number | null>(null)
+  const { centroid: cloudCentroid, maxRadius } = useMemo(() => {
+    if (vertices.length === 0) return { centroid: new THREE.Vector3(0, 0, 0), maxRadius: 50 }
+    const c = vertices.reduce((acc, v) => acc.add(v), new THREE.Vector3()).multiplyScalar(1 / vertices.length)
+    let r = 0
+    for (const v of vertices) r = Math.max(r, v.distanceTo(c))
+    return { centroid: c, maxRadius: r }
+  }, [vertices])
+
+  const scatterPositions = useMemo(() => {
+    const out: THREE.Vector3[] = []
+    const radius = Math.max(10, maxRadius * 2)
+    for (let i = 0; i < 500; i++) {
+      const dir = new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1).normalize()
+      const dist = radius * (0.5 + Math.random())
+      out.push(cloudCentroid.clone().add(dir.multiplyScalar(dist)))
+    }
+    return out
+  }, [cloudCentroid, maxRadius])
+
   // Update instanced mesh matrices and colors
   useFrame(() => {
     if (renderMode !== 'spheres' || !instancedMeshRef.current) return
@@ -452,6 +488,36 @@ export function ConceptParticles({
     const mesh = instancedMeshRef.current
     const targetPixelSize = 30 // target ~30px diameter for screenshot mode
     const worldRadius = worldUnitsPerPixel * targetPixelSize * 0.5
+
+    // Initialize intro
+    const introActive = intro && !reduceMotion
+    if (introActive && introStartRef.current == null) {
+      introStartRef.current = performance.now()
+    }
+    const now = performance.now()
+    let t = 1
+    if (introActive && !introDoneRef.current && introStartRef.current != null) {
+      const elapsed = now - introStartRef.current
+      const raw = Math.min(1, elapsed / Math.max(1, introDurationMs))
+      // ease in-out
+      t = raw < 0.5 ? 2.0 * raw * raw : -1.0 + (4.0 - 2.0 * raw) * raw
+      if (raw >= 1) {
+        introDoneRef.current = true
+        pulseStartRef.current = now
+      }
+    }
+    // Pulse after assemble
+    if (glowMaterial) {
+      const uniform = (glowMaterial as any).uniforms?.pulse
+      if (uniform) {
+        let pulse = 0
+        if (pulseStartRef.current != null) {
+          const pElapsed = (now - pulseStartRef.current) / 1000
+          pulse = Math.max(0, 0.6 * Math.exp(-3.0 * pElapsed))
+        }
+        uniform.value = pulse
+      }
+    }
 
     for (let i = 0; i < 500; i++) {
       const data = instanceData[i]
@@ -463,7 +529,16 @@ export function ConceptParticles({
       } else {
         // Set scale for target pixel size
         tempMatrix.makeScale(worldRadius, worldRadius, worldRadius)
-        tempMatrix.setPosition(data.position.x, data.position.y, data.position.z)
+        // Interpolate position if intro active
+        if (introActive && !introDoneRef.current) {
+          const s = scatterPositions[i]
+          const x = s.x * (1 - t) + data.position.x * t
+          const y = s.y * (1 - t) + data.position.y * t
+          const z = s.z * (1 - t) + data.position.z * t
+          tempMatrix.setPosition(x, y, z)
+        } else {
+          tempMatrix.setPosition(data.position.x, data.position.y, data.position.z)
+        }
         tempColor.copy(data.color)
       }
 

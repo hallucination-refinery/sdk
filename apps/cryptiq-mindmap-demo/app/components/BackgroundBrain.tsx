@@ -48,6 +48,8 @@ export default function BackgroundBrain() {
             activeLens="affinity"
             surfaceOffset={1.0}
             renderMode={'spheres'}
+            intro={true}
+            introDurationMs={1200}
           />
         )}
       </Canvas>
