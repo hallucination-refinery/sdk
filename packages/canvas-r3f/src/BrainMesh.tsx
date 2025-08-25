@@ -190,18 +190,17 @@ function BrainMeshGeometry({
           child.material = new THREE.MeshPhysicalMaterial({
             color: wireframeColor,
             transparent: true,
-            // With transmission active, keep opacity at 1 for proper energy behavior
-            opacity: 1,
-            transmission: physicalTransmission ?? 0.65,
-            thickness: physicalThickness ?? 0.8,
-            roughness: 0.9,
+            opacity,
+            transmission: physicalTransmission ?? 0.95,
+            thickness: physicalThickness ?? 0.22,
+            roughness: 0.6,
             metalness: 0.0,
-            ior: 1.3,
-            clearcoat: 0.05,
-            clearcoatRoughness: 1.0,
+            ior: 1.45,
+            clearcoat: 0.3,
+            clearcoatRoughness: 0.12,
             side: THREE.DoubleSide,
-            emissive: new THREE.Color(0x1ea7ff),
-            emissiveIntensity: 0.12,
+            emissive: new THREE.Color(0x1e7cff),
+            emissiveIntensity: 0.35,
             depthTest: true,
             depthWrite,
           })
@@ -237,6 +236,9 @@ export function BrainMesh({
   wireframe = true,
   depthWrite = true,
   visible = true,
+  usePhysical,
+  physicalTransmission,
+  physicalThickness,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -266,6 +268,9 @@ export function BrainMesh({
           lineWidth={lineWidth}
           wireframe={wireframe}
           depthWrite={depthWrite}
+          usePhysical={usePhysical}
+          physicalTransmission={physicalTransmission}
+          physicalThickness={physicalThickness}
           onVerticesLoaded={onVerticesLoaded}
           onLoadingChange={onLoadingChange}
           onLoadStart={onLoadStart}

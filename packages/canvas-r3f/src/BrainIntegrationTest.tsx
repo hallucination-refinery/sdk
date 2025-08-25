@@ -686,7 +686,7 @@ export function BrainIntegrationTest({
       <Canvas
         camera={{ position: [0, 80, 220], fov: 45 }}
         gl={{ antialias: true, alpha: false }}
-        style={{ background: '#000' }}
+        style={{ background: '#010C2A' }}
       >
         <CameraFitter
           vertices={state.brainVertices}
@@ -719,13 +719,13 @@ export function BrainIntegrationTest({
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={isScreenshotMode ? '#0A1A30' : '#3eb4ff'}
-            opacity={isScreenshotMode ? 1 : 1}
+            wireframeColor={isScreenshotMode ? '#081E4A' : '#3eb4ff'}
+            opacity={isScreenshotMode ? 0.22 : 1}
             wireframe={!isScreenshotMode}
             depthWrite={isScreenshotMode ? false : false}
             usePhysical={isScreenshotMode}
-            physicalTransmission={0.65}
-            physicalThickness={0.8}
+            physicalTransmission={0.95}
+            physicalThickness={0.22}
             scale={1}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
