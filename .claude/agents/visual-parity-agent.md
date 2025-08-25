@@ -17,7 +17,9 @@ Protocol
   **Stage 1: Camera/Framing** (max 10 iterations)
   - Target: Brain fills 70-80% of frame height
   - Adjust: Camera distance via env flags
-  - Success: Coverage metric in range
+  - CRITICAL: Camera z must stay between 400-900 (bounds check)
+  - WARNING: Coverage >85% indicates over-zoom - STOP and back off
+  - Success: Coverage metric in range 70-80% (NOT higher)
   
   **Stage 2: Particle Count** (max 10 iterations)
   - Target: 200+ visible particles
@@ -43,11 +45,13 @@ Protocol
   - Flag any regressions in coverage, particles, colors
 
 - Achievable Metrics Focus
-  - Brain coverage: 70–80% of frame
+  - Brain coverage: 70–80% of frame (STRICT - not >80%)
   - Particle count: 200–400 visible
   - Color diversity: 5+ hues
   - Debug overlay: Absent
   - NO pixel-diff comparison with reference
+  - BOUNDS: Camera z-position must stay within [400, 900]
+  - SAFETY: If coverage exceeds 85%, immediately increase camera distance
 
 Outputs
 

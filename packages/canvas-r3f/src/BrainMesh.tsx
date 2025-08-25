@@ -25,6 +25,12 @@ export interface BrainMeshProps {
   visible?: boolean
   /** Whether to render as wireframe (true) or solid (false) */
   wireframe?: boolean
+  /** Use MeshPhysicalMaterial with transmission (screenshot A/B) */
+  usePhysical?: boolean
+  /** Optional physical material transmission (0..1) */
+  physicalTransmission?: number
+  /** Optional physical material thickness (>0) */
+  physicalThickness?: number
   /** Callback when vertices are extracted from the mesh */
   onVerticesLoaded?: (vertices: THREE.Vector3[]) => void
   /** Callback when loading state changes */
@@ -44,6 +50,9 @@ function BrainMeshGeometry({
   lineWidth = 1,
   wireframe = true,
   depthWrite = true,
+  usePhysical = false,
+  physicalTransmission,
+  physicalThickness,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -57,6 +66,9 @@ function BrainMeshGeometry({
   | 'lineWidth'
   | 'wireframe'
   | 'depthWrite'
+  | 'usePhysical'
+  | 'physicalTransmission'
+  | 'physicalThickness'
   | 'onVerticesLoaded'
   | 'onLoadingChange'
   | 'onLoadStart'
@@ -173,17 +185,40 @@ function BrainMeshGeometry({
           depthWrite,
         })
       } else {
-        // Solid surface with proper lighting
-        child.material = new THREE.MeshPhongMaterial({
-          color: wireframeColor,
-          transparent: true,
-          opacity,
-          side: THREE.DoubleSide,
-          shininess: 30,
-          specular: 0x222222,
-          depthTest: true,
-          depthWrite,
-        })
+        // Solid surface: Physical (with transmission) or Phong
+        if (usePhysical) {
+          child.material = new THREE.MeshPhysicalMaterial({
+            color: wireframeColor,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            opacity,
+            transmission: physicalTransmission ?? 0.2,
+            thickness: physicalThickness ?? 0.2,
+            roughness: 0.6,
+            metalness: 0.0,
+            ior: 1.45,
+            clearcoat: 0.35,
+            clearcoatRoughness: 0.1,
+            side: THREE.FrontSide,
+            emissive: new THREE.Color(0x1e7cff),
+            emissiveIntensity: 0.3,
+            depthTest: true,
+            depthWrite,
+          })
+        } else {
+          child.material = new THREE.MeshPhongMaterial({
+            color: wireframeColor,
+            transparent: true,
+            opacity,
+            side: THREE.DoubleSide,
+            shininess: 40,
+            specular: 0x222222,
+            emissive: new THREE.Color(0x0f8ed0),
+            emissiveIntensity: 0.1,
+            depthTest: true,
+            depthWrite,
+          })
+        }
       }
     }
   })
@@ -202,6 +237,9 @@ export function BrainMesh({
   wireframe = true,
   depthWrite = true,
   visible = true,
+  usePhysical,
+  physicalTransmission,
+  physicalThickness,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -231,6 +269,9 @@ export function BrainMesh({
           lineWidth={lineWidth}
           wireframe={wireframe}
           depthWrite={depthWrite}
+          usePhysical={usePhysical}
+          physicalTransmission={physicalTransmission}
+          physicalThickness={physicalThickness}
           onVerticesLoaded={onVerticesLoaded}
           onLoadingChange={onLoadingChange}
           onLoadStart={onLoadStart}
