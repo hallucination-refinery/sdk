@@ -198,7 +198,7 @@ function BrainMeshGeometry({
             ior: 1.45,
             clearcoat: 0.3,
             clearcoatRoughness: 0.12,
-            side: THREE.DoubleSide,
+            side: THREE.FrontSide,
             emissive: new THREE.Color(0x1e7cff),
             emissiveIntensity: 0.35,
             depthTest: true,
