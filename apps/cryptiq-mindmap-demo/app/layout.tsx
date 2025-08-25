@@ -24,7 +24,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable}`} style={{ background: '#010c2a' }}>
+        {/* Always-on brain background */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <div id="brain-bg-root">
+          {/* Client component renders the R3F brain behind all pages */}
+          {/* @ts-expect-error Server/Client boundary */}
+          <noscript />
+        </div>
         {children}
       </body>
     </html>
