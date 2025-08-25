@@ -720,12 +720,12 @@ export function BrainIntegrationTest({
           <BrainMesh
             modelPath="/models/brain.obj"
             wireframeColor={isScreenshotMode ? '#081E4A' : '#3eb4ff'}
-            opacity={isScreenshotMode ? 0.12 : 1}
+            opacity={isScreenshotMode ? 0.08 : 1}
             wireframe={!isScreenshotMode}
             depthWrite={isScreenshotMode ? false : false}
             usePhysical={isScreenshotMode}
-            physicalTransmission={0.95}
-            physicalThickness={0.22}
+            physicalTransmission={0.2}
+            physicalThickness={0.25}
             scale={1}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
