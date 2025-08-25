@@ -193,7 +193,7 @@ function BrainMeshGeometry({
             blending: THREE.AdditiveBlending,
             opacity,
             transmission: physicalTransmission ?? 0.2,
-            thickness: physicalThickness ?? 0.25,
+            thickness: physicalThickness ?? 0.2,
             roughness: 0.6,
             metalness: 0.0,
             ior: 1.45,
@@ -201,7 +201,7 @@ function BrainMeshGeometry({
             clearcoatRoughness: 0.1,
             side: THREE.FrontSide,
             emissive: new THREE.Color(0x1e7cff),
-            emissiveIntensity: 0.28,
+            emissiveIntensity: 0.3,
             depthTest: true,
             depthWrite,
           })
