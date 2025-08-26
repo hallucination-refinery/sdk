@@ -108,7 +108,7 @@ export default function BackgroundBrain() {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }} aria-hidden>
+    <div style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none' }} aria-hidden>
       <Canvas
         camera={{ position: [0, 80, 220], fov: 45 }}
         gl={{ antialias: true, alpha: false }}
@@ -164,7 +164,6 @@ export default function BackgroundBrain() {
             intro={true}
             introDurationMs={2000}
             mappedIndices={mappedIndices}
-            
           />
         )}
       </Canvas>
