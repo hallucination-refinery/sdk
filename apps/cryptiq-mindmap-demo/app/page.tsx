@@ -19,8 +19,10 @@ function IntroParticles() {
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(ellipse at center, #071222, #02060e)',
+        background: 'transparent',
         overflow: 'hidden',
+        pointerEvents: 'none',
+        zIndex: 0,
       }}
     >
       {!reduce && (
@@ -48,6 +50,7 @@ function HUDPrompt() {
         display: 'flex',
         gap: 12,
         alignItems: 'center',
+        zIndex: 10,
       }}
     >
       <button
@@ -91,7 +94,15 @@ export default function Home() {
     []
   )
   return (
-    <main style={{ position: 'relative', width: '100vw', height: '100vh', background: '#010c2a', overflow: 'hidden' }}>
+    <main
+      style={{
+        position: 'relative',
+        width: '100vw',
+        height: '100vh',
+        background: '#010c2a',
+        overflow: 'hidden',
+      }}
+    >
       <BackgroundBrain />
       <IntroParticles />
       <HUDPrompt />

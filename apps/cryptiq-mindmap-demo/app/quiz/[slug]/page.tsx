@@ -28,6 +28,10 @@ export default function QuizPage() {
   const params = useParams<{ slug: string }>()
   const state = useRefineryStore()
   const [loading, setLoading] = useState(true)
+  const BackgroundBrain = useMemo(
+    () => dynamic(() => import('../../components/BackgroundBrain'), { ssr: false }),
+    []
+  )
 
   useEffect(() => {
     const run = async () => {
@@ -72,9 +76,9 @@ export default function QuizPage() {
         overflow: 'hidden',
       }}
     >
-      {dynamic(() => import('../../components/BackgroundBrain'), { ssr: false }) as any}
+      <BackgroundBrain />
       <AnalysisBar value={analysis} />
-      <div style={{ paddingTop: 40, maxWidth: 880, margin: '0 auto' }}>
+      <div style={{ paddingTop: 40, maxWidth: 880, margin: '0 auto', position: 'relative', zIndex: 10 }}>
         {questions.map((q) => (
           <div key={q.id} style={{ margin: '16px 0', opacity: answeredIds.has(q.id) ? 0.6 : 1 }}>
             <div style={{ marginBottom: 8 }}>{q.prompt}</div>
