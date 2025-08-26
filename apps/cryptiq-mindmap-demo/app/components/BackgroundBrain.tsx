@@ -5,6 +5,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
 import { ConceptParticles } from '@refinery/canvas-r3f'
+import { calculateRegionBoundaries, getRegionVertices } from '@refinery/canvas-r3f/src/VertexMapper'
 import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
@@ -35,48 +36,32 @@ export default function BackgroundBrain() {
   }, [])
   const conceptArray = liveConcepts.length > 0 ? liveConcepts : ambientConcepts
 
-  // Even surface coverage using spherical binning (phi x theta grid)
+  // Use the same region-quota mapping as /brain
   const mappedIndices = useMemo(() => {
-    const desired = 500
     if (vertices.length === 0) return undefined
-    const centroid = vertices
-      .reduce((acc, v) => acc.add(v), new THREE.Vector3())
-      .multiplyScalar(1 / vertices.length)
-    const phiBins = 20
-    const thetaBins = 25
-    const bins: number[][] = Array.from({ length: phiBins * thetaBins }, () => [])
-    for (let i = 0; i < vertices.length; i++) {
-      const p = vertices[i].clone().sub(centroid)
-      if (p.lengthSq() === 0) continue
-      const r = p.length()
-      const nx = p.x / r
-      const ny = p.y / r
-      const nz = p.z / r
-      const phi = Math.atan2(ny, nx) // [-pi, pi]
-      const theta = Math.acos(Math.max(-1, Math.min(1, nz))) // [0, pi]
-      const pi = Math.min(
-        phiBins - 1,
-        Math.max(0, Math.floor(((phi + Math.PI) / (2 * Math.PI)) * phiBins))
-      )
-      const ti = Math.min(thetaBins - 1, Math.max(0, Math.floor((theta / Math.PI) * thetaBins)))
-      bins[ti * phiBins + pi].push(i)
+    const boundaries = calculateRegionBoundaries(vertices)
+    const R0 = getRegionVertices(vertices, 0, boundaries)
+    const R1 = getRegionVertices(vertices, 1, boundaries)
+    const R2 = getRegionVertices(vertices, 2, boundaries)
+    const R3 = getRegionVertices(vertices, 3, boundaries)
+    const N = 500
+    const q0 = Math.max(0, Math.floor(N * 0.3))
+    const q1 = Math.max(0, Math.floor(N * 0.25))
+    const q2 = Math.max(0, Math.floor(N * 0.25))
+    const q3 = Math.max(0, N - (q0 + q1 + q2))
+    const takeEven = (arr: number[], count: number): number[] => {
+      if (arr.length === 0 || count <= 0) return []
+      const step = Math.max(1, Math.floor(arr.length / count))
+      const out: number[] = []
+      for (let i = 0, j = 0; i < count; i++, j = (j + step) % arr.length) out.push(arr[j])
+      return out
     }
-    const out: number[] = []
-    let bi = 0
-    while (out.length < desired) {
-      let attempts = 0
-      while (attempts < bins.length && bins[bi].length === 0) {
-        bi = (bi + 1) % bins.length
-        attempts++
-      }
-      if (bins[bi].length === 0) break
-      const idx = bins[bi].pop() as number
-      out.push(idx)
-      bi = (bi + 1) % bins.length
-    }
-    // Fallback: pad with modulo indices
-    while (out.length < desired) out.push(out[out.length % Math.max(1, out.length)])
-    return out
+    return [
+      ...takeEven(R0, q0),
+      ...takeEven(R1, q1),
+      ...takeEven(R2, q2),
+      ...takeEven(R3, q3),
+    ]
   }, [vertices])
 
   // Brain intro animation (opacity/scale) in tandem with particles
