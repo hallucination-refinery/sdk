@@ -12,7 +12,7 @@ export default function BackgroundBrain() {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [brainOpacity, setBrainOpacity] = useState(0)
-  const [brainScale, setBrainScale] = useState(0.92)
+  const [brainScale, setBrainScale] = useState(0.9)
   const concepts = useMindmapStore().getVisibleConcepts()
   const liveConcepts = useMemo(() => (concepts as Node[]) || [], [concepts])
   const ambientConcepts = useMemo<Node[]>(() => {
@@ -50,7 +50,10 @@ export default function BackgroundBrain() {
       const nz = p.z / r
       const phi = Math.atan2(ny, nx) // [-pi, pi]
       const theta = Math.acos(Math.max(-1, Math.min(1, nz))) // [0, pi]
-      const pi = Math.min(phiBins - 1, Math.max(0, Math.floor(((phi + Math.PI) / (2 * Math.PI)) * phiBins)))
+      const pi = Math.min(
+        phiBins - 1,
+        Math.max(0, Math.floor(((phi + Math.PI) / (2 * Math.PI)) * phiBins))
+      )
       const ti = Math.min(thetaBins - 1, Math.max(0, Math.floor((theta / Math.PI) * thetaBins)))
       bins[ti * phiBins + pi].push(i)
     }
@@ -89,8 +92,8 @@ export default function BackgroundBrain() {
       const now = performance.now()
       const t = Math.min(1, (now - start) / (INTRO_MS + EXTRA_DELAY))
       const e = easeExpoInOut(t)
-      setBrainOpacity(0.1 * e)
-      setBrainScale(0.92 + 0.08 * e)
+      setBrainOpacity(0.18 * e)
+      setBrainScale(0.9 + 0.1 * e)
       if (t < 1) {
         raf = requestAnimationFrame(tick)
       }
