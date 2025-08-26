@@ -13,6 +13,7 @@ export default function BackgroundBrain() {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [brainOpacity, setBrainOpacity] = useState(0.04)
+  const [meshReady, setMeshReady] = useState(false)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
   const workerRef = useRef<Worker | null>(null)
   const concepts = useMindmapStore().getVisibleConcepts()
@@ -90,9 +91,10 @@ export default function BackgroundBrain() {
     return out
   }, [anchorPool, vertices, conceptArray])
 
-  // Brain shell fade-in (opacity only) after particles finish
+  // Brain shell fade-in (opacity only) after particles finish and mesh ready
   useEffect(() => {
     if (vertices.length === 0 || introStart != null) return
+    if (!meshReady) return
     // Wait for anchorPool fetch to resolve (null => still loading, [] => missing OK)
     if (conceptArray.length > 0 && anchorPool === null) return
     // Delay shell fade until particles finish: 1200ms + 300ms = 1500ms
@@ -124,7 +126,7 @@ export default function BackgroundBrain() {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [vertices, conceptArray.length, anchorPool, introStart])
+  }, [vertices, conceptArray.length, anchorPool, meshReady, introStart])
 
   function CameraFitter({ target = 0.72 }: { target?: number }) {
     const { camera } = useThree()
@@ -189,6 +191,7 @@ export default function BackgroundBrain() {
             physicalThickness={0.25}
             emissiveIntensity={0.3}
             onVerticesLoaded={setVertices}
+            onLoadComplete={() => setMeshReady(true)}
             visible={true}
           />
         </Suspense>

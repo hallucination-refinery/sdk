@@ -246,6 +246,7 @@ export function BrainMesh({
   depthWrite = true,
   visible = true,
   usePhysical,
+  blending,
   physicalTransmission,
   physicalThickness,
   onVerticesLoaded,
@@ -281,6 +282,7 @@ export function BrainMesh({
           wireframe={wireframe}
           depthWrite={depthWrite}
           usePhysical={usePhysical}
+          blending={blending}
           physicalTransmission={physicalTransmission}
           physicalThickness={physicalThickness}
           onVerticesLoaded={onVerticesLoaded}
@@ -306,14 +308,16 @@ function OpacitySync({
     if (!group) return
     group.traverse((obj) => {
       const mesh = obj as unknown as THREE.Mesh
-      const mat = (mesh && (mesh as unknown as { material?: THREE.Material }).material) as
-        | THREE.Material
-        | undefined
-      if (mat && 'opacity' in mat) {
-        ;(mat as unknown as { opacity: number }).opacity = opacity
-        ;(mat as unknown as { transparent: boolean }).transparent = true
-        mat.needsUpdate = true
+      const m = (mesh as any).material
+      const apply = (mat: THREE.Material) => {
+        if ('opacity' in mat) {
+          ;(mat as any).opacity = opacity
+          ;(mat as any).transparent = true
+          mat.needsUpdate = true
+        }
       }
+      if (Array.isArray(m)) (m as THREE.Material[]).forEach(apply)
+      else if (m) apply(m as THREE.Material)
     })
   }, [groupRef, opacity])
   return null
