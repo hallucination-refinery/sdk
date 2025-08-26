@@ -353,6 +353,20 @@ export function BrainIntegrationTest({
         )
       }
 
+      // Export anchors for landing parity: localStorage + window hook (dev convenience)
+      try {
+        if (typeof window !== 'undefined') {
+          const payload = JSON.stringify({ indices: anchorPool })
+          window.localStorage.setItem('cryptiq:anchors:brain.obj:500', payload)
+          ;(window as any).__anchors = anchorPool
+          if (debug) {
+            console.log('[Anchors] saved to localStorage', anchorPool.length)
+          }
+        }
+      } catch (_err) {
+        // no-op: export is a dev convenience only
+      }
+
       // 4) Map concepts deterministically to anchor pool order
       const mappedIndices: number[] = conceptIds.map((_, i) => anchorPool[i % anchorPool.length])
 

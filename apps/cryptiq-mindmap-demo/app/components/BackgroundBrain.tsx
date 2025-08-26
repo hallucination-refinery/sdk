@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useState, useEffect } from 'react'
+import { Suspense, useMemo, useState, useEffect, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
@@ -14,6 +14,7 @@ export default function BackgroundBrain() {
   const [brainOpacity, setBrainOpacity] = useState(0)
   const [brainScale, setBrainScale] = useState(0.9)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
+  const workerRef = useRef<Worker | null>(null)
   const concepts = useMindmapStore().getVisibleConcepts()
   const liveConcepts = useMemo(() => (concepts as Node[]) || [], [concepts])
   const ambientConcepts = useMemo<Node[]>(() => {
@@ -43,6 +44,7 @@ export default function BackgroundBrain() {
         const arr: number[] = Array.isArray(json) ? json : json.indices
         if (!cancelled && Array.isArray(arr)) setAnchorPool(arr)
       } catch {
+        // No shipped anchors: compute in a worker once vertices are available
         if (!cancelled) setAnchorPool([])
       }
     })()
@@ -50,6 +52,31 @@ export default function BackgroundBrain() {
       cancelled = true
     }
   }, [])
+
+  // If no static anchors, compute an anchor pool off-thread once we have vertices
+  useEffect(() => {
+    if (anchorPool === null) return // still trying static
+    if (anchorPool.length > 0) return // already have static
+    if (vertices.length === 0) return // need vertices
+    if (workerRef.current) return // already computing
+    try {
+      const w = new Worker(new URL('./brainAnchors.worker.ts', import.meta.url), {
+        type: 'module',
+      })
+      workerRef.current = w
+      w.onmessage = (e: MessageEvent<{ anchors?: number[]; error?: string }>) => {
+        if (e.data?.anchors && Array.isArray(e.data.anchors)) {
+          setAnchorPool(e.data.anchors)
+        }
+        w.terminate()
+        workerRef.current = null
+      }
+      const verts = vertices.slice(0, vertices.length).map((v) => ({ x: v.x, y: v.y, z: v.z }))
+      w.postMessage({ vertices: verts, count: Math.min(500, conceptArray.length) })
+    } catch {
+      // If worker fails, leave anchorPool as [] so we still render with hash fallback
+    }
+  }, [anchorPool, vertices, conceptArray.length])
 
   // Build mappedIndices exactly how /brain does it: concept index → anchorPool[i % L].
   const mappedIndices = useMemo(() => {
@@ -143,7 +170,7 @@ export default function BackgroundBrain() {
         </Suspense>
 
         {/* Concept Orbs */}
-        {vertices.length > 0 && conceptArray.length > 0 && mappedIndices && (
+        {vertices.length > 0 && conceptArray.length > 0 && (
           <ConceptParticles
             concepts={conceptArray}
             vertices={vertices}
