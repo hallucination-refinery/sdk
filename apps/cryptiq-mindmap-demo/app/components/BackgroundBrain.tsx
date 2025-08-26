@@ -92,7 +92,7 @@ export default function BackgroundBrain() {
       const now = performance.now()
       const t = Math.min(1, (now - start) / (INTRO_MS + EXTRA_DELAY))
       const e = easeExpoInOut(t)
-      setBrainOpacity(0.18 * e)
+      setBrainOpacity(0.32 * e)
       setBrainScale(0.9 + 0.1 * e)
       if (t < 1) {
         raf = requestAnimationFrame(tick)
