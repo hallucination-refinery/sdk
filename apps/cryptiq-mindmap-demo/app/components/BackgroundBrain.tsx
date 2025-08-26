@@ -8,6 +8,7 @@ import { ConceptParticles } from '@refinery/canvas-r3f'
 import { calculateRegionBoundaries, getRegionVertices } from '@refinery/canvas-r3f'
 import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
+import { Environment } from '@react-three/drei'
 
 export default function BackgroundBrain() {
   const isScreenshotMode =
@@ -24,7 +25,7 @@ export default function BackgroundBrain() {
     // Fallback: 500 ambient nodes so intro animation always plays
     const cats = ['values', 'traits', 'emotions', 'coping', 'goals']
     return Array.from(
-      { length: 500 },
+      { length: 1000 },
       (_, i) =>
         ({
           id: `ambient-${i + 1}`,
@@ -34,7 +35,7 @@ export default function BackgroundBrain() {
         }) as Node
     )
   }, [])
-  const conceptArray = liveConcepts.length > 0 ? liveConcepts : ambientConcepts
+  const conceptArray = (liveConcepts.length > 0 ? liveConcepts : ambientConcepts).slice(0, 1000)
 
   // Use the same region-quota mapping as /brain
   const mappedIndices = useMemo(() => {
@@ -86,7 +87,7 @@ export default function BackgroundBrain() {
     return () => cancelAnimationFrame(raf)
   }, [vertices, introStart])
 
-  function CameraFitter({ target = 0.65 }: { target?: number }) {
+  function CameraFitter({ target = 0.72 }: { target?: number }) {
     const { camera } = useThree()
     useMemo(() => {
       if (vertices.length === 0) return
@@ -111,13 +112,23 @@ export default function BackgroundBrain() {
       <Canvas
         camera={{ position: [0, 80, 220], fov: 45 }}
         gl={{ antialias: true, alpha: false }}
+        onCreated={({ gl }) => {
+          gl.outputColorSpace = THREE.SRGBColorSpace
+          gl.toneMapping = THREE.ACESFilmicToneMapping
+          gl.toneMappingExposure = 1.0
+          ;(gl as any).physicallyCorrectLights = true
+          const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1
+          gl.setPixelRatio(dpr)
+        }}
         style={{ background: '#010C2A' }}
       >
-        <CameraFitter target={0.65} />
+        <CameraFitter />
         {/* Lights */}
         <ambientLight intensity={1} />
-        <directionalLight position={[10, 10, 5]} intensity={0.6} />
-        <directionalLight position={[-8, 6, -4]} intensity={0.3} color={0x3eb4ff} />
+        <hemisphereLight args={[0x223355, 0x000011, 0.08]} />
+        <directionalLight position={[10, 10, 5]} intensity={0.5} />
+        <directionalLight position={[-8, 6, -4]} intensity={0.25} color={0x2bc7ff} />
+        <Environment preset="studio" background={false} blur={0.3} />
 
         {/* Brain Mesh */}
         <Suspense fallback={null}>
@@ -128,6 +139,10 @@ export default function BackgroundBrain() {
             wireframe={!isScreenshotMode}
             depthWrite={false}
             usePhysical={isScreenshotMode}
+            useTwoPass={isScreenshotMode}
+            rimColor="#2BC7FF"
+            rimStrength={0.5}
+            rimPower={2.5}
             physicalTransmission={0.2}
             physicalThickness={0.25}
             scale={brainScale}
@@ -147,8 +162,9 @@ export default function BackgroundBrain() {
             surfaceOffset={1.0}
             renderMode={'spheres'}
             intro={true}
-            introDurationMs={1200}
+            introDurationMs={2000}
             mappedIndices={mappedIndices}
+            
           />
         )}
       </Canvas>
