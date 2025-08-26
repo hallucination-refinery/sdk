@@ -35,8 +35,6 @@ export interface BrainMeshProps {
   blending?: THREE.Blending
   /** Optional emissive intensity override for physical/phong */
   emissiveIntensity?: number
-  /** Optional render order for the surface mesh */
-  surfaceRenderOrder?: number
   /** Callback when vertices are extracted from the mesh */
   onVerticesLoaded?: (vertices: THREE.Vector3[]) => void
   /** Callback when loading state changes */
@@ -61,7 +59,6 @@ function BrainMeshGeometry({
   physicalThickness,
   blending,
   emissiveIntensity,
-  surfaceRenderOrder,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -80,7 +77,6 @@ function BrainMeshGeometry({
   | 'physicalThickness'
   | 'blending'
   | 'emissiveIntensity'
-  | 'surfaceRenderOrder'
   | 'onVerticesLoaded'
   | 'onLoadingChange'
   | 'onLoadStart'
@@ -232,9 +228,6 @@ function BrainMeshGeometry({
           })
         }
       }
-      if (typeof surfaceRenderOrder === 'number') {
-        child.renderOrder = surfaceRenderOrder
-      }
     }
   })
 
@@ -253,10 +246,8 @@ export function BrainMesh({
   depthWrite = true,
   visible = true,
   usePhysical,
-  blending,
   physicalTransmission,
   physicalThickness,
-  surfaceRenderOrder,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -290,10 +281,8 @@ export function BrainMesh({
           wireframe={wireframe}
           depthWrite={depthWrite}
           usePhysical={usePhysical}
-          blending={blending}
           physicalTransmission={physicalTransmission}
           physicalThickness={physicalThickness}
-          surfaceRenderOrder={surfaceRenderOrder}
           onVerticesLoaded={onVerticesLoaded}
           onLoadingChange={onLoadingChange}
           onLoadStart={onLoadStart}
@@ -313,50 +302,19 @@ function OpacitySync({
   opacity: number
 }) {
   useEffect(() => {
-    if (!groupRef) return
-    let cancelled = false
-    let attempts = 0
-
-    const applyOnce = () => {
-      if (cancelled) return
-      const group = groupRef.current
-      if (!group) {
-        if (attempts++ < 6) requestAnimationFrame(applyOnce)
-        return
+    const group = groupRef.current
+    if (!group) return
+    group.traverse((obj) => {
+      const mesh = obj as unknown as THREE.Mesh
+      const mat = (mesh && (mesh as unknown as { material?: THREE.Material }).material) as
+        | THREE.Material
+        | undefined
+      if (mat && 'opacity' in mat) {
+        ;(mat as unknown as { opacity: number }).opacity = opacity
+        ;(mat as unknown as { transparent: boolean }).transparent = true
+        mat.needsUpdate = true
       }
-
-      let found = false
-      let foundCount = 0
-      group.traverse((obj) => {
-        const m = (obj as any).material
-        const applyMat = (mat: THREE.Material) => {
-          if (mat && 'opacity' in mat) {
-            ;(mat as any).opacity = opacity
-            ;(mat as any).transparent = true
-            mat.needsUpdate = true
-            found = true
-            foundCount++
-          }
-        }
-        if (Array.isArray(m)) (m as THREE.Material[]).forEach(applyMat)
-        else if (m) applyMat(m as THREE.Material)
-      })
-
-      if (found) {
-        // Temporary instrumentation: verify live materials were updated
-        // eslint-disable-next-line no-console
-        console.log('[OpacitySync] Materials updated', { foundCount, opacity, attempts })
-      }
-
-      if (!found && attempts++ < 8) {
-        requestAnimationFrame(applyOnce)
-      }
-    }
-
-    applyOnce()
-    return () => {
-      cancelled = true
-    }
+    })
   }, [groupRef, opacity])
   return null
 }

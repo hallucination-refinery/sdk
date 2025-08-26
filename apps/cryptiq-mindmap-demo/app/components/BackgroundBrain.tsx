@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useState, useEffect, useRef, useLayoutEffect } from 'react'
+import { Suspense, useMemo, useState, useEffect, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -10,11 +10,8 @@ import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
 export default function BackgroundBrain() {
-  const controlsRef = useRef<any>(null)
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
-  const [brainOpacity, setBrainOpacity] = useState(0.04)
-  const [meshReady, setMeshReady] = useState(false)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
   const workerRef = useRef<Worker | null>(null)
   const concepts = useMindmapStore().getVisibleConcepts()
@@ -92,10 +89,9 @@ export default function BackgroundBrain() {
     return out
   }, [anchorPool, vertices, conceptArray])
 
-  // Brain shell fade-in (opacity only) after particles finish and mesh ready
+  // Brain shell fade-in (opacity only) after particles finish
   useEffect(() => {
     if (vertices.length === 0 || introStart != null) return
-    if (!meshReady) return
     // Wait for anchorPool fetch to resolve (null => still loading, [] => missing OK)
     if (conceptArray.length > 0 && anchorPool === null) return
     // Delay shell fade until particles finish: 1200ms + 300ms = 1500ms
@@ -105,12 +101,7 @@ export default function BackgroundBrain() {
     const start = performance.now() + SHELL_DELAY_MS
     setIntroStart(start)
     const INTRO_MS = 1200
-    const EXTRA_DELAY = 0
-    const easeExpoInOut = (t: number) => {
-      if (t <= 0) return 0
-      if (t >= 1) return 1
-      return t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2
-    }
+    const EXTRA_DELAY = 400
     let raf = 0
     const tick = () => {
       const now = performance.now()
@@ -119,32 +110,17 @@ export default function BackgroundBrain() {
         return
       }
       const t = Math.min(1, (now - start) / (INTRO_MS + EXTRA_DELAY))
-      const e = easeExpoInOut(t)
-      setBrainOpacity(0.32 * e)
       if (t < 1) {
         raf = requestAnimationFrame(tick)
       }
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [vertices, conceptArray.length, anchorPool, meshReady, introStart])
+  }, [vertices, conceptArray.length, anchorPool, introStart])
 
-  function CameraFitter({
-    target = 0.72,
-    enableControls: controlsEnabled = false,
-    controlsRef,
-  }: {
-    target?: number
-    enableControls?: boolean
-    controlsRef?: React.RefObject<any>
-  }) {
+  function CameraFitter({ target = 0.72 }: { target?: number }) {
     const { camera } = useThree()
-    const fittedRef = useRef(false)
-    useLayoutEffect(() => {
-      if (fittedRef.current) return
-      if (controlsEnabled) {
-        // do an initial fit once, then stop to avoid fighting controls
-      }
+    useMemo(() => {
       if (vertices.length === 0) return
       const c = vertices
         .reduce((acc, v) => acc.add(v), new THREE.Vector3())
@@ -154,27 +130,13 @@ export default function BackgroundBrain() {
       if ((camera as THREE.Camera) && (camera as THREE.PerspectiveCamera).isPerspectiveCamera) {
         const fov = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180
         const z = r / Math.max(0.1, target * Math.tan(fov / 2))
-        camera.position.set(0, 80, z)
+        camera.position.set(0, 80, -z)
         camera.lookAt(0, 0, 0)
         ;(camera as THREE.PerspectiveCamera).updateProjectionMatrix()
-        if (controlsRef?.current) {
-          controlsRef.current.target.set(0, 0, 0)
-          controlsRef.current.update()
-        }
-        fittedRef.current = true
       }
-    }, [camera, vertices.length, target, controlsEnabled, controlsRef])
+    }, [camera, vertices, target])
     return null
   }
-
-  // Follow-up controls sync: if controls mount after fitter, update once
-  useLayoutEffect(() => {
-    if (controlsRef?.current) {
-      controlsRef.current.update()
-      // eslint-disable-next-line no-console
-      console.log('[CameraFitter] Controls post-mount update applied')
-    }
-  }, [controlsRef?.current])
 
   const enableControls = useMemo(() => {
     if (typeof window === 'undefined') return false
@@ -198,7 +160,7 @@ export default function BackgroundBrain() {
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#010C2A' }}
       >
-        <CameraFitter target={0.75} enableControls={enableControls} controlsRef={controlsRef} />
+        <CameraFitter target={0.75} />
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
@@ -209,18 +171,15 @@ export default function BackgroundBrain() {
           <BrainMesh
             modelPath="/models/brain.obj"
             wireframeColor={'#003375'}
-            opacity={brainOpacity}
+            opacity={0.08}
             scale={1}
-            wireframe={false}
+            wireframe={true}
             depthWrite={false}
             usePhysical={true}
-            blending={THREE.NormalBlending}
-            surfaceRenderOrder={2}
             physicalTransmission={0.2}
             physicalThickness={0.25}
-            emissiveIntensity={0.3}
+            emissiveIntensity={0.35}
             onVerticesLoaded={setVertices}
-            onLoadComplete={() => setMeshReady(true)}
             visible={true}
           />
         </Suspense>
@@ -231,17 +190,17 @@ export default function BackgroundBrain() {
             concepts={conceptArray}
             vertices={vertices}
             mappedIndices={mappedIndices ?? undefined}
-            particleSize={3}
+            particleSize={4}
             visible={true}
             activeLens="affinity"
             surfaceOffset={0.1}
             renderMode={'spheres'}
             intro={true}
-            introDurationMs={1200}
+            introDurationMs={2000}
           />
         )}
 
-        {enableControls && <OrbitControls ref={controlsRef} enableDamping dampingFactor={0.12} />}
+        {enableControls && <OrbitControls enableDamping dampingFactor={0.12} />}
       </Canvas>
     </div>
   )

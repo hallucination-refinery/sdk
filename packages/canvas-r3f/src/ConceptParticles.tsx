@@ -463,6 +463,7 @@ export function ConceptParticles({
   const introDoneRef = useRef<boolean>(false)
   const pulseStartRef = useRef<number | null>(null)
   const maxIntroDelayMs = 300
+  const glowDelayMs = 200
   // Per-instance randomized intro delay and swirl speed to match vendor behavior
   const instanceDelayMs = useMemo(() => {
     const arr = new Float32Array(500)
@@ -487,7 +488,7 @@ export function ConceptParticles({
   const ringBase = useMemo(() => {
     // Build a ring/spiral cloud around the centroid, sized relative to brain radius
     const out: { base: THREE.Vector3; radius: number; angle: number }[] = []
-    const baseRadius = Math.max(10, maxRadius * 2.0)
+    const baseRadius = Math.max(10, maxRadius * 1.5)
     for (let i = 0; i < 500; i++) {
       const a = (i / 500) * Math.PI * 2 + (Math.random() - 0.5) * 0.6
       const r = baseRadius * (0.6 + Math.random() * 0.8)
@@ -519,7 +520,8 @@ export function ConceptParticles({
       introStartRef.current = performance.now()
     }
     const now = performance.now()
-    const introAllDoneTime = (introStartRef.current ?? now) + introDurationMs + maxIntroDelayMs
+    const introAllDoneTime =
+      (introStartRef.current ?? now) + introDurationMs + maxIntroDelayMs + glowDelayMs
     if (
       introActive &&
       !introDoneRef.current &&
@@ -535,8 +537,12 @@ export function ConceptParticles({
       if (uniform) {
         let pulse = 0
         if (pulseStartRef.current != null) {
-          const pElapsed = (now - pulseStartRef.current) / 1000
-          pulse = Math.max(0, 0.6 * Math.exp(-2.0 * pElapsed))
+          // Attack–decay envelope: ~200ms charge-up then exponential decay at 2.0/s
+          const pElapsed = Math.max(0, now - pulseStartRef.current)
+          const attackMs = 200
+          const attack = Math.min(1, pElapsed / attackMs)
+          const decay = Math.exp(-2.0 * (pElapsed / 1000))
+          pulse = 0.8 * attack * decay
         }
         uniform.value = pulse
       }
