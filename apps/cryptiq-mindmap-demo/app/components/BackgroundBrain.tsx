@@ -10,6 +10,7 @@ import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
 export default function BackgroundBrain() {
+  const controlsRef = useRef<any>(null)
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [brainOpacity, setBrainOpacity] = useState(0.04)
@@ -131,9 +132,11 @@ export default function BackgroundBrain() {
   function CameraFitter({
     target = 0.72,
     enableControls: controlsEnabled = false,
+    controlsRef,
   }: {
     target?: number
     enableControls?: boolean
+    controlsRef?: React.RefObject<any>
   }) {
     const { camera } = useThree()
     const fittedRef = useRef(false)
@@ -154,9 +157,13 @@ export default function BackgroundBrain() {
         camera.position.set(0, 80, z)
         camera.lookAt(0, 0, 0)
         ;(camera as THREE.PerspectiveCamera).updateProjectionMatrix()
+        if (controlsRef?.current) {
+          controlsRef.current.target.set(0, 0, 0)
+          controlsRef.current.update()
+        }
         fittedRef.current = true
       }
-    }, [camera, vertices.length, target, controlsEnabled])
+    }, [camera, vertices.length, target, controlsEnabled, controlsRef])
     return null
   }
 
@@ -182,7 +189,7 @@ export default function BackgroundBrain() {
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#010C2A' }}
       >
-        <CameraFitter target={0.75} enableControls={enableControls} />
+        <CameraFitter target={0.75} enableControls={enableControls} controlsRef={controlsRef} />
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
@@ -199,6 +206,7 @@ export default function BackgroundBrain() {
             depthWrite={false}
             usePhysical={true}
             blending={THREE.NormalBlending}
+            surfaceRenderOrder={2}
             physicalTransmission={0.2}
             physicalThickness={0.25}
             emissiveIntensity={0.3}
@@ -224,7 +232,7 @@ export default function BackgroundBrain() {
           />
         )}
 
-        {enableControls && <OrbitControls enableDamping dampingFactor={0.12} />}
+        {enableControls && <OrbitControls ref={controlsRef} enableDamping dampingFactor={0.12} />}
       </Canvas>
     </div>
   )

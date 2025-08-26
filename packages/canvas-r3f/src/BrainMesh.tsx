@@ -35,6 +35,8 @@ export interface BrainMeshProps {
   blending?: THREE.Blending
   /** Optional emissive intensity override for physical/phong */
   emissiveIntensity?: number
+  /** Optional render order for the surface mesh */
+  surfaceRenderOrder?: number
   /** Callback when vertices are extracted from the mesh */
   onVerticesLoaded?: (vertices: THREE.Vector3[]) => void
   /** Callback when loading state changes */
@@ -59,6 +61,7 @@ function BrainMeshGeometry({
   physicalThickness,
   blending,
   emissiveIntensity,
+  surfaceRenderOrder,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -77,6 +80,7 @@ function BrainMeshGeometry({
   | 'physicalThickness'
   | 'blending'
   | 'emissiveIntensity'
+  | 'surfaceRenderOrder'
   | 'onVerticesLoaded'
   | 'onLoadingChange'
   | 'onLoadStart'
@@ -228,6 +232,9 @@ function BrainMeshGeometry({
           })
         }
       }
+      if (typeof surfaceRenderOrder === 'number') {
+        child.renderOrder = surfaceRenderOrder
+      }
     }
   })
 
@@ -249,6 +256,7 @@ export function BrainMesh({
   blending,
   physicalTransmission,
   physicalThickness,
+  surfaceRenderOrder,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -285,6 +293,7 @@ export function BrainMesh({
           blending={blending}
           physicalTransmission={physicalTransmission}
           physicalThickness={physicalThickness}
+          surfaceRenderOrder={surfaceRenderOrder}
           onVerticesLoaded={onVerticesLoaded}
           onLoadingChange={onLoadingChange}
           onLoadStart={onLoadStart}
