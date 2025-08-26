@@ -9,6 +9,10 @@ import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
 export default function BackgroundBrain() {
+  const isScreenshotMode =
+    typeof window !== 'undefined' &&
+    (process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1' ||
+      window.location.search.includes('screenshot'))
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [brainOpacity, setBrainOpacity] = useState(0)
@@ -124,7 +128,11 @@ export default function BackgroundBrain() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }} aria-hidden>
-      <Canvas camera={{ position: [0, 80, 220], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+      <Canvas
+        camera={{ position: [0, 80, 220], fov: 45 }}
+        gl={{ antialias: true, alpha: false }}
+        style={{ background: '#010C2A' }}
+      >
         <CameraFitter target={0.65} />
         {/* Lights */}
         <ambientLight intensity={1} />
@@ -135,15 +143,13 @@ export default function BackgroundBrain() {
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={'#081E4A'}
-            opacity={brainOpacity}
-            wireframe={false}
+            wireframeColor={isScreenshotMode ? '#081E4A' : '#3eb4ff'}
+            opacity={isScreenshotMode ? 0.08 : 1}
+            wireframe={!isScreenshotMode}
             depthWrite={false}
-            usePhysical={true}
+            usePhysical={isScreenshotMode}
             physicalTransmission={0.2}
-            physicalThickness={0.2}
-            blending={THREE.NormalBlending}
-            emissiveIntensity={0.35}
+            physicalThickness={0.25}
             scale={brainScale}
             onVerticesLoaded={setVertices}
             visible={true}
