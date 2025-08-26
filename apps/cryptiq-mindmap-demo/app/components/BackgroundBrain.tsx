@@ -5,7 +5,6 @@ import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
 import { ConceptParticles } from '@refinery/canvas-r3f'
-import { calculateRegionBoundaries, getRegionVertices } from '@refinery/canvas-r3f'
 import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
@@ -36,91 +35,6 @@ export default function BackgroundBrain() {
   }, [])
   const conceptArray = liveConcepts.length > 0 ? liveConcepts : ambientConcepts
 
-  // Exact mapping used by /brain: region quotas + farthest-point sampling + deterministic order
-  const mappedIndices = useMemo(() => {
-    if (vertices.length === 0 || conceptArray.length === 0) return undefined
-
-    const boundaries = calculateRegionBoundaries(vertices)
-    const R0 = getRegionVertices(vertices, 0, boundaries)
-    const R1 = getRegionVertices(vertices, 1, boundaries)
-    const R2 = getRegionVertices(vertices, 2, boundaries)
-    const R3 = getRegionVertices(vertices, 3, boundaries)
-
-    const N = conceptArray.length
-    const q0 = Math.max(0, Math.floor(N * 0.3))
-    const q1 = Math.max(0, Math.floor(N * 0.25))
-    const q2 = Math.max(0, Math.floor(N * 0.25))
-    const q3 = Math.max(0, N - (q0 + q1 + q2))
-
-    const hashSeed = (s: string): number => {
-      let h = 1779033703 ^ s.length
-      for (let i = 0; i < s.length; i++) {
-        h = Math.imul(h ^ s.charCodeAt(i), 3432918353)
-        h = (h << 13) | (h >>> 19)
-      }
-      return h >>> 0
-    }
-    const mulberry32 = (aInit: number) => {
-      let a = aInit >>> 0
-      return () => {
-        a += 0x6d2b79f5
-        let t = Math.imul(a ^ (a >>> 15), 1 | a)
-        t ^= t + Math.imul(t ^ (t >>> 7), 61 | t)
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-      }
-    }
-    const shuffleDeterministic = <T,>(arr: T[], seed: string): T[] => {
-      const rnd = mulberry32(hashSeed(seed))
-      const a = arr.slice()
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(rnd() * (i + 1))
-        ;[a[i], a[j]] = [a[j], a[i]]
-      }
-      return a
-    }
-    const farthestSample = (indices: number[], k: number, seed: string): number[] => {
-      if (indices.length === 0 || k <= 0) return []
-      const rnd = mulberry32(hashSeed(seed))
-      const picked: number[] = []
-      picked.push(indices[Math.floor(rnd() * indices.length)])
-      while (picked.length < Math.min(k, indices.length)) {
-        let bestIndex = -1
-        let bestDist = -1
-        for (const idx of indices) {
-          let minD = Infinity
-          const p = vertices[idx]
-          for (const sel of picked) {
-            const q = vertices[sel]
-            const d = p.distanceToSquared(q)
-            if (d < minD) minD = d
-          }
-          if (minD > bestDist) {
-            bestDist = minD
-            bestIndex = idx
-          }
-        }
-        if (bestIndex === -1) break
-        picked.push(bestIndex)
-      }
-      return picked
-    }
-
-    const anchors0 = farthestSample(R0, q0, 'fp-0')
-    const anchors1 = farthestSample(R1, q1, 'fp-1')
-    const anchors2 = farthestSample(R2, q2, 'fp-2')
-    const anchors3 = farthestSample(R3, q3, 'fp-3')
-    let anchorPool = [...anchors0, ...anchors1, ...anchors2, ...anchors3]
-    if (anchorPool.length < N) {
-      const remainder = N - anchorPool.length
-      const allIndices = vertices.map((_, i) => i)
-      anchorPool = anchorPool.concat(
-        shuffleDeterministic(allIndices, 'anchors-all').slice(0, remainder)
-      )
-    }
-
-    return conceptArray.map((_, i) => anchorPool[i % anchorPool.length])
-  }, [vertices, conceptArray])
-
   // Brain intro animation (opacity/scale) in tandem with particles
   useEffect(() => {
     if (vertices.length === 0 || introStart != null) return
@@ -148,7 +62,7 @@ export default function BackgroundBrain() {
     return () => cancelAnimationFrame(raf)
   }, [vertices, introStart])
 
-  function CameraFitter({ target = 0.65 }: { target?: number }) {
+  function CameraFitter({ target = 0.72 }: { target?: number }) {
     const { camera } = useThree()
     useMemo(() => {
       if (vertices.length === 0) return
@@ -175,7 +89,7 @@ export default function BackgroundBrain() {
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#010C2A' }}
       >
-        <CameraFitter target={0.65} />
+        <CameraFitter target={0.72} />
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
@@ -210,7 +124,6 @@ export default function BackgroundBrain() {
             renderMode={'spheres'}
             intro={true}
             introDurationMs={1200}
-            mappedIndices={mappedIndices}
           />
         )}
       </Canvas>
