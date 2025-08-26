@@ -31,6 +31,10 @@ export interface BrainMeshProps {
   physicalTransmission?: number
   /** Optional physical material thickness (>0) */
   physicalThickness?: number
+  /** Optional blending mode for the surface material */
+  blending?: THREE.Blending
+  /** Optional emissive intensity override for physical/phong */
+  emissiveIntensity?: number
   /** Callback when vertices are extracted from the mesh */
   onVerticesLoaded?: (vertices: THREE.Vector3[]) => void
   /** Callback when loading state changes */
@@ -53,6 +57,8 @@ function BrainMeshGeometry({
   usePhysical = false,
   physicalTransmission,
   physicalThickness,
+  blending,
+  emissiveIntensity,
   onVerticesLoaded,
   onLoadingChange,
   onLoadStart,
@@ -69,6 +75,8 @@ function BrainMeshGeometry({
   | 'usePhysical'
   | 'physicalTransmission'
   | 'physicalThickness'
+  | 'blending'
+  | 'emissiveIntensity'
   | 'onVerticesLoaded'
   | 'onLoadingChange'
   | 'onLoadStart'
@@ -190,7 +198,7 @@ function BrainMeshGeometry({
           child.material = new THREE.MeshPhysicalMaterial({
             color: wireframeColor,
             transparent: true,
-            blending: THREE.AdditiveBlending,
+            blending: blending ?? THREE.AdditiveBlending,
             opacity,
             transmission: physicalTransmission ?? 0.2,
             thickness: physicalThickness ?? 0.2,
@@ -201,7 +209,7 @@ function BrainMeshGeometry({
             clearcoatRoughness: 0.1,
             side: THREE.FrontSide,
             emissive: new THREE.Color(0x1e7cff),
-            emissiveIntensity: 0.3,
+            emissiveIntensity: emissiveIntensity ?? 0.3,
             depthTest: true,
             depthWrite,
           })
@@ -214,7 +222,7 @@ function BrainMeshGeometry({
             shininess: 40,
             specular: 0x222222,
             emissive: new THREE.Color(0x0f8ed0),
-            emissiveIntensity: 0.1,
+            emissiveIntensity: emissiveIntensity ?? 0.1,
             depthTest: true,
             depthWrite,
           })

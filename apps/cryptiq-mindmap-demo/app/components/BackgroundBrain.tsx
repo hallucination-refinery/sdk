@@ -142,6 +142,8 @@ export default function BackgroundBrain() {
             usePhysical={true}
             physicalTransmission={0.2}
             physicalThickness={0.2}
+            blending={THREE.NormalBlending}
+            emissiveIntensity={0.35}
             scale={brainScale}
             onVerticesLoaded={setVertices}
             visible={true}
