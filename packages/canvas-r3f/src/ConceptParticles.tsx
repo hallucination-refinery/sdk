@@ -462,27 +462,51 @@ export function ConceptParticles({
   const introStartRef = useRef<number | null>(null)
   const introDoneRef = useRef<boolean>(false)
   const pulseStartRef = useRef<number | null>(null)
+  const maxIntroDelayMs = 300
+  // Per-instance randomized intro delay and swirl speed to match vendor behavior
+  const instanceDelayMs = useMemo(() => {
+    const arr = new Float32Array(500)
+    for (let i = 0; i < 500; i++) arr[i] = Math.random() * maxIntroDelayMs
+    return arr
+  }, [])
+  const swirlSpeed = useMemo(() => {
+    const arr = new Float32Array(500)
+    for (let i = 0; i < 500; i++) arr[i] = 0.4 + Math.random() * 0.8 // radians/sec factor
+    return arr
+  }, [])
   const { centroid: cloudCentroid, maxRadius } = useMemo(() => {
     if (vertices.length === 0) return { centroid: new THREE.Vector3(0, 0, 0), maxRadius: 50 }
-    const c = vertices.reduce((acc, v) => acc.add(v), new THREE.Vector3()).multiplyScalar(1 / vertices.length)
+    const c = vertices
+      .reduce((acc, v) => acc.add(v), new THREE.Vector3())
+      .multiplyScalar(1 / vertices.length)
     let r = 0
     for (const v of vertices) r = Math.max(r, v.distanceTo(c))
     return { centroid: c, maxRadius: r }
   }, [vertices])
 
-  const scatterPositions = useMemo(() => {
-    const out: THREE.Vector3[] = []
-    const radius = Math.max(10, maxRadius * 2)
+  const ringBase = useMemo(() => {
+    // Build a ring/spiral cloud around the centroid, sized relative to brain radius
+    const out: { base: THREE.Vector3; radius: number; angle: number }[] = []
+    const baseRadius = Math.max(10, maxRadius * 1.4)
     for (let i = 0; i < 500; i++) {
-      const dir = new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1).normalize()
-      const dist = radius * (0.5 + Math.random())
-      out.push(cloudCentroid.clone().add(dir.multiplyScalar(dist)))
+      const a = (i / 500) * Math.PI * 2 + (Math.random() - 0.5) * 0.6
+      const r = baseRadius * (0.6 + Math.random() * 0.8)
+      const z = (Math.random() - 0.5) * baseRadius * 0.4
+      const x = Math.cos(a) * r
+      const y = Math.sin(a) * r
+      out.push({ base: new THREE.Vector3(x, y, z).add(cloudCentroid), radius: r, angle: a })
     }
     return out
   }, [cloudCentroid, maxRadius])
 
+  function easeExpoInOut(t: number): number {
+    if (t <= 0) return 0
+    if (t >= 1) return 1
+    return t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2
+  }
+
   // Update instanced mesh matrices and colors
-  useFrame(() => {
+  useFrame((state) => {
     if (renderMode !== 'spheres' || !instancedMeshRef.current) return
 
     const mesh = instancedMeshRef.current
@@ -495,16 +519,10 @@ export function ConceptParticles({
       introStartRef.current = performance.now()
     }
     const now = performance.now()
-    let t = 1
-    if (introActive && !introDoneRef.current && introStartRef.current != null) {
-      const elapsed = now - introStartRef.current
-      const raw = Math.min(1, elapsed / Math.max(1, introDurationMs))
-      // ease in-out
-      t = raw < 0.5 ? 2.0 * raw * raw : -1.0 + (4.0 - 2.0 * raw) * raw
-      if (raw >= 1) {
-        introDoneRef.current = true
-        pulseStartRef.current = now
-      }
+    const introAllDoneTime = (introStartRef.current ?? now) + introDurationMs + maxIntroDelayMs
+    if (introActive && !introDoneRef.current && introStartRef.current != null && now >= introAllDoneTime) {
+      introDoneRef.current = true
+      pulseStartRef.current = now
     }
     // Pulse after assemble
     if (glowMaterial) {
@@ -529,12 +547,23 @@ export function ConceptParticles({
       } else {
         // Set scale for target pixel size
         tempMatrix.makeScale(worldRadius, worldRadius, worldRadius)
-        // Interpolate position if intro active
-        if (introActive && !introDoneRef.current) {
-          const s = scatterPositions[i]
-          const x = s.x * (1 - t) + data.position.x * t
-          const y = s.y * (1 - t) + data.position.y * t
-          const z = s.z * (1 - t) + data.position.z * t
+        // Interpolate position if intro active using per-instance delay + ring swirl
+        if (introActive && !introDoneRef.current && introStartRef.current != null) {
+          const start = introStartRef.current + instanceDelayMs[i]
+          const raw = Math.min(1, Math.max(0, (now - start) / Math.max(1, introDurationMs)))
+          const tt = easeExpoInOut(raw)
+          const base = ringBase[i]
+          const w = swirlSpeed[i]
+          const theta = base.angle + w * ((state.clock?.elapsedTime ?? 0) * 0.8)
+          const bx = Math.cos(theta) * base.radius
+          const by = Math.sin(theta) * base.radius
+          const bz = base.base.z - cloudCentroid.z
+          const sx = cloudCentroid.x + bx
+          const sy = cloudCentroid.y + by
+          const sz = cloudCentroid.z + bz
+          const x = sx * (1 - tt) + data.position.x * tt
+          const y = sy * (1 - tt) + data.position.y * tt
+          const z = sz * (1 - tt) + data.position.z * tt
           tempMatrix.setPosition(x, y, z)
         } else {
           tempMatrix.setPosition(data.position.x, data.position.y, data.position.z)
