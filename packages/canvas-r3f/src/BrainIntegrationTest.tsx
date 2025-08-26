@@ -743,7 +743,6 @@ export function BrainIntegrationTest({
             scale={1}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
-            rotation={[0, Math.PI, 0]}
           />
         </Suspense>
 

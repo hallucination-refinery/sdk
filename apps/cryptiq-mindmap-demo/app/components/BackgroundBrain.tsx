@@ -128,7 +128,13 @@ export default function BackgroundBrain() {
     return () => cancelAnimationFrame(raf)
   }, [vertices, conceptArray.length, anchorPool, meshReady, introStart])
 
-  function CameraFitter({ target = 0.72, enableControls: controlsEnabled = false }: { target?: number; enableControls?: boolean }) {
+  function CameraFitter({
+    target = 0.72,
+    enableControls: controlsEnabled = false,
+  }: {
+    target?: number
+    enableControls?: boolean
+  }) {
     const { camera } = useThree()
     const fittedRef = useRef(false)
     useLayoutEffect(() => {
