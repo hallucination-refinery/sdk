@@ -9,14 +9,11 @@ import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
 export default function BackgroundBrain() {
-  const isScreenshotMode =
-    typeof window !== 'undefined' &&
-    (process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1' ||
-      window.location.search.includes('screenshot'))
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [brainOpacity, setBrainOpacity] = useState(0)
   const [brainScale, setBrainScale] = useState(0.9)
+  const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
   const concepts = useMindmapStore().getVisibleConcepts()
   const liveConcepts = useMemo(() => (concepts as Node[]) || [], [concepts])
   const ambientConcepts = useMemo<Node[]>(() => {
@@ -29,15 +26,48 @@ export default function BackgroundBrain() {
           id: `ambient-${i + 1}`,
           label: `Ambient ${i + 1}`,
           size: 1,
-          metadata: { category: cats[i % cats.length] } as any,
+          metadata: { category: cats[i % cats.length] } as Record<string, unknown>,
         }) as Node
     )
   }, [])
   const conceptArray = liveConcepts.length > 0 ? liveConcepts : ambientConcepts
 
+  // Load canonical farthest-point anchors once (cached). If unavailable, set to empty array.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch('/models/brain-anchors-500.json', { cache: 'force-cache' })
+        if (!res.ok) throw new Error('anchors missing')
+        const json = await res.json()
+        const arr: number[] = Array.isArray(json) ? json : json.indices
+        if (!cancelled && Array.isArray(arr)) setAnchorPool(arr)
+      } catch {
+        if (!cancelled) setAnchorPool([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Build mappedIndices exactly how /brain does it: concept index → anchorPool[i % L].
+  const mappedIndices = useMemo(() => {
+    if (!anchorPool || anchorPool.length === 0) return null
+    if (vertices.length === 0 || conceptArray.length === 0) return null
+    const pool = anchorPool.filter((i) => i >= 0 && i < vertices.length)
+    if (pool.length === 0) return null
+    const n = Math.min(500, conceptArray.length)
+    const out = new Array<number>(n)
+    for (let i = 0; i < n; i++) out[i] = pool[i % pool.length]
+    return out
+  }, [anchorPool, vertices, conceptArray])
+
   // Brain intro animation (opacity/scale) in tandem with particles
   useEffect(() => {
     if (vertices.length === 0 || introStart != null) return
+    // Wait for anchorPool fetch to resolve (null => still loading, [] => missing OK)
+    if (conceptArray.length > 0 && anchorPool === null) return
     const start = performance.now()
     setIntroStart(start)
     const INTRO_MS = 1200
@@ -60,7 +90,7 @@ export default function BackgroundBrain() {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [vertices, introStart])
+  }, [vertices, conceptArray.length, anchorPool, introStart])
 
   function CameraFitter({ target = 0.72 }: { target?: number }) {
     const { camera } = useThree()
@@ -71,7 +101,7 @@ export default function BackgroundBrain() {
         .multiplyScalar(1 / vertices.length)
       let r = 0
       for (const v of vertices) r = Math.max(r, v.distanceTo(c))
-      if ((camera as any).isPerspectiveCamera) {
+      if ((camera as THREE.Camera) && (camera as THREE.PerspectiveCamera).isPerspectiveCamera) {
         const fov = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180
         const z = r / Math.max(0.1, target * Math.tan(fov / 2))
         camera.position.set(0, 80, z)
@@ -99,11 +129,11 @@ export default function BackgroundBrain() {
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={isScreenshotMode ? '#081E4A' : '#3eb4ff'}
-            opacity={isScreenshotMode ? 0.08 : 1}
-            wireframe={!isScreenshotMode}
+            wireframeColor={'#081E4A'}
+            opacity={brainOpacity}
+            wireframe={false}
             depthWrite={false}
-            usePhysical={isScreenshotMode}
+            usePhysical={true}
             physicalTransmission={0.2}
             physicalThickness={0.25}
             scale={brainScale}
@@ -113,10 +143,11 @@ export default function BackgroundBrain() {
         </Suspense>
 
         {/* Concept Orbs */}
-        {vertices.length > 0 && conceptArray.length > 0 && (
+        {vertices.length > 0 && conceptArray.length > 0 && mappedIndices && (
           <ConceptParticles
             concepts={conceptArray}
             vertices={vertices}
+            mappedIndices={mappedIndices ?? undefined}
             particleSize={3}
             visible={true}
             activeLens="affinity"

@@ -68,6 +68,10 @@ function ShareButtons() {
 
 export default function ResultPage() {
   const params = useParams<{ id: string }>()
+  const BackgroundBrain = useMemo(
+    () => dynamic(() => import('../../components/BackgroundBrain'), { ssr: false }),
+    []
+  )
   const top = useMemo(() => {
     const raw = decodeURIComponent(params.id || '')
     const parts = raw ? raw.split(',') : []
@@ -89,7 +93,7 @@ export default function ResultPage() {
         overflow: 'hidden',
       }}
     >
-      {dynamic(() => import('../../components/BackgroundBrain'), { ssr: false }) as any}
+      <BackgroundBrain />
       <div style={{ padding: 24, maxWidth: 880, margin: '0 auto' }}>
         <h1 style={{ margin: '0 0 12px 0', fontSize: 24 }}>Your Composite Archetypes</h1>
         <ResultComposite top={top} />
