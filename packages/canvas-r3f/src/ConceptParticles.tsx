@@ -46,7 +46,7 @@ interface InstanceData {
  */
 const AFFINITY_CATEGORY_COLORS = [
   '#FF6B6B', // Red - Technology/Engineering
-  '#4ECDC4', // Teal - Science/Research  
+  '#4ECDC4', // Teal - Science/Research
   '#45B7D1', // Blue - Business/Finance
   '#96CEB4', // Green - Health/Medicine
   '#FFEAA7', // Yellow - Education/Learning
@@ -125,7 +125,7 @@ function getAffinityColor(concept: Node): THREE.Color {
   let categoryIndex = -1
   const category = concept.metadata?.category as string | undefined
   const type = concept.metadata?.type as string | undefined
-  
+
   if (category && typeof category === 'string') {
     // Hash category string to get consistent index
     let hash = 0
@@ -181,7 +181,7 @@ function getCausalColor(concept: Node): THREE.Color {
     acc = (acc << 5) - acc + char.charCodeAt(0)
     return acc & acc
   }, 0)
-  
+
   const colorIndex = Math.abs(hash) % CAUSAL_COLORS.length
   return new THREE.Color(CAUSAL_COLORS[colorIndex])
 }
@@ -193,7 +193,7 @@ function getTemporalColor(concept: Node): THREE.Color {
   // Use temporal data if available in metadata
   const timeStamp = concept.metadata?.timestamp as number | string | undefined
   const timeScore = concept.metadata?.timeScore as number | undefined
-  
+
   if (typeof timeScore === 'number' && timeScore >= 0 && timeScore <= 1) {
     const colorIndex = Math.floor(timeScore * (TEMPORAL_COLORS.length - 1))
     return new THREE.Color(TEMPORAL_COLORS[colorIndex])
@@ -220,7 +220,7 @@ function getTemporalColor(concept: Node): THREE.Color {
     acc = (acc << 5) - acc + char.charCodeAt(0)
     return acc & acc
   }, 0)
-  
+
   const colorIndex = Math.abs(hash) % TEMPORAL_COLORS.length
   return new THREE.Color(TEMPORAL_COLORS[colorIndex])
 }
@@ -242,7 +242,7 @@ function mapConceptToVertex(concept: Node, vertices: THREE.Vector3[]): THREE.Vec
   // Use Session 3 VertexMapper for deterministic mapping
   // Note: We use a simpler approach here since ConceptParticles manages its own collision tracking
   // For full collision resolution, the BrainIntegrationTest handles this at a higher level
-  
+
   // djb2 hash implementation (from VertexMapper.ts)
   let hash = 5381
   for (let i = 0; i < concept.id.length; i++) {
@@ -273,9 +273,8 @@ export function ConceptParticles({
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null)
   const geometryRef = useRef<THREE.BufferGeometry>(null)
   const [_hoveredIndex] = useState<number | null>(null)
-  const MAX = 1000
-  const positions = useMemo(() => new Float32Array(MAX * 3), [])
-  const colors = useMemo(() => new Float32Array(MAX * 3), [])
+  const positions = useMemo(() => new Float32Array(500 * 3), [])
+  const colors = useMemo(() => new Float32Array(500 * 3), [])
   const tempMatrix = useMemo(() => new THREE.Matrix4(), [])
   const tempColor = useMemo(() => new THREE.Color(), [])
   const sphereGeometry = useMemo(() => new THREE.SphereGeometry(1, 8, 6), [])
@@ -285,9 +284,9 @@ export function ConceptParticles({
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }, [])
 
-  // Create instance data for up to MAX concepts
+  // Create instance data for up to 500 concepts
   const instanceData = useMemo<InstanceData[]>(() => {
-    const maxInstances = MAX
+    const maxInstances = 500
     const data: InstanceData[] = []
 
     // Compute centroid for outward offset
@@ -346,7 +345,7 @@ export function ConceptParticles({
 
   // Update buffer attributes once per data change
   useEffect(() => {
-    for (let i = 0; i < MAX; i++) {
+    for (let i = 0; i < 500; i++) {
       const d = instanceData[i]
       const pi = i * 3
       if (d && d.concept && d.concept.id) {
@@ -466,13 +465,13 @@ export function ConceptParticles({
   const maxIntroDelayMs = 300
   // Per-instance randomized intro delay and swirl speed to match vendor behavior
   const instanceDelayMs = useMemo(() => {
-    const arr = new Float32Array(MAX)
-    for (let i = 0; i < MAX; i++) arr[i] = Math.random() * maxIntroDelayMs
+    const arr = new Float32Array(500)
+    for (let i = 0; i < 500; i++) arr[i] = Math.random() * maxIntroDelayMs
     return arr
   }, [])
   const swirlSpeed = useMemo(() => {
-    const arr = new Float32Array(MAX)
-    for (let i = 0; i < MAX; i++) arr[i] = 0.4 + Math.random() * 0.8 // radians/sec factor
+    const arr = new Float32Array(500)
+    for (let i = 0; i < 500; i++) arr[i] = 0.4 + Math.random() * 0.8 // radians/sec factor
     return arr
   }, [])
   const { centroid: cloudCentroid, maxRadius } = useMemo(() => {
@@ -489,8 +488,8 @@ export function ConceptParticles({
     // Build a ring/spiral cloud around the centroid, sized relative to brain radius
     const out: { base: THREE.Vector3; radius: number; angle: number }[] = []
     const baseRadius = Math.max(10, maxRadius * 1.4)
-    for (let i = 0; i < MAX; i++) {
-      const a = (i / MAX) * Math.PI * 2 + (Math.random() - 0.5) * 0.6
+    for (let i = 0; i < 500; i++) {
+      const a = (i / 500) * Math.PI * 2 + (Math.random() - 0.5) * 0.6
       const r = baseRadius * (0.6 + Math.random() * 0.8)
       const z = (Math.random() - 0.5) * baseRadius * 0.4
       const x = Math.cos(a) * r
@@ -511,7 +510,7 @@ export function ConceptParticles({
     if (renderMode !== 'spheres' || !instancedMeshRef.current) return
 
     const mesh = instancedMeshRef.current
-    const targetPixelSize = 20 // target ~20px diameter
+    const targetPixelSize = 30 // target ~30px diameter for screenshot mode
     const worldRadius = worldUnitsPerPixel * targetPixelSize * 0.5
 
     // Initialize intro
@@ -521,12 +520,7 @@ export function ConceptParticles({
     }
     const now = performance.now()
     const introAllDoneTime = (introStartRef.current ?? now) + introDurationMs + maxIntroDelayMs
-    if (
-      introActive &&
-      !introDoneRef.current &&
-      introStartRef.current != null &&
-      now >= introAllDoneTime
-    ) {
+    if (introActive && !introDoneRef.current && introStartRef.current != null && now >= introAllDoneTime) {
       introDoneRef.current = true
       pulseStartRef.current = now
     }
@@ -543,7 +537,7 @@ export function ConceptParticles({
       }
     }
 
-    for (let i = 0; i < MAX; i++) {
+    for (let i = 0; i < 500; i++) {
       const data = instanceData[i]
       if (!data || !data.concept.id) {
         // Hide unused instances
@@ -593,7 +587,7 @@ export function ConceptParticles({
     return (
       <instancedMesh
         ref={instancedMeshRef}
-        args={[sphereGeometry, glowMaterial!, MAX]}
+        args={[sphereGeometry, glowMaterial!, 500]}
         visible={visible}
         renderOrder={1}
       />
