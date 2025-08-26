@@ -167,6 +167,15 @@ export default function BackgroundBrain() {
     return null
   }
 
+  // Follow-up controls sync: if controls mount after fitter, update once
+  useLayoutEffect(() => {
+    if (controlsRef?.current) {
+      controlsRef.current.update()
+      // eslint-disable-next-line no-console
+      console.log('[CameraFitter] Controls post-mount update applied')
+    }
+  }, [controlsRef?.current])
+
   const enableControls = useMemo(() => {
     if (typeof window === 'undefined') return false
     return (
@@ -228,7 +237,7 @@ export default function BackgroundBrain() {
             surfaceOffset={0.1}
             renderMode={'spheres'}
             intro={true}
-            introDurationMs={2000}
+            introDurationMs={1200}
           />
         )}
 

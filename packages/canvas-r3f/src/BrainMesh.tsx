@@ -326,6 +326,7 @@ function OpacitySync({
       }
 
       let found = false
+      let foundCount = 0
       group.traverse((obj) => {
         const m = (obj as any).material
         const applyMat = (mat: THREE.Material) => {
@@ -334,11 +335,18 @@ function OpacitySync({
             ;(mat as any).transparent = true
             mat.needsUpdate = true
             found = true
+            foundCount++
           }
         }
         if (Array.isArray(m)) (m as THREE.Material[]).forEach(applyMat)
         else if (m) applyMat(m as THREE.Material)
       })
+
+      if (found) {
+        // Temporary instrumentation: verify live materials were updated
+        // eslint-disable-next-line no-console
+        console.log('[OpacitySync] Materials updated', { foundCount, opacity, attempts })
+      }
 
       if (!found && attempts++ < 8) {
         requestAnimationFrame(applyOnce)
