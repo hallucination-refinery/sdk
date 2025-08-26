@@ -128,9 +128,14 @@ export default function BackgroundBrain() {
     return () => cancelAnimationFrame(raf)
   }, [vertices, conceptArray.length, anchorPool, meshReady, introStart])
 
-  function CameraFitter({ target = 0.72 }: { target?: number }) {
+  function CameraFitter({ target = 0.72, enableControls: controlsEnabled = false }: { target?: number; enableControls?: boolean }) {
     const { camera } = useThree()
+    const fittedRef = useRef(false)
     useLayoutEffect(() => {
+      if (fittedRef.current) return
+      if (controlsEnabled) {
+        // do an initial fit once, then stop to avoid fighting controls
+      }
       if (vertices.length === 0) return
       const c = vertices
         .reduce((acc, v) => acc.add(v), new THREE.Vector3())
@@ -143,8 +148,9 @@ export default function BackgroundBrain() {
         camera.position.set(0, 80, z)
         camera.lookAt(0, 0, 0)
         ;(camera as THREE.PerspectiveCamera).updateProjectionMatrix()
+        fittedRef.current = true
       }
-    }, [camera, vertices, target])
+    }, [camera, vertices.length, target, controlsEnabled])
     return null
   }
 
@@ -170,7 +176,7 @@ export default function BackgroundBrain() {
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#010C2A' }}
       >
-        <CameraFitter target={0.75} />
+        <CameraFitter target={0.75} enableControls={enableControls} />
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />

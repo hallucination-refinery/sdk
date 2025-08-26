@@ -304,21 +304,42 @@ function OpacitySync({
   opacity: number
 }) {
   useEffect(() => {
-    const group = groupRef.current
-    if (!group) return
-    group.traverse((obj) => {
-      const mesh = obj as unknown as THREE.Mesh
-      const m = (mesh as any).material
-      const apply = (mat: THREE.Material) => {
-        if ('opacity' in mat) {
-          ;(mat as any).opacity = opacity
-          ;(mat as any).transparent = true
-          mat.needsUpdate = true
-        }
+    if (!groupRef) return
+    let cancelled = false
+    let attempts = 0
+
+    const applyOnce = () => {
+      if (cancelled) return
+      const group = groupRef.current
+      if (!group) {
+        if (attempts++ < 6) requestAnimationFrame(applyOnce)
+        return
       }
-      if (Array.isArray(m)) (m as THREE.Material[]).forEach(apply)
-      else if (m) apply(m as THREE.Material)
-    })
+
+      let found = false
+      group.traverse((obj) => {
+        const m = (obj as any).material
+        const applyMat = (mat: THREE.Material) => {
+          if (mat && 'opacity' in mat) {
+            ;(mat as any).opacity = opacity
+            ;(mat as any).transparent = true
+            mat.needsUpdate = true
+            found = true
+          }
+        }
+        if (Array.isArray(m)) (m as THREE.Material[]).forEach(applyMat)
+        else if (m) applyMat(m as THREE.Material)
+      })
+
+      if (!found && attempts++ < 8) {
+        requestAnimationFrame(applyOnce)
+      }
+    }
+
+    applyOnce()
+    return () => {
+      cancelled = true
+    }
   }, [groupRef, opacity])
   return null
 }
