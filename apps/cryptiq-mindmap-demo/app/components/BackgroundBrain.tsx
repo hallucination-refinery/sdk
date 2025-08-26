@@ -1,7 +1,8 @@
 'use client'
 
-import { Suspense, useMemo, useState, useEffect, useRef } from 'react'
+import { Suspense, useMemo, useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
 import { ConceptParticles } from '@refinery/canvas-r3f'
@@ -11,8 +12,7 @@ import type { Node } from '@refinery/schema'
 export default function BackgroundBrain() {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
-  const [brainOpacity, setBrainOpacity] = useState(0)
-  const [brainScale, setBrainScale] = useState(0.9)
+  const [brainOpacity, setBrainOpacity] = useState(0.04)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
   const workerRef = useRef<Worker | null>(null)
   const concepts = useMindmapStore().getVisibleConcepts()
@@ -90,15 +90,19 @@ export default function BackgroundBrain() {
     return out
   }, [anchorPool, vertices, conceptArray])
 
-  // Brain intro animation (opacity/scale) in tandem with particles
+  // Brain shell fade-in (opacity only) after particles finish
   useEffect(() => {
     if (vertices.length === 0 || introStart != null) return
     // Wait for anchorPool fetch to resolve (null => still loading, [] => missing OK)
     if (conceptArray.length > 0 && anchorPool === null) return
-    const start = performance.now()
+    // Delay shell fade until particles finish: 1200ms + 300ms = 1500ms
+    const PARTICLES_MS = 1200
+    const PARTICLES_STAGGER_MS = 300
+    const SHELL_DELAY_MS = PARTICLES_MS + PARTICLES_STAGGER_MS
+    const start = performance.now() + SHELL_DELAY_MS
     setIntroStart(start)
     const INTRO_MS = 1200
-    const EXTRA_DELAY = 300
+    const EXTRA_DELAY = 0
     const easeExpoInOut = (t: number) => {
       if (t <= 0) return 0
       if (t >= 1) return 1
@@ -107,10 +111,13 @@ export default function BackgroundBrain() {
     let raf = 0
     const tick = () => {
       const now = performance.now()
+      if (now < start) {
+        raf = requestAnimationFrame(tick)
+        return
+      }
       const t = Math.min(1, (now - start) / (INTRO_MS + EXTRA_DELAY))
       const e = easeExpoInOut(t)
       setBrainOpacity(0.32 * e)
-      setBrainScale(0.9 + 0.1 * e)
       if (t < 1) {
         raf = requestAnimationFrame(tick)
       }
@@ -121,7 +128,7 @@ export default function BackgroundBrain() {
 
   function CameraFitter({ target = 0.72 }: { target?: number }) {
     const { camera } = useThree()
-    useMemo(() => {
+    useLayoutEffect(() => {
       if (vertices.length === 0) return
       const c = vertices
         .reduce((acc, v) => acc.add(v), new THREE.Vector3())
@@ -139,14 +146,29 @@ export default function BackgroundBrain() {
     return null
   }
 
+  const enableControls = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return (
+      window.location.search.includes('controls') || process.env.NEXT_PUBLIC_ENABLE_CONTROLS === '1'
+    )
+  }, [])
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }} aria-hidden>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: enableControls ? 'auto' : 'none',
+      }}
+      aria-hidden={!enableControls}
+    >
       <Canvas
         camera={{ position: [0, 80, 220], fov: 45 }}
         gl={{ antialias: true, alpha: false }}
         style={{ background: '#010C2A' }}
       >
-        <CameraFitter target={0.72} />
+        <CameraFitter target={0.75} />
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
@@ -156,14 +178,16 @@ export default function BackgroundBrain() {
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={'#081E4A'}
+            wireframeColor={'#003375'}
             opacity={brainOpacity}
+            scale={1}
             wireframe={false}
             depthWrite={false}
             usePhysical={true}
+            blending={THREE.NormalBlending}
             physicalTransmission={0.2}
             physicalThickness={0.25}
-            scale={brainScale}
+            emissiveIntensity={0.3}
             onVerticesLoaded={setVertices}
             visible={true}
           />
@@ -181,9 +205,11 @@ export default function BackgroundBrain() {
             surfaceOffset={0.1}
             renderMode={'spheres'}
             intro={true}
-            introDurationMs={1200}
+            introDurationMs={2000}
           />
         )}
+
+        {enableControls && <OrbitControls enableDamping dampingFactor={0.12} />}
       </Canvas>
     </div>
   )

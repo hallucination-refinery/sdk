@@ -269,6 +269,9 @@ export function BrainMesh({
       rotation={rotation}
       visible={visible}
     >
+      {/* Sync live material opacity with prop changes to support external fades */}
+      {/** This effect mutates the existing material instances instead of relying on remounts. */}
+      <OpacitySync groupRef={groupRef as React.RefObject<THREE.Group>} opacity={opacity} />
       <Suspense fallback={null}>
         <BrainMeshGeometry
           modelPath={modelPath}
@@ -289,6 +292,31 @@ export function BrainMesh({
       </Suspense>
     </group>
   )
+}
+
+function OpacitySync({
+  groupRef,
+  opacity,
+}: {
+  groupRef: React.RefObject<THREE.Group>
+  opacity: number
+}) {
+  useEffect(() => {
+    const group = groupRef.current
+    if (!group) return
+    group.traverse((obj) => {
+      const mesh = obj as unknown as THREE.Mesh
+      const mat = (mesh && (mesh as unknown as { material?: THREE.Material }).material) as
+        | THREE.Material
+        | undefined
+      if (mat && 'opacity' in mat) {
+        ;(mat as unknown as { opacity: number }).opacity = opacity
+        ;(mat as unknown as { transparent: boolean }).transparent = true
+        mat.needsUpdate = true
+      }
+    })
+  }, [groupRef, opacity])
+  return null
 }
 
 // Export with error boundary wrapper for better error handling

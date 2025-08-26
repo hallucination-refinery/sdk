@@ -743,6 +743,7 @@ export function BrainIntegrationTest({
             scale={1}
             onVerticesLoaded={handleVerticesLoaded}
             visible={true}
+            rotation={[0, Math.PI, 0]}
           />
         </Suspense>
 
@@ -757,7 +758,7 @@ export function BrainIntegrationTest({
             onClick={handleParticleClick}
             activeLens="affinity"
             mappedIndices={state.mappedIndices}
-            surfaceOffset={1.0}
+            surfaceOffset={0.1}
             renderMode={isScreenshotMode ? 'spheres' : 'points'}
           />
         )}

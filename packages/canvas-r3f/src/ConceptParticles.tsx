@@ -487,7 +487,7 @@ export function ConceptParticles({
   const ringBase = useMemo(() => {
     // Build a ring/spiral cloud around the centroid, sized relative to brain radius
     const out: { base: THREE.Vector3; radius: number; angle: number }[] = []
-    const baseRadius = Math.max(10, maxRadius * 1.4)
+    const baseRadius = Math.max(10, maxRadius * 2.0)
     for (let i = 0; i < 500; i++) {
       const a = (i / 500) * Math.PI * 2 + (Math.random() - 0.5) * 0.6
       const r = baseRadius * (0.6 + Math.random() * 0.8)
@@ -520,7 +520,12 @@ export function ConceptParticles({
     }
     const now = performance.now()
     const introAllDoneTime = (introStartRef.current ?? now) + introDurationMs + maxIntroDelayMs
-    if (introActive && !introDoneRef.current && introStartRef.current != null && now >= introAllDoneTime) {
+    if (
+      introActive &&
+      !introDoneRef.current &&
+      introStartRef.current != null &&
+      now >= introAllDoneTime
+    ) {
       introDoneRef.current = true
       pulseStartRef.current = now
     }
@@ -531,7 +536,7 @@ export function ConceptParticles({
         let pulse = 0
         if (pulseStartRef.current != null) {
           const pElapsed = (now - pulseStartRef.current) / 1000
-          pulse = Math.max(0, 0.6 * Math.exp(-3.0 * pElapsed))
+          pulse = Math.max(0, 0.6 * Math.exp(-2.0 * pElapsed))
         }
         uniform.value = pulse
       }
