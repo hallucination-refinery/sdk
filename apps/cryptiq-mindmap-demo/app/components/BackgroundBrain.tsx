@@ -5,7 +5,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
 import { ConceptParticles } from '@refinery/canvas-r3f'
-import { calculateRegionBoundaries, getRegionVertices } from '@refinery/canvas-r3f/src/VertexMapper'
+import { calculateRegionBoundaries, getRegionVertices } from '@refinery/canvas-r3f'
 import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
@@ -56,12 +56,7 @@ export default function BackgroundBrain() {
       for (let i = 0, j = 0; i < count; i++, j = (j + step) % arr.length) out.push(arr[j])
       return out
     }
-    return [
-      ...takeEven(R0, q0),
-      ...takeEven(R1, q1),
-      ...takeEven(R2, q2),
-      ...takeEven(R3, q3),
-    ]
+    return [...takeEven(R0, q0), ...takeEven(R1, q1), ...takeEven(R2, q2), ...takeEven(R3, q3)]
   }, [vertices])
 
   // Brain intro animation (opacity/scale) in tandem with particles
