@@ -18,12 +18,16 @@ import type { RendererCommand } from './types/renderer-commands'
 enableMapSet()
 
 // Combined store type
-export type RefineryStore = GraphSlice & UISlice & AsyncSlice & MindmapSlice & QuizSlice & {
-  commandQueue: CommandQueue
-  enqueueCommand: (command: RendererCommand) => void
-  enqueueCommands: (commands: RendererCommand[]) => void
-  subscribeToCommands: (callback: (commands: RendererCommand[]) => void) => () => void
-}
+export type RefineryStore = GraphSlice &
+  UISlice &
+  AsyncSlice &
+  MindmapSlice &
+  QuizSlice & {
+    commandQueue: CommandQueue
+    enqueueCommand: (command: RendererCommand) => void
+    enqueueCommands: (commands: RendererCommand[]) => void
+    subscribeToCommands: (callback: (commands: RendererCommand[]) => void) => () => void
+  }
 
 // Create command queue instance
 const commandQueue = new CommandQueue(0) // Synchronous by default
@@ -38,24 +42,24 @@ export const useRefineryStore = create<RefineryStore>()(
       ...createAsyncSlice(set, get),
       ...createMindmapSlice(set, get),
       ...createQuizSlice(set, get),
-      
+
       // Command queue integration
       commandQueue,
-      
+
       enqueueCommand: (command) => {
         commandQueue.enqueue(command)
       },
-      
+
       enqueueCommands: (commands) => {
         commandQueue.enqueueBatch(commands)
       },
-      
+
       subscribeToCommands: (callback) => {
         return commandQueue.subscribe(callback)
-      }
+      },
     })),
     {
-      name: 'refinery-store'
+      name: 'refinery-store',
     }
   )
 )
@@ -102,7 +106,7 @@ export const useGraphStore = () => {
     getNodeEdges: store.getNodeEdges,
     clearGraph: withCommand(store.clearGraph),
     generateNodeId: store.generateNodeId,
-    generateEdgeId: store.generateEdgeId
+    generateEdgeId: store.generateEdgeId,
   }
 }
 
@@ -140,7 +144,7 @@ export const useUIStore = () => {
     getSelectedNodes: store.getSelectedNodes,
     getSelectedEdges: store.getSelectedEdges,
     getHighlightedNodes: store.getHighlightedNodes,
-    getHighlightedEdges: store.getHighlightedEdges
+    getHighlightedEdges: store.getHighlightedEdges,
   }
 }
 
@@ -161,7 +165,7 @@ export const useAsyncStore = () => {
     getJob: store.getJob,
     getActiveJobs: store.getActiveJobs,
     getCompletedJobs: store.getCompletedJobs,
-    getFailedJobs: store.getFailedJobs
+    getFailedJobs: store.getFailedJobs,
   }
 }
 
@@ -178,7 +182,7 @@ export const useMindmapStore = () => {
     conceptVisuals: store.conceptVisuals,
     visibleCategories: store.visibleCategories,
     renderMetrics: store.renderMetrics,
-    
+
     // Actions
     loadConcepts: withCommand(store.loadConcepts),
     addConcept: withCommand(store.addConcept),
@@ -199,7 +203,7 @@ export const useMindmapStore = () => {
     toggleCategory: withCommand(store.toggleCategory),
     showAllCategories: withCommand(store.showAllCategories),
     updateRenderMetrics: withCommand(store.updateRenderMetrics),
-    
+
     // Queries
     getConcept: store.getConcept,
     getConceptsByCategory: store.getConceptsByCategory,
@@ -209,6 +213,6 @@ export const useMindmapStore = () => {
     getConceptPosition: store.getConceptPosition,
     getConceptVisual: store.getConceptVisual,
     getAllCategories: store.getAllCategories,
-    getConceptMetrics: store.getConceptMetrics
+    getConceptMetrics: store.getConceptMetrics,
   }
 }

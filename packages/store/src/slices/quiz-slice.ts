@@ -86,7 +86,10 @@ export const createQuizSlice = (set: any, get: any): QuizSlice => ({
     queueMicrotask(() => {
       set(
         produce((state: any) => {
-          const s = state as QuizSlice & { addConcept?: (n: Node) => RendererCommand; updateConcept?: (id: string, u: Partial<Node>) => RendererCommand }
+          const s = state as QuizSlice & {
+            addConcept?: (n: Node) => RendererCommand
+            updateConcept?: (id: string, u: Partial<Node>) => RendererCommand
+          }
           const pack = s.activePack
           if (!pack) return
           s.responses[questionId] = optionId
@@ -97,8 +100,8 @@ export const createQuizSlice = (set: any, get: any): QuizSlice => ({
           s.analysis = Math.min(100, Math.round((answered / total) * 100))
 
           // apply option effects → local concept deltas and archetype scores
-          const q = pack.questions.find(q => q.id === questionId)
-          const opt = q?.options.find(o => o.id === optionId)
+          const q = pack.questions.find((q) => q.id === questionId)
+          const opt = q?.options.find((o) => o.id === optionId)
           if (opt) {
             // bump archetype tags
             for (const tag of opt.tags) {
@@ -107,19 +110,24 @@ export const createQuizSlice = (set: any, get: any): QuizSlice => ({
 
             // upsert concept weights into mindmap slice (Node minimal)
             const addConcept = (state as any).addConcept as ((n: Node) => any) | undefined
-            const updateConcept = (state as any).updateConcept as ((id: string, u: Partial<Node>) => any) | undefined
+            const updateConcept = (state as any).updateConcept as
+              | ((id: string, u: Partial<Node>) => any)
+              | undefined
             if (addConcept && updateConcept) {
               for (const eff of opt.effects) {
                 const id = `quiz:${eff.conceptKey}`
                 const existing = (state as any).concepts.get(id) as Node | undefined
                 const category = eff.category || 'other'
-                const weight = Math.max(0, Math.min(1, (existing?.size as number | undefined || 0) + eff.deltaWeight))
+                const weight = Math.max(
+                  0,
+                  Math.min(1, ((existing?.size as number | undefined) || 0) + eff.deltaWeight)
+                )
                 const updates: Partial<Node> = {
                   id,
                   label: eff.label || eff.conceptKey,
                   size: weight,
                   color: undefined,
-                  metadata: { ...(existing?.metadata || {}), category }
+                  metadata: { ...(existing?.metadata || {}), category },
                 } as any
                 if (existing) {
                   updateConcept(id, updates)
@@ -143,8 +151,9 @@ export const createQuizSlice = (set: any, get: any): QuizSlice => ({
     const threshold = s.activePack?.resultMapping?.threshold ?? 0
     const entries = Object.entries(s.scores)
     const sum = entries.reduce((a, [, v]) => a + v, 0) || 1
-    const normalized = entries.map(([k, v]) => ({ key: k, score: v / sum }))
-      .filter(x => x.score >= threshold)
+    const normalized = entries
+      .map(([k, v]) => ({ key: k, score: v / sum }))
+      .filter((x) => x.score >= threshold)
       .sort((a, b) => b.score - a.score)
       .slice(0, topN)
     return { type: 'QUIZ_RESULT', payload: { top: normalized } }
@@ -171,7 +180,5 @@ export const createQuizSlice = (set: any, get: any): QuizSlice => ({
       )
     })
     return { type: 'QUIZ_RESET' }
-  }
+  },
 })
-
-

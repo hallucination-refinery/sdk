@@ -78,7 +78,15 @@ export default function QuizPage() {
     >
       <BackgroundBrain />
       <AnalysisBar value={analysis} />
-      <div style={{ paddingTop: 40, maxWidth: 880, margin: '0 auto', position: 'relative', zIndex: 10 }}>
+      <div
+        style={{
+          paddingTop: 40,
+          maxWidth: 880,
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 10,
+        }}
+      >
         {questions.map((q) => (
           <div key={q.id} style={{ margin: '16px 0', opacity: answeredIds.has(q.id) ? 0.6 : 1 }}>
             <div style={{ marginBottom: 8 }}>{q.prompt}</div>
