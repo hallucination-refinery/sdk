@@ -1,7 +1,7 @@
 'use client'
 
-import { Suspense, useMemo, useState, useEffect, useRef } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Suspense, useMemo, useState, useEffect, useRef, useCallback } from 'react'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
@@ -9,11 +9,168 @@ import { ConceptParticles } from '@refinery/canvas-r3f'
 import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
+// Postprocessing imports (preflight for Session 2)
+// Type-safe imports for three/examples
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass'
+
+// Debug HUD for dev mode
+function DebugHUD({
+  pixelateEnabled,
+  onTogglePixelate,
+  pixelSize,
+  onPixelSizeChange,
+}: {
+  pixelateEnabled: boolean
+  onTogglePixelate: () => void
+  pixelSize: number
+  onPixelSizeChange: (size: number) => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 10,
+        right: 10,
+        zIndex: 1000,
+        background: 'rgba(0, 0, 0, 0.8)',
+        color: 'white',
+        padding: '8px 12px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        fontFamily: 'monospace',
+        pointerEvents: 'auto',
+      }}
+    >
+      <div style={{ marginBottom: '4px' }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={pixelateEnabled}
+            onChange={onTogglePixelate}
+            style={{ marginRight: '6px' }}
+          />
+          Pixelation
+        </label>
+      </div>
+      <div>
+        <label>
+          Pixel Size:
+          <select
+            value={pixelSize}
+            onChange={(e) => onPixelSizeChange(parseInt(e.target.value, 10))}
+            style={{
+              marginLeft: '6px',
+              background: '#333',
+              color: 'white',
+              border: '1px solid #555',
+              fontSize: '11px',
+            }}
+          >
+            <option value={2}>2px</option>
+            <option value={4}>4px</option>
+            <option value={6}>6px</option>
+            <option value={8}>8px</option>
+            <option value={12}>12px</option>
+            <option value={16}>16px</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  )
+}
+
+// PostProcessing component to handle EffectComposer
+function PostProcessing({
+  pixelateEnabled,
+  pixelSize,
+}: {
+  pixelateEnabled: boolean
+  pixelSize: number
+}) {
+  const { gl, scene, camera, size } = useThree()
+  const composerRef = useRef<EffectComposer | null>(null)
+  const pixelPassRef = useRef<RenderPixelatedPass | null>(null)
+
+  // Initialize EffectComposer on mount
+  useEffect(() => {
+    if (!gl || !scene || !camera) return
+
+    const composer = new EffectComposer(gl)
+
+    // Pass order: RenderPass → (other passes if any) → PixelShader (last)
+    // Add render pass first - renders the scene to a buffer
+    const renderPass = new RenderPass(scene, camera)
+    composer.addPass(renderPass)
+
+    // Add pixelation pass last - ensures it affects the entire frame including glow/particles
+    const pixelPass = new RenderPixelatedPass(pixelSize, scene, camera)
+    // Ensure final pass renders to screen
+    ;(pixelPass as any).renderToScreen = true
+    composer.addPass(pixelPass)
+
+    composerRef.current = composer
+    pixelPassRef.current = pixelPass
+
+    return () => {
+      composer.dispose()
+    }
+  }, [gl, scene, camera])
+
+  // Update composer size and handle DPR when canvas resizes
+  useEffect(() => {
+    if (composerRef.current && pixelPassRef.current) {
+      // Update composer size
+      composerRef.current.setSize(size.width, size.height)
+
+      // Set pixel ratio to 1 for consistent pixelation across different DPR
+      composerRef.current.setPixelRatio(1)
+
+      // Update pixel pass size (RenderPixelatedPass needs to know the new size)
+      pixelPassRef.current.setSize(size.width, size.height)
+
+      // Scale pixel size by DPR for visual consistency
+      const dpr = gl.getPixelRatio()
+      const scaledPixelSize = Math.max(1, Math.round(pixelSize * dpr))
+      pixelPassRef.current.setPixelSize(scaledPixelSize)
+    }
+  }, [size.width, size.height, gl, pixelSize])
+
+  // Update pixel size when it changes
+  useEffect(() => {
+    if (pixelPassRef.current) {
+      // Scale by DPR for consistent appearance
+      const dpr = gl.getPixelRatio()
+      const scaledPixelSize = Math.max(1, Math.round(pixelSize * dpr))
+      pixelPassRef.current.setPixelSize(scaledPixelSize)
+    }
+  }, [pixelSize, gl])
+
+  // Handle rendering in useFrame - guard against double render
+  useFrame(() => {
+    if (pixelateEnabled && composerRef.current) {
+      // Use composer for pixelated rendering (composer OR default, never both)
+      composerRef.current.render()
+    }
+    // When pixelation is off, R3F handles rendering automatically
+  }, 1) // Priority 1 to render after scene updates
+
+  return null
+}
+
 export default function BackgroundBrain() {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
   const workerRef = useRef<Worker | null>(null)
+
+  // Pixelation state management
+  const [pixelateEnabled, setPixelateEnabled] = useState(false)
+  const [pixelSize, setPixelSize] = useState(1.5)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [showDebugHUD, setShowDebugHUD] = useState(false)
+
   const concepts = useMindmapStore().getVisibleConcepts()
   const liveConcepts = useMemo(() => (concepts as Node[]) || [], [concepts])
   const ambientConcepts = useMemo<Node[]>(() => {
@@ -31,6 +188,117 @@ export default function BackgroundBrain() {
     )
   }, [])
   const conceptArray = liveConcepts.length > 0 ? liveConcepts : ambientConcepts
+
+  // Initialize pixelation settings from query params and environment
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const urlParams = new URLSearchParams(window.location.search)
+    const hasPixelateQuery = urlParams.has('pixelate')
+    const pixelateValue = urlParams.get('pixelate')
+    const hasDebugQuery = urlParams.has('debug')
+    const envPixelate = process.env.NEXT_PUBLIC_PIXELATE === '1'
+    const isScreenshotMode = process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1'
+
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+
+    mediaQuery.addEventListener('change', handleMotionChange)
+
+    // Show debug HUD if ?debug is present
+    setShowDebugHUD(hasDebugQuery)
+
+    // Load persisted settings from localStorage if in debug mode
+    let persistedPixelate: string | null = null
+    let persistedPixelSize: string | null = null
+    if (hasDebugQuery) {
+      persistedPixelate = localStorage.getItem('cryptiq:pixelate')
+      persistedPixelSize = localStorage.getItem('cryptiq:pixelSize')
+
+      // Apply persisted pixel size if available
+      if (persistedPixelSize) {
+        const size = parseInt(persistedPixelSize, 10)
+        if (!isNaN(size) && size >= 2 && size <= 16) {
+          setPixelSize(size)
+        }
+      }
+    }
+
+    // Compute pixelateEnabled:
+    // - ?pixelate=force overrides reduced motion and screenshot mode
+    // - ?pixelate (without value) or NEXT_PUBLIC_PIXELATE=1 enables it
+    // - Default OFF if prefers-reduced-motion, unless force
+    // - Default OFF in screenshot mode, unless explicitly forced
+    // - Use persisted value in debug mode if available
+    let shouldEnable = false
+
+    if (pixelateValue === 'force') {
+      // Force enables pixelation regardless of other settings
+      shouldEnable = true
+    } else if (hasDebugQuery && persistedPixelate) {
+      // Use persisted value in debug mode
+      shouldEnable = persistedPixelate === 'enabled'
+    } else if (isScreenshotMode) {
+      // Screenshot mode defaults to OFF unless explicitly enabled via query
+      shouldEnable = hasPixelateQuery
+    } else if (hasPixelateQuery || envPixelate) {
+      // Respect reduced motion preference unless forced
+      shouldEnable = !mediaQuery.matches
+    }
+
+    setPixelateEnabled(shouldEnable)
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleMotionChange)
+    }
+  }, [])
+
+  // Update pixelation when reduced motion preference changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const urlParams = new URLSearchParams(window.location.search)
+    const pixelateValue = urlParams.get('pixelate')
+    const hasPixelateQuery = urlParams.has('pixelate')
+    const envPixelate = process.env.NEXT_PUBLIC_PIXELATE === '1'
+    const isScreenshotMode = process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1'
+
+    // Don't change if forced
+    if (pixelateValue === 'force') return
+
+    // Don't enable in screenshot mode unless explicitly requested
+    if (isScreenshotMode && !hasPixelateQuery) return
+
+    // Update based on reduced motion if pixelation was requested
+    if (hasPixelateQuery || envPixelate) {
+      setPixelateEnabled(!prefersReducedMotion)
+    }
+  }, [prefersReducedMotion])
+
+  // Debug HUD handlers with localStorage persistence
+  const handleTogglePixelate = useCallback(() => {
+    setPixelateEnabled((prev) => {
+      const newValue = !prev
+      // Persist choice in localStorage (dev only)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('cryptiq:pixelate', newValue ? 'enabled' : 'disabled')
+      }
+      return newValue
+    })
+  }, [])
+
+  const handlePixelSizeChange = useCallback((size: number) => {
+    setPixelSize(size)
+    // Persist pixel size choice in localStorage (dev only)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cryptiq:pixelSize', size.toString())
+    }
+  }, [])
 
   // Load canonical farthest-point anchors once (cached). If unavailable, set to empty array.
   useEffect(() => {
@@ -156,9 +424,9 @@ export default function BackgroundBrain() {
       aria-hidden={!enableControls}
     >
       <Canvas
-        camera={{ position: [0, 80, 220], fov: 45 }}
+        camera={{ position: [0, 80, 220], fov: 90 }}
         gl={{ antialias: true, alpha: false }}
-        style={{ background: '#010C2A' }}
+        style={{ background: '#00041A' }}
       >
         <CameraFitter target={0.75} />
         {/* Lights */}
@@ -170,8 +438,8 @@ export default function BackgroundBrain() {
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={'#003375'}
-            opacity={0.08}
+            wireframeColor={'#0551A3'}
+            opacity={0.03}
             scale={1}
             wireframe={true}
             depthWrite={false}
@@ -190,7 +458,7 @@ export default function BackgroundBrain() {
             concepts={conceptArray}
             vertices={vertices}
             mappedIndices={mappedIndices ?? undefined}
-            particleSize={4}
+            particleSize={2}
             visible={true}
             activeLens="affinity"
             surfaceOffset={0.1}
@@ -200,8 +468,31 @@ export default function BackgroundBrain() {
           />
         )}
 
-        {enableControls && <OrbitControls enableDamping dampingFactor={0.12} />}
+        {enableControls && (
+          <OrbitControls
+            enableDamping
+            dampingFactor={0.12}
+            autoRotate
+            autoRotateSpeed={2}
+            enableZoom={false}
+            enablePan={false}
+            enableRotate={false}
+          />
+        )}
+
+        {/* PostProcessing for pixelation */}
+        {pixelateEnabled && <PostProcessing pixelateEnabled={true} pixelSize={pixelSize} />}
       </Canvas>
+
+      {/* Debug HUD for development */}
+      {showDebugHUD && (
+        <DebugHUD
+          pixelateEnabled={pixelateEnabled}
+          onTogglePixelate={handleTogglePixelate}
+          pixelSize={pixelSize}
+          onPixelSizeChange={handlePixelSizeChange}
+        />
+      )}
     </div>
   )
 }

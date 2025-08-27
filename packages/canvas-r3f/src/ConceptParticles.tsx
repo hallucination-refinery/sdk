@@ -511,7 +511,7 @@ export function ConceptParticles({
     if (renderMode !== 'spheres' || !instancedMeshRef.current) return
 
     const mesh = instancedMeshRef.current
-    const targetPixelSize = 30 // target ~30px diameter for screenshot mode
+    const targetPixelSize = 20 // target ~30px diameter for screenshot mode
     const worldRadius = worldUnitsPerPixel * targetPixelSize * 0.5
 
     // Initialize intro

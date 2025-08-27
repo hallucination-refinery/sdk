@@ -99,7 +99,7 @@ export default function Home() {
         position: 'relative',
         width: '100vw',
         height: '100vh',
-        background: '#010c2a',
+        background: '#00041A',
         overflow: 'hidden',
       }}
     >
