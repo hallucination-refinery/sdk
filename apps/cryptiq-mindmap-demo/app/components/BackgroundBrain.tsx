@@ -198,6 +198,7 @@ export default function BackgroundBrain() {
     const pixelateValue = urlParams.get('pixelate')
     const hasDebugQuery = urlParams.has('debug')
     const envPixelate = process.env.NEXT_PUBLIC_PIXELATE === '1'
+    const isScreenshotMode = process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1'
     
     // Check for reduced motion preference
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -213,13 +214,18 @@ export default function BackgroundBrain() {
     setShowDebugHUD(hasDebugQuery)
     
     // Compute pixelateEnabled:
-    // - ?pixelate=force overrides reduced motion
+    // - ?pixelate=force overrides reduced motion and screenshot mode
     // - ?pixelate (without value) or NEXT_PUBLIC_PIXELATE=1 enables it
     // - Default OFF if prefers-reduced-motion, unless force
+    // - Default OFF in screenshot mode, unless explicitly forced
     let shouldEnable = false
     
     if (pixelateValue === 'force') {
+      // Force enables pixelation regardless of other settings
       shouldEnable = true
+    } else if (isScreenshotMode) {
+      // Screenshot mode defaults to OFF unless explicitly enabled via query
+      shouldEnable = hasPixelateQuery
     } else if (hasPixelateQuery || envPixelate) {
       // Respect reduced motion preference unless forced
       shouldEnable = !mediaQuery.matches
@@ -240,9 +246,13 @@ export default function BackgroundBrain() {
     const pixelateValue = urlParams.get('pixelate')
     const hasPixelateQuery = urlParams.has('pixelate')
     const envPixelate = process.env.NEXT_PUBLIC_PIXELATE === '1'
+    const isScreenshotMode = process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1'
     
     // Don't change if forced
     if (pixelateValue === 'force') return
+    
+    // Don't enable in screenshot mode unless explicitly requested
+    if (isScreenshotMode && !hasPixelateQuery) return
     
     // Update based on reduced motion if pixelation was requested
     if (hasPixelateQuery || envPixelate) {
