@@ -166,7 +166,7 @@ export default function BackgroundBrain() {
   const workerRef = useRef<Worker | null>(null)
 
   // Pixelation state management
-  const [pixelateEnabled, setPixelateEnabled] = useState(false)
+  const [pixelateEnabled, setPixelateEnabled] = useState(true)
   const [pixelSize, setPixelSize] = useState(1.5)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const [showDebugHUD, setShowDebugHUD] = useState(false)
@@ -235,7 +235,8 @@ export default function BackgroundBrain() {
     // - Default OFF if prefers-reduced-motion, unless force
     // - Default OFF in screenshot mode, unless explicitly forced
     // - Use persisted value in debug mode if available
-    let shouldEnable = false
+    // Default ON on landing (except in screenshot mode or reduced motion)
+    let shouldEnable = !mediaQuery.matches && !isScreenshotMode
 
     if (pixelateValue === 'force') {
       // Force enables pixelation regardless of other settings
@@ -416,18 +417,14 @@ export default function BackgroundBrain() {
   return (
     <div
       style={{
-        position: 'fixed',
+        position: 'absolute',
         inset: 0,
         zIndex: 1,
         pointerEvents: enableControls ? 'auto' : 'none',
       }}
       aria-hidden={!enableControls}
     >
-      <Canvas
-        camera={{ position: [0, 80, 220], fov: 90 }}
-        gl={{ antialias: true, alpha: false }}
-        style={{ background: '#00041A' }}
-      >
+      <Canvas camera={{ position: [0, 80, 220], fov: 90 }} gl={{ antialias: true, alpha: true }}>
         <CameraFitter target={0.75} />
         {/* Lights */}
         <ambientLight intensity={1} />
@@ -438,8 +435,8 @@ export default function BackgroundBrain() {
         <Suspense fallback={null}>
           <BrainMesh
             modelPath="/models/brain.obj"
-            wireframeColor={'#0551A3'}
-            opacity={0.03}
+            wireframeColor={'#081E4A'}
+            opacity={0.08}
             scale={1}
             wireframe={true}
             depthWrite={false}

@@ -1,14 +1,11 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Anton, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const displayFont = Anton({ variable: '--font-display', weight: '400', subsets: ['latin'] })
+const monoFont = IBM_Plex_Mono({
+  variable: '--font-mono',
+  weight: ['400', '500'],
   subsets: ['latin'],
 })
 
@@ -25,8 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable}`}
-        style={{ background: '#010c2a' }}
+        className={`${displayFont.variable} ${monoFont.variable}`}
+        style={{ background: '#000' }}
       >
         {/* Background brain is mounted per-page to avoid SSR ordering issues */}
         {children}
