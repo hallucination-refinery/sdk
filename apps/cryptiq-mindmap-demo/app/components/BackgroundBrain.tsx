@@ -98,11 +98,12 @@ function PostProcessing({
 
     const composer = new EffectComposer(gl)
     
-    // Add render pass
+    // Pass order: RenderPass → (other passes if any) → PixelShader (last)
+    // Add render pass first - renders the scene to a buffer
     const renderPass = new RenderPass(scene, camera)
     composer.addPass(renderPass)
     
-    // Add pixelation pass
+    // Add pixelation pass last - ensures it affects the entire frame including glow/particles
     const pixelPass = new RenderPixelatedPass(pixelSize, scene, camera)
     composer.addPass(pixelPass)
     
@@ -143,14 +144,16 @@ function PostProcessing({
     }
   }, [pixelSize, gl])
 
-  // Handle rendering in useFrame
-  useFrame(() => {
+  // Handle rendering in useFrame - guard against double render
+  useFrame(({ gl }) => {
     if (pixelateEnabled && composerRef.current) {
-      // Use composer for pixelated rendering
+      // Use composer for pixelated rendering (composer OR default, never both)
       composerRef.current.render()
-    } else {
-      // Fall back to default R3F rendering (handled by R3F automatically when we don't render)
+      // Prevent default R3F render by marking as already rendered
+      gl.autoClear = false
+      gl.setRenderTarget(null)
     }
+    // When pixelation is off, R3F handles rendering automatically
   }, 1) // Priority 1 to render after scene updates
 
   return null
