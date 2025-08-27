@@ -9,6 +9,12 @@ import { ConceptParticles } from '@refinery/canvas-r3f'
 import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
+// Postprocessing imports (preflight for Session 2)
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js'
+
 export default function BackgroundBrain() {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
