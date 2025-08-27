@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useMemo, useState, useEffect, useRef, useCallback } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
@@ -79,6 +79,67 @@ function DebugHUD({
       </div>
     </div>
   )
+}
+
+// PostProcessing component to handle EffectComposer
+function PostProcessing({ 
+  pixelateEnabled, 
+  pixelSize 
+}: { 
+  pixelateEnabled: boolean
+  pixelSize: number 
+}) {
+  const { gl, scene, camera, size } = useThree()
+  const composerRef = useRef<EffectComposer | null>(null)
+  const pixelPassRef = useRef<RenderPixelatedPass | null>(null)
+
+  // Initialize EffectComposer on mount
+  useEffect(() => {
+    if (!gl || !scene || !camera) return
+
+    const composer = new EffectComposer(gl)
+    
+    // Add render pass
+    const renderPass = new RenderPass(scene, camera)
+    composer.addPass(renderPass)
+    
+    // Add pixelation pass
+    const pixelPass = new RenderPixelatedPass(pixelSize, scene, camera)
+    composer.addPass(pixelPass)
+    
+    composerRef.current = composer
+    pixelPassRef.current = pixelPass
+    
+    return () => {
+      composer.dispose()
+    }
+  }, [gl, scene, camera])
+
+  // Update composer size when canvas resizes
+  useEffect(() => {
+    if (composerRef.current) {
+      composerRef.current.setSize(size.width, size.height)
+    }
+  }, [size.width, size.height])
+
+  // Update pixel size when it changes
+  useEffect(() => {
+    if (pixelPassRef.current) {
+      pixelPassRef.current.setPixelSize(pixelSize)
+    }
+  }, [pixelSize])
+
+  // Handle rendering in useFrame
+  useFrame(() => {
+    if (pixelateEnabled && composerRef.current) {
+      // Use composer for pixelated rendering
+      composerRef.current.render()
+    } else {
+      // Fall back to default R3F rendering (handled by R3F automatically when we don't render)
+    }
+  }, 1) // Priority 1 to render after scene updates
+
+  return null
 }
 
 export default function BackgroundBrain() {
@@ -350,6 +411,12 @@ export default function BackgroundBrain() {
         )}
 
         {enableControls && <OrbitControls enableDamping dampingFactor={0.12} />}
+        
+        {/* PostProcessing for pixelation */}
+        <PostProcessing 
+          pixelateEnabled={pixelateEnabled} 
+          pixelSize={pixelSize} 
+        />
       </Canvas>
       
       {/* Debug HUD for development */}
