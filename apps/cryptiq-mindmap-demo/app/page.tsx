@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 // IntroParticles removed (unused)
 
 function LeftPanel() {
-  const router = useRouter()
   return (
     <div
       style={{
@@ -151,32 +150,29 @@ hover-only neighbor edges; results saved as short signed IDs
 (30d TTL).`}
         </pre>
       </div>
-      {/* Prompt */}
-      <button
-        onClick={() => router.push('/quiz/archetype-v1')}
+      {/* Prompt (plain text, not a button) */}
+      <div
         style={{
           alignSelf: 'stretch',
           height: 87,
           textAlign: 'center',
-          justifyContent: 'center',
           display: 'flex',
           flexDirection: 'row',
+          justifyContent: 'center',
           alignItems: 'center',
           columnGap: 8,
           fontSize: 20,
           fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
           fontWeight: '500',
           lineHeight: '22px',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 0,
+          userSelect: 'none',
         }}
+        aria-hidden
       >
         <span style={{ color: '#FAFAFA' }}>PRESS</span>
         <span style={{ color: 'white' }}>[SPACE]</span>
         <span style={{ color: '#FAFAFA' }}>TO BEGIN</span>
-      </button>
+      </div>
     </div>
   )
 }
