@@ -213,16 +213,36 @@ export default function BackgroundBrain() {
     // Show debug HUD if ?debug is present
     setShowDebugHUD(hasDebugQuery)
     
+    // Load persisted settings from localStorage if in debug mode
+    let persistedPixelate: string | null = null
+    let persistedPixelSize: string | null = null
+    if (hasDebugQuery) {
+      persistedPixelate = localStorage.getItem('cryptiq:pixelate')
+      persistedPixelSize = localStorage.getItem('cryptiq:pixelSize')
+      
+      // Apply persisted pixel size if available
+      if (persistedPixelSize) {
+        const size = parseInt(persistedPixelSize, 10)
+        if (!isNaN(size) && size >= 2 && size <= 16) {
+          setPixelSize(size)
+        }
+      }
+    }
+    
     // Compute pixelateEnabled:
     // - ?pixelate=force overrides reduced motion and screenshot mode
     // - ?pixelate (without value) or NEXT_PUBLIC_PIXELATE=1 enables it
     // - Default OFF if prefers-reduced-motion, unless force
     // - Default OFF in screenshot mode, unless explicitly forced
+    // - Use persisted value in debug mode if available
     let shouldEnable = false
     
     if (pixelateValue === 'force') {
       // Force enables pixelation regardless of other settings
       shouldEnable = true
+    } else if (hasDebugQuery && persistedPixelate) {
+      // Use persisted value in debug mode
+      shouldEnable = persistedPixelate === 'enabled'
     } else if (isScreenshotMode) {
       // Screenshot mode defaults to OFF unless explicitly enabled via query
       shouldEnable = hasPixelateQuery
@@ -260,13 +280,24 @@ export default function BackgroundBrain() {
     }
   }, [prefersReducedMotion])
   
-  // Debug HUD handlers
+  // Debug HUD handlers with localStorage persistence
   const handleTogglePixelate = useCallback(() => {
-    setPixelateEnabled(prev => !prev)
+    setPixelateEnabled(prev => {
+      const newValue = !prev
+      // Persist choice in localStorage (dev only)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('cryptiq:pixelate', newValue ? 'enabled' : 'disabled')
+      }
+      return newValue
+    })
   }, [])
   
   const handlePixelSizeChange = useCallback((size: number) => {
     setPixelSize(size)
+    // Persist pixel size choice in localStorage (dev only)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cryptiq:pixelSize', size.toString())
+    }
   }, [])
 
   // Load canonical farthest-point anchors once (cached). If unavailable, set to empty array.
