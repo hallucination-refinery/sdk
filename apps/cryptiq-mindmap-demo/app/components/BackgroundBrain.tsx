@@ -12,7 +12,6 @@ import type { Node } from '@refinery/schema'
 // Postprocessing imports (preflight for Session 2)
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js'
 
 // Debug HUD for dev mode
@@ -115,19 +114,34 @@ function PostProcessing({
     }
   }, [gl, scene, camera])
 
-  // Update composer size when canvas resizes
+  // Update composer size and handle DPR when canvas resizes
   useEffect(() => {
-    if (composerRef.current) {
+    if (composerRef.current && pixelPassRef.current) {
+      // Update composer size
       composerRef.current.setSize(size.width, size.height)
+      
+      // Set pixel ratio to 1 for consistent pixelation across different DPR
+      composerRef.current.setPixelRatio(1)
+      
+      // Update pixel pass size (RenderPixelatedPass needs to know the new size)
+      pixelPassRef.current.setSize(size.width, size.height)
+      
+      // Scale pixel size by DPR for visual consistency
+      const dpr = gl.getPixelRatio()
+      const scaledPixelSize = Math.max(1, Math.round(pixelSize * dpr))
+      pixelPassRef.current.setPixelSize(scaledPixelSize)
     }
-  }, [size.width, size.height])
+  }, [size.width, size.height, gl, pixelSize])
 
   // Update pixel size when it changes
   useEffect(() => {
     if (pixelPassRef.current) {
-      pixelPassRef.current.setPixelSize(pixelSize)
+      // Scale by DPR for consistent appearance
+      const dpr = gl.getPixelRatio()
+      const scaledPixelSize = Math.max(1, Math.round(pixelSize * dpr))
+      pixelPassRef.current.setPixelSize(scaledPixelSize)
     }
-  }, [pixelSize])
+  }, [pixelSize, gl])
 
   // Handle rendering in useFrame
   useFrame(() => {
