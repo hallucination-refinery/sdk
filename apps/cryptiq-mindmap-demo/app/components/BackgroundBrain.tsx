@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useState, useEffect, useRef } from 'react'
+import { Suspense, useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -15,11 +15,84 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js'
 
+// Debug HUD for dev mode
+function DebugHUD({
+  pixelateEnabled,
+  onTogglePixelate,
+  pixelSize,
+  onPixelSizeChange,
+}: {
+  pixelateEnabled: boolean
+  onTogglePixelate: () => void
+  pixelSize: number
+  onPixelSizeChange: (size: number) => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 10,
+        right: 10,
+        zIndex: 1000,
+        background: 'rgba(0, 0, 0, 0.8)',
+        color: 'white',
+        padding: '8px 12px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        fontFamily: 'monospace',
+        pointerEvents: 'auto',
+      }}
+    >
+      <div style={{ marginBottom: '4px' }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={pixelateEnabled}
+            onChange={onTogglePixelate}
+            style={{ marginRight: '6px' }}
+          />
+          Pixelation
+        </label>
+      </div>
+      <div>
+        <label>
+          Pixel Size:
+          <select
+            value={pixelSize}
+            onChange={(e) => onPixelSizeChange(parseInt(e.target.value, 10))}
+            style={{
+              marginLeft: '6px',
+              background: '#333',
+              color: 'white',
+              border: '1px solid #555',
+              fontSize: '11px',
+            }}
+          >
+            <option value={2}>2px</option>
+            <option value={4}>4px</option>
+            <option value={6}>6px</option>
+            <option value={8}>8px</option>
+            <option value={12}>12px</option>
+            <option value={16}>16px</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  )
+}
+
 export default function BackgroundBrain() {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
   const workerRef = useRef<Worker | null>(null)
+  
+  // Pixelation state management
+  const [pixelateEnabled, setPixelateEnabled] = useState(false)
+  const [pixelSize, setPixelSize] = useState(6)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [showDebugHUD, setShowDebugHUD] = useState(false)
+  
   const concepts = useMindmapStore().getVisibleConcepts()
   const liveConcepts = useMemo(() => (concepts as Node[]) || [], [concepts])
   const ambientConcepts = useMemo<Node[]>(() => {
@@ -37,6 +110,76 @@ export default function BackgroundBrain() {
     )
   }, [])
   const conceptArray = liveConcepts.length > 0 ? liveConcepts : ambientConcepts
+
+  // Initialize pixelation settings from query params and environment
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const urlParams = new URLSearchParams(window.location.search)
+    const hasPixelateQuery = urlParams.has('pixelate')
+    const pixelateValue = urlParams.get('pixelate')
+    const hasDebugQuery = urlParams.has('debug')
+    const envPixelate = process.env.NEXT_PUBLIC_PIXELATE === '1'
+    
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+    
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+    
+    mediaQuery.addEventListener('change', handleMotionChange)
+    
+    // Show debug HUD if ?debug is present
+    setShowDebugHUD(hasDebugQuery)
+    
+    // Compute pixelateEnabled:
+    // - ?pixelate=force overrides reduced motion
+    // - ?pixelate (without value) or NEXT_PUBLIC_PIXELATE=1 enables it
+    // - Default OFF if prefers-reduced-motion, unless force
+    let shouldEnable = false
+    
+    if (pixelateValue === 'force') {
+      shouldEnable = true
+    } else if (hasPixelateQuery || envPixelate) {
+      // Respect reduced motion preference unless forced
+      shouldEnable = !mediaQuery.matches
+    }
+    
+    setPixelateEnabled(shouldEnable)
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleMotionChange)
+    }
+  }, [])
+  
+  // Update pixelation when reduced motion preference changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const urlParams = new URLSearchParams(window.location.search)
+    const pixelateValue = urlParams.get('pixelate')
+    const hasPixelateQuery = urlParams.has('pixelate')
+    const envPixelate = process.env.NEXT_PUBLIC_PIXELATE === '1'
+    
+    // Don't change if forced
+    if (pixelateValue === 'force') return
+    
+    // Update based on reduced motion if pixelation was requested
+    if (hasPixelateQuery || envPixelate) {
+      setPixelateEnabled(!prefersReducedMotion)
+    }
+  }, [prefersReducedMotion])
+  
+  // Debug HUD handlers
+  const handleTogglePixelate = useCallback(() => {
+    setPixelateEnabled(prev => !prev)
+  }, [])
+  
+  const handlePixelSizeChange = useCallback((size: number) => {
+    setPixelSize(size)
+  }, [])
 
   // Load canonical farthest-point anchors once (cached). If unavailable, set to empty array.
   useEffect(() => {
@@ -208,6 +351,16 @@ export default function BackgroundBrain() {
 
         {enableControls && <OrbitControls enableDamping dampingFactor={0.12} />}
       </Canvas>
+      
+      {/* Debug HUD for development */}
+      {showDebugHUD && (
+        <DebugHUD
+          pixelateEnabled={pixelateEnabled}
+          onTogglePixelate={handleTogglePixelate}
+          pixelSize={pixelSize}
+          onPixelSizeChange={handlePixelSizeChange}
+        />
+      )}
     </div>
   )
 }
