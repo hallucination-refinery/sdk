@@ -192,6 +192,15 @@ function PointsMesh({
     const uvs = new Float32Array(us)
     const depths = new Float32Array(ds)
     const colors = new Float32Array(cs)
+    console.log('[PC] counts', {
+      verts: positions.length / 3,
+      uvs: uvs.length / 2,
+      depths: depths.length,
+      colors: colors.length / 3,
+      w,
+      h,
+      stride,
+    })
     return { positions, uvs, depths, colors }
   }, [colorImage, depth16, stride])
 
@@ -217,15 +226,20 @@ function PointsMesh({
     return () => cancelAnimationFrame(raf)
   }, [onMaterialValid])
 
-  // Animate time uniform for gentle drift
+  // Animate time uniform for gentle drift; keep inverse projection fresh
   useFrame((_, dt) => {
-    const mat = matRef.current as unknown as { uniforms?: { uTime?: { value: number } } }
-    if (!mat || !mat.uniforms || !mat.uniforms.uTime) return
-    mat.uniforms.uTime.value += dt
+    const mat = matRef.current as unknown as {
+      uniforms?: { uTime?: { value: number }; uProjInv?: { value: THREE.Matrix4 } }
+    }
+    if (!mat || !mat.uniforms) return
+    if (mat.uniforms.uTime) mat.uniforms.uTime.value += dt
+    if (mat.uniforms.uProjInv) {
+      mat.uniforms.uProjInv.value.copy((camera as THREE.PerspectiveCamera).projectionMatrixInverse)
+    }
   })
 
   return (
-    <points frustumCulled={true} renderOrder={1}>
+    <points frustumCulled={false} renderOrder={1}>
       <bufferGeometry ref={geomRef}>
         {/* position attribute */}
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
@@ -256,16 +270,17 @@ function PointsMesh({
             float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
             void main(){
               vColor=color;
-              // uv is provided by R3F/Three as built-in attribute
-              vec2 ndc = uv*2.0-1.0;
-              vec4 q = uProjInv * vec4(ndc, -1.0, 1.0);
-              vec3 dirVS = normalize(q.xyz / q.w);
+              // Build near/far eye-space points (robust ray)
+              vec2 ndc = uv * 2.0 - 1.0;
+              vec4 near4 = uProjInv * vec4(ndc, -1.0, 1.0); near4 /= near4.w;
+              vec4 far4  = uProjInv * vec4(ndc,  1.0, 1.0); far4  /= far4.w;
+              vec3 dirVS = normalize(far4.xyz - near4.xyz);
               float d01 = aDepth;
               float d = uZScale * pow(d01, uGamma) * 1000.0;
-              vec3 posVS = dirVS * d;
+              vec3 posVS = near4.xyz + dirVS * d;
               // depth-scaled drift in view plane
               float n = hash12(uv*91.7 + uTime*0.07);
-              float ang = n*6.28318; float amp = mix(1.2, 0.2, clamp(d*0.002, 0.0, 1.0));
+              float ang = n*6.28318; float amp = mix(1.0, 0.2, clamp(d*0.002, 0.0, 1.0));
               posVS.xy += vec2(cos(ang), sin(ang)) * amp;
               gl_Position = projectionMatrix * vec4(posVS, 1.0);
               vNear = 1.0/(1e-3 + d*0.0025);
