@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
+// dynamic import not required here
+import MaskStage from '../../components/MaskStage'
 
 type MaskOption = { id: string; label: string; vector?: Record<string, number> }
 type MaskItem = {
@@ -28,10 +29,7 @@ export default function QuizPage() {
   const [pack, setPack] = useState<ArchetypePack | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [focusedOption, setFocusedOption] = useState(-1)
-  const BackgroundBrain = useMemo(
-    () => dynamic(() => import('../../components/BackgroundBrain'), { ssr: false }),
-    []
-  )
+  // Brain background not used on quiz model stage for now
 
   useEffect(() => {
     const run = async () => {
@@ -335,11 +333,15 @@ hover-only neighbor edges; results saved as short signed IDs
         </div>
       </div>
 
-      {/* Right pane - brain fills remaining space */}
+      {/* Right pane - mask stage replaces brain for quiz */}
       <div
         style={{ flex: '1 1 0', alignSelf: 'stretch', position: 'relative', background: 'black' }}
       >
-        <BackgroundBrain />
+        {current && (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <MaskStage model={current.model || '/models/mask-placeholder.glb'} opacity={1} />
+          </div>
+        )}
       </div>
     </main>
   )

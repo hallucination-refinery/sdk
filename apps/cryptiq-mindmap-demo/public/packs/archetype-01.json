@@ -14,7 +14,8 @@
   "masks": [
     {
       "id": "mask-01",
-      "model": "/models/mask-01.glb",
+      "model": "/models/shibu_inu_sample.glb",
+      "placeholder": true,
       "title": "Mirror Mirror",
       "durationMs": 3500,
       "alt": "symmetrical ink-like 3D form",
@@ -49,8 +50,9 @@
     },
     {
       "id": "mask-02",
-      "model": "/models/mask-02.glb",
-      "title": "Plate B2",
+      "model": "/models/hippo_sample.glb",
+      "placeholder": true,
+      "title": "Hippo Campus",
       "durationMs": 3500,
       "alt": "bilateral organic shape",
       "options": [
@@ -77,15 +79,16 @@
         {
           "id": "river",
           "label": "a river",
-          "vector": { "Sage": 0.4, "Explorer": 0.3, "Planner": 0.3 }
+          "vector": { "Sage": 0.4, "Explorer": 0.3, "Architect": 0.3 }
         },
         { "id": "skip", "label": "skip/other", "vector": {} }
       ]
     },
     {
       "id": "mask-03",
-      "model": "/models/mask-03.glb",
-      "title": "Plate C3",
+      "model": "/models/realistic_croissant.glb",
+      "placeholder": true,
+      "title": "Realistic Croissant",
       "durationMs": 3500,
       "alt": "inked ridge structure",
       "options": [
@@ -97,7 +100,7 @@
         {
           "id": "portal",
           "label": "a portal",
-          "vector": { "Maverick": 0.5, "Explorer": 0.3, "Creator": 0.2 }
+          "vector": { "Rogue": 0.5, "Explorer": 0.3, "Creator": 0.2 }
         },
         {
           "id": "blueprint",
