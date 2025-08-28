@@ -14,6 +14,7 @@ type EdgeLinesProps = {
   ttlMs?: number
   thickness?: number
   reducedMotion?: boolean
+  keepAlive?: boolean
 }
 
 type PoolItem = {
@@ -30,6 +31,7 @@ export default function EdgeLines({
   ttlMs = 1500,
   thickness = 0.5,
   reducedMotion = false,
+  keepAlive = false,
 }: EdgeLinesProps) {
   const groupRef = useRef<THREE.Group>(null)
   const pool = useRef<PoolItem[]>([])
@@ -122,6 +124,12 @@ export default function EdgeLines({
     for (const item of pool.current) {
       const mat = item.mesh.material as THREE.MeshBasicMaterial
       if (!item.mesh.visible) continue
+      // Keep edges alive while hovering
+      if (keepAlive && item.inUse) {
+        item.expiresAt = now + ttlMs
+        mat.opacity = reducedMotion ? 1 : Math.min(1, mat.opacity + 0.15)
+        continue
+      }
       const tRemain = item.expiresAt - now
       if (tRemain <= 0) {
         mat.opacity = 0

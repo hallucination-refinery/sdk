@@ -467,10 +467,12 @@ export default function BackgroundBrain({
   }
 
   const enableControls = useMemo(() => {
+    // Ensure SSR and client agree when forceControls is true
+    if (forceControls) return true
     if (typeof window === 'undefined') return false
     const fromQuery = window.location.search.includes('controls')
     const fromEnv = process.env.NEXT_PUBLIC_ENABLE_CONTROLS === '1'
-    return forceControls || fromQuery || fromEnv
+    return fromQuery || fromEnv
   }, [forceControls])
 
   return (
@@ -521,12 +523,24 @@ export default function BackgroundBrain({
             renderMode={'spheres'}
             intro={true}
             introDurationMs={2000}
-            onHover={(concept, idx) => setHoveredIndex(idx)}
+            onHover={(concept, idx) => setHoveredIndex(idx >= 0 ? idx : null)}
+            highlightIndices={(() => {
+              if (hoveredIndex == null || !mappedIndices) return undefined
+              const n = mappedIndices.length
+              const set = new Uint8Array(500)
+              const offsets = [0, 7, -7, 17, -17, 29, -29]
+              for (const off of offsets) {
+                const j = (hoveredIndex + off + n) % n
+                set[j] = 1
+              }
+              return set
+            })()}
+            dimFactor={0.25}
           />
         )}
 
         {/* Hover edges */}
-        {edgeStart && edgeNormal && (
+        {!!edgeStart && !!edgeNormal && (
           <EdgeLines
             start={edgeStart}
             ends={edgeEnds}
@@ -535,6 +549,7 @@ export default function BackgroundBrain({
             ttlMs={1500}
             thickness={0.5}
             reducedMotion={prefersReducedMotion}
+            keepAlive={true}
           />
         )}
 

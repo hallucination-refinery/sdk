@@ -31,6 +31,10 @@ export interface ConceptParticlesProps {
   intro?: boolean
   /** Intro duration in milliseconds (default 1200) */
   introDurationMs?: number
+  /** Optional highlight set (indices that should stay bright) */
+  highlightIndices?: Set<number> | Uint8Array
+  /** Dim factor for non-highlighted instances (0..1, default 0.25) */
+  dimFactor?: number
 }
 
 interface InstanceData {
@@ -269,6 +273,8 @@ export function ConceptParticles({
   camera,
   intro = false,
   introDurationMs = 1200,
+  highlightIndices,
+  dimFactor = 0.25,
 }: ConceptParticlesProps) {
   const pointsRef = useRef<THREE.Points>(null)
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null)
@@ -580,7 +586,18 @@ export function ConceptParticles({
         } else {
           tempMatrix.setPosition(data.position.x, data.position.y, data.position.z)
         }
-        tempColor.copy(data.color)
+        // Apply dimming if this instance is not highlighted
+        if (
+          highlightIndices &&
+          !(
+            (highlightIndices instanceof Set && highlightIndices.has(i)) ||
+            (highlightIndices instanceof Uint8Array && highlightIndices[i] === 1)
+          )
+        ) {
+          tempColor.copy(data.color).multiplyScalar(Math.max(0, Math.min(1, dimFactor)))
+        } else {
+          tempColor.copy(data.color)
+        }
       }
 
       mesh.setMatrixAt(i, tempMatrix)
