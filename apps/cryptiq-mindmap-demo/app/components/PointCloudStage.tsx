@@ -1,8 +1,12 @@
 'use client'
 
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as React from 'react'
+// three types are optional in this workspace; import at runtime only
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import * as THREE from 'three'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -121,6 +125,7 @@ function PointsMesh({
   pointSize?: number
 }) {
   const geomRef = React.useRef<unknown>(null)
+  const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
 
   // Build point positions/colors once inputs available
   const { positions, colors } = React.useMemo(() => {
@@ -167,6 +172,13 @@ function PointsMesh({
     if (typeof g.computeBoundingSphere === 'function') g.computeBoundingSphere()
   }, [positions, colors])
 
+  // Animate time uniform for gentle drift
+  useFrame((_, dt) => {
+    if (!matRef.current) return
+    const u = matRef.current.uniforms as any
+    u.uTime.value += dt
+  })
+
   return (
     <points frustumCulled={true} renderOrder={1}>
       <bufferGeometry ref={geomRef}>
@@ -175,11 +187,63 @@ function PointsMesh({
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      <pointsMaterial
-        size={pointSize}
-        vertexColors={true}
-        sizeAttenuation={true}
-        depthWrite={false}
+      {/* Custom shader for particle size/alpha and gentle drift; additive blending */}
+      <shaderMaterial
+        ref={matRef as any}
+        args={[{
+          uniforms: {
+            uTime: { value: 0 },
+            uZScale: { value: zScale },
+            uBaseSize: { value: pointSize },
+          },
+          vertexShader: `
+            uniform float uTime;
+            uniform float uZScale;
+            uniform float uBaseSize;
+            attribute vec3 color;
+            varying vec3 vColor;
+
+            // simple 2D hash noise
+            float hash12(vec2 p) {
+              vec3 p3  = fract(vec3(p.xyx) * 0.1031);
+              p3 += dot(p3, p3.yzx + 33.33);
+              return fract((p3.x + p3.y) * p3.z);
+            }
+
+            void main() {
+              vColor = color;
+              vec3 p = position;
+              // subtle drift in screen plane
+              float n = hash12(p.xy * 0.007 + uTime * 0.05);
+              float ang = n * 6.28318;
+              vec2 jitter = vec2(cos(ang), sin(ang)) * 0.8; // pixels
+              p.xy += jitter;
+
+              vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+              gl_Position = projectionMatrix * mvPosition;
+
+              // size by luma (using vertex color) and approximate depth
+              float luma = dot(vColor, vec3(0.299, 0.587, 0.114));
+              float nearFactor = clamp(1.0 / max(1e-3, -mvPosition.z * 0.0025), 0.6, 2.5);
+              float size = uBaseSize * mix(0.7, 1.6, luma) * nearFactor;
+              gl_PointSize = size;
+            }
+          `,
+          fragmentShader: `
+            precision highp float;
+            varying vec3 vColor;
+            void main() {
+              // soft circular sprite
+              vec2 uv = gl_PointCoord - 0.5;
+              float r = length(uv);
+              float alpha = smoothstep(0.6, 0.15, r);
+              gl_FragColor = vec4(vColor, alpha);
+            }
+          `,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        }]} 
       />
     </points>
   )

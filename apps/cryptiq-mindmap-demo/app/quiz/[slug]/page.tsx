@@ -351,7 +351,13 @@ hover-only neighbor edges; results saved as short signed IDs
         {sceneId ? (
           <div style={{ position: 'absolute', inset: 0 }}>
             {/* Render point cloud for requested scene */}
-            <PointCloudStage sceneId={sceneId} zScale={2.5} pointSize={2.0} stride={1} perspective={true} />
+            <PointCloudStage
+              sceneId={sceneId}
+              zScale={2.5}
+              pointSize={2.0}
+              stride={1}
+              perspective={true}
+            />
           </div>
         ) : (
           current && (
