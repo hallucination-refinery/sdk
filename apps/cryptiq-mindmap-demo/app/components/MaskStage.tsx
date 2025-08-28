@@ -2,6 +2,8 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import * as THREE from 'three'
 import React, { useEffect, useMemo, useRef } from 'react'
 // Post-processing pixelation (same approach as BackgroundBrain)
@@ -49,7 +51,7 @@ function MaskModel({ url, opacity = 1 }: MaskModelProps) {
   obj.group.traverse((child: THREE.Object3D) => {
     if (child instanceof THREE.Mesh && child.material) {
       const mats = Array.isArray(child.material) ? child.material : [child.material]
-      mats.forEach((m) => {
+      mats.forEach((m: THREE.Material) => {
         const mat = m as THREE.Material & { opacity?: number; transparent?: boolean }
         mat.transparent = true
         if (typeof opacity === 'number') mat.opacity = opacity
@@ -62,7 +64,7 @@ function MaskModel({ url, opacity = 1 }: MaskModelProps) {
 
 function Pixelation({ pixelSize = 4 }: { pixelSize?: number }) {
   const { gl, scene, camera, size } = useThree()
-  const composerRef = useRef<any>(null)
+  const composerRef = useRef<EffectComposer | null>(null)
   useEffect(() => {
     const composer = new EffectComposer(gl)
     composer.addPass(new RenderPass(scene, camera))
@@ -91,7 +93,7 @@ export default function MaskStage({ model, opacity = 1 }: { model: string; opaci
       gl={{ antialias: true, alpha: true }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping
-        ;(gl as any).toneMappingExposure = 1.2
+        ;(gl as unknown as { toneMappingExposure?: number }).toneMappingExposure = 1.2
       }}
     >
       {/* Quick lighting pass to lift PBR without HDRI */}
@@ -108,5 +110,6 @@ export default function MaskStage({ model, opacity = 1 }: { model: string; opaci
   )
 }
 
-useGLTF.preload('/models/mask-placeholder.glb')
-useGLTF.preload('/models/realistic_croissant.glb')
+// Preloads disabled during pointcloud testing to avoid 404 and extra GLTF work
+// useGLTF.preload('/models/mask-placeholder.glb')
+// useGLTF.preload('/models/realistic_croissant.glb')

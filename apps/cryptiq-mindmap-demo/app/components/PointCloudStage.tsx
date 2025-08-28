@@ -126,17 +126,18 @@ function PointsMesh({
   stride = 2,
   zScale = 0.5,
   pointSize = 1.5,
+  onMaterialValid,
 }: {
   colorImage: { data: ImageData; width: number; height: number }
   depth16: { data16: Uint16Array; width: number; height: number }
   stride?: number
   zScale?: number
   pointSize?: number
+  onMaterialValid?: () => void
 }) {
   const geomRef = React.useRef<unknown>(null)
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
   const materialValidRef = React.useRef(false)
-  const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const { camera } = useThree()
 
   // Build attributes (uv, depth01, color); position computed in shader via unprojection
@@ -200,21 +201,21 @@ function PointsMesh({
     if (typeof g.computeBoundingSphere === 'function') g.computeBoundingSphere()
   }, [positions, colors])
 
-  // Poll once until the material compiles, then enable bloom
+  // Poll once until the material compiles, then notify parent to enable bloom
   React.useEffect(() => {
     let raf = 0
     const check = () => {
       const m = matRef.current as unknown as { program?: { glProgram?: unknown } }
       if (m && m.program && m.program.glProgram) {
         materialValidRef.current = true
-        setBloomEnabled(true)
+        if (onMaterialValid) onMaterialValid()
         return
       }
       raf = requestAnimationFrame(check)
     }
     raf = requestAnimationFrame(check)
     return () => cancelAnimationFrame(raf)
-  }, [])
+  }, [onMaterialValid])
 
   // Animate time uniform for gentle drift
   useFrame((_, dt) => {
@@ -360,6 +361,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stride = 1,
     perspective = false,
   } = props
+  const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
   const depthUrl = depthUrlProp ?? (base ? `${base}/depth16.png` : null)
@@ -413,6 +415,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           stride={stride}
           zScale={zScale}
           pointSize={pointSize}
+          onMaterialValid={() => setBloomEnabled(true)}
         />
       ) : (
         readyFallback && (
@@ -422,6 +425,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             stride={stride}
             zScale={zScale}
             pointSize={pointSize}
+            onMaterialValid={() => setBloomEnabled(true)}
           />
         )
       )}
