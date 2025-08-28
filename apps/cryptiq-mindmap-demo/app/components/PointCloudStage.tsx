@@ -8,6 +8,7 @@ type PointCloudStageProps = {
   sceneId?: string
   colorUrl?: string
   depthUrl?: string
+  depthRgUrl?: string
   zScale?: number
   pointSize?: number
   stride?: number
@@ -57,15 +58,63 @@ function useImageData(url: string | null): {
   return state
 }
 
+// Load RG-packed depth (R=hi, G=lo) and reconstruct to Uint16Array
+function usePackedDepth(url: string | null): {
+  data16: Uint16Array | null
+  width: number
+  height: number
+} {
+  const [state, setState] = React.useState<{
+    data16: Uint16Array | null
+    width: number
+    height: number
+  }>({ data16: null, width: 0, height: 0 })
+
+  React.useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      if (!url) return
+      try {
+        const res = await fetch(url, { cache: 'force-cache' })
+        const blob = await res.blob()
+        const img = await createImageBitmap(blob)
+        if (cancelled) return
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })
+        if (!ctx) return
+        ctx.drawImage(img, 0, 0)
+        const imageData = ctx.getImageData(0, 0, img.width, img.height)
+        const src = imageData.data
+        const out = new Uint16Array(img.width * img.height)
+        for (let i = 0, p = 0; p < out.length; i += 4, p++) {
+          const hi = src[i]
+          const lo = src[i + 1]
+          out[p] = (hi << 8) | lo
+        }
+        setState({ data16: out, width: img.width, height: img.height })
+      } catch {
+        // noop
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [url])
+
+  return state
+}
+
 function PointsMesh({
   colorImage,
-  depthImage,
+  depth16,
   stride = 2,
   zScale = 1.0,
   pointSize = 1.5,
 }: {
   colorImage: { data: ImageData; width: number; height: number }
-  depthImage: { data: ImageData; width: number; height: number }
+  depth16: { data16: Uint16Array; width: number; height: number }
   stride?: number
   zScale?: number
   pointSize?: number
@@ -76,35 +125,40 @@ function PointsMesh({
   const { positions, colors } = React.useMemo(() => {
     const cw = colorImage.width
     const ch = colorImage.height
-    const dw = depthImage.width
-    const dh = depthImage.height
+    const dw = depth16.width
+    const dh = depth16.height
     const w = Math.min(cw, dw)
     const h = Math.min(ch, dh)
     const col = colorImage.data.data
-    const dep = depthImage.data.data
+    const dep16 = depth16.data16
 
     const xs: number[] = []
     const cs: number[] = []
     for (let y = 0; y < h; y += stride) {
       for (let x = 0; x < w; x += stride) {
-        const i = (y * w + x) * 4
-        // Depth: browser decodes 16-bit PNG to 8-bit; use the R channel as normalized depth
-        const d01 = 1.0 - dep[i] / 255.0 // invert so brighter is farther
+        // Jittered sampling to break scanlines
+        const jx = stride > 1 ? (Math.random() - 0.5) * 0.9 * stride : 0
+        const jy = stride > 1 ? (Math.random() - 0.5) * 0.9 * stride : 0
+        const sx = Math.min(w - 1, Math.max(0, Math.round(x + jx)))
+        const sy = Math.min(h - 1, Math.max(0, Math.round(y + jy)))
+        const p = sy * w + sx
+        const d01 = 1.0 - dep16[p] / 65535.0
         const z = (d01 - 0.5) * 2.0 * zScale * 50.0
         // Center XY around origin
-        const nx = (x / w) * 2 - 1
-        const ny = (y / h) * 2 - 1
+        const nx = (sx / w) * 2 - 1
+        const ny = (sy / h) * 2 - 1
         const px = nx * w
         const py = -ny * h
         xs.push(px, py, z)
         // Color sampling
-        cs.push(col[i] / 255.0, col[i + 1] / 255.0, col[i + 2] / 255.0)
+        const ci = (sy * w + sx) * 4
+        cs.push(col[ci] / 255.0, col[ci + 1] / 255.0, col[ci + 2] / 255.0)
       }
     }
     const positions = new Float32Array(xs)
     const colors = new Float32Array(cs)
     return { positions, colors }
-  }, [colorImage, depthImage, stride, zScale])
+  }, [colorImage, depth16, stride, zScale])
 
   React.useEffect(() => {
     const g = geomRef.current as { computeBoundingSphere?: () => void } | null
@@ -130,10 +184,23 @@ function PointsMesh({
   )
 }
 
-function FitOrtho({ contentWidth, contentHeight, margin = 0.98 }: { contentWidth: number; contentHeight: number; margin?: number }) {
+function FitOrtho({
+  contentWidth,
+  contentHeight,
+  margin = 0.98,
+}: {
+  contentWidth: number
+  contentHeight: number
+  margin?: number
+}) {
   const { camera, size } = useThree()
   React.useEffect(() => {
-    const ortho = camera as { isOrthographicCamera?: boolean; zoom?: number; updateProjectionMatrix?: () => void; position?: { set?: (x: number, y: number, z: number) => void } }
+    const ortho = camera as {
+      isOrthographicCamera?: boolean
+      zoom?: number
+      updateProjectionMatrix?: () => void
+      position?: { set?: (x: number, y: number, z: number) => void }
+    }
     if (!ortho || !ortho.isOrthographicCamera) return
     const zx = size.width / contentWidth
     const zy = size.height / contentHeight
@@ -150,6 +217,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     sceneId,
     colorUrl: colorUrlProp,
     depthUrl: depthUrlProp,
+    depthRgUrl,
     zScale = 1.0,
     pointSize = 1.5,
     stride = 2,
@@ -157,25 +225,54 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
   const depthUrl = depthUrlProp ?? (base ? `${base}/depth16.png` : null)
+  const depthRg = depthRgUrl ?? (base ? `${base}/depth_rg.png` : null)
 
   const color = useImageData(colorUrl)
+  const packed = usePackedDepth(depthRg)
   const depth = useImageData(depthUrl)
 
-  const ready = !!color.data && !!depth.data && color.width > 0 && depth.width > 0
+  const depth16From8 = React.useMemo(() => {
+    if (!depth.data) return null
+    const w = depth.width
+    const h = depth.height
+    const src = depth.data.data
+    const out = new Uint16Array(w * h)
+    for (let i = 0, p = 0; p < out.length; i += 4, p++) out[p] = src[i] * 257
+    return { data16: out, width: w, height: h }
+  }, [depth.data, depth.width, depth.height])
+
+  const readyPacked = !!color.data && !!packed.data16 && color.width > 0 && packed.width > 0
+  const readyFallback = !!color.data && !!depth16From8
 
   return (
-    <Canvas orthographic camera={{ position: [0, 0, 1000], near: -10000, far: 10000, zoom: 1 }} gl={{ antialias: true, alpha: true }}>
-      {ready && <FitOrtho contentWidth={color.width} contentHeight={color.height} />}
+    <Canvas
+      orthographic
+      camera={{ position: [0, 0, 1000], near: -10000, far: 10000, zoom: 1 }}
+      gl={{ antialias: true, alpha: true }}
+    >
+      {(readyPacked || readyFallback) && (
+        <FitOrtho contentWidth={color.width} contentHeight={color.height} />
+      )}
       <ambientLight intensity={1} />
       <directionalLight position={[2, 3, 4]} intensity={0.6} />
-      {ready && (
+      {readyPacked ? (
         <PointsMesh
           colorImage={{ data: color.data!, width: color.width, height: color.height }}
-          depthImage={{ data: depth.data!, width: depth.width, height: depth.height }}
+          depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
           stride={stride}
           zScale={zScale}
           pointSize={pointSize}
         />
+      ) : (
+        readyFallback && (
+          <PointsMesh
+            colorImage={{ data: color.data!, width: color.width, height: color.height }}
+            depth16={depth16From8!}
+            stride={stride}
+            zScale={zScale}
+            pointSize={pointSize}
+          />
+        )
       )}
       <OrbitControls enableDamping dampingFactor={0.1} />
     </Canvas>

@@ -99,6 +99,13 @@ def infer_one(midas, transform, device: torch.device, img_path: Path, out_dir: P
 	if vis:
 		save_vis(depth16, out_vis)
 
+	# Also save RG-packed 8-bit depth for web: hi in R, lo in G
+	hi = (depth16 >> 8).astype(np.uint8)
+	lo = (depth16 & 0xFF).astype(np.uint8)
+	rg = np.stack([hi, lo, np.zeros_like(lo, dtype=np.uint8)], axis=-1)
+	out_rg = out_dir / f'{stem}_depth_rg.png'
+	cv.imwrite(str(out_rg), rg)
+
 	print(f'[OK] {img_path.name} → {out_depth.name} ({dt*1000:.0f} ms)')
 
 
