@@ -12,6 +12,7 @@ type PointCloudStageProps = {
   zScale?: number
   pointSize?: number
   stride?: number
+  perspective?: boolean
 }
 
 function useImageData(url: string | null): {
@@ -218,9 +219,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     colorUrl: colorUrlProp,
     depthUrl: depthUrlProp,
     depthRgUrl,
-    zScale = 1.0,
-    pointSize = 1.5,
-    stride = 2,
+    zScale = 2.5,
+    pointSize = 2.0,
+    stride = 1,
+    perspective = false,
   } = props
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
@@ -246,11 +248,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   return (
     <Canvas
-      orthographic
-      camera={{ position: [0, 0, 1000], near: -10000, far: 10000, zoom: 1 }}
+      orthographic={!perspective}
+      camera={
+        perspective
+          ? { position: [0, 0, 1200], fov: 55, near: 0.1, far: 5000 }
+          : { position: [0, 0, 1000], near: -10000, far: 10000, zoom: 1 }
+      }
       gl={{ antialias: true, alpha: true }}
     >
-      {(readyPacked || readyFallback) && (
+      {!perspective && (readyPacked || readyFallback) && (
         <FitOrtho contentWidth={color.width} contentHeight={color.height} />
       )}
       <ambientLight intensity={1} />
