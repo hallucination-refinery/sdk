@@ -1,33 +1,33 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import { useRefineryStore } from '@refinery/store'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 
-function AnalysisBar({ value }: { value: number }) {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        right: 12,
-        height: 8,
-        background: '#0b1630',
-        borderRadius: 4,
-      }}
-    >
-      <div style={{ width: `${value}%`, height: '100%', background: '#2bc7ff', borderRadius: 4 }} />
-    </div>
-  )
+type MaskOption = { id: string; label: string; vector?: Record<string, number> }
+type MaskItem = {
+  id: string
+  title: string
+  model?: string
+  durationMs?: number
+  alt?: string
+  options: MaskOption[]
+}
+type ArchetypePack = {
+  id: string
+  packVersion?: number
+  archetypes: string[]
+  masks: MaskItem[]
 }
 
+// AnalysisBar removed (unused in side-panel template)
+
 export default function QuizPage() {
-  const router = useRouter()
-  const params = useParams<{ slug: string }>()
-  const state = useRefineryStore()
+  useRouter() // keep navigation available if needed later
   const [loading, setLoading] = useState(true)
+  const [pack, setPack] = useState<ArchetypePack | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [focusedOption, setFocusedOption] = useState(-1)
   const BackgroundBrain = useMemo(
     () => dynamic(() => import('../../components/BackgroundBrain'), { ssr: false }),
     []
@@ -37,92 +37,309 @@ export default function QuizPage() {
     const run = async () => {
       try {
         const res = await fetch('/packs/archetype-01.json')
-        const pack = await res.json()
-        state.loadPack(pack)
+        const data = await res.json()
+        setPack(data)
       } finally {
         setLoading(false)
         console.log('[Quiz] start')
       }
     }
     run()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const questions = state.activePack?.questions || []
-  const analysis = state.analysis
-  const answeredIds = useMemo(() => new Set(Object.keys(state.responses)), [state.responses])
+  const masks = useMemo<MaskItem[]>(() => (Array.isArray(pack?.masks) ? pack!.masks : []), [pack])
+  const total = masks.length || 10
+  const currentIndex = Math.min(Math.max(activeIndex, 0), Math.max(total - 1, 0))
+  const current = masks[currentIndex]
+  const optionCount = current?.options?.length || 0
+  // Derive a title with a hard cap of 19 characters (including spaces), trimming to last space
+  const truncatedTitle = useMemo(() => {
+    const source = current?.title || 'MASK TITLE'
+    const raw = source.toString().toUpperCase()
+    const max = 19
+    if (raw.length <= max) return raw
+    const slice = raw.slice(0, max)
+    const lastSpace = slice.lastIndexOf(' ')
+    return lastSpace > 0 ? slice.slice(0, lastSpace) : slice
+  }, [current])
 
+  // Keyboard controls: Up/Down move focus; Enter selects next; Space skips
   useEffect(() => {
-    if (analysis === 100) {
-      const top = state.computeResult().payload.top
-      const rid = encodeURIComponent(top.map((t) => `${t.key}:${t.score.toFixed(2)}`).join(','))
-      console.log('[Quiz] complete')
-      router.push(`/result/${rid}`)
+    const onKey = (e: KeyboardEvent) => {
+      if (loading || !pack) return
+      if (
+        e.code === 'ArrowUp' ||
+        e.code === 'ArrowDown' ||
+        e.code === 'Enter' ||
+        e.code === 'Space'
+      ) {
+        e.preventDefault()
+      }
+      if (e.code === 'ArrowUp') {
+        setFocusedOption((i) => {
+          if (optionCount <= 0) return -1
+          const base = i === -1 ? 0 : i
+          return (base - 1 + optionCount) % optionCount
+        })
+      } else if (e.code === 'ArrowDown') {
+        setFocusedOption((i) => {
+          if (optionCount <= 0) return -1
+          const base = i === -1 ? 0 : i
+          return (base + 1) % optionCount
+        })
+      } else if (e.code === 'Enter' || e.code === 'Space') {
+        setActiveIndex((i) => Math.min(i + 1, Math.max(total - 1, 0)))
+        // reset focus for next mask
+        setFocusedOption(-1)
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [analysis])
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [loading, pack, optionCount, total])
 
   if (loading) return <div style={{ padding: 24, color: '#9ab' }}>Loading…</div>
 
   return (
     <main
       style={{
-        position: 'relative',
-        width: '100vw',
-        height: '100vh',
-        background: '#010c2a',
-        color: '#cfe8ff',
-        fontFamily: 'system-ui,sans-serif',
+        width: '100%',
+        height: '100%',
+        background: 'black',
         overflow: 'hidden',
+        justifyContent: 'flex-end',
+        alignItems: 'stretch',
+        display: 'inline-flex',
       }}
     >
-      <BackgroundBrain />
-      <AnalysisBar value={analysis} />
+      {/* Left side panel */}
       <div
         style={{
-          paddingTop: 40,
-          maxWidth: 880,
-          margin: '0 auto',
-          position: 'relative',
-          zIndex: 10,
+          width: 581,
+          alignSelf: 'stretch',
+          background: '#00041A',
+          paddingTop: 0,
+          paddingLeft: 24,
+          paddingRight: 24,
+          display: 'inline-flex',
+          flexDirection: 'column',
+          gap: 36,
+          justifyContent: 'flex-start',
+          alignItems: 'flex-start',
         }}
       >
-        {questions.map((q) => (
-          <div key={q.id} style={{ margin: '16px 0', opacity: answeredIds.has(q.id) ? 0.6 : 1 }}>
-            <div style={{ marginBottom: 8 }}>{q.prompt}</div>
+        {/* Progress indicator */}
+        <div style={{ display: 'flex', gap: 20, padding: '24px 0' }}>
+          {Array.from({ length: total }).map((_, i) => (
             <div
+              key={i}
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                gap: 12,
+                position: 'relative',
+                width: i === currentIndex ? 40 : 32,
+                height: i === currentIndex ? 40 : 32,
               }}
             >
-              {q.options.map((o) => (
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  border:
+                    i === currentIndex ? '4px solid #fff' : '1px solid rgba(245,245,245,0.96)',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Mask header and title */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            alignItems: 'flex-start',
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
+              fontWeight: 500,
+              fontSize: 24,
+              color: '#F5F5F5',
+              letterSpacing: 0.24,
+            }}
+          >
+            {`[MASK ${currentIndex + 1}/${total}]`}
+          </div>
+          <div
+            style={{
+              fontFamily: 'var(--font-display), Anton, sans-serif',
+              fontSize: 120,
+              color: '#fff',
+              letterSpacing: -2.4,
+              lineHeight: '108px',
+            }}
+          >
+            {truncatedTitle}
+          </div>
+        </div>
+
+        {/* Hint box */}
+        <div
+          style={{
+            position: 'relative',
+            border: '1px solid #F5F5F5',
+            borderRadius: 2,
+            paddingTop: 18,
+            paddingBottom: 12,
+            paddingLeft: 16,
+            paddingRight: 16,
+            color: '#F5F5F5',
+            fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
+            fontSize: 14,
+            lineHeight: '1.1',
+            minHeight: 182,
+            width: '100%',
+          }}
+        >
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: -9,
+              left: 12,
+              background: '#00041A',
+              paddingLeft: 8,
+              paddingRight: 8,
+              fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
+              fontSize: 14,
+              whiteSpace: 'nowrap',
+              color: '#F5F5F5',
+              lineHeight: 1,
+            }}
+          >
+            <span style={{ fontWeight: 600, color: '#FAFAFA' }}>HINT</span>
+            <span>{' — Cryptiq Mindmap v1.0.0 — 2025-08-30'}</span>
+          </div>
+          <pre
+            style={{ margin: 0, whiteSpace: 'pre-wrap', letterSpacing: '-0.42px' }}
+          >{`Archival backup of concept pack and UI assets. No executables
+or user PII included.
+Modified files (timestamps may differ):
+ • packs/archetype-v1.json
+ • public/models/brain-anchors-500.json
+ • public/assets/maskpack-v1/*.png
+Quick notes: 8 timed Rorschach masks; ~400 pre-seeded concepts;
+hover-only neighbor edges; results saved as short signed IDs
+(30d TTL).`}</pre>
+        </div>
+
+        {/* Options list (from mask options) */}
+        <div
+          style={{
+            fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
+            fontSize: 24,
+            lineHeight: '28.8px',
+            color: 'rgba(245,245,245,0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 20,
+            padding: '16px 20px 24px 20px',
+          }}
+        >
+          {(current?.options || [])
+            .slice(0, 5)
+            .map((o: { id?: string; label?: string }, idx: number) => (
+              <div key={o.id || idx} style={{ textTransform: 'uppercase' }}>
+                <span style={{ color: '#F5F5F5' }}>{idx + 1}. </span>
                 <button
-                  key={o.id}
-                  onClick={() => state.answer(q.id, o.id)}
+                  onClick={() => setActiveIndex((i) => Math.min(i + 1, total - 1))}
                   style={{
-                    textAlign: 'left',
-                    padding: 12,
-                    borderRadius: 8,
-                    border: '1px solid #2a3550',
-                    background: '#0b1630',
-                    color: '#cfe8ff',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    margin: 0,
+                    fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
+                    fontSize: 24,
+                    lineHeight: '28.8px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase',
+                    color: focusedOption === idx ? '#FFFFFF' : 'rgba(245,245,245,0.9)',
+                    textDecoration: focusedOption === idx ? 'underline' : 'none',
+                    cursor: 'pointer',
                   }}
                 >
-                  {o.image ? (
-                    <img
-                      src={o.image}
-                      alt=""
-                      style={{ width: '100%', borderRadius: 6, marginBottom: 8 }}
-                    />
-                  ) : null}
-                  <div>{o.label || 'Choose'}</div>
+                  {o.label || 'Option'}
                 </button>
-              ))}
-            </div>
+              </div>
+            ))}
+        </div>
+
+        {/* Controls row (Figma Dev spec) */}
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            paddingTop: 24,
+            paddingBottom: 24,
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+            gap: 24,
+            display: 'inline-flex',
+            fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
+            fontSize: 20,
+            lineHeight: '24px',
+            color: '#F5F5F5',
+          }}
+        >
+          <div
+            style={{
+              textAlign: 'center',
+              justifyContent: 'flex-end',
+              display: 'flex',
+              flexDirection: 'column',
+              whiteSpace: 'pre',
+              letterSpacing: '-0.8px',
+            }}
+          >
+            {`UP / DOWN  [ARROW]`}
           </div>
-        ))}
+          <div
+            style={{
+              width: 140,
+              textAlign: 'center',
+              justifyContent: 'flex-end',
+              display: 'flex',
+              flexDirection: 'column',
+              whiteSpace: 'pre',
+              letterSpacing: '-0.8px',
+            }}
+          >
+            {`SKIP  [SPACE]`}
+          </div>
+          <div
+            style={{
+              width: 140,
+              textAlign: 'center',
+              justifyContent: 'flex-end',
+              display: 'flex',
+              flexDirection: 'column',
+              whiteSpace: 'pre',
+              letterSpacing: '-0.8px',
+            }}
+          >
+            {`NEXT  [ENTER]`}
+          </div>
+        </div>
+      </div>
+
+      {/* Right pane - brain fills remaining space */}
+      <div
+        style={{ flex: '1 1 0', alignSelf: 'stretch', position: 'relative', background: 'black' }}
+      >
+        <BackgroundBrain />
       </div>
     </main>
   )
