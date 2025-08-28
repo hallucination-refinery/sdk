@@ -7,6 +7,15 @@ import * as React from 'react'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as THREE from 'three'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -115,7 +124,7 @@ function PointsMesh({
   colorImage,
   depth16,
   stride = 2,
-  zScale = 1.0,
+  zScale = 0.5,
   pointSize = 1.5,
 }: {
   colorImage: { data: ImageData; width: number; height: number }
@@ -126,9 +135,10 @@ function PointsMesh({
 }) {
   const geomRef = React.useRef<unknown>(null)
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
+  const { camera } = useThree()
 
-  // Build point positions/colors once inputs available
-  const { positions, colors } = React.useMemo(() => {
+  // Build attributes (uv, depth01, color); position computed in shader via unprojection
+  const { positions, uvs, depths, colors } = React.useMemo(() => {
     const cw = colorImage.width
     const ch = colorImage.height
     const dw = depth16.width
@@ -139,32 +149,45 @@ function PointsMesh({
     const dep16 = depth16.data16
 
     const xs: number[] = []
+    const us: number[] = []
+    const ds: number[] = []
     const cs: number[] = []
+
+    const hash = (x: number, y: number) => {
+      const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
+      return s - Math.floor(s)
+    }
+
     for (let y = 0; y < h; y += stride) {
       for (let x = 0; x < w; x += stride) {
-        // Jittered sampling to break scanlines
-        const jx = stride > 1 ? (Math.random() - 0.5) * 0.9 * stride : 0
-        const jy = stride > 1 ? (Math.random() - 0.5) * 0.9 * stride : 0
-        const sx = Math.min(w - 1, Math.max(0, Math.round(x + jx)))
-        const sy = Math.min(h - 1, Math.max(0, Math.round(y + jy)))
-        const p = sy * w + sx
-        const d01 = 1.0 - dep16[p] / 65535.0
-        const z = (d01 - 0.5) * 2.0 * zScale * 50.0
-        // Center XY around origin
-        const nx = (sx / w) * 2 - 1
-        const ny = (sy / h) * 2 - 1
-        const px = nx * w
-        const py = -ny * h
-        xs.push(px, py, z)
-        // Color sampling
-        const ci = (sy * w + sx) * 4
-        cs.push(col[ci] / 255.0, col[ci + 1] / 255.0, col[ci + 2] / 255.0)
+        const p = y * w + x
+        const d01 = dep16[p] / 65535.0
+
+        // Luma for sparsity
+        const ci = p * 4
+        const r = col[ci] / 255.0
+        const g = col[ci + 1] / 255.0
+        const b = col[ci + 2] / 255.0
+        const luma = 0.299 * r + 0.587 * g + 0.114 * b
+
+        // Stochastic keep to introduce airy gaps (more sparse in bright/far)
+        const near = 1.0 - d01
+        const keep = 0.45 + 0.35 * near + 0.2 * (1.0 - luma)
+        if (hash(x, y) > keep) continue
+
+        // attributes
+        us.push(x / (w - 1), y / (h - 1))
+        ds.push(d01)
+        xs.push(0, 0, 0) // dummy; shader computes true position
+        cs.push(r, g, b)
       }
     }
     const positions = new Float32Array(xs)
+    const uvs = new Float32Array(us)
+    const depths = new Float32Array(ds)
     const colors = new Float32Array(cs)
-    return { positions, colors }
-  }, [colorImage, depth16, stride, zScale])
+    return { positions, uvs, depths, colors }
+  }, [colorImage, depth16, stride])
 
   React.useEffect(() => {
     const g = geomRef.current as { computeBoundingSphere?: () => void } | null
@@ -174,9 +197,9 @@ function PointsMesh({
 
   // Animate time uniform for gentle drift
   useFrame((_, dt) => {
-    if (!matRef.current) return
-    const u = matRef.current.uniforms as any
-    u.uTime.value += dt
+    const mat = matRef.current as unknown as { uniforms?: { uTime?: { value: number } } }
+    if (!mat || !mat.uniforms || !mat.uniforms.uTime) return
+    mat.uniforms.uTime.value += dt
   })
 
   return (
@@ -184,69 +207,72 @@ function PointsMesh({
       <bufferGeometry ref={geomRef}>
         {/* position attribute */}
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        {/* uv and depth attributes for shader unprojection */}
+        <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
+        {/* custom attribute name is not necessary; pass as 'aDepth' via shader semantics using second uv channel */}
+        <bufferAttribute attach="attributes-uv2" args={[depths, 1]} />
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       {/* Custom shader for particle size/alpha and gentle drift; additive blending */}
       <shaderMaterial
-        ref={matRef as any}
+        // Casting for R3F ref type compatibility
+        ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
         args={[{
           uniforms: {
             uTime: { value: 0 },
             uZScale: { value: zScale },
             uBaseSize: { value: pointSize },
+            uGamma: { value: 1.0 },
+            uProjInv: { value: (camera as THREE.PerspectiveCamera).projectionMatrixInverse },
           },
           vertexShader: `
-            uniform float uTime;
-            uniform float uZScale;
-            uniform float uBaseSize;
-            attribute vec3 color;
-            varying vec3 vColor;
-
-            // simple 2D hash noise
-            float hash12(vec2 p) {
-              vec3 p3  = fract(vec3(p.xyx) * 0.1031);
-              p3 += dot(p3, p3.yzx + 33.33);
-              return fract((p3.x + p3.y) * p3.z);
-            }
-
-            void main() {
-              vColor = color;
-              vec3 p = position;
-              // subtle drift in screen plane
-              float n = hash12(p.xy * 0.007 + uTime * 0.05);
-              float ang = n * 6.28318;
-              vec2 jitter = vec2(cos(ang), sin(ang)) * 0.8; // pixels
-              p.xy += jitter;
-
-              vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
-              gl_Position = projectionMatrix * mvPosition;
-
-              // size by luma (using vertex color) and approximate depth
-              float luma = dot(vColor, vec3(0.299, 0.587, 0.114));
-              float nearFactor = clamp(1.0 / max(1e-3, -mvPosition.z * 0.0025), 0.6, 2.5);
-              float size = uBaseSize * mix(0.7, 1.6, luma) * nearFactor;
+            uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uProjInv;
+            attribute vec2 uv; attribute vec2 uv2; attribute vec3 color; varying vec3 vColor; varying float vNear;
+            float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+            void main(){
+              vColor=color;
+              vec2 ndc = uv*2.0-1.0;
+              vec4 q = uProjInv * vec4(ndc, -1.0, 1.0);
+              vec3 dirVS = normalize(q.xyz / q.w);
+              float d01 = uv2.x; // depth packed in uv2.x
+              float d = uZScale * pow(d01, uGamma) * 1000.0;
+              vec3 posVS = dirVS * d;
+              // depth-scaled drift in view plane
+              float n = hash12(uv*91.7 + uTime*0.07);
+              float ang = n*6.28318; float amp = mix(1.2, 0.2, clamp(d*0.002, 0.0, 1.0));
+              posVS.xy += vec2(cos(ang), sin(ang)) * amp;
+              gl_Position = projectionMatrix * vec4(posVS, 1.0);
+              vNear = 1.0/(1e-3 + d*0.0025);
+              float luma = dot(vColor, vec3(0.299,0.587,0.114));
+              float size = uBaseSize * mix(0.7,1.6,luma) * clamp(vNear,0.5,3.0);
               gl_PointSize = size;
             }
           `,
           fragmentShader: `
-            precision highp float;
-            varying vec3 vColor;
-            void main() {
-              // soft circular sprite
-              vec2 uv = gl_PointCoord - 0.5;
-              float r = length(uv);
-              float alpha = smoothstep(0.6, 0.15, r);
-              gl_FragColor = vec4(vColor, alpha);
-            }
+            precision highp float; varying vec3 vColor; varying float vNear;
+            void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
           `,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-        }]} 
+          transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+        }]}
       />
     </points>
   )
+}
+
+function BloomPass({ strength = 0.18, radius = 0.12, threshold = 0.65 }: { strength?: number; radius?: number; threshold?: number }) {
+  const { gl, scene, camera, size } = useThree()
+  const composerRef = React.useRef<EffectComposer | null>(null)
+  React.useEffect(() => {
+    const comp = new EffectComposer(gl)
+    const rp = new RenderPass(scene, camera)
+    const bloom = new UnrealBloomPass(undefined, strength, radius, threshold)
+    comp.addPass(rp); comp.addPass(bloom); composerRef.current = comp
+    return () => { try { comp.dispose() } catch {} composerRef.current = null }
+  }, [gl, scene, camera, strength, radius, threshold])
+  React.useEffect(() => { if (composerRef.current) composerRef.current.setSize(size.width, size.height) }, [size.width, size.height])
+  useFrame(() => { if (composerRef.current) composerRef.current.render() }, 1)
+  return null
 }
 
 function FitOrtho({
@@ -315,10 +341,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       orthographic={!perspective}
       camera={
         perspective
-          ? { position: [0, 0, 1200], fov: 55, near: 0.1, far: 5000 }
+          ? { position: [0, 0, 1200], fov: 80, near: 0.1, far: 5000 }
           : { position: [0, 0, 1000], near: -10000, far: 10000, zoom: 1 }
       }
       gl={{ antialias: true, alpha: true }}
+      onCreated={({ gl }) => {
+        // ACES tone mapping for nicer highlights
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        gl.toneMapping = THREE.ACESFilmicToneMapping
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        gl.toneMappingExposure = 1.0
+      }}
     >
       {!perspective && (readyPacked || readyFallback) && (
         <FitOrtho contentWidth={color.width} contentHeight={color.height} />
@@ -345,6 +380,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         )
       )}
       <OrbitControls enableDamping dampingFactor={0.1} />
+      <BloomPass strength={0.18} radius={0.12} threshold={0.65} />
     </Canvas>
   )
 }
