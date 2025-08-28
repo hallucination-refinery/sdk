@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 // dynamic import not required here
 import MaskStage from '../../components/MaskStage'
+import dynamic from 'next/dynamic'
+const PointCloudStage = dynamic(() => import('../../components/PointCloudStage'), { ssr: false })
 
 type MaskOption = { id: string; label: string; vector?: Record<string, number> }
 type MaskItem = {
@@ -29,6 +31,7 @@ export default function QuizPage() {
   const [pack, setPack] = useState<ArchetypePack | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [focusedOption, setFocusedOption] = useState(-1)
+  const [sceneId, setSceneId] = useState<string | null>(null)
   // Brain background not used on quiz model stage for now
 
   useEffect(() => {
@@ -43,6 +46,14 @@ export default function QuizPage() {
       }
     }
     run()
+  }, [])
+
+  // Read ?pc=scene-xx to switch right-pane renderer to point cloud
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const url = new URL(window.location.href)
+    const pc = url.searchParams.get('pc')
+    setSceneId(pc)
   }, [])
 
   const masks = useMemo<MaskItem[]>(() => (Array.isArray(pack?.masks) ? pack!.masks : []), [pack])
@@ -333,14 +344,21 @@ hover-only neighbor edges; results saved as short signed IDs
         </div>
       </div>
 
-      {/* Right pane - mask stage replaces brain for quiz */}
+      {/* Right pane - mask stage or point cloud stage */}
       <div
         style={{ flex: '1 1 0', alignSelf: 'stretch', position: 'relative', background: 'black' }}
       >
-        {current && (
+        {sceneId ? (
           <div style={{ position: 'absolute', inset: 0 }}>
-            <MaskStage model={current.model || '/models/mask-placeholder.glb'} opacity={1} />
+            {/* Render point cloud for requested scene */}
+            <PointCloudStage sceneId={sceneId} zScale={1.0} pointSize={1.5} stride={2} />
           </div>
+        ) : (
+          current && (
+            <div style={{ position: 'absolute', inset: 0 }}>
+              <MaskStage model={current.model || '/models/mask-placeholder.glb'} opacity={1} />
+            </div>
+          )
         )}
       </div>
     </main>

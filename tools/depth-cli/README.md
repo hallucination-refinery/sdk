@@ -24,6 +24,7 @@ python depth_cli.py --help
 ```
 
 Key flags:
+
 - `--model {dpt_hybrid,dpt_large}`: quality/speed tradeoff
 - `--minp 2 --maxp 98`: percentile normalization window
 - `--vis`: also save a colormapped preview PNG for quick QA
@@ -32,6 +33,6 @@ Key flags:
 Outputs go to `./outputs` by default.
 
 ## Notes
+
 - First run downloads MiDaS weights via torch.hub (~0.5–1.0 GB). Cached afterwards.
 - On Apple Silicon, PyTorch uses MPS automatically when available.
-
