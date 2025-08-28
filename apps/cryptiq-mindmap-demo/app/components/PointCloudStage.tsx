@@ -135,6 +135,8 @@ function PointsMesh({
 }) {
   const geomRef = React.useRef<unknown>(null)
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
+  const materialValidRef = React.useRef(false)
+  const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const { camera } = useThree()
 
   // Build attributes (uv, depth01, color); position computed in shader via unprojection
@@ -158,6 +160,9 @@ function PointsMesh({
       return s - Math.floor(s)
     }
 
+    const maxPoints = 600_000
+    const totalCandidates = Math.ceil((w / stride) * (h / stride))
+    const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
     for (let y = 0; y < h; y += stride) {
       for (let x = 0; x < w; x += stride) {
         const p = y * w + x
@@ -172,7 +177,7 @@ function PointsMesh({
 
         // Stochastic keep to introduce airy gaps (more sparse in bright/far)
         const near = 1.0 - d01
-        const keep = 0.45 + 0.35 * near + 0.2 * (1.0 - luma)
+        const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
         if (hash(x, y) > keep) continue
 
         // attributes
@@ -195,6 +200,22 @@ function PointsMesh({
     if (typeof g.computeBoundingSphere === 'function') g.computeBoundingSphere()
   }, [positions, colors])
 
+  // Poll once until the material compiles, then enable bloom
+  React.useEffect(() => {
+    let raf = 0
+    const check = () => {
+      const m = matRef.current as unknown as { program?: { glProgram?: unknown } }
+      if (m && m.program && m.program.glProgram) {
+        materialValidRef.current = true
+        setBloomEnabled(true)
+        return
+      }
+      raf = requestAnimationFrame(check)
+    }
+    raf = requestAnimationFrame(check)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
   // Animate time uniform for gentle drift
   useFrame((_, dt) => {
     const mat = matRef.current as unknown as { uniforms?: { uTime?: { value: number } } }
@@ -211,7 +232,7 @@ function PointsMesh({
         <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
         {/* custom float attribute for normalized depth */}
         {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={["attributes", "aDepth"]} args={[depths, 1]} />
+        <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
@@ -230,10 +251,11 @@ function PointsMesh({
             },
             vertexShader: `
             uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uProjInv;
-            attribute vec2 uv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
+            attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
             float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
             void main(){
               vColor=color;
+              // uv is provided by R3F/Three as built-in attribute
               vec2 ndc = uv*2.0-1.0;
               vec4 q = uProjInv * vec4(ndc, -1.0, 1.0);
               vec3 dirVS = normalize(q.xyz / q.w);
@@ -404,7 +426,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         )
       )}
       <OrbitControls enableDamping dampingFactor={0.1} />
-      <BloomPass strength={0.18} radius={0.12} threshold={0.65} />
+      {bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
     </Canvas>
   )
 }
