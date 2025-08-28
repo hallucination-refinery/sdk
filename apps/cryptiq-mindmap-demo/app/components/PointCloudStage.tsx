@@ -209,8 +209,9 @@ function PointsMesh({
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         {/* uv and depth attributes for shader unprojection */}
         <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
-        {/* custom attribute name is not necessary; pass as 'aDepth' via shader semantics using second uv channel */}
-        <bufferAttribute attach="attributes-uv2" args={[depths, 1]} />
+        {/* custom float attribute for normalized depth */}
+        {/** @ts-expect-error attachObject is supported at runtime */}
+        <bufferAttribute attachObject={["attributes", "aDepth"]} args={[depths, 1]} />
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
@@ -218,24 +219,25 @@ function PointsMesh({
       <shaderMaterial
         // Casting for R3F ref type compatibility
         ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
-        args={[{
-          uniforms: {
-            uTime: { value: 0 },
-            uZScale: { value: zScale },
-            uBaseSize: { value: pointSize },
-            uGamma: { value: 1.0 },
-            uProjInv: { value: (camera as THREE.PerspectiveCamera).projectionMatrixInverse },
-          },
-          vertexShader: `
+        args={[
+          {
+            uniforms: {
+              uTime: { value: 0 },
+              uZScale: { value: zScale },
+              uBaseSize: { value: pointSize },
+              uGamma: { value: 1.0 },
+              uProjInv: { value: (camera as THREE.PerspectiveCamera).projectionMatrixInverse },
+            },
+            vertexShader: `
             uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uProjInv;
-            attribute vec2 uv; attribute vec2 uv2; attribute vec3 color; varying vec3 vColor; varying float vNear;
+            attribute vec2 uv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
             float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
             void main(){
               vColor=color;
               vec2 ndc = uv*2.0-1.0;
               vec4 q = uProjInv * vec4(ndc, -1.0, 1.0);
               vec3 dirVS = normalize(q.xyz / q.w);
-              float d01 = uv2.x; // depth packed in uv2.x
+              float d01 = aDepth;
               float d = uZScale * pow(d01, uGamma) * 1000.0;
               vec3 posVS = dirVS * d;
               // depth-scaled drift in view plane
@@ -249,29 +251,51 @@ function PointsMesh({
               gl_PointSize = size;
             }
           `,
-          fragmentShader: `
+            fragmentShader: `
             precision highp float; varying vec3 vColor; varying float vNear;
             void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
           `,
-          transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-        }]}
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+          },
+        ]}
       />
     </points>
   )
 }
 
-function BloomPass({ strength = 0.18, radius = 0.12, threshold = 0.65 }: { strength?: number; radius?: number; threshold?: number }) {
+function BloomPass({
+  strength = 0.18,
+  radius = 0.12,
+  threshold = 0.65,
+}: {
+  strength?: number
+  radius?: number
+  threshold?: number
+}) {
   const { gl, scene, camera, size } = useThree()
   const composerRef = React.useRef<EffectComposer | null>(null)
   React.useEffect(() => {
     const comp = new EffectComposer(gl)
     const rp = new RenderPass(scene, camera)
     const bloom = new UnrealBloomPass(undefined, strength, radius, threshold)
-    comp.addPass(rp); comp.addPass(bloom); composerRef.current = comp
-    return () => { try { comp.dispose() } catch {} composerRef.current = null }
+    comp.addPass(rp)
+    comp.addPass(bloom)
+    composerRef.current = comp
+    return () => {
+      try {
+        comp.dispose()
+      } catch {}
+      composerRef.current = null
+    }
   }, [gl, scene, camera, strength, radius, threshold])
-  React.useEffect(() => { if (composerRef.current) composerRef.current.setSize(size.width, size.height) }, [size.width, size.height])
-  useFrame(() => { if (composerRef.current) composerRef.current.render() }, 1)
+  React.useEffect(() => {
+    if (composerRef.current) composerRef.current.setSize(size.width, size.height)
+  }, [size.width, size.height])
+  useFrame(() => {
+    if (composerRef.current) composerRef.current.render()
+  }, 1)
   return null
 }
 
