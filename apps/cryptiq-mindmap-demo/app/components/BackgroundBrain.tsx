@@ -6,6 +6,7 @@ import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
 import { ConceptParticles } from '@refinery/canvas-r3f'
+import EdgeLines from './EdgeLines'
 import { useMindmapStore } from '@refinery/store'
 import type { Node } from '@refinery/schema'
 
@@ -159,7 +160,9 @@ function PostProcessing({
   return null
 }
 
-export default function BackgroundBrain() {
+export default function BackgroundBrain({
+  forceControls = false,
+}: { forceControls?: boolean } = {}) {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
@@ -170,6 +173,9 @@ export default function BackgroundBrain() {
   const [pixelSize, setPixelSize] = useState(1.5)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const [showDebugHUD, setShowDebugHUD] = useState(false)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const hasFittedRef = useRef(false)
+  const userInteractedRef = useRef(false)
 
   const concepts = useMindmapStore().getVisibleConcepts()
   const liveConcepts = useMemo(() => (concepts as Node[]) || [], [concepts])
@@ -358,6 +364,56 @@ export default function BackgroundBrain() {
     return out
   }, [anchorPool, vertices, conceptArray])
 
+  // Centroid computed once for normals/radials
+  const centroid = useMemo(() => {
+    if (vertices.length === 0) return new THREE.Vector3(0, 0, 0)
+    const c = vertices
+      .reduce((acc, v) => acc.add(v), new THREE.Vector3())
+      .multiplyScalar(1 / vertices.length)
+    return c
+  }, [vertices])
+
+  // Map hover/focus index → start/ends vectors for EdgeLines
+  const edgeStart = useMemo(() => {
+    if (hoveredIndex == null || !mappedIndices || vertices.length === 0) return null
+    const vi = mappedIndices[hoveredIndex] ?? hoveredIndex % vertices.length
+    return vertices[vi]?.clone() ?? null
+  }, [hoveredIndex, mappedIndices, vertices])
+
+  const edgeNormal = useMemo(() => {
+    if (!edgeStart) return null
+    return edgeStart.clone().sub(centroid).normalize()
+  }, [edgeStart, centroid])
+
+  const edgeEnds = useMemo(() => {
+    if (hoveredIndex == null || !mappedIndices || vertices.length === 0)
+      return [] as { pos: THREE.Vector3; color?: string }[]
+    const n = mappedIndices.length
+    if (n === 0) return []
+    const offsets = [7, -7, 17, -17, 29, -29]
+    const out: { pos: THREE.Vector3; color?: string }[] = []
+    for (const off of offsets) {
+      const j = (hoveredIndex + off + n) % n
+      const vi = mappedIndices[j] ?? j % vertices.length
+      const v = vertices[vi]
+      if (v) out.push({ pos: v.clone(), color: '#8fbaff' })
+    }
+    return out
+  }, [hoveredIndex, mappedIndices, vertices])
+
+  // Listen to focus events from side panel (optional bridge)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ id?: string }>
+      const id = ce.detail?.id
+      if (!id) return
+      const idx = conceptArray.findIndex((c) => (c as any).id === id)
+      if (idx >= 0) setHoveredIndex(idx)
+    }
+    window.addEventListener('cryptiq:focus-concept', handler as EventListener)
+    return () => window.removeEventListener('cryptiq:focus-concept', handler as EventListener)
+  }, [conceptArray])
+
   // Brain shell fade-in (opacity only) after particles finish
   useEffect(() => {
     if (vertices.length === 0 || introStart != null) return
@@ -387,9 +443,11 @@ export default function BackgroundBrain() {
     return () => cancelAnimationFrame(raf)
   }, [vertices, conceptArray.length, anchorPool, introStart])
 
-  function CameraFitter({ target = 0.72 }: { target?: number }) {
+  function CameraFitter({ target = 0.72, active = true }: { target?: number; active?: boolean }) {
     const { camera } = useThree()
-    useMemo(() => {
+    useEffect(() => {
+      if (!active) return
+      if (hasFittedRef.current) return
       if (vertices.length === 0) return
       const c = vertices
         .reduce((acc, v) => acc.add(v), new THREE.Vector3())
@@ -402,17 +460,18 @@ export default function BackgroundBrain() {
         camera.position.set(0, 80, -z)
         camera.lookAt(0, 0, 0)
         ;(camera as THREE.PerspectiveCamera).updateProjectionMatrix()
+        hasFittedRef.current = true
       }
-    }, [camera, vertices, target])
+    }, [active, camera, target, vertices])
     return null
   }
 
   const enableControls = useMemo(() => {
     if (typeof window === 'undefined') return false
-    return (
-      window.location.search.includes('controls') || process.env.NEXT_PUBLIC_ENABLE_CONTROLS === '1'
-    )
-  }, [])
+    const fromQuery = window.location.search.includes('controls')
+    const fromEnv = process.env.NEXT_PUBLIC_ENABLE_CONTROLS === '1'
+    return forceControls || fromQuery || fromEnv
+  }, [forceControls])
 
   return (
     <div
@@ -425,7 +484,7 @@ export default function BackgroundBrain() {
       aria-hidden={!enableControls}
     >
       <Canvas camera={{ position: [0, 80, 220], fov: 90 }} gl={{ antialias: true, alpha: true }}>
-        <CameraFitter target={0.75} />
+        <CameraFitter target={0.75} active={!userInteractedRef.current} />
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
@@ -462,6 +521,20 @@ export default function BackgroundBrain() {
             renderMode={'spheres'}
             intro={true}
             introDurationMs={2000}
+            onHover={(concept, idx) => setHoveredIndex(idx)}
+          />
+        )}
+
+        {/* Hover edges */}
+        {edgeStart && edgeNormal && (
+          <EdgeLines
+            start={edgeStart}
+            ends={edgeEnds}
+            normal={edgeNormal}
+            maxK={6}
+            ttlMs={1500}
+            thickness={0.5}
+            reducedMotion={prefersReducedMotion}
           />
         )}
 
@@ -469,11 +542,17 @@ export default function BackgroundBrain() {
           <OrbitControls
             enableDamping
             dampingFactor={0.12}
-            autoRotate
+            autoRotate={false}
             autoRotateSpeed={2}
-            enableZoom={false}
-            enablePan={false}
-            enableRotate={false}
+            enableZoom={true}
+            enablePan={true}
+            enableRotate={true}
+            onStart={() => {
+              userInteractedRef.current = true
+            }}
+            onChange={() => {
+              userInteractedRef.current = true
+            }}
           />
         )}
 

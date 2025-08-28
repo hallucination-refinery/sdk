@@ -1,5 +1,6 @@
 import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import { useCallback } from 'react'
 import * as THREE from 'three'
 import { Node } from '@refinery/schema'
 
@@ -601,6 +602,22 @@ export function ConceptParticles({
         args={[sphereGeometry, glowMaterial!, 500]}
         visible={visible}
         renderOrder={1}
+        onPointerMove={useCallback(
+          (e: any) => {
+            if (!_onHover) return
+            const id = (e?.instanceId as number) ?? -1
+            if (id >= 0 && id < 500) {
+              const d = instanceData[id]
+              if (d && d.concept && d.concept.id) {
+                _onHover(d.concept, id)
+              }
+            }
+          },
+          [_onHover, instanceData]
+        )}
+        onPointerOut={useCallback(() => {
+          if (_onHover) _onHover(null as any, -1)
+        }, [_onHover])}
       />
     )
   }
