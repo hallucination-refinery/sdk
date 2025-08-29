@@ -340,10 +340,14 @@ function PointsMesh({
           ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
           args={[
             {
-              uniforms: {},
+              uniforms: { uBaseSize: { value: pointSize } },
               vertexShader: `
               precision highp float;
-              void main(){ gl_Position = vec4(0.0, 0.0, 0.0, 1.0); gl_PointSize = 50.0; }
+              uniform float uBaseSize;
+              void main(){
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                gl_PointSize = uBaseSize;
+              }
             `,
               fragmentShader: `
               precision highp float;
