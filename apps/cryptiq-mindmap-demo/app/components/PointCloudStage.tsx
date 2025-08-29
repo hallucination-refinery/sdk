@@ -154,6 +154,9 @@ function PointsMesh({
     const col = colorImage.data.data
     const dep16 = depth16.data16
 
+    // Log basic dimensions
+    console.log('[Buffer Verification] Image dimensions:', { cw, ch, dw, dh, w, h })
+
     const xs: number[] = []
     const us: number[] = []
     const ds: number[] = []
@@ -166,17 +169,36 @@ function PointsMesh({
 
     const maxPoints = 250_000
     const totalCandidates = Math.ceil((w / stride) * (h / stride))
-    const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
+    let keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
+    
+    console.log('[Buffer Verification] Candidate calculation:', {
+      stride,
+      maxPoints,
+      totalCandidates,
+      initialKeepRatio: keepRatio
+    })
+
+    // Track points as we iterate
+    let candidateCount = 0
+    let keptCount = 0
+
     for (let y = 0; y < h; y += stride) {
       for (let x = 0; x < w; x += stride) {
-        const p = y * w + x
-        const d01 = dep16[p] / 65535.0
+        candidateCount++
+        
+        // Handle dimension mismatch: compute separate indices for color and depth
+        const dp = y * dw + x  // depth index
+        const cp = (y * cw + x) * 4  // color index
+        
+        // Ensure we don't read beyond array bounds
+        if (dp >= dep16.length || cp >= col.length) continue
+        
+        const d01 = dep16[dp] / 65535.0
 
         // Luma for sparsity
-        const ci = p * 4
-        const r = col[ci] / 255.0
-        const g = col[ci + 1] / 255.0
-        const b = col[ci + 2] / 255.0
+        const r = col[cp] / 255.0
+        const g = col[cp + 1] / 255.0
+        const b = col[cp + 2] / 255.0
         const luma = 0.299 * r + 0.587 * g + 0.114 * b
 
         // Stochastic keep to introduce airy gaps (more sparse in bright/far)
@@ -184,6 +206,8 @@ function PointsMesh({
         const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
         if (hash(x, y) > keep) continue
 
+        keptCount++
+        
         // attributes
         us.push(x / (w - 1), y / (h - 1))
         ds.push(d01)
@@ -191,10 +215,70 @@ function PointsMesh({
         cs.push(r, g, b)
       }
     }
+    
+    // Check if we need to disable stochastic keep due to low point count
+    if (keptCount < 100) {
+      console.log('[Buffer Verification] Low point count detected, disabling stochastic keep:', keptCount)
+      
+      // Clear arrays and rebuild with keepRatio=1
+      xs.length = 0
+      us.length = 0
+      ds.length = 0
+      cs.length = 0
+      
+      keepRatio = 1.0
+      keptCount = 0
+      
+      for (let y = 0; y < h; y += stride) {
+        for (let x = 0; x < w; x += stride) {
+          // Handle dimension mismatch: compute separate indices for color and depth
+          const dp = y * dw + x  // depth index
+          const cp = (y * cw + x) * 4  // color index
+          
+          // Ensure we don't read beyond array bounds
+          if (dp >= dep16.length || cp >= col.length) continue
+          
+          const d01 = dep16[dp] / 65535.0
+
+          // Luma for sparsity
+          const r = col[cp] / 255.0
+          const g = col[cp + 1] / 255.0
+          const b = col[cp + 2] / 255.0
+
+          keptCount++
+          
+          // attributes
+          us.push(x / (w - 1), y / (h - 1))
+          ds.push(d01)
+          xs.push(0, 0, 0) // dummy; shader computes true position
+          cs.push(r, g, b)
+        }
+      }
+    }
+    
     const positions = new Float32Array(xs)
     const uvs = new Float32Array(us)
     const depths = new Float32Array(ds)
     const colors = new Float32Array(cs)
+    
+    // Log final buffer sizes and sample data
+    console.log('[Buffer Verification] Final counts:', {
+      candidateCount,
+      keptCount,
+      finalKeepRatio: keepRatio,
+      positionsLength: positions.length,
+      uvsLength: uvs.length,
+      depthsLength: depths.length,
+      colorsLength: colors.length
+    })
+    
+    // Log first few samples for verification
+    console.log('[Buffer Verification] Sample data:', {
+      firstUv: uvs.length >= 2 ? [uvs[0], uvs[1]] : 'none',
+      firstDepth: depths.length >= 1 ? depths[0] : 'none',
+      firstColor: colors.length >= 3 ? [colors[0], colors[1], colors[2]] : 'none'
+    })
+    
     return { positions, uvs, depths, colors }
   }, [colorImage, depth16, stride])
 
