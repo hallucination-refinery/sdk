@@ -410,6 +410,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           : { position: [0, 0, 1000], near: -10000, far: 10000, zoom: 1 }
       }
       gl={{ antialias: true, alpha: true }}
+      style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
+      onPointerDown={(e) => {
+        // simple signal that canvas receives input
+        // eslint-disable-next-line no-console
+        console.log('[PC] pointer down', e.clientX, e.clientY)
+      }}
       onCreated={({ gl }) => {
         // ACES tone mapping for nicer highlights
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -418,6 +424,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         gl.toneMappingExposure = 1.0
+        // ensure browser gesture handling doesn't block wheel/touch
+        gl.domElement.style.touchAction = 'none'
+        gl.domElement.style.pointerEvents = 'auto'
       }}
     >
       {!perspective && (readyPacked || readyFallback) && (
@@ -457,9 +466,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         // approximate cloud center along -Z
         target={[0, 0, -800]}
       />
-      {false && bloomEnabled && (
-        <BloomPass strength={0.18} radius={0.12} threshold={0.65} />
-      )}
+      {false && bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
     </Canvas>
   )
 }
