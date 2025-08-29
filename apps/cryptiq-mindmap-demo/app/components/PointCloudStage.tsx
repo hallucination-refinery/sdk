@@ -457,7 +457,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         // approximate cloud center along -Z
         target={[0, 0, -800]}
       />
-      {bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
+      {false && bloomEnabled && (
+        <BloomPass strength={0.18} radius={0.12} threshold={0.65} />
+      )}
     </Canvas>
   )
 }
