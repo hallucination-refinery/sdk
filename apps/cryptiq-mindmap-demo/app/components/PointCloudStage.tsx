@@ -280,7 +280,7 @@ function PointsMesh({
               vec3 dirW  = normalize(farW.xyz - nearW.xyz);
               // Use forward depth polarity and clamp into a stable shell
               float d01 = clamp(aDepth, 0.0, 1.0);
-              float d = mix(500.0, 1100.0, pow(d01, uGamma));
+              float d = mix(700.0, 900.0, pow(d01, uGamma));
               // Move along the captured world ray toward the camera
               vec3 posW = nearW.xyz - dirW * d;
               // depth-scaled drift in a plane orthogonal to dirW (world-stable)
@@ -363,8 +363,8 @@ function SceneControls() {
       enablePan={false}
       enableDamping
       dampingFactor={0.1}
-      minDistance={450}
-      maxDistance={1600}
+      minDistance={200}
+      maxDistance={3000}
       target={[0, 0, -800]}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
