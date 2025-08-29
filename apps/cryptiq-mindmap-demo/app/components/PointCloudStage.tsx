@@ -29,7 +29,7 @@ type PointCloudStageProps = {
 }
 
 // Toggle between shader path and baseline PointsMaterial
-const USE_SHADER = true
+const USE_SHADER = false
 
 function useImageData(url: string | null): {
   data: ImageData | null
@@ -299,6 +299,7 @@ function PointsMesh({
 
   // Poll once until the material compiles, then notify parent to enable bloom
   React.useEffect(() => {
+    if (!USE_SHADER) return
     let raf = 0
     const check = () => {
       const m = matRef.current as unknown as { program?: { glProgram?: unknown } }
@@ -447,9 +448,9 @@ function SceneControls() {
       enablePan={false}
       enableDamping
       dampingFactor={0.1}
-      minDistance={200}
-      maxDistance={3000}
-      target={[0, 0, -800]}
+      minDistance={100}
+      maxDistance={5000}
+      target={[0, 0, 0]}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
       onStart={() => console.log('[PC] controls start')}
