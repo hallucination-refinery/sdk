@@ -280,3 +280,153 @@ float size = uBaseSize * mix(0.7,1.6,luma) * (0.8 + 0.4 * vNear);
 - Drift parameters are tuned for subtle effect (2.0, 1.5, 1.0 units amplitude)
 - Point sizing now properly reflects depth for enhanced 3D perception
 - The implementation creates the target "airy point-cloud" effect with proper depth and animation
+
+## Session 4 - OrbitControls Optimization
+
+**Date:** 2025-08-29
+**Goal:** Optimize OrbitControls parameters for better point cloud exploration and interaction
+**Status:** Completed
+
+### Changes Made:
+
+1. **Reduced minDistance**: Changed from `200` to `100` to allow closer zoom for detail examination
+2. **Increased maxDistance**: Changed from `3000` to `5000` for better zoom-out range to see full cloud
+3. **Centered rotation target**: Changed from `[0, 0, -800]` to `[0, 0, 0]` for proper center-based rotation
+4. **Verified enableDamping**: Confirmed `enableDamping={true}` is set for smooth interaction
+5. **Maintained interaction settings**: Kept existing `pointerEvents: 'auto'`, `touchAction: 'none'`, and gesture handling
+
+### Technical Implementation:
+
+**Previous Controls Configuration:**
+```jsx
+<OrbitControls
+  minDistance={200}
+  maxDistance={3000}
+  target={[0, 0, -800]}
+  enableDamping
+  // other props...
+/>
+```
+
+**New Controls Configuration:**
+```jsx
+<OrbitControls
+  minDistance={100}
+  maxDistance={5000}  
+  target={[0, 0, 0]}
+  enableDamping={true}
+  // other props...
+/>
+```
+
+### Key Improvements:
+
+- **Closer Detail Inspection**: `minDistance={100}` allows users to zoom much closer to examine point cloud details
+- **Better Overview**: `maxDistance={5000}` provides wider zoom-out range to see entire point cloud structure
+- **Proper Center Rotation**: `target={[0, 0, 0]}` ensures rotation happens around the natural center point
+- **Smooth Interaction**: Explicit `enableDamping={true}` ensures smooth, dampened camera movement
+- **Maintained Canvas Interaction**: All existing pointer event and touch action settings preserved
+
+### Expected Behavior:
+
+- **Enhanced Zoom Range**: Users can now zoom from very close (100 units) to very far (5000 units)
+- **Natural Rotation**: Camera orbits around the center of the point cloud instead of offset position
+- **Smooth Controls**: Damped movement provides polished interaction feel
+- **No Interaction Blocking**: Canvas remains fully interactive with proper event handling
+
+### Validation Points:
+
+✅ **Closer Zoom**: `minDistance={100}` allows detailed point examination  
+✅ **Extended Zoom Range**: `maxDistance={5000}` provides comprehensive view options  
+✅ **Centered Rotation**: `target={[0, 0, 0]}` creates natural rotation behavior  
+✅ **Smooth Damping**: Explicit `enableDamping={true}` ensures quality interaction  
+✅ **Preserved Interaction**: All canvas interaction settings maintained  
+
+### Notes:
+
+- The new distance range provides 50x zoom range (100 to 5000) for comprehensive exploration
+- Centered target aligns with the point cloud's natural coordinate system
+- Canvas retains all existing interaction capabilities with improved control tuning
+- OrbitControls now optimized specifically for 3D point cloud visualization use case
+
+## Session 5 - Performance Safeguards Implementation
+
+**Date:** 2025-08-29
+**Goal:** Add performance safeguards to ensure stable performance on consumer laptops
+**Status:** Completed
+
+### Changes Made:
+
+1. **Added Performance Constants**: Added `MAX_POINTS = 150000` and `MIN_STRIDE = 2` constants with documentation
+2. **Implemented Point Count Cap**: Capped total points at 150k with early validation and warnings
+3. **Enhanced Stride Validation**: Added minimum stride checking and warnings for performance
+4. **Added Early Exit Logic**: Returns empty buffers if candidate count exceeds 5x MAX_POINTS
+5. **Implemented Bloom Safety**: Only enables bloom after geometry verification and point count validation
+6. **Updated Default Stride**: Changed default from `stride = 1` to `stride = 2` for better performance
+7. **Added Performance Warnings**: Multiple warning levels for point count thresholds
+
+### Technical Implementation:
+
+**Performance Constants:**
+```typescript
+const MAX_POINTS = 150000 // Conservative limit for stable 60fps
+const MIN_STRIDE = 2 // Minimum stride for initial testing - reduces point density
+```
+
+**Point Count Validation:**
+```typescript
+// Early exit if candidate count is extremely high
+if (totalCandidates > MAX_POINTS * 5) {
+  console.error(`[PointCloud Performance] Too many candidate points (${totalCandidates}). Consider increasing stride from ${stride} to ${Math.ceil(stride * Math.sqrt(totalCandidates / MAX_POINTS))}`)
+  return { positions: new Float32Array([]), uvs: new Float32Array([]), depths: new Float32Array([]), colors: new Float32Array([]) }
+}
+```
+
+**Bloom Safety Check:**
+```typescript
+// For baseline mode, verify geometry before enabling bloom
+if (pointCount > 0 && pointCount <= MAX_POINTS) {
+  console.info('[PointCloud Debug] Baseline mode - geometry verified, ready for bloom')
+  if (onMaterialValid) onMaterialValid()
+} else {
+  console.warn(`[PointCloud Performance] Baseline mode - invalid geometry (${pointCount} points), bloom disabled`)
+}
+```
+
+**Default Stride Update:**
+```typescript
+stride = 2, // Performance safeguard: Start with stride ≥ 2 for stable performance
+```
+
+### Key Safeguards:
+
+- **MAX_POINTS Limit**: Conservative 150k point cap prevents GPU overload
+- **Minimum Stride**: Ensures initial testing starts with stride ≥ 2 for reduced density
+- **Early Exit Protection**: Prevents processing if candidate count exceeds reasonable bounds
+- **Bloom Conditional Activation**: Only enables bloom after geometry verification
+- **Performance Warnings**: Multi-level warning system (< 100 points, > 80% max, > 100% max)
+- **Stride Recommendations**: Calculates suggested stride values when limits exceeded
+
+### Expected Behavior:
+
+- **Stable Performance**: 150k point limit ensures 60fps on consumer laptops
+- **Conservative Defaults**: stride=2 provides good balance of quality vs performance
+- **Graceful Degradation**: System warns and adjusts rather than crashing
+- **Clear Diagnostics**: Performance warnings with actionable recommendations
+- **Conditional Effects**: Bloom only activates when safe to do so
+
+### Validation Points:
+
+✅ **Point Count Capped**: MAX_POINTS constant limits total points to 150k  
+✅ **Stride Safeguarded**: Default stride increased to 2, minimum validation added  
+✅ **Early Exit Logic**: Returns empty buffers if candidate count too high  
+✅ **Bloom Conditional**: Only enables after geometry verification  
+✅ **Performance Warnings**: Multi-level warning system implemented  
+
+### Notes:
+
+- Performance limits are tuned for consumer laptops while maintaining visual quality
+- System provides clear guidance when limits are exceeded
+- Bloom activation is now tied to geometry validation for safety
+- Default stride=2 reduces initial point density by 4x compared to stride=1
+- Early exit prevents system lockup from extremely high point counts

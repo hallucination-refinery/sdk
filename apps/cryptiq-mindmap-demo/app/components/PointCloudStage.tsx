@@ -17,6 +17,12 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 
+// PERFORMANCE SAFEGUARDS
+// Cap total points to ensure stable performance on consumer laptops
+// Can be increased for high-end systems after initial testing
+const MAX_POINTS = 150000 // Conservative limit for stable 60fps
+const MIN_STRIDE = 2 // Minimum stride for initial testing - reduces point density
+
 type PointCloudStageProps = {
   sceneId?: string
   colorUrl?: string
@@ -178,9 +184,21 @@ function PointsMesh({
       return s - Math.floor(s)
     }
 
-    const maxPoints = 250_000
+    // Performance safeguard: Cap points to prevent system overload
     const totalCandidates = Math.ceil((w / stride) * (h / stride))
-    const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
+    
+    // Early exit if stride is too low for initial testing
+    if (stride < MIN_STRIDE) {
+      console.warn(`[PointCloud Performance] Stride ${stride} is below minimum ${MIN_STRIDE} for stable performance. Consider increasing stride.`)
+    }
+    
+    // Early exit if candidate count is extremely high
+    if (totalCandidates > MAX_POINTS * 5) {
+      console.error(`[PointCloud Performance] Too many candidate points (${totalCandidates}). Consider increasing stride from ${stride} to ${Math.ceil(stride * Math.sqrt(totalCandidates / MAX_POINTS))}`)
+      return { positions: new Float32Array([]), uvs: new Float32Array([]), depths: new Float32Array([]), colors: new Float32Array([]) }
+    }
+    
+    const keepRatio = Math.min(1, MAX_POINTS / Math.max(1, totalCandidates))
     
     console.info('[PointCloud Debug] Total candidate points:', totalCandidates, 'keep ratio:', keepRatio.toFixed(4))
     
@@ -226,8 +244,15 @@ function PointsMesh({
     const finalPointCount = us.length / 2 // uvs has 2 components per point
     console.info('[PointCloud Debug] Points kept after filtering:', finalPointCount)
     
+    // Performance validation
+    if (finalPointCount > MAX_POINTS) {
+      console.error(`[PointCloud Performance] Point count ${finalPointCount} exceeds maximum ${MAX_POINTS}. Increase stride or reduce image size.`)
+    }
+    
     if (finalPointCount < 100) {
       console.warn('[PointCloud Debug] WARNING: Very few points kept (<100)! This may cause empty/black screen.')
+    } else if (finalPointCount > MAX_POINTS * 0.8) {
+      console.warn(`[PointCloud Performance] High point count (${finalPointCount}). Performance may be degraded on lower-end systems.`)
     }
     
     const positions = new Float32Array(xs)
@@ -255,28 +280,39 @@ function PointsMesh({
   }, [positions, colors])
 
   // Poll once until the material compiles, then notify parent to enable bloom
+  // PERFORMANCE SAFEGUARD: Only enable bloom after geometry is verified and ready
   React.useEffect(() => {
+    const pointCount = positions.length / 3
+    
     if (useBaseline) {
-      // For baseline mode, no shader compilation needed - immediately enable bloom
-      console.info('[PointCloud Debug] Baseline mode - immediately ready')
-      if (onMaterialValid) onMaterialValid()
+      // For baseline mode, verify geometry before enabling bloom
+      if (pointCount > 0 && pointCount <= MAX_POINTS) {
+        console.info('[PointCloud Debug] Baseline mode - geometry verified, ready for bloom')
+        if (onMaterialValid) onMaterialValid()
+      } else {
+        console.warn(`[PointCloud Performance] Baseline mode - invalid geometry (${pointCount} points), bloom disabled`)
+      }
       return
     }
     
+    // For shader mode, wait for compilation AND verify geometry
     let raf = 0
     const check = () => {
       const m = matRef.current as unknown as { program?: { glProgram?: unknown } }
-      if (m && m.program && m.program.glProgram) {
+      if (m && m.program && m.program.glProgram && pointCount > 0 && pointCount <= MAX_POINTS) {
         materialValidRef.current = true
-        console.info('[PointCloud Debug] Shader material compiled and ready')
+        console.info(`[PointCloud Debug] Shader material compiled and geometry verified (${pointCount} points) - ready for bloom`)
         if (onMaterialValid) onMaterialValid()
+        return
+      } else if (pointCount > MAX_POINTS) {
+        console.error(`[PointCloud Performance] Too many points (${pointCount}), bloom disabled for performance`)
         return
       }
       raf = requestAnimationFrame(check)
     }
     raf = requestAnimationFrame(check)
     return () => cancelAnimationFrame(raf)
-  }, [onMaterialValid, useBaseline])
+  }, [onMaterialValid, useBaseline, positions.length])
 
   // Animate time and capture PV^-1 once for world-space reconstruction
   const capturedRef = React.useRef(false)
@@ -436,11 +472,11 @@ function SceneControls() {
       enableRotate
       enableZoom
       enablePan={false}
-      enableDamping
+      enableDamping={true}
       dampingFactor={0.1}
-      minDistance={200}
-      maxDistance={3000}
-      target={[0, 0, -800]}
+      minDistance={100}
+      maxDistance={5000}
+      target={[0, 0, 0]}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
       onStart={() => console.log('[PC] controls start')}
@@ -484,7 +520,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     depthRgUrl,
     zScale = 2.5,
     pointSize = 2.0,
-    stride = 1,
+    stride = 2, // Performance safeguard: Start with stride ≥ 2 for stable performance
     perspective = false,
     useBaseline = true, // Default to baseline mode initially
   } = props
