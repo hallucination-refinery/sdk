@@ -337,23 +337,26 @@ function PointsMesh({
       {/* Rendering path */}
       {USE_SHADER ? (
         <shaderMaterial
-          // minimal program: clip-space sheet, solid alpha
+          ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
           args={[
             {
-              uniforms: {
-                uBaseSize: { value: pointSize },
-              },
+              uniforms: {},
               vertexShader: `
-              uniform float uBaseSize; attribute vec2 aUv; attribute vec3 color; varying vec3 vColor;
-              void main(){ vColor = color; vec2 ndc = aUv * 2.0 - 1.0; gl_Position = vec4(ndc, 0.0, 1.0); gl_PointSize = uBaseSize; }
+              precision highp float;
+              void main(){ gl_Position = vec4(0.0, 0.0, 0.0, 1.0); gl_PointSize = 50.0; }
             `,
               fragmentShader: `
-              precision highp float; varying vec3 vColor; void main(){ gl_FragColor = vec4(vColor, 1.0); }
+              precision highp float;
+              void main(){ gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); }
             `,
               transparent: false,
               depthWrite: true,
               depthTest: true,
               blending: THREE.NormalBlending,
+              fog: false,
+              lights: false,
+              dithering: false,
+              toneMapped: false,
             },
           ]}
         />
@@ -510,6 +513,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         gl.toneMappingExposure = 1.0
+        // Surface shader errors and log point-size limits
+        try {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          if (gl.debug) gl.debug.checkShaderErrors = true
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const ctx = gl.getContext && gl.getContext()
+          if (ctx) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const range = ctx.getParameter(ctx.ALIASED_POINT_SIZE_RANGE)
+            console.log('[PC] ALIASED_POINT_SIZE_RANGE', range)
+          }
+        } catch {}
         // ensure browser gesture handling doesn't block wheel/touch
         gl.domElement.style.touchAction = 'none'
         gl.domElement.style.pointerEvents = 'auto'
