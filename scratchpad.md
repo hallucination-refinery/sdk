@@ -62,3 +62,53 @@ This diagnostic information will clearly identify if the problem is:
 3. Invalid depth data (all 0s or narrow range)
 4. Buffer creation issues (mismatched lengths)
 5. Shader compilation problems
+
+## Session 2 - Baseline Rendering Mode Implementation
+
+**Date:** 2025-08-29
+**Goal:** Add baseline rendering toggle to verify geometry/buffer validity separate from custom shader
+**Status:** Completed
+
+### Changes Made:
+
+1. **Added useBaseline prop** - New optional boolean prop `useBaseline` to PointCloudStageProps
+2. **Implemented CPU position computation** - For baseline mode, positions are computed on CPU as a flat sheet at fixed depth (-800) using NDC→world transformation
+3. **Conditional material rendering** - Baseline mode uses standard `<pointsMaterial>` with fixed size, shader mode uses custom `<shaderMaterial>`
+4. **Conditional attribute creation** - Only creates aUv and aDepth attributes when not in baseline mode (shader mode only)
+5. **Immediate material validation** - Baseline mode bypasses shader compilation wait and immediately enables bloom
+6. **Enhanced logging** - Added mode indication ("BASELINE" vs "SHADER") to debug output
+7. **Default to baseline** - Component defaults to `useBaseline = true` initially
+
+### Key Implementation Details:
+
+- **Baseline positions**: CPU-computed as flat sheet using `ndcX * 400, -ndcY * 300, -800`
+- **Baseline material**: `<pointsMaterial size={2} sizeAttenuation={false} vertexColors transparent />`
+- **Shader attributes**: aUv and aDepth only created when `!useBaseline`
+- **Material validation**: Baseline mode calls `onMaterialValid()` immediately, shader mode waits for compilation
+- **Dependency tracking**: Added `useBaseline` to React.useMemo dependencies
+
+### Expected Behavior:
+
+**Baseline Mode (useBaseline=true):**
+- Should show a visible flat rectangular sheet of colored points at fixed depth
+- Points positioned using CPU calculation, no shader unprojection
+- Uses standard Three.js PointsMaterial with vertex colors
+- No custom shader compilation required
+- Immediate bloom activation
+
+**Shader Mode (useBaseline=false):**  
+- Uses original custom shader with NDC→clip space debug path
+- Requires shader compilation before bloom activation
+- Custom particle size/alpha calculations and additive blending
+
+### Diagnostic Value:
+
+If baseline mode shows visible points but shader mode doesn't:
+- Issue is in custom shader implementation, not geometry/buffer data
+- Confirms point cloud data is valid and positions can be computed correctly
+- Isolates problem to shader unprojection or rendering logic
+
+If baseline mode also shows nothing:
+- Issue is with underlying point cloud data, image loading, or filtering
+- Geometry/buffer creation problem, not shader-specific
+- Need to investigate data pipeline before shader

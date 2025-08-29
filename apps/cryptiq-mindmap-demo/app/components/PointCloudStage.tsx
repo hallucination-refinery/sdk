@@ -26,6 +26,7 @@ type PointCloudStageProps = {
   pointSize?: number
   stride?: number
   perspective?: boolean
+  useBaseline?: boolean
 }
 
 function useImageData(url: string | null): {
@@ -127,6 +128,7 @@ function PointsMesh({
   zScale = 0.5,
   pointSize = 1.5,
   onMaterialValid,
+  useBaseline = false,
 }: {
   colorImage: { data: ImageData; width: number; height: number }
   depth16: { data16: Uint16Array; width: number; height: number }
@@ -134,6 +136,7 @@ function PointsMesh({
   zScale?: number
   pointSize?: number
   onMaterialValid?: () => void
+  useBaseline?: boolean
 }) {
   const geomRef = React.useRef<unknown>(null)
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
@@ -152,7 +155,7 @@ function PointsMesh({
     }
   }, [])
 
-  // Build attributes (uv, depth01, color); position computed in shader via unprojection
+  // Build attributes (uv, depth01, color); position computed in shader or CPU depending on mode
   const { positions, uvs, depths, colors } = React.useMemo(() => {
     const cw = colorImage.width
     const ch = colorImage.height
@@ -163,7 +166,7 @@ function PointsMesh({
     const col = colorImage.data.data
     const dep16 = depth16.data16
 
-    console.info('[PointCloud Debug] Image dimensions - color:', `${cw}x${ch}`, 'depth:', `${dw}x${dh}`, 'effective:', `${w}x${h}`)
+    console.info('[PointCloud Debug] Mode:', useBaseline ? 'BASELINE' : 'SHADER', '- Image dimensions - color:', `${cw}x${ch}`, 'depth:', `${dw}x${dh}`, 'effective:', `${w}x${h}`)
 
     const xs: number[] = []
     const us: number[] = []
@@ -201,7 +204,21 @@ function PointsMesh({
         // attributes
         us.push(x / (w - 1), y / (h - 1))
         ds.push(d01)
-        xs.push(0, 0, 0) // dummy; shader computes true position
+        
+        if (useBaseline) {
+          // CPU-computed positions: flat sheet at mid-depth using NDC->world
+          // Convert UV to NDC (-1 to 1)
+          const ndcX = (x / (w - 1)) * 2.0 - 1.0
+          const ndcY = (y / (h - 1)) * 2.0 - 1.0
+          // Place at fixed depth for baseline (flat sheet)
+          const worldX = ndcX * 400  // Scale to reasonable world units
+          const worldY = -ndcY * 300 // Flip Y and scale
+          const worldZ = -800        // Fixed depth
+          xs.push(worldX, worldY, worldZ)
+        } else {
+          xs.push(0, 0, 0) // dummy; shader computes true position
+        }
+        
         cs.push(r, g, b)
       }
     }
@@ -229,7 +246,7 @@ function PointsMesh({
     }
     
     return { positions, uvs, depths, colors }
-  }, [colorImage, depth16, stride])
+  }, [colorImage, depth16, stride, useBaseline])
 
   React.useEffect(() => {
     const g = geomRef.current as { computeBoundingSphere?: () => void } | null
@@ -239,6 +256,13 @@ function PointsMesh({
 
   // Poll once until the material compiles, then notify parent to enable bloom
   React.useEffect(() => {
+    if (useBaseline) {
+      // For baseline mode, no shader compilation needed - immediately enable bloom
+      console.info('[PointCloud Debug] Baseline mode - immediately ready')
+      if (onMaterialValid) onMaterialValid()
+      return
+    }
+    
     let raf = 0
     const check = () => {
       const m = matRef.current as unknown as { program?: { glProgram?: unknown } }
@@ -252,7 +276,7 @@ function PointsMesh({
     }
     raf = requestAnimationFrame(check)
     return () => cancelAnimationFrame(raf)
-  }, [onMaterialValid])
+  }, [onMaterialValid, useBaseline])
 
   // Animate time and capture PV^-1 once for world-space reconstruction
   const capturedRef = React.useRef(false)
@@ -284,55 +308,65 @@ function PointsMesh({
       <bufferGeometry ref={geomRef}>
         {/* position attribute */}
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        {/* uv and depth attributes for shader unprojection */}
-        {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
-        {/* custom float attribute for normalized depth */}
-        {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
+        {!useBaseline && (
+          <>
+            {/* uv and depth attributes for shader unprojection */}
+            {/** @ts-expect-error attachObject is supported at runtime */}
+            <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
+            {/* custom float attribute for normalized depth */}
+            {/** @ts-expect-error attachObject is supported at runtime */}
+            <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
+          </>
+        )}
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      {/* Custom shader for particle size/alpha and gentle drift; additive blending */}
-      <shaderMaterial
-        // Casting for R3F ref type compatibility
-        ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
-        args={[
-          {
-            uniforms: {
-              uTime: { value: 0 },
-              uZScale: { value: zScale },
-              uBaseSize: { value: pointSize },
-              uGamma: { value: 1.0 },
-              // capture of initial inverse view-projection
-              uPVInvCapture: { value: new THREE.Matrix4() },
+      
+      {useBaseline ? (
+        /* Baseline: Standard points material with fixed size */
+        <pointsMaterial size={2} sizeAttenuation={false} vertexColors transparent />
+      ) : (
+        /* Custom shader for particle size/alpha and gentle drift; additive blending */
+        <shaderMaterial
+          // Casting for R3F ref type compatibility
+          ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
+          args={[
+            {
+              uniforms: {
+                uTime: { value: 0 },
+                uZScale: { value: zScale },
+                uBaseSize: { value: pointSize },
+                uGamma: { value: 1.0 },
+                // capture of initial inverse view-projection
+                uPVInvCapture: { value: new THREE.Matrix4() },
+              },
+              vertexShader: `
+              uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
+              attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
+              float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+              void main(){
+                vColor=color;
+                // Build near/far WORLD points from the *captured* PV^-1
+                vec2 ndc = aUv * 2.0 - 1.0;
+                // Debug path: draw in clip space using NDC directly (bypass PV^-1)
+                gl_Position = vec4(ndc, 0.0, 1.0);
+                vNear = 1.0;
+                float luma = dot(vColor, vec3(0.299,0.587,0.114));
+                float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
+                gl_PointSize = size;
+              }
+            `,
+              fragmentShader: `
+              precision highp float; varying vec3 vColor; varying float vNear;
+              void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
+            `,
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending,
             },
-            vertexShader: `
-            uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
-            attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
-            float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
-            void main(){
-              vColor=color;
-              // Build near/far WORLD points from the *captured* PV^-1
-              vec2 ndc = aUv * 2.0 - 1.0;
-              // Debug path: draw in clip space using NDC directly (bypass PV^-1)
-              gl_Position = vec4(ndc, 0.0, 1.0);
-              vNear = 1.0;
-              float luma = dot(vColor, vec3(0.299,0.587,0.114));
-              float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
-              gl_PointSize = size;
-            }
-          `,
-            fragmentShader: `
-            precision highp float; varying vec3 vColor; varying float vNear;
-            void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
-          `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-          },
-        ]}
-      />
+          ]}
+        />
+      )}
     </points>
   )
 }
@@ -436,6 +470,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     pointSize = 2.0,
     stride = 1,
     perspective = false,
+    useBaseline = true, // Default to baseline mode initially
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
@@ -500,6 +535,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           stride={stride}
           zScale={zScale}
           pointSize={pointSize}
+          useBaseline={useBaseline}
           onMaterialValid={() => setBloomEnabled(true)}
         />
       ) : (
@@ -510,6 +546,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             stride={stride}
             zScale={zScale}
             pointSize={pointSize}
+            useBaseline={useBaseline}
             onMaterialValid={() => setBloomEnabled(true)}
           />
         )
