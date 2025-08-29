@@ -228,6 +228,8 @@ function PointsMesh({
   colorImage,
   depth16,
   stride = 2,
+  // zScale retained for future shader path; unused in baseline
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   zScale = 0.5,
   pointSize = 1.5,
   onMaterialValid,
@@ -248,9 +250,25 @@ function PointsMesh({
   } = useThree()
 
   // Build attributes (uv, depth01, color); position computed in shader via unprojection
-  const { positions, uvs, depths, colors } = React.useMemo(() => {
+  const { positions, uvs, depths, colors, gridW, gridH } = React.useMemo(() => {
     return buildAttributes(colorImage, depth16, stride, 150_000)
   }, [colorImage, depth16, stride])
+
+  // CPU baseline plane positions (centered at origin, z=0) sized to preserve aspect
+  const planePositions = React.useMemo(() => {
+    const n = uvs.length / 2
+    const out = new Float32Array(n * 3)
+    const heightUnits = 1000
+    const widthUnits = heightUnits * (gridW / Math.max(1, gridH))
+    for (let i = 0; i < n; i++) {
+      const u = uvs[i * 2]
+      const v = uvs[i * 2 + 1]
+      out[i * 3 + 0] = (u - 0.5) * widthUnits
+      out[i * 3 + 1] = -(v - 0.5) * heightUnits
+      out[i * 3 + 2] = 0
+    }
+    return out
+  }, [uvs, gridW, gridH])
 
   React.useEffect(() => {
     const g = geomRef.current as { computeBoundingSphere?: () => void } | null
@@ -302,8 +320,8 @@ function PointsMesh({
   return (
     <points frustumCulled={false} renderOrder={1}>
       <bufferGeometry ref={geomRef}>
-        {/* position attribute */}
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        {/* position attribute (CPU baseline plane) */}
+        <bufferAttribute attach="attributes-position" args={[planePositions, 3]} />
         {/* uv and depth attributes for shader unprojection */}
         {/** @ts-expect-error attachObject is supported at runtime */}
         <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
@@ -313,46 +331,8 @@ function PointsMesh({
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      {/* Custom shader for particle size/alpha and gentle drift; additive blending */}
-      <shaderMaterial
-        // Casting for R3F ref type compatibility
-        ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
-        args={[
-          {
-            uniforms: {
-              uTime: { value: 0 },
-              uZScale: { value: zScale },
-              uBaseSize: { value: pointSize },
-              uGamma: { value: 1.0 },
-              // capture of initial inverse view-projection
-              uPVInvCapture: { value: new THREE.Matrix4() },
-            },
-            vertexShader: `
-            uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
-            attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
-            float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
-            void main(){
-              vColor=color;
-              // Build near/far WORLD points from the *captured* PV^-1
-              vec2 ndc = aUv * 2.0 - 1.0;
-              // Debug path: draw in clip space using NDC directly (bypass PV^-1)
-              gl_Position = vec4(ndc, 0.0, 1.0);
-              vNear = 1.0;
-              float luma = dot(vColor, vec3(0.299,0.587,0.114));
-              float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
-              gl_PointSize = size;
-            }
-          `,
-            fragmentShader: `
-            precision highp float; varying vec3 vColor; varying float vNear;
-            void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
-          `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-          },
-        ]}
-      />
+      {/* Baseline: standard PointsMaterial using vertex colors */}
+      <pointsMaterial size={pointSize} sizeAttenuation vertexColors />
     </points>
   )
 }
