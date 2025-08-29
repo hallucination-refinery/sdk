@@ -129,6 +129,7 @@ function PointsMesh({
   pointSize = 1.5,
   onMaterialValid,
   baselineMode = false,
+  onPerformanceMetrics,
 }: {
   colorImage: { data: ImageData; width: number; height: number }
   depth16: { data16: Uint16Array; width: number; height: number }
@@ -137,6 +138,7 @@ function PointsMesh({
   pointSize?: number
   onMaterialValid?: () => void
   baselineMode?: boolean
+  onPerformanceMetrics?: (metrics: {pointCount: number; ready: boolean}) => void
 }) {
   const geomRef = React.useRef<unknown>(null)
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
@@ -170,7 +172,8 @@ function PointsMesh({
       return s - Math.floor(s)
     }
 
-    const maxPoints = 250_000
+    // Performance safeguard: Cap points at 150k for stable performance on consumer laptops
+    const maxPoints = 150_000
     const totalCandidates = Math.ceil((w / stride) * (h / stride))
     let keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
     
@@ -180,6 +183,9 @@ function PointsMesh({
       totalCandidates,
       initialKeepRatio: keepRatio
     })
+    
+    // Performance logging: Track actual point generation metrics
+    const performanceStart = performance.now()
 
     // Track points as we iterate
     let candidateCount = 0
@@ -288,7 +294,10 @@ function PointsMesh({
     const depths = new Float32Array(ds)
     const colors = new Float32Array(cs)
     
-    // Log final buffer sizes and sample data
+    const performanceEnd = performance.now()
+    const generationTimeMs = performanceEnd - performanceStart
+    
+    // Log final buffer sizes and sample data with performance metrics
     console.log('[Buffer Verification] Final counts:', {
       candidateCount,
       keptCount,
@@ -299,12 +308,29 @@ function PointsMesh({
       colorsLength: colors.length
     })
     
+    // Performance logging: Report generation time and point density
+    console.log('[Performance] Point generation metrics:', {
+      actualPointCount: keptCount,
+      maxPointsCap: maxPoints,
+      utilizationPercent: ((keptCount / maxPoints) * 100).toFixed(1),
+      generationTimeMs: generationTimeMs.toFixed(2),
+      pointsPerMs: (keptCount / Math.max(generationTimeMs, 0.1)).toFixed(0),
+      memoryEstimateMB: ((positions.length + uvs.length + depths.length + colors.length) * 4 / (1024 * 1024)).toFixed(2)
+    })
+    
     // Log first few samples for verification
     console.log('[Buffer Verification] Sample data:', {
       firstUv: uvs.length >= 2 ? [uvs[0], uvs[1]] : 'none',
       firstDepth: depths.length >= 1 ? depths[0] : 'none',
       firstColor: colors.length >= 3 ? [colors[0], colors[1], colors[2]] : 'none'
     })
+    
+    // Update parent component with performance metrics
+    React.useEffect(() => {
+      if (onPerformanceMetrics) {
+        onPerformanceMetrics({ pointCount: keptCount, ready: true })
+      }
+    }, [keptCount, onPerformanceMetrics])
     
     return { positions, uvs, depths, colors }
   }, [colorImage, depth16, stride, baselineMode])
@@ -555,11 +581,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     depthRgUrl,
     zScale = 2.5,
     pointSize = 2.0,
-    stride = 1,
+    stride = 2, // Performance safeguard: Minimum stride of 2 during bring-up
     perspective = false,
     baselineMode = false,
   } = props
+  // Performance safeguard: Start with bloom disabled, enable conditionally based on performance
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
+  const [performanceMetrics, setPerformanceMetrics] = React.useState<{pointCount: number; ready: boolean}>({pointCount: 0, ready: false})
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
   const depthUrl = depthUrlProp ?? (base ? `${base}/depth16.png` : null)
@@ -623,7 +651,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           zScale={zScale}
           pointSize={pointSize}
           baselineMode={baselineMode}
-          onMaterialValid={() => setBloomEnabled(true)}
+          onPerformanceMetrics={setPerformanceMetrics}
+          onMaterialValid={() => {
+            // Performance safeguard: Only enable bloom if geometry is verified and point count is reasonable
+            const shouldEnableBloom = performanceMetrics.pointCount > 0 && performanceMetrics.pointCount < 100_000
+            console.log('[Performance] Material valid, bloom decision:', {
+              pointCount: performanceMetrics.pointCount,
+              shouldEnableBloom,
+              reason: shouldEnableBloom ? 'Point count within safe range' : 'Point count too high or zero'
+            })
+            if (shouldEnableBloom) {
+              setBloomEnabled(true)
+            }
+          }}
         />
       ) : (
         readyFallback && (
@@ -634,12 +674,25 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             zScale={zScale}
             pointSize={pointSize}
             baselineMode={baselineMode}
-            onMaterialValid={() => setBloomEnabled(true)}
+            onPerformanceMetrics={setPerformanceMetrics}
+            onMaterialValid={() => {
+              // Performance safeguard: Only enable bloom if geometry is verified and point count is reasonable
+              const shouldEnableBloom = performanceMetrics.pointCount > 0 && performanceMetrics.pointCount < 100_000
+              console.log('[Performance] Material valid, bloom decision:', {
+                pointCount: performanceMetrics.pointCount,
+                shouldEnableBloom,
+                reason: shouldEnableBloom ? 'Point count within safe range' : 'Point count too high or zero'
+              })
+              if (shouldEnableBloom) {
+                setBloomEnabled(true)
+              }
+            }}
           />
         )
       )}
       <SceneControls />
-      {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
+      {/* Performance safeguard: Bloom conditionally enabled with reduced settings during bring-up */}
+      {bloomEnabled && <BloomPass strength={0.08} radius={0.08} threshold={0.8} />}
     </Canvas>
   )
 }
