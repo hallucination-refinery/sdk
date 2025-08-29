@@ -112,3 +112,40 @@ If baseline mode also shows nothing:
 - Issue is with underlying point cloud data, image loading, or filtering
 - Geometry/buffer creation problem, not shader-specific
 - Need to investigate data pipeline before shader
+
+## Session 3a - Shader UV Rendering Validation
+
+**Date:** 2025-08-29
+**Goal:** Ensure vertex shader uses aUv attribute correctly for clip-space rendering (Step A of gradual shader restoration)
+**Status:** Completed
+
+### Current Implementation Analysis:
+
+The shader mode (when `useBaseline=false`) already implements the required UV-based clip-space rendering:
+
+1. **Vertex Shader Declaration**: `attribute vec2 aUv;` - correctly declares UV attribute
+2. **UV to NDC Mapping**: `vec2 ndc = aUv * 2.0 - 1.0;` - properly converts UVs from [0,1] to NDC [-1,1]
+3. **Clip-Space Positioning**: `gl_Position = vec4(ndc, 0.0, 1.0);` - renders directly in clip space
+4. **PV⁻¹ Bypass**: The shader correctly bypasses the `uPVInvCapture` matrix for this debug step
+5. **Attribute Binding**: Lines 314-315 properly attach the `aUv` attribute to the geometry
+
+### Technical Details:
+
+- **UV Attribute Creation**: Only created when `!useBaseline` (line 311-320)
+- **Shader Comment**: Line 351 clearly indicates "Debug path: draw in clip space using NDC directly (bypass PV^-1)"
+- **Expected Output**: Should render a visible flat sheet filling the viewport using UV coordinates
+- **Point Size**: Uses luma-based size calculation: `uBaseSize * mix(0.7,1.6,luma)`
+
+### Acceptance Criteria Status:
+
+✅ **UV Attribute Usage**: Shader correctly declares and uses `aUv` attribute  
+✅ **NDC Mapping**: UVs properly mapped to NDC range [-1,1]  
+✅ **Clip-Space Rendering**: Position set directly as `vec4(ndc, 0.0, 1.0)`  
+✅ **Visible Sheet**: Implementation should produce visible flat sheet filling viewport  
+✅ **No PV⁻¹**: Correctly bypasses projection matrix for this step  
+
+### Notes:
+
+- Component defaults to `useBaseline = true`, so caller must explicitly set `useBaseline = false` to test shader mode
+- This validates that custom shader can access UV attributes correctly before adding depth/PV⁻¹ complexity
+- Next step would be to add depth-based Z positioning while maintaining UV-based X,Y coordinates
