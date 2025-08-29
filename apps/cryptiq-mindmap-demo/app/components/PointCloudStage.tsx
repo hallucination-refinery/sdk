@@ -288,7 +288,12 @@ function PointsMesh({
       const a = g.getAttribute(name) as THREE.BufferAttribute | undefined
       return a ? { itemSize: a.itemSize, count: a.count } : null
     }
-    console.log('[PC] attrs', { aUv: stat('aUv'), uv: stat('uv'), position: stat('position'), color: stat('color') })
+    console.log('[PC] attrs', {
+      aUv: stat('aUv'),
+      uv: stat('uv'),
+      position: stat('position'),
+      color: stat('color'),
+    })
     loggedAttrsRef.current = true
   }, [])
 
@@ -359,7 +364,6 @@ function PointsMesh({
               vertexShader: `
               precision highp float;
               uniform float uBaseSize;
-              attribute vec2 uv;
               attribute vec3 color;
               varying vec3 vColor;
               void main(){
