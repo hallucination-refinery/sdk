@@ -353,8 +353,8 @@ hover-only neighbor edges; results saved as short signed IDs
             {/* Render point cloud for requested scene */}
             <PointCloudStage
               sceneId={sceneId}
-              zScale={2.5}
-              pointSize={2.0}
+              zScale={2.2}
+              pointSize={2.2}
               stride={1}
               perspective={true}
             />

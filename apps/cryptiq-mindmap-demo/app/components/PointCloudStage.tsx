@@ -161,7 +161,7 @@ function PointsMesh({
       return s - Math.floor(s)
     }
 
-    const maxPoints = 600_000
+    const maxPoints = 400_000
     const totalCandidates = Math.ceil((w / stride) * (h / stride))
     const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
     for (let y = 0; y < h; y += stride) {
@@ -275,19 +275,20 @@ function PointsMesh({
               vec4 near4 = uProjInv * vec4(ndc, -1.0, 1.0); near4 /= near4.w;
               vec4 far4  = uProjInv * vec4(ndc,  1.0, 1.0); far4  /= far4.w;
               vec3 dirVS = normalize(far4.xyz - near4.xyz);
-              float d01 = aDepth;
-              // Map depth into a guaranteed visible shell (debug‑friendly)
-              float d = mix(400.0, 1400.0, pow(d01, uGamma)) * max(0.6, uZScale);
+              // Many monocular depths have inverse depth polarity; use (1.0 - aDepth)
+              float d01 = 1.0 - aDepth;
+              // Aesthetic depth mapping (zScale * pow(depth, gamma))
+              float d = uZScale * pow(d01, uGamma) * 800.0;
               vec3 posVS = near4.xyz + dirVS * d;
               // depth-scaled drift in view plane
               float n = hash12(uv*91.7 + uTime*0.07);
-              float ang = n*6.28318; float amp = mix(1.0, 0.2, clamp(d*0.002, 0.0, 1.0));
+              float ang = n*6.28318; float amp = mix(1.0, 0.15, clamp(d*0.002, 0.0, 1.0));
               posVS.xy += vec2(cos(ang), sin(ang)) * amp;
               gl_Position = projectionMatrix * vec4(posVS, 1.0);
               vNear = 1.0/(1e-3 + d*0.0025);
               float luma = dot(vColor, vec3(0.299,0.587,0.114));
-              float size = uBaseSize * mix(0.9,1.8,luma) * clamp(vNear,0.6,3.0);
-              gl_PointSize = max(3.0, size);
+              float size = uBaseSize * mix(0.7,1.6,luma) * clamp(vNear,0.6,3.0);
+              gl_PointSize = size;
             }
           `,
             fragmentShader: `
