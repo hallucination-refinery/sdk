@@ -367,12 +367,25 @@ function PointsMesh({
                 uBaseSize: { value: pointSize },
                 uPVInvCapture: { value: new THREE.Matrix4() },
                 uHasCapture: { value: 0 },
+                uZNearNdc: { value: -0.4 },
+                uZFarNdc: { value: 0.4 },
+                uGamma: { value: 1.2 },
+                uFocal: { value: 900.0 },
+                uMinSize: { value: 0.75 },
+                uMaxSize: { value: 6.0 },
               },
               vertexShader: `
               precision highp float;
               uniform float uBaseSize;
               uniform mat4 uPVInvCapture;
               uniform float uHasCapture;
+              uniform float uZNearNdc;
+              uniform float uZFarNdc;
+              uniform float uGamma;
+              uniform float uFocal;
+              uniform float uMinSize;
+              uniform float uMaxSize;
+              attribute float aDepth;
               attribute vec3 color;
               varying vec3 vColor;
               void main(){
@@ -380,15 +393,21 @@ function PointsMesh({
                 vec4 posMV;
                 if (uHasCapture > 0.5) {
                   vec2 ndc = uv * 2.0 - 1.0;
-                  vec4 world = uPVInvCapture * vec4(ndc.x, ndc.y, 0.0, 1.0);
-                  world.xyz /= world.w;
-                  world.w = 1.0;
+                  // Unproject to two planes in world space
+                  vec4 wNear = uPVInvCapture * vec4(ndc.x, ndc.y, uZNearNdc, 1.0);
+                  wNear.xyz /= wNear.w; wNear.w = 1.0;
+                  vec4 wFar = uPVInvCapture * vec4(ndc.x, ndc.y, uZFarNdc, 1.0);
+                  wFar.xyz /= wFar.w; wFar.w = 1.0;
+                  float t = pow(clamp(aDepth, 0.0, 1.0), uGamma);
+                  vec4 world = mix(wNear, wFar, t);
                   posMV = viewMatrix * world;
                 } else {
                   posMV = modelViewMatrix * vec4(position, 1.0);
                 }
                 gl_Position = projectionMatrix * posMV;
-                gl_PointSize = uBaseSize;
+                float dist = max(1e-3, -posMV.z);
+                float atten = clamp(uFocal / dist, uMinSize, uMaxSize);
+                gl_PointSize = uBaseSize * atten;
               }
             `,
               fragmentShader: `
@@ -397,7 +416,7 @@ function PointsMesh({
               void main(){ gl_FragColor = vec4(vColor, 1.0); }
             `,
               transparent: false,
-              depthWrite: true,
+              depthWrite: false,
               depthTest: true,
               blending: THREE.NormalBlending,
               fog: false,
@@ -540,9 +559,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   return (
     <Canvas
       orthographic={false}
-      camera={
-        { position: [0, 0, 1200], fov: 80, near: 0.1, far: 5000 }
-      }
+      camera={{ position: [0, 0, 1200], fov: 80, near: 0.1, far: 5000 }}
       gl={{ antialias: true, alpha: true }}
       style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
       onPointerDown={(e) => {
