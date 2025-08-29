@@ -283,11 +283,8 @@ function PointsMesh({
               vec4 nearW = uPVInvCapture * vec4(ndc, -1.0, 1.0); nearW /= nearW.w;
               vec4 farW  = uPVInvCapture * vec4(ndc,  1.0, 1.0); farW  /= farW.w;
               vec3 dirW  = normalize(farW.xyz - nearW.xyz);
-              // Use forward depth polarity and clamp into a stable shell
-              float d01 = clamp(aDepth, 0.0, 1.0);
-              // Wider band for visibility; scale by uZScale for global shift
-              float d = mix(400.0, 1200.0, pow(d01, uGamma)) * max(0.5, uZScale);
-              // March forward along the world ray into the scene
+              // Debug: force a flat sheet at a fixed world distance to validate PV^-1/UVs
+              float d = 800.0;
               vec3 posW = nearW.xyz + dirW * d;
               // depth-scaled drift in a plane orthogonal to dirW (world-stable)
               float n = hash12(uv*91.7 + uTime*0.07);
