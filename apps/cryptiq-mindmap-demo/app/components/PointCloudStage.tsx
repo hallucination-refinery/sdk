@@ -402,19 +402,44 @@ function PointsMesh({
               vertexShader: `
               uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
               attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
+              float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
               void main(){
                 vColor=color;
-                // PV^-1 world-space transformation with constant depth
+                
+                // Apply gamma correction to depth for band mapping
+                float depthGamma = pow(aDepth, uGamma);
+                
+                // Build near/far WORLD points from the *captured* PV^-1
                 vec2 ndc = aUv * 2.0 - 1.0;
-                vec4 ndcPoint = vec4(ndc, 0.5, 1.0); // constant depth at mid-depth (0.5)
-                vec4 worldPoint = uPVInvCapture * ndcPoint;
-                vec3 worldPos = worldPoint.xyz / worldPoint.w;
+                vec4 nearWorld = uPVInvCapture * vec4(ndc, -1.0, 1.0);
+                vec4 farWorld = uPVInvCapture * vec4(ndc, 1.0, 1.0);
+                nearWorld /= nearWorld.w;
+                farWorld /= farWorld.w;
+                
+                // Interpolate based on gamma-corrected depth
+                vec3 worldPos = mix(nearWorld.xyz, farWorld.xyz, depthGamma);
+                
+                // Add subtle drift effects for atmospheric movement
+                float hashVal = hash12(aUv * 100.0);
+                vec3 driftOffset = vec3(
+                  sin(uTime * 0.3 + hashVal * 6.28) * 2.0,
+                  cos(uTime * 0.4 + hashVal * 4.71) * 1.5,
+                  sin(uTime * 0.2 + hashVal * 3.14) * 1.0
+                );
+                worldPos += driftOffset;
+                
+                // Apply Z scaling
+                worldPos.z *= uZScale;
                 
                 // Apply current projection and view matrices for proper orbiting
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos, 1.0);
-                vNear = 1.0;
+                
+                // Near factor for alpha falloff (closer = more opaque)
+                vNear = 1.0 - depthGamma;
+                
                 float luma = dot(vColor, vec3(0.299,0.587,0.114));
-                float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
+                float depthSize = mix(0.8, 1.4, 1.0 - depthGamma); // closer points larger
+                float size = uBaseSize * mix(0.7,1.6,luma) * depthSize;
                 gl_PointSize = size;
               }
             `,
