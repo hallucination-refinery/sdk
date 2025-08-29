@@ -96,11 +96,11 @@ Short‑circuit to a known‑good baseline, then re‑enable features stepwise.
 1. Verify attribute buffer sizes on CPU and log once (counts only).
    - Compute and log: `w,h`, candidate points, kept points, and Float32Array/Uint16Array lengths.
    - If kept points < 100, disable stochastic keep (`keepRatio=1`, `keep=1`).
-    - Also log final `positions/uvs/depths/colors` lengths and first few samples.
+   - Also log final `positions/uvs/depths/colors` lengths and first few samples.
 2. Minimal render path (baseline toggle first).
    - CPU‑compute `positions` in view/world as a flat sheet using NDC→PV⁻¹ (single mid‑depth), then render with `<points><pointsMaterial size=2 sizeAttenuation /></points>`.
    - Expect a visible sheet; if not, it’s definitely attributes or point count.
-    - Provide a runtime flag (prop or constant) to toggle Baseline vs Shader.
+   - Provide a runtime flag (prop or constant) to toggle Baseline vs Shader.
 3. Restore custom shader gradually (re‑enable PV⁻¹ stepwise):
    - Step A: Shader uses `aUv` only, clip‑space sheet; confirm sheet.
    - Step B: Switch to PV⁻¹ world‑space with constant depth; confirm sheet moves with orbit.
@@ -131,7 +131,8 @@ Deliverables for this pass
 - Any DOM overlay/z‑index clearing the canvas after render? Inspect with DevTools’ layers.
 - Are we hitting a Three.js point size clamp on the device? Baseline will confirm.
 - Is PV⁻¹ captured before camera aspect/FOV settle on first frame? Delay should mitigate; baseline path removes this dependency.
- - Data‑integrity risk: color/depth indexing currently uses a shared `w` for both; when `cw != dw` or `ch != dh` we must compute `pColor = y*cw + x` and `pDepth = y*dw + x`. Make this fix early.
+- Data‑integrity risk: color/depth indexing currently uses a shared `w` for both; when `cw != dw` or `ch != dh` we must compute `pColor = y*cw + x` and `pDepth = y*dw + x`. Make this fix early.
 
 ### Asset layout expectations
+
 - Viewer loads assets at `.../<sceneId>/{color.png, depth16.png, depth_rg.png}`. Ensure CLI outputs are renamed and placed accordingly.
