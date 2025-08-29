@@ -164,7 +164,7 @@ function PointsMesh({
       return s - Math.floor(s)
     }
 
-    const maxPoints = 400_000
+    const maxPoints = 250_000
     const totalCandidates = Math.ceil((w / stride) * (h / stride))
     const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
     for (let y = 0; y < h; y += stride) {
@@ -195,15 +195,6 @@ function PointsMesh({
     const uvs = new Float32Array(us)
     const depths = new Float32Array(ds)
     const colors = new Float32Array(cs)
-    console.log('[PC] counts', {
-      verts: positions.length / 3,
-      uvs: uvs.length / 2,
-      depths: depths.length,
-      colors: colors.length / 3,
-      w,
-      h,
-      stride,
-    })
     return { positions, uvs, depths, colors }
   }, [colorImage, depth16, stride])
 
@@ -287,15 +278,14 @@ function PointsMesh({
               vec4 nearW = uPVInvCapture * vec4(ndc, -1.0, 1.0); nearW /= nearW.w;
               vec4 farW  = uPVInvCapture * vec4(ndc,  1.0, 1.0); farW  /= farW.w;
               vec3 dirW  = normalize(farW.xyz - nearW.xyz);
-              // Use forward depth polarity
-              float d01 = aDepth;
-              // Aesthetic depth mapping (zScale * pow(depth, gamma))
-              float d = uZScale * pow(d01, uGamma) * 800.0;
+              // Use forward depth polarity and clamp into a stable shell
+              float d01 = clamp(aDepth, 0.0, 1.0);
+              float d = mix(300.0, 1400.0, pow(d01, uGamma));
               // Move along the captured world ray toward the camera
               vec3 posW = nearW.xyz - dirW * d;
               // depth-scaled drift in a plane orthogonal to dirW (world-stable)
               float n = hash12(uv*91.7 + uTime*0.07);
-              float ang = n*6.28318; float amp = mix(1.0, 0.15, clamp(d*0.002, 0.0, 1.0));
+              float ang = n*6.28318; float amp = mix(0.6, 0.12, clamp(d*0.002, 0.0, 1.0));
               vec3 tmpUp = abs(dirW.y) > 0.99 ? vec3(1.0,0.0,0.0) : vec3(0.0,1.0,0.0);
               vec3 rightW = normalize(cross(dirW, tmpUp));
               vec3 upW    = normalize(cross(dirW, rightW));
@@ -500,7 +490,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         )
       )}
       <SceneControls />
-      {bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
+      {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
     </Canvas>
   )
 }
