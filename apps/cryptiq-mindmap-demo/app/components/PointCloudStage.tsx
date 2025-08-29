@@ -402,12 +402,10 @@ function PointsMesh({
               vertexShader: `
               uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
               attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
-              float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
               void main(){
                 vColor=color;
-                // Build near/far WORLD points from the *captured* PV^-1
+                // aUv-only clip-space rendering: create flat sheet in clip space
                 vec2 ndc = aUv * 2.0 - 1.0;
-                // Debug path: draw in clip space using NDC directly (bypass PV^-1)
                 gl_Position = vec4(ndc, 0.0, 1.0);
                 vNear = 1.0;
                 float luma = dot(vColor, vec3(0.299,0.587,0.114));
