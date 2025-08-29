@@ -404,9 +404,14 @@ function PointsMesh({
               attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
               void main(){
                 vColor=color;
-                // aUv-only clip-space rendering: create flat sheet in clip space
+                // PV^-1 world-space transformation with constant depth
                 vec2 ndc = aUv * 2.0 - 1.0;
-                gl_Position = vec4(ndc, 0.0, 1.0);
+                vec4 ndcPoint = vec4(ndc, 0.5, 1.0); // constant depth at mid-depth (0.5)
+                vec4 worldPoint = uPVInvCapture * ndcPoint;
+                vec3 worldPos = worldPoint.xyz / worldPoint.w;
+                
+                // Apply current projection and view matrices for proper orbiting
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos, 1.0);
                 vNear = 1.0;
                 float luma = dot(vColor, vec3(0.299,0.587,0.114));
                 float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
