@@ -222,6 +222,7 @@ function PointsMesh({
 
   // Animate time and capture PV^-1 once for world-space reconstruction
   const capturedRef = React.useRef(false)
+  const captureDelayRef = React.useRef(2)
   useFrame(({ camera }, dt) => {
     const mat = matRef.current
     if (!mat) return
@@ -231,12 +232,16 @@ function PointsMesh({
     }
     if (u.uTime) u.uTime.value += dt
     if (!capturedRef.current && u.uPVInvCapture) {
+      if (captureDelayRef.current > 0) {
+        captureDelayRef.current -= 1
+        return
+      }
       const pvInv = new THREE.Matrix4()
         .copy((camera as THREE.PerspectiveCamera).matrixWorld)
         .multiply((camera as THREE.PerspectiveCamera).projectionMatrixInverse)
       u.uPVInvCapture.value.copy(pvInv)
       capturedRef.current = true
-      console.log('[PC] captured PV^-1')
+      console.log('[PC] captured PV^-1 (delayed)')
     }
   })
 
@@ -280,9 +285,10 @@ function PointsMesh({
               vec3 dirW  = normalize(farW.xyz - nearW.xyz);
               // Use forward depth polarity and clamp into a stable shell
               float d01 = clamp(aDepth, 0.0, 1.0);
-              float d = mix(700.0, 900.0, pow(d01, uGamma));
-              // Move along the captured world ray toward the camera
-              vec3 posW = nearW.xyz - dirW * d;
+              // Wider band for visibility; scale by uZScale for global shift
+              float d = mix(400.0, 1200.0, pow(d01, uGamma)) * max(0.5, uZScale);
+              // March forward along the world ray into the scene
+              vec3 posW = nearW.xyz + dirW * d;
               // depth-scaled drift in a plane orthogonal to dirW (world-stable)
               float n = hash12(uv*91.7 + uTime*0.07);
               float ang = n*6.28318; float amp = mix(0.6, 0.12, clamp(d*0.002, 0.0, 1.0));
