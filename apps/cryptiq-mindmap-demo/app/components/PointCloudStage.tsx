@@ -29,7 +29,7 @@ type PointCloudStageProps = {
 }
 
 // Toggle between shader path and baseline PointsMaterial
-const USE_SHADER = false
+const USE_SHADER = true
 
 function useImageData(url: string | null): {
   data: ImageData | null
@@ -323,6 +323,7 @@ function PointsMesh({
     const u = mat.uniforms as {
       uTime?: { value: number }
       uPVInvCapture?: { value: THREE.Matrix4 }
+      uHasCapture?: { value: number }
     }
     if (u.uTime) u.uTime.value += dt
     if (!capturedRef.current && u.uPVInvCapture) {
@@ -334,6 +335,7 @@ function PointsMesh({
         .copy((camera as THREE.PerspectiveCamera).matrixWorld)
         .multiply((camera as THREE.PerspectiveCamera).projectionMatrixInverse)
       u.uPVInvCapture.value.copy(pvInv)
+      if (u.uHasCapture) u.uHasCapture.value = 1.0
       capturedRef.current = true
       console.log('[PC] captured PV^-1 (delayed)')
     }
@@ -361,16 +363,30 @@ function PointsMesh({
           ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
           args={[
             {
-              uniforms: { uBaseSize: { value: pointSize } },
+              uniforms: {
+                uBaseSize: { value: pointSize },
+                uPVInvCapture: { value: new THREE.Matrix4() },
+                uHasCapture: { value: 0 },
+              },
               vertexShader: `
               precision highp float;
               uniform float uBaseSize;
+              uniform mat4 uPVInvCapture;
+              uniform float uHasCapture;
               attribute vec3 color;
               varying vec3 vColor;
               void main(){
                 vColor = color;
-                vec2 ndc = uv * 2.0 - 1.0;
-                gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
+                vec4 posMV;
+                if (uHasCapture > 0.5) {
+                  vec2 ndc = uv * 2.0 - 1.0;
+                  vec4 world = uPVInvCapture * vec4(ndc.x, ndc.y, 0.0, 1.0);
+                  world.xyz /= world.w;
+                  posMV = viewMatrix * world;
+                } else {
+                  posMV = modelViewMatrix * vec4(position, 1.0);
+                }
+                gl_Position = projectionMatrix * posMV;
                 gl_PointSize = uBaseSize;
               }
             `,
