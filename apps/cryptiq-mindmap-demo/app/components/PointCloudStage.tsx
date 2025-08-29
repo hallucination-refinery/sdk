@@ -446,7 +446,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           />
         )
       )}
-      <OrbitControls enableDamping dampingFactor={0.1} />
+      <OrbitControls
+        makeDefault
+        enableDamping
+        dampingFactor={0.1}
+        enableZoom
+        enablePan={false}
+        minDistance={200}
+        maxDistance={4000}
+        // approximate cloud center along -Z
+        target={[0, 0, -800]}
+      />
       {bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
     </Canvas>
   )
