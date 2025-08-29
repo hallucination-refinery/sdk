@@ -355,7 +355,7 @@ hover-only neighbor edges; results saved as short signed IDs
               sceneId={sceneId}
               zScale={2.6}
               pointSize={2.4}
-              stride={1}
+              stride={2}
               perspective={true}
             />
           </div>

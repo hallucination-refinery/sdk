@@ -120,6 +120,110 @@ function usePackedDepth(url: string | null): {
   return state
 }
 
+// Shared attribute builder with robust indexing and one-time logging
+function buildAttributes(
+  colorImage: { data: ImageData; width: number; height: number },
+  depth16: { data16: Uint16Array; width: number; height: number },
+  stride: number,
+  cap: number
+) {
+  const cw = colorImage.width
+  const ch = colorImage.height
+  const dw = depth16.width
+  const dh = depth16.height
+  const w = Math.min(cw, dw)
+  const h = Math.min(ch, dh)
+  const col = colorImage.data.data
+  const dep16 = depth16.data16
+
+  const xs: number[] = []
+  const us: number[] = []
+  const ds: number[] = []
+  const cs: number[] = []
+
+  const hash = (x: number, y: number) => {
+    const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
+    return s - Math.floor(s)
+  }
+
+  const totalCandidates = Math.ceil((w / stride) * (h / stride))
+  const maxPoints = cap
+  const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
+
+  let kept = 0
+  for (let y = 0; y < h; y += stride) {
+    for (let x = 0; x < w; x += stride) {
+      // map sample to each source's native grid to avoid misindexing
+      const xC = Math.round((x / Math.max(1, w - 1)) * Math.max(0, cw - 1))
+      const yC = Math.round((y / Math.max(1, h - 1)) * Math.max(0, ch - 1))
+      const pColor = yC * cw + xC
+
+      const xD = Math.round((x / Math.max(1, w - 1)) * Math.max(0, dw - 1))
+      const yD = Math.round((y / Math.max(1, h - 1)) * Math.max(0, dh - 1))
+      const pDepth = yD * dw + xD
+
+      const d01 = dep16[pDepth] / 65535.0
+
+      const r = col[pColor * 4] / 255.0
+      const g = col[pColor * 4 + 1] / 255.0
+      const b = col[pColor * 4 + 2] / 255.0
+      const luma = 0.299 * r + 0.587 * g + 0.114 * b
+
+      const near = 1.0 - d01
+      const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
+      if (hash(x, y) > keep) continue
+
+      us.push(x / Math.max(1, w - 1), y / Math.max(1, h - 1))
+      ds.push(d01)
+      xs.push(0, 0, 0)
+      cs.push(r, g, b)
+      kept++
+    }
+  }
+
+  if (kept < 100 && keepRatio < 1) {
+    // rerun with keep forced to 1 (no stochastic drop) to avoid "dot" during bring-up
+    xs.length = 0
+    us.length = 0
+    ds.length = 0
+    cs.length = 0
+    kept = 0
+    for (let y = 0; y < h; y += stride) {
+      for (let x = 0; x < w; x += stride) {
+        const xC = Math.round((x / Math.max(1, w - 1)) * Math.max(0, cw - 1))
+        const yC = Math.round((y / Math.max(1, h - 1)) * Math.max(0, ch - 1))
+        const pColor = yC * cw + xC
+        const xD = Math.round((x / Math.max(1, w - 1)) * Math.max(0, dw - 1))
+        const yD = Math.round((y / Math.max(1, h - 1)) * Math.max(0, dh - 1))
+        const pDepth = yD * dw + xD
+        const d01 = dep16[pDepth] / 65535.0
+        const r = col[pColor * 4] / 255.0
+        const g = col[pColor * 4 + 1] / 255.0
+        const b = col[pColor * 4 + 2] / 255.0
+        us.push(x / Math.max(1, w - 1), y / Math.max(1, h - 1))
+        ds.push(d01)
+        xs.push(0, 0, 0)
+        cs.push(r, g, b)
+        kept++
+      }
+    }
+  }
+
+  console.log(
+    `[PC] build: color ${cw}x${ch} depth ${dw}x${dh} → grid ${w}x${h} stride=${stride} candidates=${totalCandidates} kept=${kept} | uvs=${us.length / 2} depths=${ds.length} colors=${cs.length / 3}`
+  )
+
+  return {
+    positions: new Float32Array(xs),
+    uvs: new Float32Array(us),
+    depths: new Float32Array(ds),
+    colors: new Float32Array(cs),
+    gridW: w,
+    gridH: h,
+    kept,
+  }
+}
+
 function PointsMesh({
   colorImage,
   depth16,
@@ -145,57 +249,7 @@ function PointsMesh({
 
   // Build attributes (uv, depth01, color); position computed in shader via unprojection
   const { positions, uvs, depths, colors } = React.useMemo(() => {
-    const cw = colorImage.width
-    const ch = colorImage.height
-    const dw = depth16.width
-    const dh = depth16.height
-    const w = Math.min(cw, dw)
-    const h = Math.min(ch, dh)
-    const col = colorImage.data.data
-    const dep16 = depth16.data16
-
-    const xs: number[] = []
-    const us: number[] = []
-    const ds: number[] = []
-    const cs: number[] = []
-
-    const hash = (x: number, y: number) => {
-      const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
-      return s - Math.floor(s)
-    }
-
-    const maxPoints = 250_000
-    const totalCandidates = Math.ceil((w / stride) * (h / stride))
-    const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
-    for (let y = 0; y < h; y += stride) {
-      for (let x = 0; x < w; x += stride) {
-        const p = y * w + x
-        const d01 = dep16[p] / 65535.0
-
-        // Luma for sparsity
-        const ci = p * 4
-        const r = col[ci] / 255.0
-        const g = col[ci + 1] / 255.0
-        const b = col[ci + 2] / 255.0
-        const luma = 0.299 * r + 0.587 * g + 0.114 * b
-
-        // Stochastic keep to introduce airy gaps (more sparse in bright/far)
-        const near = 1.0 - d01
-        const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
-        if (hash(x, y) > keep) continue
-
-        // attributes
-        us.push(x / (w - 1), y / (h - 1))
-        ds.push(d01)
-        xs.push(0, 0, 0) // dummy; shader computes true position
-        cs.push(r, g, b)
-      }
-    }
-    const positions = new Float32Array(xs)
-    const uvs = new Float32Array(us)
-    const depths = new Float32Array(ds)
-    const colors = new Float32Array(cs)
-    return { positions, uvs, depths, colors }
+    return buildAttributes(colorImage, depth16, stride, 150_000)
   }, [colorImage, depth16, stride])
 
   React.useEffect(() => {
