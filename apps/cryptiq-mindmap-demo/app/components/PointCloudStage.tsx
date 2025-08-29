@@ -251,7 +251,8 @@ function PointsMesh({
         {/* position attribute */}
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         {/* uv and depth attributes for shader unprojection */}
-        <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
+        {/** @ts-expect-error attachObject is supported at runtime */}
+        <bufferAttribute attachObject={["attributes", "aUv"]} args={[uvs, 2]} />
         {/* custom float attribute for normalized depth */}
         {/** @ts-expect-error attachObject is supported at runtime */}
         <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
@@ -274,30 +275,17 @@ function PointsMesh({
             },
             vertexShader: `
             uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
-            attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
+            attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
             float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
             void main(){
               vColor=color;
               // Build near/far WORLD points from the *captured* PV^-1
-              vec2 ndc = uv * 2.0 - 1.0;
-              vec4 nearW = uPVInvCapture * vec4(ndc, -1.0, 1.0); nearW /= nearW.w;
-              vec4 farW  = uPVInvCapture * vec4(ndc,  1.0, 1.0); farW  /= farW.w;
-              vec3 dirW  = normalize(farW.xyz - nearW.xyz);
-              // Debug: force a flat sheet at a fixed world distance to validate PV^-1/UVs
-              float d = 800.0;
-              vec3 posW = nearW.xyz + dirW * d;
-              // depth-scaled drift in a plane orthogonal to dirW (world-stable)
-              float n = hash12(uv*91.7 + uTime*0.07);
-              float ang = n*6.28318; float amp = mix(0.6, 0.12, clamp(d*0.002, 0.0, 1.0));
-              vec3 tmpUp = abs(dirW.y) > 0.99 ? vec3(1.0,0.0,0.0) : vec3(0.0,1.0,0.0);
-              vec3 rightW = normalize(cross(dirW, tmpUp));
-              vec3 upW    = normalize(cross(dirW, rightW));
-              posW += (cos(ang)*rightW + sin(ang)*upW) * amp;
-              // Project with current camera: P * V * posW
-              gl_Position = projectionMatrix * viewMatrix * vec4(posW, 1.0);
-              vNear = 1.0/(1e-3 + d*0.0025);
+              vec2 ndc = aUv * 2.0 - 1.0;
+              // Debug path: draw in clip space using NDC directly (bypass PV^-1)
+              gl_Position = vec4(ndc, 0.0, 1.0);
+              vNear = 1.0;
               float luma = dot(vColor, vec3(0.299,0.587,0.114));
-              float size = uBaseSize * mix(0.7,1.6,luma) * clamp(vNear,0.6,3.0);
+              float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
               gl_PointSize = size;
             }
           `,
