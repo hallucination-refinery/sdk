@@ -138,7 +138,8 @@ function PointsMesh({
   const geomRef = React.useRef<unknown>(null)
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
   const materialValidRef = React.useRef(false)
-  const { camera } = useThree()
+  // no-op: camera accessed via useFrame
+  const { /* camera */ } = useThree()
 
   // Build attributes (uv, depth01, color); position computed in shader via unprojection
   const { positions, uvs, depths, colors } = React.useMemo(() => {
@@ -226,15 +227,23 @@ function PointsMesh({
     return () => cancelAnimationFrame(raf)
   }, [onMaterialValid])
 
-  // Animate time uniform for gentle drift; keep inverse projection fresh
-  useFrame((_, dt) => {
-    const mat = matRef.current as unknown as {
-      uniforms?: { uTime?: { value: number }; uProjInv?: { value: THREE.Matrix4 } }
+  // Animate time and capture PV^-1 once for world-space reconstruction
+  const capturedRef = React.useRef(false)
+  useFrame(({ camera }, dt) => {
+    const mat = matRef.current
+    if (!mat) return
+    const u = mat.uniforms as {
+      uTime?: { value: number }
+      uPVInvCapture?: { value: THREE.Matrix4 }
     }
-    if (!mat || !mat.uniforms) return
-    if (mat.uniforms.uTime) mat.uniforms.uTime.value += dt
-    if (mat.uniforms.uProjInv) {
-      mat.uniforms.uProjInv.value.copy((camera as THREE.PerspectiveCamera).projectionMatrixInverse)
+    if (u.uTime) u.uTime.value += dt
+    if (!capturedRef.current && u.uPVInvCapture) {
+      const pvInv = new THREE.Matrix4()
+        .copy((camera as THREE.PerspectiveCamera).matrixWorld)
+        .multiply((camera as THREE.PerspectiveCamera).projectionMatrixInverse)
+      u.uPVInvCapture.value.copy(pvInv)
+      capturedRef.current = true
+      console.log('[PC] captured PV^-1')
     }
   })
 
@@ -262,29 +271,34 @@ function PointsMesh({
               uZScale: { value: zScale },
               uBaseSize: { value: pointSize },
               uGamma: { value: 1.0 },
-              uProjInv: { value: (camera as THREE.PerspectiveCamera).projectionMatrixInverse },
+              // capture of initial inverse view-projection
+              uPVInvCapture: { value: new THREE.Matrix4() },
             },
             vertexShader: `
-            uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uProjInv;
+            uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
             attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
             float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
             void main(){
               vColor=color;
-              // Build near/far eye-space points (robust ray)
+              // Build near/far WORLD points from the *captured* PV^-1
               vec2 ndc = uv * 2.0 - 1.0;
-              vec4 near4 = uProjInv * vec4(ndc, -1.0, 1.0); near4 /= near4.w;
-              vec4 far4  = uProjInv * vec4(ndc,  1.0, 1.0); far4  /= far4.w;
-              vec3 dirVS = normalize(far4.xyz - near4.xyz);
+              vec4 nearW = uPVInvCapture * vec4(ndc, -1.0, 1.0); nearW /= nearW.w;
+              vec4 farW  = uPVInvCapture * vec4(ndc,  1.0, 1.0); farW  /= farW.w;
+              vec3 dirW  = normalize(farW.xyz - nearW.xyz);
               // Many monocular depths have inverse depth polarity; use (1.0 - aDepth)
               float d01 = 1.0 - aDepth;
               // Aesthetic depth mapping (zScale * pow(depth, gamma))
               float d = uZScale * pow(d01, uGamma) * 800.0;
-              vec3 posVS = near4.xyz + dirVS * d;
-              // depth-scaled drift in view plane
+              vec3 posW = nearW.xyz + dirW * d;
+              // depth-scaled drift in a plane orthogonal to dirW (world-stable)
               float n = hash12(uv*91.7 + uTime*0.07);
               float ang = n*6.28318; float amp = mix(1.0, 0.15, clamp(d*0.002, 0.0, 1.0));
-              posVS.xy += vec2(cos(ang), sin(ang)) * amp;
-              gl_Position = projectionMatrix * vec4(posVS, 1.0);
+              vec3 tmpUp = abs(dirW.y) > 0.99 ? vec3(1.0,0.0,0.0) : vec3(0.0,1.0,0.0);
+              vec3 rightW = normalize(cross(dirW, tmpUp));
+              vec3 upW    = normalize(cross(dirW, rightW));
+              posW += (cos(ang)*rightW + sin(ang)*upW) * amp;
+              // Project with current camera: P * V * posW
+              gl_Position = projectionMatrix * viewMatrix * vec4(posW, 1.0);
               vNear = 1.0/(1e-3 + d*0.0025);
               float luma = dot(vColor, vec3(0.299,0.587,0.114));
               float size = uBaseSize * mix(0.7,1.6,luma) * clamp(vNear,0.6,3.0);
@@ -322,6 +336,8 @@ function BloomPass({
     const bloom = new UnrealBloomPass(undefined, strength, radius, threshold)
     comp.addPass(rp)
     comp.addPass(bloom)
+    // ensure the last pass renders to screen when enabled
+    ;(bloom as unknown as { renderToScreen?: boolean }).renderToScreen = true
     composerRef.current = comp
     return () => {
       try {
@@ -340,16 +356,14 @@ function BloomPass({
 }
 
 function SceneControls() {
-  const controlsRef = React.useRef<any>(null)
-  const { camera, gl } = useThree()
+  const controlsRef = React.useRef(null)
+  const { gl } = useThree()
   React.useEffect(() => {
-    // eslint-disable-next-line no-console
     console.log('[PC] attach controls to', gl.domElement)
   }, [gl])
   return (
     <OrbitControls
       ref={controlsRef}
-      args={[camera, gl.domElement]}
       makeDefault
       enableRotate
       enableZoom
