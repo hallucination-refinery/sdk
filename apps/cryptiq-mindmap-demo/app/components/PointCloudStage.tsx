@@ -210,9 +210,12 @@ function PointsMesh({
         const b = col[cp + 2] / 255.0
         const luma = 0.299 * r + 0.587 * g + 0.114 * b
 
-        // Stochastic keep to introduce airy gaps (more sparse in bright/far)
+        // Enhanced stochastic keep for natural density variations
         const near = 1.0 - d01
-        const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
+        const darkBoost = Math.pow(1.0 - luma, 1.3) // stronger bias for darker regions
+        const depthCurve = Math.pow(near, 0.8) // nonlinear depth emphasis
+        const edgeDetection = Math.abs(luma - 0.5) * 0.15 // preserve edges
+        const keep = (0.35 + 0.45 * depthCurve + 0.25 * darkBoost + edgeDetection) * keepRatio
         if (hash(x, y) > keep) continue
 
         keptCount++
@@ -422,11 +425,13 @@ function PointsMesh({
                 uZScale: { value: zScale },
                 uBaseSize: { value: pointSize },
                 uGamma: { value: 1.0 },
+                uDriftStrength: { value: 0.12 },
+                uDriftSpeed: { value: 0.25 },
                 // capture of initial inverse view-projection
                 uPVInvCapture: { value: new THREE.Matrix4() },
               },
               vertexShader: `
-              uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
+              uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform float uDriftStrength; uniform float uDriftSpeed; uniform mat4 uPVInvCapture;
               attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
               float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
               void main(){
@@ -445,13 +450,14 @@ function PointsMesh({
                 // Interpolate based on gamma-corrected depth
                 vec3 worldPos = mix(nearWorld.xyz, farWorld.xyz, depthGamma);
                 
-                // Add subtle drift effects for atmospheric movement
+                // Enhanced atmospheric drift with more natural movement
                 float hashVal = hash12(aUv * 100.0);
+                float driftPhase = hashVal * 6.28;
                 vec3 driftOffset = vec3(
-                  sin(uTime * 0.3 + hashVal * 6.28) * 2.0,
-                  cos(uTime * 0.4 + hashVal * 4.71) * 1.5,
-                  sin(uTime * 0.2 + hashVal * 3.14) * 1.0
-                );
+                  sin(uTime * uDriftSpeed + driftPhase) * uDriftStrength,
+                  cos(uTime * uDriftSpeed * 0.7 + driftPhase * 1.3) * uDriftStrength * 0.8,
+                  sin(uTime * uDriftSpeed * 0.5 + driftPhase * 0.8) * uDriftStrength * 0.6
+                ) * mix(0.3, 1.0, 1.0 - depthGamma); // stronger drift for distant points
                 worldPos += driftOffset;
                 
                 // Apply Z scaling
@@ -463,15 +469,31 @@ function PointsMesh({
                 // Near factor for alpha falloff (closer = more opaque)
                 vNear = 1.0 - depthGamma;
                 
+                // Enhanced size variation with better luma and depth response
                 float luma = dot(vColor, vec3(0.299,0.587,0.114));
-                float depthSize = mix(0.8, 1.4, 1.0 - depthGamma); // closer points larger
-                float size = uBaseSize * mix(0.7,1.6,luma) * depthSize;
+                float lumaBoost = smoothstep(0.1, 0.9, luma); // smoother transitions
+                float depthSize = mix(0.7, 1.5, 1.0 - depthGamma); // closer points larger
+                float sizeVariation = mix(0.6, 1.8, lumaBoost); // wider size range for better hierarchy
+                float perPointNoise = mix(0.85, 1.15, hash12(aUv * 1000.0)); // subtle per-point variation
+                float size = uBaseSize * sizeVariation * depthSize * perPointNoise;
                 gl_PointSize = size;
               }
             `,
               fragmentShader: `
               precision highp float; varying vec3 vColor; varying float vNear;
-              void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
+              void main(){ 
+                vec2 p = gl_PointCoord - 0.5; 
+                float r = length(p); 
+                // Enhanced airy falloff with softer edges
+                float core = smoothstep(0.5, 0.1, r); 
+                float glow = smoothstep(0.8, 0.25, r) * 0.4; 
+                float alpha = (core + glow) * clamp(vNear * 0.45, 0.12, 0.82); 
+                // Subtle color temperature variation for depth atmosphere
+                vec3 coolTint = vColor * vec3(0.95, 0.98, 1.05);
+                vec3 warmTint = vColor * vec3(1.08, 1.02, 0.94);
+                vec3 finalColor = mix(coolTint, warmTint, clamp(vNear * 0.8, 0.0, 1.0));
+                gl_FragColor = vec4(finalColor, alpha); 
+              }
             `,
               transparent: true,
               depthWrite: false,
@@ -632,7 +654,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         gl.toneMapping = THREE.ACESFilmicToneMapping
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        gl.toneMappingExposure = 1.0
+        gl.toneMappingExposure = 1.2
         // ensure browser gesture handling doesn't block wheel/touch
         gl.domElement.style.touchAction = 'none'
         gl.domElement.style.pointerEvents = 'auto'
@@ -692,7 +714,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       )}
       <SceneControls />
       {/* Performance safeguard: Bloom conditionally enabled with reduced settings during bring-up */}
-      {bloomEnabled && <BloomPass strength={0.08} radius={0.08} threshold={0.8} />}
+      {bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.6} />}
     </Canvas>
   )
 }
