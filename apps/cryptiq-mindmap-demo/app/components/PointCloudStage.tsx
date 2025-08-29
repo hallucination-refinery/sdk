@@ -382,6 +382,7 @@ function PointsMesh({
                   vec2 ndc = uv * 2.0 - 1.0;
                   vec4 world = uPVInvCapture * vec4(ndc.x, ndc.y, 0.0, 1.0);
                   world.xyz /= world.w;
+                  world.w = 1.0;
                   posMV = viewMatrix * world;
                 } else {
                   posMV = modelViewMatrix * vec4(position, 1.0);
@@ -474,7 +475,7 @@ function SceneControls() {
   )
 }
 
-function FitOrtho({
+/* function FitOrtho({
   contentWidth,
   contentHeight,
   margin = 0.98,
@@ -500,7 +501,7 @@ function FitOrtho({
     if (ortho.position && typeof ortho.position.set === 'function') ortho.position.set(0, 0, 1000)
   }, [camera, size.width, size.height, contentWidth, contentHeight, margin])
   return null
-}
+} */
 
 export default function PointCloudStage(props: PointCloudStageProps) {
   const {
@@ -511,7 +512,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     zScale = 2.5,
     pointSize = 2.0,
     stride = 1,
-    perspective = false,
+    // omit perspective in baseline
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
@@ -538,11 +539,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   return (
     <Canvas
-      orthographic={!perspective}
+      orthographic={false}
       camera={
-        perspective
-          ? { position: [0, 0, 1200], fov: 80, near: 0.1, far: 5000 }
-          : { position: [0, 0, 1000], near: -10000, far: 10000, zoom: 1 }
+        { position: [0, 0, 1200], fov: 80, near: 0.1, far: 5000 }
       }
       gl={{ antialias: true, alpha: true }}
       style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
@@ -579,9 +578,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         gl.domElement.style.pointerEvents = 'auto'
       }}
     >
-      {!perspective && (readyPacked || readyFallback) && (
-        <FitOrtho contentWidth={color.width} contentHeight={color.height} />
-      )}
+      {/* no FitOrtho in perspective baseline */}
       <ambientLight intensity={1} />
       <directionalLight position={[2, 3, 4]} intensity={0.6} />
       {readyPacked ? (
