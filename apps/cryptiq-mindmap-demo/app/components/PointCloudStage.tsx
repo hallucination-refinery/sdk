@@ -28,6 +28,9 @@ type PointCloudStageProps = {
   perspective?: boolean
 }
 
+// Toggle between shader path and baseline PointsMaterial
+const USE_SHADER = true
+
 function useImageData(url: string | null): {
   data: ImageData | null
   width: number
@@ -331,8 +334,32 @@ function PointsMesh({
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      {/* Baseline: standard PointsMaterial using vertex colors */}
-      <pointsMaterial size={pointSize} sizeAttenuation vertexColors />
+      {/* Rendering path */}
+      {USE_SHADER ? (
+        <shaderMaterial
+          // minimal program: clip-space sheet, solid alpha
+          args={[
+            {
+              uniforms: {
+                uBaseSize: { value: pointSize },
+              },
+              vertexShader: `
+              uniform float uBaseSize; attribute vec2 aUv; attribute vec3 color; varying vec3 vColor;
+              void main(){ vColor = color; vec2 ndc = aUv * 2.0 - 1.0; gl_Position = vec4(ndc, 0.0, 1.0); gl_PointSize = uBaseSize; }
+            `,
+              fragmentShader: `
+              precision highp float; varying vec3 vColor; void main(){ gl_FragColor = vec4(vColor, 1.0); }
+            `,
+              transparent: false,
+              depthWrite: true,
+              depthTest: true,
+              blending: THREE.NormalBlending,
+            },
+          ]}
+        />
+      ) : (
+        <pointsMaterial size={pointSize} sizeAttenuation vertexColors />
+      )}
     </points>
   )
 }
