@@ -139,7 +139,9 @@ function PointsMesh({
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
   const materialValidRef = React.useRef(false)
   // no-op: camera accessed via useFrame
-  const { /* camera */ } = useThree()
+  const {
+    /* camera */
+  } = useThree()
 
   // Build attributes (uv, depth01, color); position computed in shader via unprojection
   const { positions, uvs, depths, colors } = React.useMemo(() => {
@@ -285,11 +287,12 @@ function PointsMesh({
               vec4 nearW = uPVInvCapture * vec4(ndc, -1.0, 1.0); nearW /= nearW.w;
               vec4 farW  = uPVInvCapture * vec4(ndc,  1.0, 1.0); farW  /= farW.w;
               vec3 dirW  = normalize(farW.xyz - nearW.xyz);
-              // Many monocular depths have inverse depth polarity; use (1.0 - aDepth)
-              float d01 = 1.0 - aDepth;
+              // Use forward depth polarity
+              float d01 = aDepth;
               // Aesthetic depth mapping (zScale * pow(depth, gamma))
               float d = uZScale * pow(d01, uGamma) * 800.0;
-              vec3 posW = nearW.xyz + dirW * d;
+              // Move along the captured world ray toward the camera
+              vec3 posW = nearW.xyz - dirW * d;
               // depth-scaled drift in a plane orthogonal to dirW (world-stable)
               float n = hash12(uv*91.7 + uTime*0.07);
               float ang = n*6.28318; float amp = mix(1.0, 0.15, clamp(d*0.002, 0.0, 1.0));
@@ -497,7 +500,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         )
       )}
       <SceneControls />
-      {false && bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
+      {bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
     </Canvas>
   )
 }
