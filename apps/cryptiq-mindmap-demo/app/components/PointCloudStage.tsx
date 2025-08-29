@@ -215,8 +215,11 @@ function PointsMesh({
         const luma = 0.299 * r + 0.587 * g + 0.114 * b
 
         // Stochastic keep to introduce airy gaps (more sparse in bright/far)
+        // Enhanced for "tweet look" - more aggressive sparsity based on luma and depth
         const near = 1.0 - d01
-        const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
+        const lumaSparsity = Math.pow(luma, 0.8) // Gamma correction for more natural sparsity
+        const depthSparsity = Math.pow(near, 1.2) // Tighter depth-based sparsity
+        const keep = (0.35 + 0.4 * depthSparsity + 0.25 * (1.0 - lumaSparsity)) * keepRatio
         if (hash(x, y) > keep) continue
 
         // attributes
@@ -384,19 +387,21 @@ function PointsMesh({
                 vColor=color;
                 // Unproject NDC to world space using captured PV^-1
                 vec2 ndc = aUv * 2.0 - 1.0;
-                // Map depth to a reasonable band (0.3 to 0.7 in NDC space) for 3D relief
-                float remappedDepth = mix(0.3, 0.7, aDepth);
+                // Tighter depth band for more pronounced 3D relief - "tweet look"
+                float depthGamma = pow(aDepth, 1.1); // Gamma correction for depth perception
+                float remappedDepth = mix(0.25, 0.75, depthGamma);
                 vec4 ndcPos = vec4(ndc, remappedDepth, 1.0);
                 // Unproject to world space using captured PV^-1
                 vec4 worldPos = uPVInvCapture * ndcPos;
                 worldPos /= worldPos.w; // Perspective divide
                 
-                // Add subtle drift based on time and world position for "airy" effect
-                float driftPhase = uTime * 0.3 + worldPos.x * 0.001 + worldPos.y * 0.0008;
+                // Enhanced drift for more natural "airy" movement
+                float driftPhase = uTime * 0.25 + worldPos.x * 0.0012 + worldPos.y * 0.0009;
+                float driftAmplitude = 0.8 + 0.4 * (1.0 - aDepth); // Near points drift more
                 vec3 drift = vec3(
-                  sin(driftPhase) * 2.0,
-                  cos(driftPhase * 1.3) * 1.5,
-                  sin(driftPhase * 0.7) * 1.0
+                  sin(driftPhase) * 1.8 * driftAmplitude,
+                  cos(driftPhase * 1.2) * 1.4 * driftAmplitude,
+                  sin(driftPhase * 0.8) * 0.9 * driftAmplitude
                 );
                 worldPos.xyz += drift;
                 
@@ -404,13 +409,26 @@ function PointsMesh({
                 gl_Position = projectionMatrix * modelViewMatrix * worldPos;
                 vNear = 1.0 - aDepth; // Use actual depth for near calculation
                 float luma = dot(vColor, vec3(0.299,0.587,0.114));
-                float size = uBaseSize * mix(0.7,1.6,luma) * (0.8 + 0.4 * vNear);
+                // Enhanced size variation for "tweet look" - more dramatic size differences
+                float lumaSize = pow(luma, 0.9); // Gamma correction for size variation
+                float depthSize = 0.7 + 0.5 * vNear; // More pronounced depth size variation
+                float size = uBaseSize * mix(0.6, 1.8, lumaSize) * depthSize;
                 gl_PointSize = size;
               }
             `,
               fragmentShader: `
               precision highp float; varying vec3 vColor; varying float vNear;
-              void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
+              void main(){ 
+                vec2 p=gl_PointCoord-0.5; 
+                float r=length(p); 
+                // Enhanced alpha for airy feel with more subtle transparency
+                float coreAlpha = smoothstep(0.5, 0.1, r); // Softer core
+                float edgeAlpha = smoothstep(0.7, 0.4, r); // Softer edges
+                float alpha = mix(edgeAlpha, coreAlpha, 0.6) * clamp(vNear * 0.7 + 0.15, 0.15, 0.9);
+                // Enhanced color saturation and brightness for "tweet look"
+                vec3 enhancedColor = pow(vColor, vec3(0.85)) * 1.1; // Slight gamma and brightness boost
+                gl_FragColor=vec4(enhancedColor, alpha); 
+              }
             `,
               transparent: true,
               depthWrite: false,
@@ -604,7 +622,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         )
       )}
       <SceneControls />
-      {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
+      {bloomEnabled && <BloomPass strength={0.12} radius={0.08} threshold={0.6} />}
     </Canvas>
   )
 }

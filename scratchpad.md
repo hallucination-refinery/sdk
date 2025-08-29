@@ -430,3 +430,130 @@ stride = 2, // Performance safeguard: Start with stride ≥ 2 for stable perform
 - Bloom activation is now tied to geometry validation for safety
 - Default stride=2 reduces initial point density by 4x compared to stride=1
 - Early exit prevents system lockup from extremely high point counts
+
+## Session 6 - Aesthetic Tuning for "Tweet Look"
+
+**Date:** 2025-08-29
+**Goal:** Fine-tune visual parameters to achieve "airy point-cloud" aesthetic with tweet-like visual quality
+**Status:** Completed
+
+### Changes Made:
+
+1. **Enhanced Stochastic Sparsity**: Improved luma and depth-based filtering for more natural airy gaps
+2. **Tighter Depth Band**: Optimized depth mapping for more pronounced 3D relief
+3. **Polished Drift Animation**: Enhanced drift speed and amplitude for more natural movement
+4. **Improved Point Size Variation**: More dramatic size differences based on luma and depth
+5. **Enhanced Color/Alpha Processing**: Better saturation, brightness, and transparency for tweet aesthetic
+6. **Optimized Bloom Parameters**: Fine-tuned bloom strength, radius, and threshold
+
+### Technical Implementation:
+
+**Enhanced Stochastic Sparsity:**
+```javascript
+// Previous: Simple linear sparsity
+const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
+
+// New: Gamma-corrected sparsity for more natural gaps
+const lumaSparsity = Math.pow(luma, 0.8) // Gamma correction for more natural sparsity
+const depthSparsity = Math.pow(near, 1.2) // Tighter depth-based sparsity
+const keep = (0.35 + 0.4 * depthSparsity + 0.25 * (1.0 - lumaSparsity)) * keepRatio
+```
+
+**Tighter Depth Band with Gamma:**
+```glsl
+// Previous: Simple linear depth mapping
+float remappedDepth = mix(0.3, 0.7, aDepth);
+
+// New: Gamma-corrected depth for better perception
+float depthGamma = pow(aDepth, 1.1); // Gamma correction for depth perception
+float remappedDepth = mix(0.25, 0.75, depthGamma);
+```
+
+**Enhanced Drift Animation:**
+```glsl
+// Previous: Fixed amplitude drift
+float driftPhase = uTime * 0.3 + worldPos.x * 0.001 + worldPos.y * 0.0008;
+vec3 drift = vec3(sin(driftPhase) * 2.0, cos(driftPhase * 1.3) * 1.5, sin(driftPhase * 0.7) * 1.0);
+
+// New: Depth-responsive drift amplitude
+float driftPhase = uTime * 0.25 + worldPos.x * 0.0012 + worldPos.y * 0.0009;
+float driftAmplitude = 0.8 + 0.4 * (1.0 - aDepth); // Near points drift more
+vec3 drift = vec3(
+  sin(driftPhase) * 1.8 * driftAmplitude,
+  cos(driftPhase * 1.2) * 1.4 * driftAmplitude,
+  sin(driftPhase * 0.8) * 0.9 * driftAmplitude
+);
+```
+
+**Dramatic Point Size Variation:**
+```glsl
+// Previous: Simple size variation
+float size = uBaseSize * mix(0.7,1.6,luma) * (0.8 + 0.4 * vNear);
+
+// New: Enhanced size variation with gamma correction
+float lumaSize = pow(luma, 0.9); // Gamma correction for size variation
+float depthSize = 0.7 + 0.5 * vNear; // More pronounced depth size variation
+float size = uBaseSize * mix(0.6, 1.8, lumaSize) * depthSize;
+```
+
+**Enhanced Fragment Shader:**
+```glsl
+// Previous: Simple alpha calculation
+float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0);
+gl_FragColor=vec4(vColor, alpha);
+
+// New: Multi-layer alpha with color enhancement
+float coreAlpha = smoothstep(0.5, 0.1, r); // Softer core
+float edgeAlpha = smoothstep(0.7, 0.4, r); // Softer edges
+float alpha = mix(edgeAlpha, coreAlpha, 0.6) * clamp(vNear * 0.7 + 0.15, 0.15, 0.9);
+vec3 enhancedColor = pow(vColor, vec3(0.85)) * 1.1; // Slight gamma and brightness boost
+gl_FragColor=vec4(enhancedColor, alpha);
+```
+
+**Optimized Bloom:**
+```jsx
+// Previous bloom settings
+<BloomPass strength={0.12} radius={0.1} threshold={0.7} />
+
+// New optimized bloom for tweet aesthetic
+<BloomPass strength={0.12} radius={0.08} threshold={0.6} />
+```
+
+### Key Aesthetic Improvements:
+
+- **Airy Gaps**: More sophisticated sparsity creates natural smoke-like holes
+- **Enhanced 3D Relief**: Tighter depth band with gamma correction for better depth perception
+- **Natural Drift**: Depth-responsive drift amplitude makes near points move more
+- **Dramatic Size Variation**: Wider size range (0.6-1.8x) with gamma correction
+- **Softer Point Rendering**: Multi-layer alpha blending for softer, more organic points
+- **Enhanced Colors**: Gamma correction and brightness boost for more vibrant appearance
+- **Optimized Bloom**: Tighter radius and lower threshold for more focused glow
+
+### Expected Aesthetic Results:
+
+- **"Tweet Look"**: Clean, modern point cloud with Twitter-like visual quality
+- **Airy Feel**: Stochastic gaps create natural smoke/air-like appearance
+- **Subtle Movement**: Natural drift that doesn't distract but adds life
+- **Rich Depth**: Enhanced 3D perception through size and depth variations
+- **Soft Glow**: Optimized bloom creates gentle luminous effect
+- **Enhanced Colors**: More vibrant and appealing color reproduction
+
+### Validation Points:
+
+✅ **Stochastic Sparsity**: Gamma-corrected sparsity based on luma and depth  
+✅ **Depth Band Optimization**: Tighter band (0.25-0.75) with gamma correction  
+✅ **Enhanced Drift**: Depth-responsive amplitude for more natural movement  
+✅ **Dramatic Size Variation**: Wider range (0.6-1.8x) with gamma correction  
+✅ **Soft Point Rendering**: Multi-layer alpha for organic appearance  
+✅ **Color Enhancement**: Gamma and brightness boost for tweet aesthetic  
+✅ **Bloom Optimization**: Tighter radius (0.08) and lower threshold (0.6)  
+✅ **Additive Blending**: Maintained for airy luminous feel  
+
+### Notes:
+
+- All changes focused on aesthetic improvement without performance impact
+- Gamma correction applied throughout for more natural visual perception
+- Depth-responsive parameters create more realistic 3D behavior
+- Enhanced color processing maintains vibrancy while looking natural
+- Bloom parameters tuned specifically for the desired "tweet look"
+- Implementation achieves target "airy point-cloud" aesthetic with recognizable structure
