@@ -339,6 +339,33 @@ function BloomPass({
   return null
 }
 
+function SceneControls() {
+  const controlsRef = React.useRef<any>(null)
+  const { camera, gl } = useThree()
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[PC] attach controls to', gl.domElement)
+  }, [gl])
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      args={[camera, gl.domElement]}
+      makeDefault
+      enableRotate
+      enableZoom
+      enablePan={false}
+      enableDamping
+      dampingFactor={0.1}
+      minDistance={200}
+      maxDistance={4000}
+      target={[0, 0, -800]}
+      rotateSpeed={0.8}
+      zoomSpeed={1.0}
+      onStart={() => console.log('[PC] controls start')}
+    />
+  )
+}
+
 function FitOrtho({
   contentWidth,
   contentHeight,
@@ -413,7 +440,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
       onPointerDown={(e) => {
         // simple signal that canvas receives input
-        // eslint-disable-next-line no-console
+
         console.log('[PC] pointer down', e.clientX, e.clientY)
       }}
       onCreated={({ gl }) => {
@@ -455,17 +482,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           />
         )
       )}
-      <OrbitControls
-        makeDefault
-        enableDamping
-        dampingFactor={0.1}
-        enableZoom
-        enablePan={false}
-        minDistance={200}
-        maxDistance={4000}
-        // approximate cloud center along -Z
-        target={[0, 0, -800]}
-      />
+      <SceneControls />
       {false && bloomEnabled && <BloomPass strength={0.18} radius={0.12} threshold={0.65} />}
     </Canvas>
   )
