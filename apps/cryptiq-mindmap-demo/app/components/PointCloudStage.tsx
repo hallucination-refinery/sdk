@@ -278,6 +278,19 @@ function PointsMesh({
     if (!g) return
     if (typeof g.computeBoundingSphere === 'function') g.computeBoundingSphere()
   }, [positions, colors])
+  // Log geometry attribute inventory once to verify bindings
+  const loggedAttrsRef = React.useRef(false)
+  React.useEffect(() => {
+    if (loggedAttrsRef.current) return
+    const g = geomRef.current as unknown as THREE.BufferGeometry | null
+    if (!g) return
+    const stat = (name: string) => {
+      const a = g.getAttribute(name) as THREE.BufferAttribute | undefined
+      return a ? { itemSize: a.itemSize, count: a.count } : null
+    }
+    console.log('[PC] attrs', { aUv: stat('aUv'), uv: stat('uv'), position: stat('position'), color: stat('color') })
+    loggedAttrsRef.current = true
+  }, [])
 
   // Poll once until the material compiles, then notify parent to enable bloom
   React.useEffect(() => {
@@ -328,6 +341,8 @@ function PointsMesh({
         {/* uv and depth attributes for shader unprojection */}
         {/** @ts-expect-error attachObject is supported at runtime */}
         <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
+        {/* also bind built-in uv for isolation tests */}
+        <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
         {/* custom float attribute for normalized depth */}
         {/** @ts-expect-error attachObject is supported at runtime */}
         <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
@@ -344,12 +359,12 @@ function PointsMesh({
               vertexShader: `
               precision highp float;
               uniform float uBaseSize;
-              attribute vec2 aUv;
+              attribute vec2 uv;
               attribute vec3 color;
               varying vec3 vColor;
               void main(){
                 vColor = color;
-                vec2 ndc = aUv * 2.0 - 1.0;
+                vec2 ndc = uv * 2.0 - 1.0;
                 gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
                 gl_PointSize = uBaseSize;
               }
