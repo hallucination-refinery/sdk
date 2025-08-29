@@ -478,12 +478,12 @@ function SceneControls() {
       makeDefault
       enableRotate
       enableZoom
-      enablePan={false}
+      enablePan={true}
       enableDamping
-      dampingFactor={0.1}
-      minDistance={200}
-      maxDistance={3000}
-      target={[0, 0, -800]}
+      dampingFactor={0.05}
+      minDistance={100}
+      maxDistance={5000}
+      target={[0, 0, 0]}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
       onStart={() => console.log('[PC] controls start')}
