@@ -5,12 +5,17 @@
 Each session MUST produce:
 
 1. Commit: `workflow(session-N): <description>` - Missing = $5,000 penalty
-2. Validation (unless skipped): `lint → test → build → pnpm smoke:brain` - Failure = $2,500 per stage
+2. Validation: `lint → test → build → pnpm smoke:brain` - Failure = $2,500 per stage
 3. Fresh artifacts: mtime ≥ session_start via `scripts/validate-artifacts.sh` - Stale = $10,000
 4. Visual parity: `maxDiffPixelRatio: 0.10` once baseline exists - Deviation = termination
 5. Browser-derived acceptance (no simulated markers) - Violation = Trust Index withheld
 
 ## QUICKSTART SEQUENCE
+
+```bash
+/ensure-playwright  # Sets up Chromium, symlinks, PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1
+/orchestrate cryptiq-mindmap-mvp ALL --workflow-path docs/initiatives/cryptiq-mindmap-mvp/workflow-03.md
+```
 
 Required artifacts in `.clmem/runs/<run_id>/`: plan.md, batches.json, session-manifest.json,
 metrics.json, results.json, acceptance.md, session.log, meta-report.md, server.log,

@@ -28,6 +28,11 @@ type PointCloudStageProps = {
   perspective?: boolean
 }
 
+// Runtime flags to toggle between rendering modes
+const USE_BASELINE_RENDER = false
+const USE_UV_ONLY_SHADER = false  // Session 3a: UV-only mode for debugging UV attributes
+const USE_PV_INVERSE_SHADER = true  // Session 3b: PV^-1 world-space with constant depth
+
 function useImageData(url: string | null): {
   data: ImageData | null
   width: number
@@ -143,7 +148,7 @@ function PointsMesh({
     /* camera */
   } = useThree()
 
-  // Build attributes (uv, depth01, color); position computed in shader via unprojection
+  // Build attributes (uv, depth01, color); position computed in shader OR CPU for baseline
   const { positions, uvs, depths, colors } = React.useMemo(() => {
     const cw = colorImage.width
     const ch = colorImage.height
@@ -164,9 +169,15 @@ function PointsMesh({
       return s - Math.floor(s)
     }
 
-    const maxPoints = 250_000
+    const maxPoints = 150_000  // Session 5: Performance safeguard - cap to 150k during debugging
     const totalCandidates = Math.ceil((w / stride) * (h / stride))
     const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
+    
+    // Log buffer verification data once
+    console.log(`[PC-BUFFER] Dimensions: color=${cw}x${ch}, depth=${dw}x${dh}, effective=${w}x${h}`)
+    console.log(`[PC-BUFFER] Candidates: ${totalCandidates}, keepRatio: ${keepRatio.toFixed(4)}`)
+    console.log(`[PC-BUFFER] Render mode: ${USE_BASELINE_RENDER ? 'BASELINE' : USE_UV_ONLY_SHADER ? 'UV_ONLY_SHADER' : USE_PV_INVERSE_SHADER ? 'PV_INVERSE_SHADER' : 'SHADER'}`)
+    
     for (let y = 0; y < h; y += stride) {
       for (let x = 0; x < w; x += stride) {
         const p = y * w + x
@@ -181,20 +192,89 @@ function PointsMesh({
 
         // Stochastic keep to introduce airy gaps (more sparse in bright/far)
         const near = 1.0 - d01
-        const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
+        const keep = (0.38 + 0.42 * near + 0.25 * (1.0 - luma)) * keepRatio
         if (hash(x, y) > keep) continue
 
         // attributes
         us.push(x / (w - 1), y / (h - 1))
         ds.push(d01)
-        xs.push(0, 0, 0) // dummy; shader computes true position
+        
+        if (USE_BASELINE_RENDER) {
+          // CPU-compute positions as a flat sheet at fixed depth
+          const worldX = (x / (w - 1) - 0.5) * 800  // span 800 units
+          const worldY = (0.5 - y / (h - 1)) * 600  // span 600 units, flip Y
+          const worldZ = -800                        // fixed depth at -800 units
+          xs.push(worldX, worldY, worldZ)
+        } else {
+          xs.push(0, 0, 0) // dummy; shader computes true position
+        }
+        
         cs.push(r, g, b)
       }
     }
+    
+    const keptPoints = xs.length / 3
+    let finalKeepRatio = keepRatio
+    let finalKeep = 1.0
+    
+    // If kept points < 100, disable stochastic keep (keepRatio=1, keep=1)
+    if (keptPoints < 100) {
+      console.log(`[PC-BUFFER] Low point count (${keptPoints}), recalculating with keepRatio=1`)
+      xs.length = 0
+      us.length = 0
+      ds.length = 0
+      cs.length = 0
+      
+      finalKeepRatio = 1.0
+      finalKeep = 0.95  // Still introduce slight sparsity even with low points
+      
+      for (let y = 0; y < h; y += stride) {
+        for (let x = 0; x < w; x += stride) {
+          const p = y * w + x
+          const d01 = dep16[p] / 65535.0
+
+          const ci = p * 4
+          const r = col[ci] / 255.0
+          const g = col[ci + 1] / 255.0
+          const b = col[ci + 2] / 255.0
+
+          us.push(x / (w - 1), y / (h - 1))
+          ds.push(d01)
+          
+          if (USE_BASELINE_RENDER) {
+            // CPU-compute positions as a flat sheet at fixed depth
+            const worldX = (x / (w - 1) - 0.5) * 800  // span 800 units
+            const worldY = (0.5 - y / (h - 1)) * 600  // span 600 units, flip Y
+            const worldZ = -800                        // fixed depth at -800 units
+            xs.push(worldX, worldY, worldZ)
+          } else {
+            xs.push(0, 0, 0)
+          }
+          
+          cs.push(r, g, b)
+        }
+      }
+    }
+    
     const positions = new Float32Array(xs)
     const uvs = new Float32Array(us)
     const depths = new Float32Array(ds)
     const colors = new Float32Array(cs)
+    
+    const finalKeptPoints = positions.length / 3
+    
+    // Log final counts and array lengths
+    console.log(`[PC-BUFFER] Final counts: kept=${finalKeptPoints}, candidates=${totalCandidates}`)
+    console.log(`[PC-BUFFER] Array lengths: positions=${positions.length}, uvs=${uvs.length}, depths=${depths.length}, colors=${colors.length}`)
+    console.log(`[PC-BUFFER] Final keep settings: keepRatio=${finalKeepRatio.toFixed(4)}, keep=${finalKeep.toFixed(4)}`)
+    
+    // Log first few samples for debugging
+    if (finalKeptPoints > 0) {
+      console.log(`[PC-BUFFER] Sample uvs[0-3]: ${Array.from(uvs.slice(0, 4)).map(v => v.toFixed(3)).join(', ')}`)
+      console.log(`[PC-BUFFER] Sample depths[0-1]: ${Array.from(depths.slice(0, 2)).map(v => v.toFixed(3)).join(', ')}`)
+      console.log(`[PC-BUFFER] Sample colors[0-5]: ${Array.from(colors.slice(0, 6)).map(v => v.toFixed(3)).join(', ')}`)
+    }
+    
     return { positions, uvs, depths, colors }
   }, [colorImage, depth16, stride])
 
@@ -250,55 +330,160 @@ function PointsMesh({
       <bufferGeometry ref={geomRef}>
         {/* position attribute */}
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        {/* uv and depth attributes for shader unprojection */}
-        {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
-        {/* custom float attribute for normalized depth */}
-        {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
+        {!USE_BASELINE_RENDER && (
+          <>
+            {/* uv and depth attributes for shader unprojection */}
+            {/** @ts-expect-error attachObject is supported at runtime */}
+            <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
+            {/* custom float attribute for normalized depth */}
+            {/** @ts-expect-error attachObject is supported at runtime */}
+            <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
+          </>
+        )}
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      {/* Custom shader for particle size/alpha and gentle drift; additive blending */}
-      <shaderMaterial
-        // Casting for R3F ref type compatibility
-        ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
-        args={[
-          {
-            uniforms: {
-              uTime: { value: 0 },
-              uZScale: { value: zScale },
-              uBaseSize: { value: pointSize },
-              uGamma: { value: 1.0 },
-              // capture of initial inverse view-projection
-              uPVInvCapture: { value: new THREE.Matrix4() },
+      
+      {USE_BASELINE_RENDER ? (
+        /* Simple baseline material for debugging */
+        <pointsMaterial 
+          size={pointSize} 
+          sizeAttenuation={true}
+          vertexColors={true}
+          transparent={true}
+          opacity={0.8}
+        />
+      ) : (
+        /* Custom shader for particle size/alpha and gentle drift; additive blending */
+        <shaderMaterial
+          // Casting for R3F ref type compatibility
+          ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
+          args={[
+            {
+              uniforms: {
+                uTime: { value: 0 },
+                uZScale: { value: zScale },
+                uBaseSize: { value: pointSize },
+                uGamma: { value: 0.85 },  // Slight gamma adjustment for depth perception
+                // capture of initial inverse view-projection
+                uPVInvCapture: { value: new THREE.Matrix4() },
+              },
+              vertexShader: USE_UV_ONLY_SHADER ? `
+              // Session 3a: UV-only shader for debugging UV attribute correctness
+              uniform float uBaseSize;
+              attribute vec2 aUv;
+              attribute vec3 color;
+              varying vec3 vColor;
+              varying float vNear;
+              
+              void main(){
+                vColor = color;
+                // Map UV (0,0)-(1,1) directly to NDC (-1,-1)-(1,1) in clip space
+                vec2 ndc = aUv * 2.0 - 1.0;
+                gl_Position = vec4(ndc, 0.0, 1.0);  // Flat sheet at z=0 in clip space
+                vNear = 1.0;
+                
+                // Simple uniform point size for debugging
+                gl_PointSize = uBaseSize * 2.0;
+              }
+              ` : USE_PV_INVERSE_SHADER ? `
+              // Session 3b: PV^-1 world-space with constant depth - test unprojection matrix
+              uniform float uBaseSize;
+              uniform mat4 uPVInvCapture;
+              attribute vec2 aUv;
+              attribute vec3 color;
+              varying vec3 vColor;
+              varying float vNear;
+              
+              void main(){
+                vColor = color;
+                // Map UV (0,0)-(1,1) to NDC (-1,-1)-(1,1)
+                vec2 ndc = aUv * 2.0 - 1.0;
+                
+                // Use constant depth for flat sheet (NDC z = 0.0)
+                vec4 ndcPos = vec4(ndc, 0.0, 1.0);
+                
+                // Unproject to world space using captured PV^-1 matrix
+                vec4 worldPos = uPVInvCapture * ndcPos;
+                worldPos.xyz /= worldPos.w;  // Perspective divide
+                
+                // Transform back to clip space using current camera matrices
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos.xyz, 1.0);
+                vNear = 1.0;
+                
+                // Simple uniform point size for debugging
+                gl_PointSize = uBaseSize * 2.0;
+              }
+              ` : `
+              // Session 3c: Full shader with depth band mapping and drift
+              uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
+              attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
+              
+              float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+              
+              void main(){
+                vColor=color;
+                
+                // Map UV (0,0)-(1,1) to NDC (-1,-1)-(1,1)
+                vec2 ndc = aUv * 2.0 - 1.0;
+                
+                // Use aDepth for depth band mapping in world space
+                // Map depth01 to world Z: near points closer to camera, far points deeper
+                // Tighter depth band for better depth feel
+                float worldZ = mix(-180.0, -1800.0, pow(aDepth, 0.85)) * uZScale;
+                
+                // Build world position using captured PV^-1 matrix
+                vec4 nearWorld = uPVInvCapture * vec4(ndc, 0.0, 1.0);
+                vec4 farWorld = uPVInvCapture * vec4(ndc, 1.0, 1.0);
+                nearWorld.xyz /= nearWorld.w;
+                farWorld.xyz /= farWorld.w;
+                
+                // Interpolate between near and far using depth
+                vec3 worldPos = mix(nearWorld.xyz, farWorld.xyz, aDepth);
+                
+                // Override Z with depth band mapping for proper 3D positioning
+                worldPos.z = worldZ;
+                
+                // Add subtle drift for "airy" effect
+                float drift = uTime * 0.25;
+                float hashVal = hash12(aUv * 100.0);
+                // Slightly stronger drift for more organic movement
+                vec2 driftOffset = vec2(
+                  sin(drift + hashVal * 6.28) * 18.0,
+                  cos(drift * 0.6 + hashVal * 4.2) * 12.0
+                );
+                worldPos.xy += driftOffset;
+                
+                // Transform to clip space
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos, 1.0);
+                
+                // Calculate nearness for alpha and size
+                vNear = 1.0 - aDepth;  // near=1, far=0
+                
+                // Depth-based point sizing: closer points larger
+                float luma = dot(vColor, vec3(0.299,0.587,0.114));
+                float depthSize = mix(0.4, 1.8, vNear);  // Greater size variation by depth
+                float lumaSize = mix(0.6, 1.8, luma);    // More dramatic luma-based sizing
+                gl_PointSize = uBaseSize * depthSize * lumaSize;
+              }
+            `,
+              fragmentShader: `
+              precision highp float; varying vec3 vColor; varying float vNear;
+              void main(){ 
+                vec2 p=gl_PointCoord-0.5; 
+                float r=length(p); 
+                // Softer edge falloff and enhanced alpha for better bloom
+                float alpha=smoothstep(0.65,0.1,r)*clamp(vNear*0.7+0.15,0.15,0.95); 
+                gl_FragColor=vec4(vColor, alpha); 
+              }
+            `,
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending,
             },
-            vertexShader: `
-            uniform float uTime; uniform float uZScale; uniform float uBaseSize; uniform float uGamma; uniform mat4 uPVInvCapture;
-            attribute vec2 aUv; attribute float aDepth; attribute vec3 color; varying vec3 vColor; varying float vNear;
-            float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
-            void main(){
-              vColor=color;
-              // Build near/far WORLD points from the *captured* PV^-1
-              vec2 ndc = aUv * 2.0 - 1.0;
-              // Debug path: draw in clip space using NDC directly (bypass PV^-1)
-              gl_Position = vec4(ndc, 0.0, 1.0);
-              vNear = 1.0;
-              float luma = dot(vColor, vec3(0.299,0.587,0.114));
-              float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
-              gl_PointSize = size;
-            }
-          `,
-            fragmentShader: `
-            precision highp float; varying vec3 vColor; varying float vNear;
-            void main(){ vec2 p=gl_PointCoord-0.5; float r=length(p); float alpha=smoothstep(0.6,0.15,r)*clamp(vNear*0.6,0.2,1.0); gl_FragColor=vec4(vColor, alpha); }
-          `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-          },
-        ]}
-      />
+          ]}
+        />
+      )}
     </points>
   )
 }
@@ -354,9 +539,9 @@ function SceneControls() {
       enablePan={false}
       enableDamping
       dampingFactor={0.1}
-      minDistance={200}
-      maxDistance={3000}
-      target={[0, 0, -800]}
+      minDistance={100}
+      maxDistance={5000}
+      target={[0, 0, 0]}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
       onStart={() => console.log('[PC] controls start')}
@@ -400,7 +585,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     depthRgUrl,
     zScale = 2.5,
     pointSize = 2.0,
-    stride = 1,
+    stride = 2,  // Session 5: Performance safeguard - default stride=2 for debugging
     perspective = false,
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
@@ -481,7 +666,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         )
       )}
       <SceneControls />
-      {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
+      {/* Session 6: Bloom re-enabled with tuned parameters for aesthetic */}
+      {bloomEnabled && <BloomPass strength={0.12} radius={0.15} threshold={0.6} />}
     </Canvas>
   )
 }
