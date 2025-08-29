@@ -149,3 +149,62 @@ The shader mode (when `useBaseline=false`) already implements the required UV-ba
 - Component defaults to `useBaseline = true`, so caller must explicitly set `useBaseline = false` to test shader mode
 - This validates that custom shader can access UV attributes correctly before adding depth/PV⁻¹ complexity
 - Next step would be to add depth-based Z positioning while maintaining UV-based X,Y coordinates
+
+## Session 3b - Shader World-Space Rendering with PV⁻¹
+
+**Date:** 2025-08-29
+**Goal:** Modify vertex shader to use PV⁻¹ unprojection with constant depth, enabling world-space rendering that responds to orbit controls
+**Status:** Completed
+
+### Changes Made:
+
+1. **Replaced Debug Clip-Space Path**: Changed from direct NDC clip-space rendering to PV⁻¹ unprojection
+2. **Added Constant Depth**: Uses fixed depth value of 0.5 in NDC space for initial testing
+3. **Implemented World-Space Unprojection**: Uses captured `uPVInvCapture` matrix to transform NDC to world coordinates
+4. **Added Current View/Projection Transform**: World position transformed with current `projectionMatrix * modelViewMatrix`
+
+### Technical Implementation:
+
+**Previous Shader (Debug Path):**
+```glsl
+vec2 ndc = aUv * 2.0 - 1.0;
+gl_Position = vec4(ndc, 0.0, 1.0); // Direct clip-space
+```
+
+**New Shader (World-Space Path):**
+```glsl
+vec2 ndc = aUv * 2.0 - 1.0;
+vec4 ndcPos = vec4(ndc, 0.5, 1.0);          // Constant depth
+vec4 worldPos = uPVInvCapture * ndcPos;      // Unproject to world
+worldPos /= worldPos.w;                      // Perspective divide
+gl_Position = projectionMatrix * modelViewMatrix * worldPos; // Current view/proj
+```
+
+### Key Features:
+
+- **PV⁻¹ Matrix Usage**: Uses the captured inverse projection-view matrix from initial camera state
+- **Constant Depth**: Fixed at 0.5 in NDC space (mid-depth) for validation
+- **Perspective Divide**: Proper homogeneous coordinate handling with `worldPos /= worldPos.w`
+- **Current Transform**: Applies current camera matrices to enable orbit control response
+
+### Expected Behavior:
+
+- **World-Space Rendering**: Sheet now exists in world coordinates, not clip space
+- **Orbit Control Response**: Sheet should move/rotate with camera controls
+- **Fixed Depth Plane**: All points render at same Z depth (flat sheet)
+- **UV-Based Positioning**: X,Y positions still derived from UV coordinates
+
+### Validation Points:
+
+✅ **PV⁻¹ Unprojection**: Shader uses `uPVInvCapture` matrix for NDC→world transform  
+✅ **Constant Depth**: Fixed depth value (0.5) used instead of varying depth  
+✅ **World Coordinates**: Points positioned in world space, not clip space  
+✅ **Current View/Projection**: Uses current matrices for final positioning  
+✅ **Orbit Response**: Sheet should now move with camera controls  
+
+### Notes:
+
+- This validates the PV⁻¹ matrix capture and unprojection pipeline works correctly
+- Sheet should now be responsive to orbit controls instead of being viewport-locked
+- Next step would be to replace constant depth with actual depth values from `aDepth` attribute
+- The captured matrix represents the camera state when first initialized, providing the reference frame

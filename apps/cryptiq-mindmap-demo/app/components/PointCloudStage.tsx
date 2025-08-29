@@ -346,10 +346,15 @@ function PointsMesh({
               float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
               void main(){
                 vColor=color;
-                // Build near/far WORLD points from the *captured* PV^-1
+                // Unproject NDC to world space using captured PV^-1
                 vec2 ndc = aUv * 2.0 - 1.0;
-                // Debug path: draw in clip space using NDC directly (bypass PV^-1)
-                gl_Position = vec4(ndc, 0.0, 1.0);
+                // Use constant depth initially (0.5 in NDC space)
+                vec4 ndcPos = vec4(ndc, 0.5, 1.0);
+                // Unproject to world space using captured PV^-1
+                vec4 worldPos = uPVInvCapture * ndcPos;
+                worldPos /= worldPos.w; // Perspective divide
+                // Transform world position with current view/projection matrices
+                gl_Position = projectionMatrix * modelViewMatrix * worldPos;
                 vNear = 1.0;
                 float luma = dot(vColor, vec3(0.299,0.587,0.114));
                 float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
