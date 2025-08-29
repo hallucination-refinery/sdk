@@ -208,3 +208,75 @@ gl_Position = projectionMatrix * modelViewMatrix * worldPos; // Current view/pro
 - Sheet should now be responsive to orbit controls instead of being viewport-locked
 - Next step would be to replace constant depth with actual depth values from `aDepth` attribute
 - The captured matrix represents the camera state when first initialized, providing the reference frame
+
+## Session 3c - Shader Depth Variation and Drift Implementation
+
+**Date:** 2025-08-29
+**Goal:** Complete the point cloud shader by adding actual depth values from aDepth attribute and subtle drift animation
+**Status:** Completed
+
+### Changes Made:
+
+1. **Replaced Constant Depth with Depth Band**: Changed from fixed `0.5` depth to depth remapping using actual `aDepth` values
+2. **Implemented Depth Band Mapping**: Maps depth to reasonable 3D band from `0.3` to `0.7` in NDC space
+3. **Added Subtle Drift Animation**: Implemented time-based drift using world position for phase variation
+4. **Enhanced Near Calculation**: Uses actual depth (`1.0 - aDepth`) instead of fixed value
+5. **Added Depth-Based Point Sizing**: Point size now varies with depth for better 3D perception
+
+### Technical Implementation:
+
+**Previous Shader (Constant Depth):**
+```glsl
+vec4 ndcPos = vec4(ndc, 0.5, 1.0);              // Fixed depth
+vNear = 1.0;                                     // Constant near
+```
+
+**New Shader (Variable Depth + Drift):**
+```glsl
+float remappedDepth = mix(0.3, 0.7, aDepth);    // Depth band mapping
+vec4 ndcPos = vec4(ndc, remappedDepth, 1.0);    // Variable depth
+
+// Add subtle drift for "airy" effect
+float driftPhase = uTime * 0.3 + worldPos.x * 0.001 + worldPos.y * 0.0008;
+vec3 drift = vec3(
+  sin(driftPhase) * 2.0,
+  cos(driftPhase * 1.3) * 1.5,
+  sin(driftPhase * 0.7) * 1.0
+);
+worldPos.xyz += drift;
+
+vNear = 1.0 - aDepth;                            // Actual depth-based near
+float size = uBaseSize * mix(0.7,1.6,luma) * (0.8 + 0.4 * vNear);
+```
+
+### Key Features:
+
+- **Depth Band Mapping**: `mix(0.3, 0.7, aDepth)` creates reasonable 3D relief within NDC range
+- **Multi-Phase Drift**: Three-component drift with different frequencies for organic motion
+- **World-Position-Based Phase**: Drift phase varies by world position to avoid uniform movement
+- **Depth-Responsive Sizing**: Nearer points (higher vNear) appear larger
+- **Subtle Animation Speed**: `uTime * 0.3` provides gentle drift without distraction
+
+### Expected Behavior:
+
+- **3D Point Cloud Effect**: Points now show depth variation instead of flat sheet
+- **Depth Relief**: Front-to-back spacing creates proper 3D structure
+- **Airy Drift Animation**: Subtle floating motion adds organic "point cloud" feel
+- **Variable Point Sizes**: Nearer points appear larger, enhancing depth perception
+- **Maintained UV Positioning**: X,Y coordinates still based on original UV mapping
+
+### Validation Points:
+
+✅ **Actual Depth Usage**: Shader now uses `aDepth` attribute instead of constant  
+✅ **Depth Band Implementation**: Maps depth to `0.3-0.7` NDC range for reasonable relief  
+✅ **Drift Animation**: Three-component drift based on time and world position  
+✅ **Full 3D Effect**: Creates proper point cloud with depth variation  
+✅ **Airy Feel**: Subtle animation provides desired floating aesthetic  
+
+### Notes:
+
+- This completes the shader restoration from debug mode to full 3D point cloud rendering
+- The depth band (0.3 to 0.7) provides good 3D relief without extreme front/back clipping
+- Drift parameters are tuned for subtle effect (2.0, 1.5, 1.0 units amplitude)
+- Point sizing now properly reflects depth for enhanced 3D perception
+- The implementation creates the target "airy point-cloud" effect with proper depth and animation

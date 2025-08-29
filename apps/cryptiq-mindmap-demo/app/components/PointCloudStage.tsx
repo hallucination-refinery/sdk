@@ -348,16 +348,27 @@ function PointsMesh({
                 vColor=color;
                 // Unproject NDC to world space using captured PV^-1
                 vec2 ndc = aUv * 2.0 - 1.0;
-                // Use constant depth initially (0.5 in NDC space)
-                vec4 ndcPos = vec4(ndc, 0.5, 1.0);
+                // Map depth to a reasonable band (0.3 to 0.7 in NDC space) for 3D relief
+                float remappedDepth = mix(0.3, 0.7, aDepth);
+                vec4 ndcPos = vec4(ndc, remappedDepth, 1.0);
                 // Unproject to world space using captured PV^-1
                 vec4 worldPos = uPVInvCapture * ndcPos;
                 worldPos /= worldPos.w; // Perspective divide
+                
+                // Add subtle drift based on time and world position for "airy" effect
+                float driftPhase = uTime * 0.3 + worldPos.x * 0.001 + worldPos.y * 0.0008;
+                vec3 drift = vec3(
+                  sin(driftPhase) * 2.0,
+                  cos(driftPhase * 1.3) * 1.5,
+                  sin(driftPhase * 0.7) * 1.0
+                );
+                worldPos.xyz += drift;
+                
                 // Transform world position with current view/projection matrices
                 gl_Position = projectionMatrix * modelViewMatrix * worldPos;
-                vNear = 1.0;
+                vNear = 1.0 - aDepth; // Use actual depth for near calculation
                 float luma = dot(vColor, vec3(0.299,0.587,0.114));
-                float size = uBaseSize * mix(0.7,1.6,luma) * 1.0;
+                float size = uBaseSize * mix(0.7,1.6,luma) * (0.8 + 0.4 * vNear);
                 gl_PointSize = size;
               }
             `,
