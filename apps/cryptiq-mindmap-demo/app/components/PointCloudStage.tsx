@@ -344,11 +344,13 @@ function PointsMesh({
               vertexShader: `
               precision highp float;
               uniform float uBaseSize;
+              attribute vec2 aUv;
               attribute vec3 color;
               varying vec3 vColor;
               void main(){
                 vColor = color;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                vec2 ndc = aUv * 2.0 - 1.0;
+                gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
                 gl_PointSize = uBaseSize;
               }
             `,
