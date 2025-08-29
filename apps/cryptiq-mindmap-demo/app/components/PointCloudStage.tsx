@@ -252,7 +252,7 @@ function PointsMesh({
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         {/* uv and depth attributes for shader unprojection */}
         {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={["attributes", "aUv"]} args={[uvs, 2]} />
+        <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
         {/* custom float attribute for normalized depth */}
         {/** @ts-expect-error attachObject is supported at runtime */}
         <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
