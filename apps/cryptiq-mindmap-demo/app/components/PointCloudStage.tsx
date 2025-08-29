@@ -138,10 +138,19 @@ function PointsMesh({
   const geomRef = React.useRef<unknown>(null)
   const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
   const materialValidRef = React.useRef(false)
+  const loggedOnceRef = React.useRef(false)
   // no-op: camera accessed via useFrame
   const {
     /* camera */
   } = useThree()
+
+  // Log once when component mounts with initial data
+  React.useEffect(() => {
+    if (!loggedOnceRef.current) {
+      console.info('[PointCloud Debug] PointsMesh component initialized with stride:', stride, 'zScale:', zScale, 'pointSize:', pointSize)
+      loggedOnceRef.current = true
+    }
+  }, [])
 
   // Build attributes (uv, depth01, color); position computed in shader via unprojection
   const { positions, uvs, depths, colors } = React.useMemo(() => {
@@ -153,6 +162,8 @@ function PointsMesh({
     const h = Math.min(ch, dh)
     const col = colorImage.data.data
     const dep16 = depth16.data16
+
+    console.info('[PointCloud Debug] Image dimensions - color:', `${cw}x${ch}`, 'depth:', `${dw}x${dh}`, 'effective:', `${w}x${h}`)
 
     const xs: number[] = []
     const us: number[] = []
@@ -167,6 +178,9 @@ function PointsMesh({
     const maxPoints = 250_000
     const totalCandidates = Math.ceil((w / stride) * (h / stride))
     const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
+    
+    console.info('[PointCloud Debug] Total candidate points:', totalCandidates, 'keep ratio:', keepRatio.toFixed(4))
+    
     for (let y = 0; y < h; y += stride) {
       for (let x = 0; x < w; x += stride) {
         const p = y * w + x
@@ -191,10 +205,29 @@ function PointsMesh({
         cs.push(r, g, b)
       }
     }
+    
+    const finalPointCount = us.length / 2 // uvs has 2 components per point
+    console.info('[PointCloud Debug] Points kept after filtering:', finalPointCount)
+    
+    if (finalPointCount < 100) {
+      console.warn('[PointCloud Debug] WARNING: Very few points kept (<100)! This may cause empty/black screen.')
+    }
+    
     const positions = new Float32Array(xs)
     const uvs = new Float32Array(us)
     const depths = new Float32Array(ds)
     const colors = new Float32Array(cs)
+    
+    console.info('[PointCloud Debug] Buffer lengths - positions:', positions.length, 'uvs:', uvs.length, 'depths:', depths.length, 'colors:', colors.length)
+    
+    // Log first few values to verify data integrity
+    if (finalPointCount > 0) {
+      console.info('[PointCloud Debug] First few UVs:', uvs.slice(0, 6))
+      console.info('[PointCloud Debug] First few depths:', depths.slice(0, 3))
+      console.info('[PointCloud Debug] First few colors:', colors.slice(0, 9))
+      console.info('[PointCloud Debug] Depth range - min:', Math.min(...depths), 'max:', Math.max(...depths))
+    }
+    
     return { positions, uvs, depths, colors }
   }, [colorImage, depth16, stride])
 
@@ -211,6 +244,7 @@ function PointsMesh({
       const m = matRef.current as unknown as { program?: { glProgram?: unknown } }
       if (m && m.program && m.program.glProgram) {
         materialValidRef.current = true
+        console.info('[PointCloud Debug] Shader material compiled and ready')
         if (onMaterialValid) onMaterialValid()
         return
       }
