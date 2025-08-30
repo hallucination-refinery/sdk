@@ -484,7 +484,7 @@ function BloomPass({
   return null
 }
 
-function SceneControls() {
+function SceneControls({ radius }: { radius?: number }) {
   const controlsRef = React.useRef(null)
   const { gl } = useThree()
   React.useEffect(() => {
@@ -499,8 +499,8 @@ function SceneControls() {
       enablePan={false}
       enableDamping
       dampingFactor={0.1}
-      minDistance={100}
-      maxDistance={5000}
+      minDistance={Math.max(0.1, radius ? radius * 0.02 : 100)}
+      maxDistance={radius ? Math.max(500, radius * 10) : 5000}
       target={[0, 0, 0]}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
@@ -577,18 +577,31 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     count: number
     colors?: Uint8Array
   } | null>(null)
+  const [prebakedStatus, setPrebakedStatus] = React.useState<'idle' | 'loading' | 'present' | 'absent'>('idle')
+  const [prebakedTransform, setPrebakedTransform] = React.useState<{
+    center: [number, number, number]
+    scale: number
+    radius: number
+  } | null>(null)
   React.useEffect(() => {
     let cancelled = false
     ;(async () => {
       if (!sceneId) return
+      setPrebakedStatus('loading')
       try {
         const base = `/assets/pointclouds/${sceneId}`
         const res = await fetch(`${base}/positions.f32`, { cache: 'force-cache' })
-        if (!res.ok) return
+        if (!res.ok) {
+          if (!cancelled) setPrebakedStatus('absent')
+          return
+        }
         const buf = await res.arrayBuffer()
         const f32 = new Float32Array(buf)
         const count = Math.floor(f32.length / 3)
-        if (count <= 0) return
+        if (count <= 0) {
+          if (!cancelled) setPrebakedStatus('absent')
+          return
+        }
         let colors: Uint8Array | undefined
         try {
           const cr = await fetch(`${base}/colors.u8`, { cache: 'force-cache' })
@@ -604,8 +617,50 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             sample: Array.from(f32.slice(0, 6)),
           })
           setPrebaked({ positions: f32, count, colors })
+          // Compute AABB and a normalization transform
+          let minX = Infinity,
+            minY = Infinity,
+            minZ = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity,
+            maxZ = -Infinity
+          for (let i = 0; i < count; i++) {
+            const x = f32[i * 3 + 0]
+            const y = f32[i * 3 + 1]
+            const z = f32[i * 3 + 2]
+            if (x < minX) minX = x
+            if (y < minY) minY = y
+            if (z < minZ) minZ = z
+            if (x > maxX) maxX = x
+            if (y > maxY) maxY = y
+            if (z > maxZ) maxZ = z
+          }
+          const sizeX = Math.max(1e-6, maxX - minX)
+          const sizeY = Math.max(1e-6, maxY - minY)
+          const sizeZ = Math.max(1e-6, maxZ - minZ)
+          const maxExtent = Math.max(sizeX, sizeY, sizeZ)
+          const desiredExtent = 1000
+          const scale = desiredExtent / maxExtent
+          const center: [number, number, number] = [
+            (minX + maxX) * 0.5,
+            (minY + maxY) * 0.5,
+            (minZ + maxZ) * 0.5,
+          ]
+          const radius = 0.5 * Math.max(sizeX, sizeY, sizeZ) * scale
+          console.log('[PC] prebaked AABB', {
+            min: [minX, minY, minZ],
+            max: [maxX, maxY, maxZ],
+            extent: [sizeX, sizeY, sizeZ],
+            maxExtent,
+            scale,
+            radius,
+          })
+          setPrebakedTransform({ center, scale, radius })
+          setPrebakedStatus('present')
         }
-      } catch {}
+      } catch {
+        if (!cancelled) setPrebakedStatus('absent')
+      }
     })()
     return () => {
       cancelled = true
@@ -654,20 +709,33 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       {/* no FitOrtho in perspective baseline */}
       <ambientLight intensity={1} />
       <directionalLight position={[2, 3, 4]} intensity={0.6} />
-      {/* Prefer prebaked VGGT positions if present */}
+      {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
       {prebaked ? (
-        <points frustumCulled={false} renderOrder={1}>
-          <bufferGeometry>
-            <bufferAttribute attach="attributes-position" args={[prebaked.positions, 3]} />
-            {prebaked.colors && (
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore normalized byte colors
-              <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
-            )}
-          </bufferGeometry>
-          <pointsMaterial size={pointSize} sizeAttenuation vertexColors={!!prebaked.colors} />
-        </points>
-      ) : readyPacked ? (
+        <group
+          position={
+            prebakedTransform
+              ? [
+                  -prebakedTransform.center[0] * prebakedTransform.scale,
+                  -prebakedTransform.center[1] * prebakedTransform.scale,
+                  -prebakedTransform.center[2] * prebakedTransform.scale,
+                ]
+              : [0, 0, 0]
+          }
+          scale={prebakedTransform ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale] : [1, 1, 1]}
+        >
+          <points frustumCulled={false} renderOrder={1}>
+            <bufferGeometry>
+              <bufferAttribute attach="attributes-position" args={[prebaked.positions, 3]} />
+              {prebaked.colors && (
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore normalized byte colors
+                <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
+              )}
+            </bufferGeometry>
+            <pointsMaterial size={pointSize * 1.4} sizeAttenuation vertexColors={!!prebaked.colors} />
+          </points>
+        </group>
+      ) : prebakedStatus === 'absent' && readyPacked ? (
         <PointsMesh
           colorImage={{ data: color.data!, width: color.width, height: color.height }}
           depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
@@ -676,7 +744,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           pointSize={pointSize}
           onMaterialValid={() => setBloomEnabled(true)}
         />
-      ) : (
+      ) : prebakedStatus === 'absent' ? (
         readyFallback && (
           <PointsMesh
             colorImage={{ data: color.data!, width: color.width, height: color.height }}
@@ -687,8 +755,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             onMaterialValid={() => setBloomEnabled(true)}
           />
         )
-      )}
-      <SceneControls />
+      ) : null}
+      <SceneControls radius={prebakedTransform ? prebakedTransform.radius : undefined} />
       {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
     </Canvas>
   )
