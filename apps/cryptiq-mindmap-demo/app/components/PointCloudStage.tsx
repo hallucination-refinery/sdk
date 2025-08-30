@@ -571,6 +571,47 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const readyPacked = !!color.data && !!packed.data16 && color.width > 0 && packed.width > 0
   const readyFallback = !!color.data && !!depth16From8
 
+  // Prebaked positions path (VGGT exporter). If positions.f32 exists for the scene, prefer it.
+  const [prebaked, setPrebaked] = React.useState<{
+    positions: Float32Array
+    count: number
+    colors?: Uint8Array
+  } | null>(null)
+  React.useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      if (!sceneId) return
+      try {
+        const base = `/assets/pointclouds/${sceneId}`
+        const res = await fetch(`${base}/positions.f32`, { cache: 'force-cache' })
+        if (!res.ok) return
+        const buf = await res.arrayBuffer()
+        const f32 = new Float32Array(buf)
+        const count = Math.floor(f32.length / 3)
+        if (count <= 0) return
+        let colors: Uint8Array | undefined
+        try {
+          const cr = await fetch(`${base}/colors.u8`, { cache: 'force-cache' })
+          if (cr.ok) {
+            const cbuf = await cr.arrayBuffer()
+            colors = new Uint8Array(cbuf)
+          }
+        } catch {}
+        if (!cancelled) {
+          console.log('[PC] prebaked positions', {
+            bytes: buf.byteLength,
+            count,
+            sample: Array.from(f32.slice(0, 6)),
+          })
+          setPrebaked({ positions: f32, count, colors })
+        }
+      } catch {}
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [sceneId])
+
   return (
     <Canvas
       orthographic={false}
@@ -613,7 +654,20 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       {/* no FitOrtho in perspective baseline */}
       <ambientLight intensity={1} />
       <directionalLight position={[2, 3, 4]} intensity={0.6} />
-      {readyPacked ? (
+      {/* Prefer prebaked VGGT positions if present */}
+      {prebaked ? (
+        <points frustumCulled={false} renderOrder={1}>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[prebaked.positions, 3]} />
+            {prebaked.colors && (
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore normalized byte colors
+              <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
+            )}
+          </bufferGeometry>
+          <pointsMaterial size={pointSize} sizeAttenuation vertexColors={!!prebaked.colors} />
+        </points>
+      ) : readyPacked ? (
         <PointsMesh
           colorImage={{ data: color.data!, width: color.width, height: color.height }}
           depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}

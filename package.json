@@ -20,7 +20,8 @@
     "docs:watch": "typedoc --watch",
     "watch-smoke": "node scripts/watch-smoke.cjs",
     "smoke-check": "node scripts/watch-smoke.cjs --once",
-    "smoke:brain": "playwright test tests/brain.smoke.spec.ts --reporter=line"
+    "smoke:brain": "playwright test tests/brain.smoke.spec.ts --reporter=line",
+    "vggt:readme": "node -e \"require('fs').createReadStream('tools/vggt-cli/README.md').pipe(process.stdout)\""
   },
   "devDependencies": {
     "@playwright/test": "^1.45.2",
