@@ -143,6 +143,8 @@ function buildAttributes(
   const us: number[] = []
   const ds: number[] = []
   const cs: number[] = []
+  let minDepth01 = 1.0
+  let maxDepth01 = 0.0
 
   const hash = (x: number, y: number) => {
     const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
@@ -166,6 +168,8 @@ function buildAttributes(
       const pDepth = yD * dw + xD
 
       const d01 = dep16[pDepth] / 65535.0
+      if (d01 < minDepth01) minDepth01 = d01
+      if (d01 > maxDepth01) maxDepth01 = d01
 
       const r = col[pColor * 4] / 255.0
       const g = col[pColor * 4 + 1] / 255.0
@@ -200,6 +204,8 @@ function buildAttributes(
         const yD = Math.round((y / Math.max(1, h - 1)) * Math.max(0, dh - 1))
         const pDepth = yD * dw + xD
         const d01 = dep16[pDepth] / 65535.0
+        if (d01 < minDepth01) minDepth01 = d01
+        if (d01 > maxDepth01) maxDepth01 = d01
         const r = col[pColor * 4] / 255.0
         const g = col[pColor * 4 + 1] / 255.0
         const b = col[pColor * 4 + 2] / 255.0
@@ -213,7 +219,7 @@ function buildAttributes(
   }
 
   console.log(
-    `[PC] build: color ${cw}x${ch} depth ${dw}x${dh} → grid ${w}x${h} stride=${stride} candidates=${totalCandidates} kept=${kept} | uvs=${us.length / 2} depths=${ds.length} colors=${cs.length / 3}`
+    `[PC] build: color ${cw}x${ch} depth ${dw}x${dh} → grid ${w}x${h} stride=${stride} candidates=${totalCandidates} kept=${kept} | uvs=${us.length / 2} depths=${ds.length} colors=${cs.length / 3} | depth01[min,max]=[${minDepth01.toFixed(4)},${maxDepth01.toFixed(4)}]`
   )
 
   return {
@@ -367,12 +373,15 @@ function PointsMesh({
                 uBaseSize: { value: pointSize },
                 uPVInvCapture: { value: new THREE.Matrix4() },
                 uHasCapture: { value: 0 },
-                uZNearNdc: { value: -0.4 },
-                uZFarNdc: { value: 0.4 },
-                uGamma: { value: 1.2 },
-                uFocal: { value: 900.0 },
+                uZNearNdc: { value: -0.85 },
+                uZFarNdc: { value: 0.15 },
+                uGamma: { value: 0.8 },
+                uFocal: { value: 1600.0 },
                 uMinSize: { value: 0.75 },
-                uMaxSize: { value: 6.0 },
+                uMaxSize: { value: 10.0 },
+                uDepthMin: { value: 0.05 },
+                uDepthMax: { value: 0.95 },
+                uInvertDepth: { value: 0.0 },
               },
               vertexShader: `
               precision highp float;
@@ -385,6 +394,9 @@ function PointsMesh({
               uniform float uFocal;
               uniform float uMinSize;
               uniform float uMaxSize;
+              uniform float uDepthMin;
+              uniform float uDepthMax;
+              uniform float uInvertDepth;
               attribute float aDepth;
               attribute vec3 color;
               varying vec3 vColor;
@@ -398,7 +410,10 @@ function PointsMesh({
                   wNear.xyz /= wNear.w; wNear.w = 1.0;
                   vec4 wFar = uPVInvCapture * vec4(ndc.x, ndc.y, uZFarNdc, 1.0);
                   wFar.xyz /= wFar.w; wFar.w = 1.0;
-                  float t = pow(clamp(aDepth, 0.0, 1.0), uGamma);
+                  float t01 = clamp((aDepth - uDepthMin) / max(1e-5, (uDepthMax - uDepthMin)), 0.0, 1.0);
+                  t01 = pow(t01, uGamma);
+                  if (uInvertDepth > 0.5) t01 = 1.0 - t01;
+                  float t = t01;
                   vec4 world = mix(wNear, wFar, t);
                   posMV = viewMatrix * world;
                 } else {
