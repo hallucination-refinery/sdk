@@ -577,11 +577,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     count: number
     colors?: Uint8Array
   } | null>(null)
-  const [prebakedStatus, setPrebakedStatus] = React.useState<'idle' | 'loading' | 'present' | 'absent'>('idle')
+  const [prebakedStatus, setPrebakedStatus] = React.useState<
+    'idle' | 'loading' | 'present' | 'absent'
+  >('idle')
   const [prebakedTransform, setPrebakedTransform] = React.useState<{
     center: [number, number, number]
     scale: number
     radius: number
+    rotationMatrix?: THREE.Matrix4
   } | null>(null)
   React.useEffect(() => {
     let cancelled = false
@@ -655,7 +658,77 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             scale,
             radius,
           })
-          setPrebakedTransform({ center, scale, radius })
+          // PCA orientation: compute covariance of centered points and align axes
+          const cx = center[0], cy = center[1], cz = center[2]
+          let sxx = 0, sxy = 0, sxz = 0, syy = 0, syz = 0, szz = 0
+          for (let i = 0; i < count; i++) {
+            const x = f32[i * 3 + 0] - cx
+            const y = f32[i * 3 + 1] - cy
+            const z = f32[i * 3 + 2] - cz
+            sxx += x * x
+            sxy += x * y
+            sxz += x * z
+            syy += y * y
+            syz += y * z
+            szz += z * z
+          }
+          const invN = 1 / Math.max(1, count - 1)
+          sxx *= invN; sxy *= invN; sxz *= invN; syy *= invN; syz *= invN; szz *= invN
+          // 3x3 covariance matrix M
+          const m00 = sxx, m01 = sxy, m02 = sxz
+          const m10 = sxy, m11 = syy, m12 = syz
+          const m20 = sxz, m21 = syz, m22 = szz
+          // Power iteration to get dominant eigenvector (principal axis)
+          const powIter = (mx: number, mxy: number, mxz: number, myx: number, myy: number, myz: number, mzx: number, mzy: number, mzz: number) => {
+            let vx = 1, vy = 0, vz = 0
+            for (let k = 0; k < 16; k++) {
+              const nx = mx * vx + mxy * vy + mxz * vz
+              const ny = myx * vx + myy * vy + myz * vz
+              const nz = mzx * vx + mzy * vy + mzz * vz
+              const len = Math.max(1e-8, Math.hypot(nx, ny, nz))
+              vx = nx / len; vy = ny / len; vz = nz / len
+            }
+            return [vx, vy, vz] as [number, number, number]
+          }
+          const v0 = powIter(m00, m01, m02, m10, m11, m12, m20, m21, m22) // largest eigenvector
+          // Deflate matrix to get next axis (simple Gram-Schmidt on a random vector)
+          let rx = 0, ry = 1, rz = 0
+          const dot0 = v0[0] * rx + v0[1] * ry + v0[2] * rz
+          rx -= dot0 * v0[0]; ry -= dot0 * v0[1]; rz -= dot0 * v0[2]
+          const rlen = Math.max(1e-8, Math.hypot(rx, ry, rz))
+          rx /= rlen; ry /= rlen; rz /= rlen
+          // Map basis: we want longest in-plane = +X, dominant normal = -Z.
+          // Heuristic: treat v0 as longest axis, compute a second axis by multiplying M*r and orthonormalize, then normal = cross.
+          const mrX = m00 * rx + m01 * ry + m02 * rz
+          const mrY = m10 * rx + m11 * ry + m12 * rz
+          const mrZ = m20 * rx + m21 * ry + m22 * rz
+          // Orthonormalize against v0
+          let v1x = mrX, v1y = mrY, v1z = mrZ
+          const dot01 = v0[0] * v1x + v0[1] * v1y + v0[2] * v1z
+          v1x -= dot01 * v0[0]; v1y -= dot01 * v0[1]; v1z -= dot01 * v0[2]
+          const v1len = Math.max(1e-8, Math.hypot(v1x, v1y, v1z))
+          v1x /= v1len; v1y /= v1len; v1z /= v1len
+          // Normal
+          const nX = v0[1] * v1z - v0[2] * v1y
+          const nY = v0[2] * v1x - v0[0] * v1z
+          const nZ = v0[0] * v1y - v0[1] * v1x
+          // Build rotation matrix R such that R*[v0,v1,n] -> [X,Y,-Z]
+          // Columns are the source basis; we want to map: v0->+X, v1->+Y, n->-Z
+          const R = new THREE.Matrix4().set(
+            v0[0], v1x,  -nX, 0,
+            v0[1], v1y,  -nY, 0,
+            v0[2], v1z,  -nZ, 0,
+            0,     0,     0,  1
+          )
+          console.log('[PC] prebaked PCA orientation applied')
+          // Store transform: scale and center handled in group; rotation applied via matrix on group
+          const t: { center: [number, number, number]; scale: number; radius: number; rotationMatrix?: THREE.Matrix4 } = {
+            center,
+            scale,
+            radius,
+            rotationMatrix: R,
+          }
+          setPrebakedTransform(t)
           setPrebakedStatus('present')
         }
       } catch {
@@ -721,7 +794,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 ]
               : [0, 0, 0]
           }
-          scale={prebakedTransform ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale] : [1, 1, 1]}
+          scale={
+            prebakedTransform
+              ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
+              : [1, 1, 1]
+          }
+          matrix={prebakedTransform?.rotationMatrix}
+          matrixAutoUpdate={prebakedTransform?.rotationMatrix ? false : true}
         >
           <points frustumCulled={false} renderOrder={1}>
             <bufferGeometry>
@@ -732,7 +811,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
               )}
             </bufferGeometry>
-            <pointsMaterial size={pointSize * 1.4} sizeAttenuation vertexColors={!!prebaked.colors} />
+            <pointsMaterial
+              size={pointSize * 1.4}
+              sizeAttenuation
+              vertexColors={!!prebaked.colors}
+            />
           </points>
         </group>
       ) : prebakedStatus === 'absent' && readyPacked ? (

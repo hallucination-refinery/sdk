@@ -84,3 +84,14 @@ worktrees/
 .clmem/artifacts/playwright/
 .clmem/artifacts/smoke/
 apps/**/.clmem/
+
+# VGGT third-party and Python artifacts
+tools/_third_party/vggt/
+.venv*
+tools/**/__pycache__/
+**/*.pyc
+**/*.pt
+
+# Prebaked pointcloud binaries (keep meta.json tracked)
+apps/cryptiq-mindmap-demo/public/assets/pointclouds/**/positions.f32
+apps/cryptiq-mindmap-demo/public/assets/pointclouds/**/colors.u8
