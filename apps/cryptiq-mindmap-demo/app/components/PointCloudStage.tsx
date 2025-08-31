@@ -752,29 +752,70 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           v1x /= v1len
           v1y /= v1len
           v1z /= v1len
-          // Normal
-          const nX = v0[1] * v1z - v0[2] * v1y
-          const nY = v0[2] * v1x - v0[0] * v1z
-          const nZ = v0[0] * v1y - v0[1] * v1x
-          // Build rotation matrix R such that R*[v0,v1,n] -> [X,Y,-Z]
-          // Columns are the source basis; we want to map: v0->+X, v1->+Y, n->-Z
+          // Normal (Z axis before sign disambiguation)
+          let zX = v0[1] * v1z - v0[2] * v1y
+          let zY = v0[2] * v1x - v0[0] * v1z
+          let zZ = v0[0] * v1y - v0[1] * v1x
+          // Normalize
+          {
+            const len = Math.max(1e-8, Math.hypot(zX, zY, zZ))
+            zX /= len
+            zY /= len
+            zZ /= len
+          }
+          // Sign disambiguation:
+          // 1) Make normal face -Z (z · (0,0,-1) > 0)
+          if (zZ < 0) {
+            zX = -zX
+            zY = -zY
+            zZ = -zZ
+          }
+          // Recompute Y to keep right-handed basis after possible flip
+          // y = normalize(cross(z, x))
+          {
+            const yyX = zY * v0[2] - zZ * v0[1]
+            const yyY = zZ * v0[0] - zX * v0[2]
+            const yyZ = zX * v0[1] - zY * v0[0]
+            const len = Math.max(1e-8, Math.hypot(yyX, yyY, yyZ))
+            v1x = yyX / len
+            v1y = yyY / len
+            v1z = yyZ / len
+          }
+          // 2) Make up axis point +Y (y · (0,1,0) > 0)
+          if (v1y < 0) {
+            v1x = -v1x
+            v1y = -v1y
+            v1z = -v1z
+            // Recompute z = normalize(cross(x,y)) to keep orthonormal
+            zX = v0[1] * v1z - v0[2] * v1y
+            zY = v0[2] * v1x - v0[0] * v1z
+            zZ = v0[0] * v1y - v0[1] * v1x
+            const len2 = Math.max(1e-8, Math.hypot(zX, zY, zZ))
+            zX /= len2
+            zY /= len2
+            zZ /= len2
+          }
+          // Debug overrides from UI
+          if (ui.bloom && false) { /* no-op to keep ui referenced */ }
+          if (typeof window !== 'undefined') {
+            // honour debug toggles via state (set below)
+          }
+          if (ui.flipNormal) {
+            zX = -zX
+            zY = -zY
+            zZ = -zZ
+          }
+          if (ui.flipUp) {
+            v1x = -v1x
+            v1y = -v1y
+            v1z = -v1z
+          }
+          // Build rotation matrix R such that R*[x=v0,y=v1,z] -> [X,Y,-Z]
           const R = new THREE.Matrix4().set(
-            v0[0],
-            v1x,
-            -nX,
-            0,
-            v0[1],
-            v1y,
-            -nY,
-            0,
-            v0[2],
-            v1z,
-            -nZ,
-            0,
-            0,
-            0,
-            0,
-            1
+            v0[0], v1x, -zX, 0,
+            v0[1], v1y, -zY, 0,
+            v0[2], v1z, -zZ, 0,
+            0,     0,    0,  1
           )
           console.log('[PC] prebaked PCA orientation applied')
           // Store transform: scale/center handled via props; rotation via quaternion
@@ -810,7 +851,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     keepRatio: number
     bloom: boolean
     fovDeg: number
-  }>({ thickness: 0.2, pointSizeScale: 1.1, keepRatio: 1, bloom: false, fovDeg: 80 })
+    flipUp?: boolean
+    flipNormal?: boolean
+  }>({ thickness: 0.2, pointSizeScale: 1.1, keepRatio: 1, bloom: false, fovDeg: 80, flipUp: false, flipNormal: false })
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -824,7 +867,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
     } catch {}
-  }, [ui.thickness, ui.pointSizeScale, ui.keepRatio, ui.bloom, ui.fovDeg])
+  }, [ui.thickness, ui.pointSizeScale, ui.keepRatio, ui.bloom, ui.fovDeg, ui.flipUp, ui.flipNormal])
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
@@ -855,113 +898,113 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
-      orthographic={false}
-      camera={{ position: [0, 0, 1200], fov: ui.fovDeg, near: 0.1, far: 5000 }}
-      gl={{ antialias: true, alpha: true }}
-      style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
-      onPointerDown={(e) => {
-        // simple signal that canvas receives input
+        orthographic={false}
+        camera={{ position: [0, 0, 1200], fov: ui.fovDeg, near: 0.1, far: 5000 }}
+        gl={{ antialias: true, alpha: true }}
+        style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
+        onPointerDown={(e) => {
+          // simple signal that canvas receives input
 
-        console.log('[PC] pointer down', e.clientX, e.clientY)
-      }}
-      onCreated={({ gl }) => {
-        // ACES tone mapping for nicer highlights
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        gl.toneMapping = THREE.ACESFilmicToneMapping
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        gl.toneMappingExposure = 1.0
-        // Surface shader errors and log point-size limits
-        try {
+          console.log('[PC] pointer down', e.clientX, e.clientY)
+        }}
+        onCreated={({ gl }) => {
+          // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          if (gl.debug) gl.debug.checkShaderErrors = true
+          gl.toneMapping = THREE.ACESFilmicToneMapping
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          const ctx = gl.getContext && gl.getContext()
-          if (ctx) {
+          gl.toneMappingExposure = 1.0
+          // Surface shader errors and log point-size limits
+          try {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const range = ctx.getParameter(ctx.ALIASED_POINT_SIZE_RANGE)
-            console.log('[PC] ALIASED_POINT_SIZE_RANGE', range)
-          }
-        } catch {}
-        // ensure browser gesture handling doesn't block wheel/touch
-        gl.domElement.style.touchAction = 'none'
-        gl.domElement.style.pointerEvents = 'auto'
-      }}
+            if (gl.debug) gl.debug.checkShaderErrors = true
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const ctx = gl.getContext && gl.getContext()
+            if (ctx) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              const range = ctx.getParameter(ctx.ALIASED_POINT_SIZE_RANGE)
+              console.log('[PC] ALIASED_POINT_SIZE_RANGE', range)
+            }
+          } catch {}
+          // ensure browser gesture handling doesn't block wheel/touch
+          gl.domElement.style.touchAction = 'none'
+          gl.domElement.style.pointerEvents = 'auto'
+        }}
       >
-      {/* no FitOrtho in perspective baseline */}
-      <CameraSync
-        fovDeg={ui.fovDeg}
-        distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined}
-      />
-      <ambientLight intensity={1} />
-      <directionalLight position={[2, 3, 4]} intensity={0.6} />
-      {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
-      {prebaked ? (
-        <group
-          position={
-            prebakedTransform
-              ? [
-                  -prebakedTransform.center[0] * prebakedTransform.scale,
-                  -prebakedTransform.center[1] * prebakedTransform.scale,
-                  -prebakedTransform.center[2] * prebakedTransform.scale,
-                ]
-              : [0, 0, 0]
-          }
-          scale={
-            prebakedTransform
-              ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
-              : [1, 1, 1]
-          }
-          quaternion={prebakedTransform?.rotationQuat}
-          matrixAutoUpdate
-        >
-          <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
-            <points frustumCulled={false} renderOrder={1}>
-              <bufferGeometry>
-                <bufferAttribute
-                  attach="attributes-position"
-                  args={[renderPositions ?? prebaked.positions, 3]}
-                />
-                {prebaked.colors && (
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore normalized byte colors
-                  <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
-                )}
-              </bufferGeometry>
-              <pointsMaterial
-                size={pointSize * ui.pointSizeScale}
-                sizeAttenuation
-                vertexColors={!!prebaked.colors}
-              />
-            </points>
-          </group>
-        </group>
-      ) : prebakedStatus === 'absent' && readyPacked ? (
-        <PointsMesh
-          colorImage={{ data: color.data!, width: color.width, height: color.height }}
-          depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
-          stride={stride}
-          zScale={zScale}
-          pointSize={pointSize}
-          onMaterialValid={() => setBloomEnabled(true)}
+        {/* no FitOrtho in perspective baseline */}
+        <CameraSync
+          fovDeg={ui.fovDeg}
+          distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined}
         />
-      ) : prebakedStatus === 'absent' ? (
-        readyFallback && (
+        <ambientLight intensity={1} />
+        <directionalLight position={[2, 3, 4]} intensity={0.6} />
+        {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
+        {prebaked ? (
+          <group
+            position={
+              prebakedTransform
+                ? [
+                    -prebakedTransform.center[0] * prebakedTransform.scale,
+                    -prebakedTransform.center[1] * prebakedTransform.scale,
+                    -prebakedTransform.center[2] * prebakedTransform.scale,
+                  ]
+                : [0, 0, 0]
+            }
+            scale={
+              prebakedTransform
+                ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
+                : [1, 1, 1]
+            }
+            quaternion={prebakedTransform?.rotationQuat}
+            matrixAutoUpdate
+          >
+            <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
+              <points frustumCulled={false} renderOrder={1}>
+                <bufferGeometry>
+                  <bufferAttribute
+                    attach="attributes-position"
+                    args={[renderPositions ?? prebaked.positions, 3]}
+                  />
+                  {prebaked.colors && (
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore normalized byte colors
+                    <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
+                  )}
+                </bufferGeometry>
+                <pointsMaterial
+                  size={pointSize * ui.pointSizeScale}
+                  sizeAttenuation
+                  vertexColors={!!prebaked.colors}
+                />
+              </points>
+            </group>
+          </group>
+        ) : prebakedStatus === 'absent' && readyPacked ? (
           <PointsMesh
             colorImage={{ data: color.data!, width: color.width, height: color.height }}
-            depth16={depth16From8!}
+            depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
             stride={stride}
             zScale={zScale}
             pointSize={pointSize}
             onMaterialValid={() => setBloomEnabled(true)}
           />
-        )
-      ) : null}
-      <SceneControls radius={prebakedTransform ? prebakedTransform.radius : undefined} />
+        ) : prebakedStatus === 'absent' ? (
+          readyFallback && (
+            <PointsMesh
+              colorImage={{ data: color.data!, width: color.width, height: color.height }}
+              depth16={depth16From8!}
+              stride={stride}
+              zScale={zScale}
+              pointSize={pointSize}
+              onMaterialValid={() => setBloomEnabled(true)}
+            />
+          )
+        ) : null}
+        <SceneControls radius={prebakedTransform ? prebakedTransform.radius : undefined} />
         {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
       </Canvas>
       {debugVisible && (
@@ -1032,6 +1075,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 onChange={(e) => setUi((s) => ({ ...s, bloom: e.target.checked }))}
               />
               bloom
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={!!ui.flipUp}
+                onChange={(e) => setUi((s) => ({ ...s, flipUp: e.target.checked }))}
+              />
+              flipUp (invert Y)
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={!!ui.flipNormal}
+                onChange={(e) => setUi((s) => ({ ...s, flipNormal: e.target.checked }))}
+              />
+              flipNormal (front/back)
             </label>
           </div>
         </div>
