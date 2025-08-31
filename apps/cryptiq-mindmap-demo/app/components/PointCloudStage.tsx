@@ -852,6 +852,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     fovDeg: number
     flipUp?: boolean
     flipNormal?: boolean
+    mirrorLR?: boolean
+    mirrorUD?: boolean
+    roll180?: boolean
   }>({
     thickness: 0.2,
     pointSizeScale: 1.1,
@@ -860,6 +863,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     fovDeg: 80,
     flipUp: false,
     flipNormal: false,
+    mirrorLR: false,
+    mirrorUD: false,
+    roll180: false,
   })
   React.useEffect(() => {
     try {
@@ -874,7 +880,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
     } catch {}
-  }, [ui.thickness, ui.pointSizeScale, ui.keepRatio, ui.bloom, ui.fovDeg, ui.flipUp, ui.flipNormal])
+  }, [ui.thickness, ui.pointSizeScale, ui.keepRatio, ui.bloom, ui.fovDeg, ui.flipUp, ui.flipNormal, ui.mirrorLR, ui.mirrorUD, ui.roll180])
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
@@ -917,8 +923,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI)
       flipWorld.multiply(qX)
     }
+    if (ui.roll180) {
+      // optional 180° roll about Z
+      const qZ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI)
+      flipWorld.multiply(qZ)
+    }
     return flipWorld.multiply(base.clone())
-  }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp])
+  }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp, ui.roll180])
+
+  // Mirror scale (local reflection) for left/right and up/down
+  const mirrorScale = React.useMemo(() => {
+    return [ui.mirrorLR ? -1 : 1, ui.mirrorUD ? -1 : 1, 1] as [number, number, number]
+  }, [ui.mirrorLR, ui.mirrorUD])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -987,7 +1003,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             quaternion={appliedQuaternion ?? prebakedTransform?.rotationQuat}
             matrixAutoUpdate
           >
-            <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
+            <group scale={mirrorScale}>
+              <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
               <points frustumCulled={false} renderOrder={1}>
                 <bufferGeometry>
                   <bufferAttribute
@@ -1006,6 +1023,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   vertexColors={!!prebaked.colors}
                 />
               </points>
+              </group>
             </group>
           </group>
         ) : prebakedStatus === 'absent' && readyPacked ? (
@@ -1116,6 +1134,30 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 onChange={(e) => setUi((s) => ({ ...s, flipNormal: e.target.checked }))}
               />
               flipNormal (front/back)
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={!!ui.mirrorLR}
+                onChange={(e) => setUi((s) => ({ ...s, mirrorLR: e.target.checked }))}
+              />
+              mirrorLR (left/right)
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={!!ui.mirrorUD}
+                onChange={(e) => setUi((s) => ({ ...s, mirrorUD: e.target.checked }))}
+              />
+              mirrorUD (up/down)
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={!!ui.roll180}
+                onChange={(e) => setUi((s) => ({ ...s, roll180: e.target.checked }))}
+              />
+              roll180 (rotate Z)
             </label>
           </div>
         </div>
