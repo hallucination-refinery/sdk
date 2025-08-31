@@ -802,10 +802,60 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
   }, [sceneId])
 
+  // Debug panel state (optional via ?debug=1)
+  const [debugVisible, setDebugVisible] = React.useState(false)
+  const [ui, setUi] = React.useState<{
+    thickness: number
+    pointSizeScale: number
+    keepRatio: number
+    bloom: boolean
+    fovDeg: number
+  }>({ thickness: 0.2, pointSizeScale: 1.1, keepRatio: 1, bloom: false, fovDeg: 80 })
+  React.useEffect(() => {
+    try {
+      const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+      if (p && p.get('debug') === '1') setDebugVisible(true)
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('pcDebug') : null
+      if (saved) setUi({ ...ui, ...JSON.parse(saved) })
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  React.useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
+    } catch {}
+  }, [ui.thickness, ui.pointSizeScale, ui.keepRatio, ui.bloom, ui.fovDeg])
+
+  // Apply bloom flag from debug panel (pure React)
+  React.useEffect(() => {
+    setBloomEnabled(ui.bloom)
+  }, [ui.bloom])
+
+  // Derive reduced positions for perf / density control when using prebaked
+  const renderPositions = React.useMemo(() => {
+    if (!prebaked) return null
+    const arr = prebaked.positions
+    const count = prebaked.count
+    const cap = 150_000
+    const effectiveKeep = Math.min(ui.keepRatio, cap / Math.max(1, count))
+    if (effectiveKeep >= 0.999) return arr
+    const step = Math.max(1, Math.floor(1 / Math.max(1e-6, effectiveKeep)))
+    const target = Math.max(1, Math.floor(count / step))
+    const out = new Float32Array(target * 3)
+    let j = 0
+    for (let i = 0; i < count && j < target; i += step) {
+      out[j * 3 + 0] = arr[i * 3 + 0]
+      out[j * 3 + 1] = arr[i * 3 + 1]
+      out[j * 3 + 2] = arr[i * 3 + 2]
+      j++
+    }
+    return out
+  }, [prebaked, ui.keepRatio])
+
   return (
     <Canvas
       orthographic={false}
-      camera={{ position: [0, 0, 1200], fov: 80, near: 0.1, far: 5000 }}
+      camera={{ position: [0, 0, 1200], fov: ui.fovDeg, near: 0.1, far: 5000 }}
       gl={{ antialias: true, alpha: true }}
       style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
       onPointerDown={(e) => {
@@ -842,6 +892,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }}
     >
       {/* no FitOrtho in perspective baseline */}
+      <CameraSync fovDeg={ui.fovDeg} distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined} />
       <ambientLight intensity={1} />
       <directionalLight position={[2, 3, 4]} intensity={0.6} />
       {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
@@ -864,21 +915,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           quaternion={prebakedTransform?.rotationQuat}
           matrixAutoUpdate
         >
-          <points frustumCulled={false} renderOrder={1}>
-            <bufferGeometry>
-              <bufferAttribute attach="attributes-position" args={[prebaked.positions, 3]} />
-              {prebaked.colors && (
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore normalized byte colors
-                <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
-              )}
-            </bufferGeometry>
-            <pointsMaterial
-              size={pointSize * 1.2}
-              sizeAttenuation
-              vertexColors={!!prebaked.colors}
-            />
-          </points>
+          <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
+            <points frustumCulled={false} renderOrder={1}>
+              <bufferGeometry>
+                <bufferAttribute
+                  attach="attributes-position"
+                  args={[renderPositions ?? prebaked.positions, 3]}
+                />
+                {prebaked.colors && (
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore normalized byte colors
+                  <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
+                )}
+              </bufferGeometry>
+              <pointsMaterial
+                size={pointSize * ui.pointSizeScale}
+                sizeAttenuation
+                vertexColors={!!prebaked.colors}
+              />
+            </points>
+          </group>
         </group>
       ) : prebakedStatus === 'absent' && readyPacked ? (
         <PointsMesh
@@ -903,6 +959,97 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       ) : null}
       <SceneControls radius={prebakedTransform ? prebakedTransform.radius : undefined} />
       {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
+      {debugVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            background: 'rgba(0,0,0,0.55)',
+            color: '#fff',
+            fontSize: 12,
+            padding: '10px 12px',
+            borderRadius: 8,
+            pointerEvents: 'auto',
+            width: 220,
+          }}
+        >
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>PC Debug</div>
+          <div style={{ display: 'grid', rowGap: 8 }}>
+            <label>
+              thickness: {ui.thickness.toFixed(2)}
+              <input
+                type="range"
+                min={0.05}
+                max={1}
+                step={0.01}
+                value={ui.thickness}
+                onChange={(e) => setUi((s) => ({ ...s, thickness: Number(e.target.value) }))}
+              />
+            </label>
+            <label>
+              pointSize: {ui.pointSizeScale.toFixed(2)}
+              <input
+                type="range"
+                min={0.8}
+                max={1.5}
+                step={0.01}
+                value={ui.pointSizeScale}
+                onChange={(e) => setUi((s) => ({ ...s, pointSizeScale: Number(e.target.value) }))}
+              />
+            </label>
+            <label>
+              keepRatio: {ui.keepRatio.toFixed(2)}
+              <input
+                type="range"
+                min={0.2}
+                max={1}
+                step={0.01}
+                value={ui.keepRatio}
+                onChange={(e) => setUi((s) => ({ ...s, keepRatio: Number(e.target.value) }))}
+              />
+            </label>
+            <label>
+              fov: {Math.round(ui.fovDeg)}°
+              <input
+                type="range"
+                min={50}
+                max={100}
+                step={1}
+                value={ui.fovDeg}
+                onChange={(e) => setUi((s) => ({ ...s, fovDeg: Number(e.target.value) }))}
+              />
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={ui.bloom}
+                onChange={(e) => setUi((s) => ({ ...s, bloom: e.target.checked }))}
+              />
+              bloom
+            </label>
+          </div>
+        </div>
+      )}
     </Canvas>
   )
+}
+
+function CameraSync({ fovDeg, distance }: { fovDeg: number; distance?: number }) {
+  const { camera } = useThree()
+  React.useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera
+    if (cam && typeof cam.fov === 'number') {
+      cam.fov = fovDeg
+      cam.updateProjectionMatrix()
+    }
+  }, [camera, fovDeg])
+  React.useEffect(() => {
+    if (distance && isFinite(distance)) {
+      const cam = camera as THREE.PerspectiveCamera
+      cam.position.set(0, 0, distance)
+      cam.updateProjectionMatrix()
+    }
+  }, [camera, distance])
+  return null
 }
