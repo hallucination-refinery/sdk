@@ -853,7 +853,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [prebaked, ui.keepRatio])
 
   return (
-    <Canvas
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <Canvas
       orthographic={false}
       camera={{ position: [0, 0, 1200], fov: ui.fovDeg, near: 0.1, far: 5000 }}
       gl={{ antialias: true, alpha: true }}
@@ -890,9 +891,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         gl.domElement.style.touchAction = 'none'
         gl.domElement.style.pointerEvents = 'auto'
       }}
-    >
+      >
       {/* no FitOrtho in perspective baseline */}
-      <CameraSync fovDeg={ui.fovDeg} distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined} />
+      <CameraSync
+        fovDeg={ui.fovDeg}
+        distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined}
+      />
       <ambientLight intensity={1} />
       <directionalLight position={[2, 3, 4]} intensity={0.6} />
       {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
@@ -958,7 +962,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         )
       ) : null}
       <SceneControls radius={prebakedTransform ? prebakedTransform.radius : undefined} />
-      {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
+        {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
+      </Canvas>
       {debugVisible && (
         <div
           style={{
@@ -1031,7 +1036,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           </div>
         </div>
       )}
-    </Canvas>
+    </div>
   )
 }
 
