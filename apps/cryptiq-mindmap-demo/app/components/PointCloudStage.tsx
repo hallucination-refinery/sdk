@@ -795,27 +795,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             zY /= len2
             zZ /= len2
           }
-          // Debug overrides from UI
-          if (ui.bloom && false) { /* no-op to keep ui referenced */ }
-          if (typeof window !== 'undefined') {
-            // honour debug toggles via state (set below)
-          }
-          if (ui.flipNormal) {
-            zX = -zX
-            zY = -zY
-            zZ = -zZ
-          }
-          if (ui.flipUp) {
-            v1x = -v1x
-            v1y = -v1y
-            v1z = -v1z
-          }
+          // Debug overrides from UI are applied at runtime via composed quaternion,
+          // not baked into the PCA basis here.
           // Build rotation matrix R such that R*[x=v0,y=v1,z] -> [X,Y,-Z]
           const R = new THREE.Matrix4().set(
-            v0[0], v1x, -zX, 0,
-            v0[1], v1y, -zY, 0,
-            v0[2], v1z, -zZ, 0,
-            0,     0,    0,  1
+            v0[0],
+            v1x,
+            -zX,
+            0,
+            v0[1],
+            v1y,
+            -zY,
+            0,
+            v0[2],
+            v1z,
+            -zZ,
+            0,
+            0,
+            0,
+            0,
+            1
           )
           console.log('[PC] prebaked PCA orientation applied')
           // Store transform: scale/center handled via props; rotation via quaternion
@@ -853,7 +852,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     fovDeg: number
     flipUp?: boolean
     flipNormal?: boolean
-  }>({ thickness: 0.2, pointSizeScale: 1.1, keepRatio: 1, bloom: false, fovDeg: 80, flipUp: false, flipNormal: false })
+  }>({
+    thickness: 0.2,
+    pointSizeScale: 1.1,
+    keepRatio: 1,
+    bloom: false,
+    fovDeg: 80,
+    flipUp: false,
+    flipNormal: false,
+  })
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -894,6 +901,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     return out
   }, [prebaked, ui.keepRatio])
+
+  // Compose world-space debug flips with the PCA quaternion so toggles work live
+  const appliedQuaternion = React.useMemo(() => {
+    const base = prebakedTransform?.rotationQuat
+    if (!base) return undefined
+    const flipWorld = new THREE.Quaternion().identity()
+    if (ui.flipNormal) {
+      // rotate 180° around world Y to swap front/back
+      const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
+      flipWorld.multiply(qY)
+    }
+    if (ui.flipUp) {
+      // rotate 180° around world X to invert up/down
+      const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI)
+      flipWorld.multiply(qX)
+    }
+    return flipWorld.multiply(base.clone())
+  }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -959,7 +984,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
                 : [1, 1, 1]
             }
-            quaternion={prebakedTransform?.rotationQuat}
+            quaternion={appliedQuaternion ?? prebakedTransform?.rotationQuat}
             matrixAutoUpdate
           >
             <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
