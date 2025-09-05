@@ -880,32 +880,57 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
     } catch {}
-  }, [ui.thickness, ui.pointSizeScale, ui.keepRatio, ui.bloom, ui.fovDeg, ui.flipUp, ui.flipNormal, ui.mirrorLR, ui.mirrorUD, ui.roll180])
+  }, [
+    ui.thickness,
+    ui.pointSizeScale,
+    ui.keepRatio,
+    ui.bloom,
+    ui.fovDeg,
+    ui.flipUp,
+    ui.flipNormal,
+    ui.mirrorLR,
+    ui.mirrorUD,
+    ui.roll180,
+  ])
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
     setBloomEnabled(ui.bloom)
   }, [ui.bloom])
 
-  // Derive reduced positions for perf / density control when using prebaked
-  const renderPositions = React.useMemo(() => {
+  // Derive reduced, matched buffers for prebaked positions/colors
+  const renderBuffers = React.useMemo(() => {
     if (!prebaked) return null
-    const arr = prebaked.positions
-    const count = prebaked.count
+    const srcPos = prebaked.positions
+    const srcCount = prebaked.count
+    const srcColors =
+      prebaked.colors && prebaked.colors.length >= srcCount * 3 ? prebaked.colors : undefined
+
     const cap = 150_000
-    const effectiveKeep = Math.min(ui.keepRatio, cap / Math.max(1, count))
-    if (effectiveKeep >= 0.999) return arr
-    const step = Math.max(1, Math.floor(1 / Math.max(1e-6, effectiveKeep)))
-    const target = Math.max(1, Math.floor(count / step))
-    const out = new Float32Array(target * 3)
-    let j = 0
-    for (let i = 0; i < count && j < target; i += step) {
-      out[j * 3 + 0] = arr[i * 3 + 0]
-      out[j * 3 + 1] = arr[i * 3 + 1]
-      out[j * 3 + 2] = arr[i * 3 + 2]
-      j++
+    const keep = Math.min(ui.keepRatio, cap / Math.max(1, srcCount))
+    const step = Math.max(1, Math.floor(1 / Math.max(1e-6, keep)))
+    const outCount = keep >= 0.999 ? srcCount : Math.max(1, Math.floor(srcCount / step))
+
+    // Fast-path: no decimation and colors already match
+    if (outCount === srcCount) {
+      return { positions: srcPos, colors: srcColors, keptCount: srcCount }
     }
-    return out
+
+    const outPos = new Float32Array(outCount * 3)
+    let outCol: Uint8Array | undefined = srcColors ? new Uint8Array(outCount * 3) : undefined
+
+    for (let i = 0, j = 0; i < srcCount && j < outCount; i += step, j++) {
+      outPos[j * 3 + 0] = srcPos[i * 3 + 0]
+      outPos[j * 3 + 1] = srcPos[i * 3 + 1]
+      outPos[j * 3 + 2] = srcPos[i * 3 + 2]
+      if (outCol && srcColors) {
+        outCol[j * 3 + 0] = srcColors[i * 3 + 0]
+        outCol[j * 3 + 1] = srcColors[i * 3 + 1]
+        outCol[j * 3 + 2] = srcColors[i * 3 + 2]
+      }
+    }
+
+    return { positions: outPos, colors: outCol, keptCount: outCount }
   }, [prebaked, ui.keepRatio])
 
   // Compose world-space debug flips with the PCA quaternion so toggles work live
@@ -930,6 +955,54 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     return flipWorld.multiply(base.clone())
   }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp, ui.roll180])
+
+  // Recolor fallback: if colors missing or mismatched, synthesize from source image
+  const recolored = React.useMemo(() => {
+    if (!renderBuffers) return null
+    const pos = renderBuffers.positions
+    const count = Math.floor(pos.length / 3)
+    const colors = renderBuffers.colors
+    const needRecolor = !colors || Math.floor(colors.length / 3) !== count
+    if (!needRecolor) return null
+    if (!color.data || color.width <= 0 || color.height <= 0) return null
+
+    // Compute AABB in (optionally) PCA-aligned space for XY mapping
+    const q = appliedQuaternion
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity
+    const tmp = new THREE.Vector3()
+    for (let i = 0; i < count; i++) {
+      tmp.set(pos[i * 3 + 0], pos[i * 3 + 1], pos[i * 3 + 2])
+      if (q) tmp.applyQuaternion(q)
+      const x = tmp.x
+      const y = tmp.y
+      if (x < minX) minX = x
+      if (y < minY) minY = y
+      if (x > maxX) maxX = x
+      if (y > maxY) maxY = y
+    }
+    const dx = Math.max(1e-6, maxX - minX)
+    const dy = Math.max(1e-6, maxY - minY)
+    const w = color.width
+    const h = color.height
+    const src = color.data.data
+    const out = new Uint8Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      tmp.set(pos[i * 3 + 0], pos[i * 3 + 1], pos[i * 3 + 2])
+      if (q) tmp.applyQuaternion(q)
+      const u = (tmp.x - minX) / dx
+      const v = (tmp.y - minY) / dy
+      const px = Math.max(0, Math.min(w - 1, Math.round(u * (w - 1))))
+      const py = Math.max(0, Math.min(h - 1, Math.round((1.0 - v) * (h - 1))))
+      const p = (py * w + px) * 4
+      out[i * 3 + 0] = src[p + 0]
+      out[i * 3 + 1] = src[p + 1]
+      out[i * 3 + 2] = src[p + 2]
+    }
+    return out
+  }, [renderBuffers, color.data, color.width, color.height, appliedQuaternion])
 
   // Mirror scale (local reflection) for left/right and up/down
   const mirrorScale = React.useMemo(() => {
@@ -1005,24 +1078,37 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           >
             <group scale={mirrorScale}>
               <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
-              <points frustumCulled={false} renderOrder={1}>
-                <bufferGeometry>
-                  <bufferAttribute
-                    attach="attributes-position"
-                    args={[renderPositions ?? prebaked.positions, 3]}
+                <points frustumCulled={false} renderOrder={1}>
+                  <bufferGeometry>
+                    <bufferAttribute
+                      attach="attributes-position"
+                      args={[renderBuffers?.positions ?? prebaked.positions, 3]}
+                    />
+                    {(() => {
+                      const src = renderBuffers?.colors ?? recolored ?? null
+                      const posCount = Math.floor(
+                        (renderBuffers?.positions ?? prebaked.positions).length / 3
+                      )
+                      const ok = src && Math.floor(src.length / 3) === posCount
+                      return ok ? (
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore normalized byte colors
+                        <bufferAttribute attach="attributes-color" args={[src, 3, true]} />
+                      ) : null
+                    })()}
+                  </bufferGeometry>
+                  <pointsMaterial
+                    size={pointSize * ui.pointSizeScale}
+                    sizeAttenuation
+                    vertexColors={(() => {
+                      const src = renderBuffers?.colors ?? recolored ?? null
+                      const posCount = Math.floor(
+                        (renderBuffers?.positions ?? prebaked.positions).length / 3
+                      )
+                      return !!(src && Math.floor(src.length / 3) === posCount)
+                    })()}
                   />
-                  {prebaked.colors && (
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore normalized byte colors
-                    <bufferAttribute attach="attributes-color" args={[prebaked.colors, 3, true]} />
-                  )}
-                </bufferGeometry>
-                <pointsMaterial
-                  size={pointSize * ui.pointSizeScale}
-                  sizeAttenuation
-                  vertexColors={!!prebaked.colors}
-                />
-              </points>
+                </points>
               </group>
             </group>
           </group>
@@ -1104,7 +1190,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               fov: {Math.round(ui.fovDeg)}°
               <input
                 type="range"
-                min={50}
+                min={30}
                 max={100}
                 step={1}
                 value={ui.fovDeg}

@@ -557,11 +557,11 @@ export default function BackgroundBrain({
           <OrbitControls
             enableDamping
             dampingFactor={0.12}
-            autoRotate={true}
+            autoRotate={false}
             autoRotateSpeed={2}
-            enableZoom={false}
-            enablePan={false}
-            enableRotate={false}
+            enableZoom={true}
+            enablePan={true}
+            enableRotate={true}
             onStart={() => {
               userInteractedRef.current = true
             }}
