@@ -1,5 +1,7 @@
 # Refinery SDK
 
+> CI status-check probe: this line exists to trigger the baseline pipeline.
+
 > A modular TypeScript SDK for building interactive 3D knowledge graphs with multimodal input support
 
 ## Overview
