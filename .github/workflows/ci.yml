@@ -35,16 +35,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck (schema only)
-        run: pnpm --filter @refinery/schema run build
+      - name: Typecheck (schema)
+        run: pnpm --filter @refinery/schema exec tsc -p tsconfig.json --noEmit
 
-      - name: Lint (app only)
+      - name: Lint (app)
         run: pnpm --filter cryptiq-mindmap-demo run lint
 
-      - name: Build (schema package)
-        run: pnpm --filter @refinery/schema run build
+      - name: Build app
+        run: pnpm --filter cryptiq-mindmap-demo run build
 
-      - name: Smoke (import schema)
+      - name: Smoke
         run: pnpm run smoke
 
     # Explicitly avoid ML/inference runners/tools in CI
