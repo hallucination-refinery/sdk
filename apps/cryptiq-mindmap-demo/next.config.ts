@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import './env' // Validate env at config load (safe defaults)
 
 const nextConfig: NextConfig = {
   /* config options here */
