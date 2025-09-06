@@ -3,12 +3,11 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { clampDpr, capInstances } from '../../../../../../app/draw3d/modules/renderer/perf';
 
 export type FormationViewProps = {
   positions: Float32Array;
 };
-
-const MAX_INSTANCES = 20000;
 
 function InstancedFormation({ positions }: FormationViewProps) {
   const { gl } = useThree();
@@ -17,10 +16,10 @@ function InstancedFormation({ positions }: FormationViewProps) {
 
   // limit device pixel ratio to reduce GPU load
   useEffect(() => {
-    gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    clampDpr(gl);
   }, [gl]);
 
-  const count = Math.min(positions.length / 3, MAX_INSTANCES);
+  const count = capInstances(positions.length / 3);
 
   useEffect(() => {
     const m = mesh.current;
