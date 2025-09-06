@@ -1,5 +1,3 @@
-import { promises as fs } from 'node:fs';
-
 const formationCache = new Map<string, Float32Array>();
 
 function fallbackFormation(count = 8): Float32Array {
@@ -22,15 +20,7 @@ async function fetchFormation(name: string): Promise<Float32Array> {
     const data = Array.isArray(json) ? json : json.positions;
     return new Float32Array(data);
   } catch {
-    try {
-      // Node fallback: read from disk when running outside browser
-      const file = await fs.readFile(`apps/cryptiq-mindmap-demo/public${url}`, 'utf8');
-      const json = JSON.parse(file);
-      const data = Array.isArray(json) ? json : json.positions;
-      return new Float32Array(data);
-    } catch {
-      return fallbackFormation();
-    }
+    return fallbackFormation();
   }
 }
 
@@ -40,3 +30,4 @@ export async function useFormation(name: string): Promise<Float32Array> {
   formationCache.set(name, arr);
   return arr;
 }
+

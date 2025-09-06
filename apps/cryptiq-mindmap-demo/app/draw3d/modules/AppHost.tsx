@@ -6,7 +6,7 @@ import { get28x28Gray } from './canvas/preprocess';
 import { classify, loadDoodleNet } from './ml/doodlenet';
 import FormationView from './renderer/FormationView';
 import HUD from './ui/HUD';
-import { useFormation as fetchFormation } from '../../../../../app/draw3d/modules/data/useFormation';
+import { useFormation as fetchFormation } from './data/useFormation';
 
 export default function AppHost() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -96,4 +96,3 @@ export default function AppHost() {
     </div>
   );
 }
-
