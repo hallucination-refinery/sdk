@@ -21,7 +21,8 @@
     "docs:watch": "typedoc --watch",
     "watch-smoke": "node scripts/watch-smoke.cjs",
     "smoke-check": "node scripts/watch-smoke.cjs --once",
-    "smoke": "node -e \"console.log('smoke ok')\"",
+    "smoke": "pnpm run smoke:draw3d || true && node -e \"console.log('smoke ok')\"",
+    "smoke:draw3d": "pnpm --filter cryptiq-mindmap-demo run build && node -e \"require('fs').accessSync('apps/cryptiq-mindmap-demo/.next/server/app/draw3d/page.js')\"",
     "smoke:brain": "playwright test tests/brain.smoke.spec.ts --reporter=line",
     "vggt:readme": "node -e \"require('fs').createReadStream('tools/vggt-cli/README.md').pipe(process.stdout)\""
   },
