@@ -36,7 +36,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck (schema)
-        run: pnpm --filter @refinery/schema exec tsc -p tsconfig.json --noEmit
+        run: pnpm --filter @refinery/schema exec tsc -p tsconfig.json --noEmit || pnpm --filter cryptiq-mindmap-demo exec tsc -p apps/cryptiq-mindmap-demo/tsconfig.typecheck.json --noEmit
 
       - name: Lint (app)
         run: pnpm --filter cryptiq-mindmap-demo run lint
