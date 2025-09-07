@@ -12,6 +12,8 @@ const aliasMap: Record<string, string> = {
   cellphone: 'phone',
   mobile: 'phone',
   leaf: 'flower',
+  mug: 'phone',
+  telephone: 'phone',
 };
 
 const seeded = new Set([
@@ -37,7 +39,7 @@ async function fetchFormation(name: string): Promise<Float32Array> {
   return new Float32Array(data);
 }
 
-function fallbackFormation(count = 8, scale = 1.8): Float32Array {
+function fallbackFormation(count = 64, scale = 1.8): Float32Array {
   const arr = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const angle = (i / count) * Math.PI * 2;
