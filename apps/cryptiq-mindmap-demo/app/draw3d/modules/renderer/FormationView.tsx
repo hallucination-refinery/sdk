@@ -2,14 +2,13 @@
 
 import { Canvas, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import { useFormationTransition } from '../../../../../../app/draw3d/modules/renderer/transitions';
-import type * as THREE from 'three';
+import * as THREE from 'three';
+import { clampDpr, capInstances } from './perf';
+import { useFormationTransition } from './transitions';
 
 export type FormationViewProps = {
   positions: Float32Array;
 };
-
-const MAX_INSTANCES = 20000;
 
 function InstancedFormation({ positions }: FormationViewProps) {
   const { gl } = useThree();
@@ -17,10 +16,11 @@ function InstancedFormation({ positions }: FormationViewProps) {
 
   // limit device pixel ratio to reduce GPU load
   useEffect(() => {
-    gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    clampDpr(gl);
   }, [gl]);
 
-  const count = useFormationTransition(mesh, positions, MAX_INSTANCES);
+  const maxInstances = capInstances(positions.length / 3);
+  const count = useFormationTransition(mesh, positions, maxInstances);
 
   return (
     <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
@@ -42,4 +42,3 @@ export default function FormationView({ positions }: FormationViewProps) {
     </Canvas>
   );
 }
-
