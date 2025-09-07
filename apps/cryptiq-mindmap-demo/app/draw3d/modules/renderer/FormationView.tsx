@@ -23,15 +23,17 @@ function InstancedFormation({ positions }: FormationViewProps) {
   const count = useFormationTransition(mesh, positions, maxInstances);
 
   return (
-    <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
-      <sphereGeometry args={[0.01, 1, 1]} />
-      <meshBasicMaterial
-        color={0xffffff}
-        toneMapped={false}
-        transparent
-        opacity={1}
-      />
-    </instancedMesh>
+    <group scale={1.8}>
+      <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+        <sphereGeometry args={[0.03, 1, 1]} />
+        <meshBasicMaterial
+          color={0xffffff}
+          toneMapped={false}
+          transparent
+          opacity={1}
+        />
+      </instancedMesh>
+    </group>
   );
 }
 

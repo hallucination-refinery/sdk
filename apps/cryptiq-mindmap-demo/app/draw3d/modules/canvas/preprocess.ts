@@ -16,3 +16,23 @@ export function get28x28Gray(canvas: HTMLCanvasElement): Uint8ClampedArray {
   }
   return gray;
 }
+
+export function make28x28Canvas(src: HTMLCanvasElement): HTMLCanvasElement {
+  const size = 28;
+  const off =
+    src.ownerDocument?.createElement('canvas') ||
+    new (src.constructor as any)(size, size);
+  off.width = size;
+  off.height = size;
+  const ctx = off.getContext('2d');
+  if (!ctx) return off;
+  ctx.drawImage(src, 0, 0, size, size);
+  const img = ctx.getImageData(0, 0, size, size);
+  const data = img.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+    data[i] = data[i + 1] = data[i + 2] = avg;
+  }
+  ctx.putImageData(img, 0, 0);
+  return off;
+}
