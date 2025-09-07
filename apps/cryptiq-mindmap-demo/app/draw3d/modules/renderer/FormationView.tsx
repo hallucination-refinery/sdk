@@ -24,7 +24,7 @@ function InstancedFormation({ positions }: FormationViewProps) {
 
   return (
     <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
-      <sphereGeometry args={[0.01, 1, 1]} />
+      <sphereGeometry args={[0.03, 1, 1]} />
       <meshBasicMaterial
         color={0xffffff}
         toneMapped={false}
@@ -38,7 +38,9 @@ function InstancedFormation({ positions }: FormationViewProps) {
 export default function FormationView({ positions }: FormationViewProps) {
   return (
     <Canvas dpr={[1, 2]}>
-      <InstancedFormation positions={positions} />
+      <group scale={1.8}>
+        <InstancedFormation positions={positions} />
+      </group>
     </Canvas>
   );
 }

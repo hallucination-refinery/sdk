@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 
-export default function DoodleCanvas() {
+export default function DoodleCanvas({
+  onEnd,
+}: {
+  onEnd?: (canvas: HTMLCanvasElement) => void;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
@@ -30,6 +34,8 @@ export default function DoodleCanvas() {
   const end = () => {
     drawing.current = false;
     last.current = null;
+    const c = ref.current;
+    if (c && onEnd) onEnd(c);
   };
 
   useEffect(() => {
@@ -88,5 +94,12 @@ export default function DoodleCanvas() {
     };
   }, []);
 
-  return <canvas ref={ref} width={280} height={280} />;
+  return (
+    <canvas
+      ref={ref}
+      width={280}
+      height={280}
+      style={{ touchAction: 'none' }}
+    />
+  );
 }
