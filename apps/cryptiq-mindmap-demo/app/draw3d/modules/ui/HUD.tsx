@@ -45,42 +45,34 @@ export default function HUD({
       <div>fps: {fps}</div>
       <div>instances: {instances}</div>
       <div style={{ marginTop: 4 }}>
-        {onClassify && (
-          <button
-            style={{ marginRight: 4, fontSize: 10 }}
-            onClick={onClassify}
-            disabled={!!busy}
-          >
-            Classify
-          </button>
-        )}
-        {onClear && (
-          <button
-            style={{ marginRight: 4, fontSize: 10 }}
-            onClick={onClear}
-            disabled={!!busy}
-          >
-            Clear
-          </button>
-        )}
-        {onUndo && (
-          <button
-            style={{ marginRight: 4, fontSize: 10 }}
-            onClick={onUndo}
-            disabled={!!busy}
-          >
-            Undo
-          </button>
-        )}
-        {onToggleAuto && (
-          <button
-            style={{ marginRight: 4, fontSize: 10 }}
-            onClick={() => onToggleAuto(!autoEnabled)}
-            disabled={!!busy}
-          >
-            Auto {autoEnabled ? 'On' : 'Off'}
-          </button>
-        )}
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={onClassify}
+          disabled={!onClassify || !!busy}
+        >
+          Classify
+        </button>
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={onClear}
+          disabled={!onClear || !!busy}
+        >
+          Clear
+        </button>
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={onUndo}
+          disabled={!onUndo || !!busy}
+        >
+          Undo
+        </button>
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={() => onToggleAuto?.(!autoEnabled)}
+          disabled={!onToggleAuto || !!busy}
+        >
+          Auto {autoEnabled ? 'On' : 'Off'}
+        </button>
         {busy && <span style={{ marginLeft: 4 }}>inference…</span>}
       </div>
     </div>
