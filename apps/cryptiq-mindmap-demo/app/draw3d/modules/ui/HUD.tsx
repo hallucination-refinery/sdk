@@ -4,9 +4,27 @@ export interface HUDProps {
   inferMs: number
   fps: number
   instances: number
+  onClassify?(): void
+  onClear?(): void
+  onUndo?(): void
+  autoEnabled?: boolean
+  onToggleAuto?(next: boolean): void
+  busy?: boolean
 }
 
-export default function HUD({ ready, loadMs, inferMs, fps, instances }: HUDProps) {
+export default function HUD({
+  ready,
+  loadMs,
+  inferMs,
+  fps,
+  instances,
+  onClassify,
+  onClear,
+  onUndo,
+  autoEnabled,
+  onToggleAuto,
+  busy,
+}: HUDProps) {
   return (
     <div
       style={{
@@ -26,6 +44,45 @@ export default function HUD({ ready, loadMs, inferMs, fps, instances }: HUDProps
       <div>infer: {inferMs}ms</div>
       <div>fps: {fps}</div>
       <div>instances: {instances}</div>
+      <div style={{ marginTop: 4 }}>
+        {onClassify && (
+          <button
+            style={{ marginRight: 4, fontSize: 10 }}
+            onClick={onClassify}
+            disabled={!!busy}
+          >
+            Classify
+          </button>
+        )}
+        {onClear && (
+          <button
+            style={{ marginRight: 4, fontSize: 10 }}
+            onClick={onClear}
+            disabled={!!busy}
+          >
+            Clear
+          </button>
+        )}
+        {onUndo && (
+          <button
+            style={{ marginRight: 4, fontSize: 10 }}
+            onClick={onUndo}
+            disabled={!!busy}
+          >
+            Undo
+          </button>
+        )}
+        {onToggleAuto && (
+          <button
+            style={{ marginRight: 4, fontSize: 10 }}
+            onClick={() => onToggleAuto(!autoEnabled)}
+            disabled={!!busy}
+          >
+            Auto {autoEnabled ? 'On' : 'Off'}
+          </button>
+        )}
+        {busy && <span style={{ marginLeft: 4 }}>inference…</span>}
+      </div>
     </div>
   )
 }
