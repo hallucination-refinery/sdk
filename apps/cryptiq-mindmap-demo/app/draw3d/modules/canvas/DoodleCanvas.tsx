@@ -109,12 +109,28 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    dpr.current = Math.min(window.devicePixelRatio || 1, 1.5)
-    canvas.width = window.innerWidth * dpr.current
-    canvas.height = window.innerHeight * dpr.current
     canvas.style.width = '100%'
     canvas.style.height = '100%'
-    ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0)
+
+    const resize = () => {
+      dpr.current = Math.min(window.devicePixelRatio || 1, 1.5)
+      canvas.width = window.innerWidth * dpr.current
+      canvas.height = window.innerHeight * dpr.current
+      ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0)
+      redraw()
+    }
+
+    resize()
+
+    let frame = 0
+    const onResize = () => {
+      if (frame) cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        resize()
+      })
+    }
+    window.addEventListener('resize', onResize)
 
     const rect = () => canvas.getBoundingClientRect()
 
@@ -141,6 +157,8 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
     canvas.addEventListener('pointerup', onPointerUp, { passive: false })
 
     return () => {
+      window.removeEventListener('resize', onResize)
+      if (frame) cancelAnimationFrame(frame)
       canvas.removeEventListener('pointerdown', onPointerDown)
       canvas.removeEventListener('pointermove', onPointerMove)
       canvas.removeEventListener('pointerup', onPointerUp)
