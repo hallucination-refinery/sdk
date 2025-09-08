@@ -20,7 +20,7 @@
 - InstancedMesh is the right primitive for hundreds of spheres with one draw call; avoid post‑processing on mobile.
 
 ## 5) Architecture overview
-- Pipeline: Draw on a full‑viewport transparent overlay (multi‑stroke session) → manual “Classify” or idle auto‑commit → preprocess to 28×28 → ml5.js DoodleNet classify → label map with fallback → fetch formation JSON → render with InstancedMesh → short cross‑fade.
+- Pipeline: Full‑viewport transparent overlay collects a multi‑stroke session → user taps **Classify** or an idle timer auto‑commits → preprocess to 28×28 → ml5.js DoodleNet classify → map label to formation with fallback content → render with InstancedMesh → short cross‑fade.
 - Data: Curate ~30 categories (subset of 345). Store normalized point clouds under `public/formations/<label>.json` (≤ 10 KB each).
 - Rendering: Single InstancedMesh (spheres), 200–320 instances; DPR clamp and lean materials for mobile.
 
@@ -63,7 +63,7 @@
 - On new label, cross‑fade via per‑instance scale/alpha over 250–400 ms while reusing buffers (avoid GC churn). Debounce rapid reclassify.
 
 ### 7) Wire page logic (0.5h)
-- In `page.tsx`: load classifier on mount; show Ready when loaded. User presses **Classify** to commit the current stroke session; optional idle timer auto‑commits. After commit, preprocess + classify; apply confidence gate (e.g., ≥ 0.25). Fetch formation → render or show fallback formation if unknown.
+- In `page.tsx`: load classifier on mount; show Ready when loaded. User commits the current multi‑stroke session by pressing **Classify**, with an optional idle timer to auto‑commit. After commit, preprocess + classify; apply confidence gate (e.g., ≥ 0.25). Fetch formation → render or show fallback formation if unknown.
 - Optional: show top‑2 labels unobtrusively.
 
 ### 8) Metrics & guardrails (0.5h)
