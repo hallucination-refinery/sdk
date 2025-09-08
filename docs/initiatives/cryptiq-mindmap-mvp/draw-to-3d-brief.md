@@ -20,23 +20,23 @@
 - InstancedMesh is the right primitive for hundreds of spheres with one draw call; avoid post‑processing on mobile.
 
 ## 5) Architecture overview
-- Pipeline: Draw on a 280×280 canvas → preprocess to 28×28 → ml5.js DoodleNet classify → label map → fetch formation JSON → render with InstancedMesh → short cross‑fade.
+- Pipeline: Draw on a full‑viewport transparent overlay (multi‑stroke session) → manual “Classify” or idle auto‑commit → preprocess to 28×28 → ml5.js DoodleNet classify → label map with fallback → fetch formation JSON → render with InstancedMesh → short cross‑fade.
 - Data: Curate ~30 categories (subset of 345). Store normalized point clouds under `public/formations/<label>.json` (≤ 10 KB each).
 - Rendering: Single InstancedMesh (spheres), 200–320 instances; DPR clamp and lean materials for mobile.
 
 ## 6) Detailed implementation plan (step‑by‑step)
 
 ### 0) Route & scaffolding (0.5h)
-- Create `apps/cryptiq-mindmap-demo/app/draw3d/page.tsx` with a two‑pane layout (canvas + 3D view; stacked on mobile).
+- Create `apps/cryptiq-mindmap-demo/app/draw3d/page.tsx` with a 3D view and a full‑viewport transparent drawing overlay.
 - Show small status HUD: Ready/Loading, FPS, last inference ms.
 
 ### 1) Drawing canvas (1.5h)
 - `app/draw3d/DoodleCanvas.tsx`:
-  - 280×280 canvas, touch + mouse; `preventDefault()` to avoid scroll.
-  - Simple smoothing (lerp last→current), black stroke on white background.
-  - Export helpers:
-    - `get28x28Gray(canvas): Uint8ClampedArray` (center/crop/scale; 0–255 grayscale)
-    - `clear()`, optional `undo()`
+  - Full‑viewport transparent overlay capturing multiple strokes; `preventDefault()` to avoid scroll.
+  - Simple smoothing (lerp last→current), black stroke on transparent background.
+  - Multi‑stroke session with `clear()`, `undo()`, and `commit()` helpers.
+  - Optional idle timer to auto‑commit after user stops drawing.
+  - `get28x28Gray(canvas): Uint8ClampedArray` (center/crop/scale; 0–255 grayscale)
 
 ### 2) DoodleNet (ml5.js) integration (1h)
 - Start with `<script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>` in the page head; later switch to dynamic import if needed.
@@ -63,7 +63,7 @@
 - On new label, cross‑fade via per‑instance scale/alpha over 250–400 ms while reusing buffers (avoid GC churn). Debounce rapid reclassify.
 
 ### 7) Wire page logic (0.5h)
-- In `page.tsx`: load classifier on mount; show Ready when loaded. On `touchend` (or button), preprocess + classify; apply confidence gate (e.g., ≥ 0.25). Fetch formation → render.
+- In `page.tsx`: load classifier on mount; show Ready when loaded. User presses **Classify** to commit the current stroke session; optional idle timer auto‑commits. After commit, preprocess + classify; apply confidence gate (e.g., ≥ 0.25). Fetch formation → render or show fallback formation if unknown.
 - Optional: show top‑2 labels unobtrusively.
 
 ### 8) Metrics & guardrails (0.5h)
