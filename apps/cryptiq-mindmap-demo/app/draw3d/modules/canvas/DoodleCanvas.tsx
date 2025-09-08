@@ -1,98 +1,86 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react'
 
-export default function DoodleCanvas({
-  onEnd,
-}: {
-  onEnd?(canvas: HTMLCanvasElement): void;
-}) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const drawing = useRef(false);
-  const last = useRef<{ x: number; y: number } | null>(null);
+export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasElement): void }) {
+  const ref = useRef<HTMLCanvasElement>(null)
+  const drawing = useRef(false)
+  const last = useRef<{ x: number; y: number } | null>(null)
 
   const start = (x: number, y: number) => {
-    drawing.current = true;
-    last.current = { x, y };
-  };
+    drawing.current = true
+    last.current = { x, y }
+  }
 
   const move = (x: number, y: number) => {
-    const canvas = ref.current;
-    const ctx = canvas?.getContext("2d");
-    if (!drawing.current || !ctx || !last.current) return;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = 16;
-    const { x: lx, y: ly } = last.current;
-    ctx.beginPath();
-    ctx.moveTo(lx, ly);
-    const mx = (lx + x) / 2;
-    const my = (ly + y) / 2;
-    ctx.quadraticCurveTo(lx, ly, mx, my);
-    ctx.stroke();
-    last.current = { x, y };
-  };
+    const canvas = ref.current
+    const ctx = canvas?.getContext('2d')
+    if (!drawing.current || !ctx || !last.current) return
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.lineWidth = 16
+    const { x: lx, y: ly } = last.current
+    ctx.beginPath()
+    ctx.moveTo(lx, ly)
+    const mx = (lx + x) / 2
+    const my = (ly + y) / 2
+    ctx.quadraticCurveTo(lx, ly, mx, my)
+    ctx.stroke()
+    last.current = { x, y }
+  }
 
   const end = () => {
-    drawing.current = false;
-    last.current = null;
-  };
+    drawing.current = false
+    last.current = null
+  }
 
   useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    const rect = () => canvas.getBoundingClientRect();
+    const canvas = ref.current
+    if (!canvas) return
 
-    const handleTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
-      const r = rect();
-      const t = e.touches[0];
-      start(t.clientX - r.left, t.clientY - r.top);
-    };
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      const r = rect();
-      const t = e.touches[0];
-      move(t.clientX - r.left, t.clientY - r.top);
-    };
-    const handleTouchEnd = (e: TouchEvent) => {
-      e.preventDefault();
-      end();
-      onEnd?.(canvas);
-    };
+    // Initialize white background and black stroke for deterministic input
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.strokeStyle = '#000'
+    }
 
-    const handleMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      const r = rect();
-      start(e.clientX - r.left, e.clientY - r.top);
-    };
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!drawing.current) return;
-      e.preventDefault();
-      const r = rect();
-      move(e.clientX - r.left, e.clientY - r.top);
-    };
-    const handleMouseUp = (e: MouseEvent) => {
-      e.preventDefault();
-      end();
-      onEnd?.(canvas);
-    };
+    const rect = () => canvas.getBoundingClientRect()
 
-    canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
-    canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
-    canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
+    const onPointerDown = (e: PointerEvent) => {
+      e.preventDefault()
+      canvas.setPointerCapture(e.pointerId)
+      const r = rect()
+      start(e.clientX - r.left, e.clientY - r.top)
+    }
+    const onPointerMove = (e: PointerEvent) => {
+      if (!drawing.current) return
+      e.preventDefault()
+      const r = rect()
+      move(e.clientX - r.left, e.clientY - r.top)
+    }
+    const onPointerUp = (e: PointerEvent) => {
+      e.preventDefault()
+      end()
+      onEnd?.(canvas)
+    }
 
-    canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener('pointerdown', onPointerDown, { passive: false })
+    canvas.addEventListener('pointermove', onPointerMove, { passive: false })
+    canvas.addEventListener('pointerup', onPointerUp, { passive: false })
 
     return () => {
-      canvas.removeEventListener("touchstart", handleTouchStart);
-      canvas.removeEventListener("touchmove", handleTouchMove);
-      canvas.removeEventListener("touchend", handleTouchEnd);
-      canvas.removeEventListener("mousedown", handleMouseDown);
-      canvas.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
+      canvas.removeEventListener('pointerdown', onPointerDown)
+      canvas.removeEventListener('pointermove', onPointerMove)
+      canvas.removeEventListener('pointerup', onPointerUp)
+    }
+  }, [onEnd])
 
-  return <canvas ref={ref} width={280} height={280} style={{ touchAction: 'none' }} />;
+  return (
+    <canvas
+      ref={ref}
+      width={280}
+      height={280}
+      style={{ touchAction: 'none', position: 'relative', zIndex: 1 }}
+    />
+  )
 }
