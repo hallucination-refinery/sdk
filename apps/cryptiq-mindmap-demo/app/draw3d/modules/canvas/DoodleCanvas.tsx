@@ -4,6 +4,7 @@ export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasEleme
   const ref = useRef<HTMLCanvasElement>(null)
   const drawing = useRef(false)
   const last = useRef<{ x: number; y: number } | null>(null)
+  const dpr = useRef(1)
 
   const start = (x: number, y: number) => {
     drawing.current = true
@@ -16,7 +17,8 @@ export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasEleme
     if (!drawing.current || !ctx || !last.current) return
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
-    ctx.lineWidth = 16
+    ctx.lineWidth = 16 * dpr.current
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)'
     const { x: lx, y: ly } = last.current
     ctx.beginPath()
     ctx.moveTo(lx, ly)
@@ -36,13 +38,15 @@ export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasEleme
     const canvas = ref.current
     if (!canvas) return
 
-    // Initialize white background and black stroke for deterministic input
     const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.strokeStyle = '#000'
-    }
+    if (!ctx) return
+
+    dpr.current = Math.min(window.devicePixelRatio || 1, 1.5)
+    canvas.width = window.innerWidth * dpr.current
+    canvas.height = window.innerHeight * dpr.current
+    canvas.style.width = '100%'
+    canvas.style.height = '100%'
+    ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0)
 
     const rect = () => canvas.getBoundingClientRect()
 
@@ -78,9 +82,7 @@ export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasEleme
   return (
     <canvas
       ref={ref}
-      width={280}
-      height={280}
-      style={{ touchAction: 'none', position: 'relative', zIndex: 1 }}
+      style={{ position: 'absolute', inset: 0, zIndex: 1, touchAction: 'none' }}
     />
   )
 }
