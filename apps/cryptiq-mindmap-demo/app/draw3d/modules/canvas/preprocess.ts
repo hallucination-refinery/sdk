@@ -24,7 +24,7 @@ export function make28x28Canvas(src: HTMLCanvasElement): HTMLCanvasElement {
   const ctx = off.getContext('2d')
   if (!ctx) return off
 
-  // Compute tight bounding box of non-white pixels, with padding
+  // Compute tight bounding box of opaque, non-white pixels with padding
   const sctx = src.getContext('2d')!
   const sData = sctx.getImageData(0, 0, src.width, src.height)
   let minX = src.width,
@@ -37,8 +37,9 @@ export function make28x28Canvas(src: HTMLCanvasElement): HTMLCanvasElement {
       const r = sData.data[i]
       const g = sData.data[i + 1]
       const b = sData.data[i + 2]
+      const a = sData.data[i + 3]
       const v = r | g | b
-      if (v !== 255) {
+      if (a >= 250 && v !== 255) {
         if (x < minX) minX = x
         if (y < minY) minY = y
         if (x > maxX) maxX = x
