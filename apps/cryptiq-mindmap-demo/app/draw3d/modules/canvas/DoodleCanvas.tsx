@@ -128,10 +128,13 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
     canvas.style.width = '100%'
     canvas.style.height = '100%'
 
+    const rect = () => canvas.getBoundingClientRect()
+
     const resize = () => {
       dpr.current = Math.min(window.devicePixelRatio || 1, 1.5)
-      canvas.width = window.innerWidth * dpr.current
-      canvas.height = window.innerHeight * dpr.current
+      const { width, height } = rect()
+      canvas.width = width * dpr.current
+      canvas.height = height * dpr.current
       ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0)
       redraw()
     }
@@ -147,8 +150,6 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
       })
     }
     window.addEventListener('resize', onResize)
-
-    const rect = () => canvas.getBoundingClientRect()
 
     const onPointerDown = (e: PointerEvent) => {
       e.preventDefault()
