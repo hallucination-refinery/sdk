@@ -27,7 +27,9 @@ export function fitPositionsToBBox(
   const bcx = (bbox.minX + bbox.maxX) / 2
   const bcy = (bbox.minY + bbox.maxY) / 2
 
-  const s = Math.max(bw, bh) / (Math.max(w, h) || 1)
+  const sw = bw / (w || 1)
+  const sh = bh / (h || 1)
+  const s = Math.min(sw, sh)
 
   const out = new Float32Array(positions.length)
   for (let i = 0; i < positions.length; i += 3) {
