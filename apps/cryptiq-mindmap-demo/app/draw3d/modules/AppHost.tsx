@@ -65,8 +65,10 @@ export default function AppHost() {
   const [inferMs, setInferMs] = useState(0)
   const [fps, setFps] = useState(0)
   const [busy, setBusy] = useState(false)
+  const [autoEnabled, setAutoEnabled] = useState(false)
   const canvasRef = useRef<DoodleCanvasHandle>(null)
   const inferRef = useRef(false)
+  const timerRef = useRef<number | null>(null)
 
   const meetsInk = () => {
     const { area, length } = canvasRef.current?.getInkMetrics() ?? { area: 0, length: 0 }
@@ -75,6 +77,10 @@ export default function AppHost() {
 
   const classifyNow = async () => {
     if (inferRef.current || !meetsInk()) return
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
     const canvas = canvasRef.current?.toCanvas()
     if (!canvas) return
     inferRef.current = true
@@ -116,6 +122,22 @@ export default function AppHost() {
     }
   }
 
+  const resetTimer = () => {
+    if (!autoEnabled || inferRef.current || !meetsInk()) return
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null
+      if (!inferRef.current && meetsInk()) classifyNow()
+    }, 800)
+  }
+
+  useEffect(() => {
+    if (!autoEnabled && timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }, [autoEnabled])
+
   // simple fps tracker
   useEffect(() => {
     let frame = 0
@@ -154,13 +176,23 @@ export default function AppHost() {
         onClear={() => {
           canvasRef.current?.clear()
           setPositions(null)
+          if (timerRef.current) {
+            clearTimeout(timerRef.current)
+            timerRef.current = null
+          }
         }}
         onUndo={() => {
           canvasRef.current?.undo()
+          if (timerRef.current) {
+            clearTimeout(timerRef.current)
+            timerRef.current = null
+          }
         }}
+        autoEnabled={autoEnabled}
+        onToggleAuto={setAutoEnabled}
         busy={busy}
       />
-      <DoodleCanvas ref={canvasRef} />
+      <DoodleCanvas ref={canvasRef} onStrokeEnd={resetTimer} />
       {positions && <FormationView positions={positions} />}
     </div>
   )
