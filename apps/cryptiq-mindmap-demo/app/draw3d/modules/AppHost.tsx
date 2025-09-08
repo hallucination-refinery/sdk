@@ -31,6 +31,9 @@ const seeded = new Set([
   'tree',
 ])
 
+const MIN_AREA = 32 * 32
+const MIN_LENGTH = 80
+
 async function fetchFormation(name: string): Promise<Float32Array> {
   const url = `/formations/${name}.json`
   const res = await fetch(url)
@@ -61,14 +64,27 @@ export default function AppHost() {
   const [loadMs, setLoadMs] = useState(0)
   const [inferMs, setInferMs] = useState(0)
   const [fps, setFps] = useState(0)
+  const [autoEnabled, setAutoEnabled] = useState(false)
+  const [busy, setBusy] = useState(false)
   const canvasRef = useRef<DoodleCanvasHandle>(null)
   const inferRef = useRef(false)
+  const idleRef = useRef<NodeJS.Timeout | null>(null)
+
+  const meetsInk = () => {
+    const { area, length } = canvasRef.current?.getInkMetrics() ?? { area: 0, length: 0 }
+    return area > MIN_AREA && length > MIN_LENGTH
+  }
 
   const classifyNow = async () => {
-    if (inferRef.current) return
+    if (inferRef.current || !meetsInk()) return
     const canvas = canvasRef.current?.toCanvas()
     if (!canvas) return
     inferRef.current = true
+    setBusy(true)
+    if (idleRef.current) {
+      clearTimeout(idleRef.current)
+      idleRef.current = null
+    }
     try {
       const preStart = performance.now()
       const off = make28x28Canvas(canvas)
@@ -102,7 +118,18 @@ export default function AppHost() {
       }
     } finally {
       inferRef.current = false
+      setBusy(false)
     }
+  }
+
+  const handleStrokeEnd = () => {
+    if (!autoEnabled || busy) return
+    if (idleRef.current) clearTimeout(idleRef.current)
+    idleRef.current = setTimeout(() => {
+      idleRef.current = null
+      if (busy) return
+      classifyNow()
+    }, 800)
   }
 
   // simple fps tracker
@@ -139,8 +166,33 @@ export default function AppHost() {
         inferMs={Math.round(inferMs)}
         fps={fps}
         instances={positions ? positions.length / 3 : 0}
+        onClassify={classifyNow}
+        onClear={() => {
+          if (idleRef.current) {
+            clearTimeout(idleRef.current)
+            idleRef.current = null
+          }
+          canvasRef.current?.clear()
+          setPositions(null)
+        }}
+        onUndo={() => {
+          if (idleRef.current) {
+            clearTimeout(idleRef.current)
+            idleRef.current = null
+          }
+          canvasRef.current?.undo()
+        }}
+        autoEnabled={autoEnabled}
+        onToggleAuto={(next) => {
+          setAutoEnabled(next)
+          if (!next && idleRef.current) {
+            clearTimeout(idleRef.current)
+            idleRef.current = null
+          }
+        }}
+        busy={busy}
       />
-      <DoodleCanvas ref={canvasRef} />
+      <DoodleCanvas ref={canvasRef} onStrokeEnd={handleStrokeEnd} />
       {positions && <FormationView positions={positions} />}
     </div>
   )

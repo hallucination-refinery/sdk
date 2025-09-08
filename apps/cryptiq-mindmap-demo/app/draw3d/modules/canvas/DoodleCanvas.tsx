@@ -1,6 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import type { DoodleCanvasHandle } from '../types'
 
+type DoodleCanvasProps = { onStrokeEnd?: () => void }
+
 type Point = { x: number; y: number }
 type BBox = { minX: number; minY: number; maxX: number; maxY: number }
 
@@ -13,13 +15,14 @@ function union(b: BBox | null, x: number, y: number): BBox {
   return b
 }
 
-const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
+const DoodleCanvas = forwardRef<DoodleCanvasHandle, DoodleCanvasProps>(({ onStrokeEnd }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dpr = useRef(1)
   const isDrawing = useRef(false)
   const last = useRef<Point | null>(null)
   const strokes = useRef<Point[][]>([])
   const bbox = useRef<BBox | null>(null)
+  const length = useRef(0)
 
   const start = (x: number, y: number) => {
     isDrawing.current = true
@@ -47,11 +50,15 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
     ctx.stroke()
     last.current = { x, y }
     bbox.current = union(bbox.current, x, y)
+    const dx = x - lx
+    const dy = y - ly
+    length.current += Math.hypot(dx, dy)
   }
 
   const end = () => {
     isDrawing.current = false
     last.current = null
+    onStrokeEnd?.()
   }
 
   const redraw = () => {
@@ -82,15 +89,22 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
   const clear = () => {
     strokes.current = []
     bbox.current = null
+    length.current = 0
     redraw()
   }
 
   const undo = () => {
     strokes.current.pop()
     bbox.current = null
+    length.current = 0
     for (const stroke of strokes.current) {
+      let prev: Point | null = null
       for (const p of stroke) {
         bbox.current = union(bbox.current, p.x, p.y)
+        if (prev) {
+          length.current += Math.hypot(p.x - prev.x, p.y - prev.y)
+        }
+        prev = p
       }
     }
     redraw()
@@ -100,6 +114,11 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
     clear,
     undo,
     toCanvas: () => canvasRef.current,
+    getInkMetrics: () => {
+      const b = bbox.current
+      const area = b ? (b.maxX - b.minX) * (b.maxY - b.minY) : 0
+      return { area, length: length.current }
+    },
   }))
 
   useEffect(() => {
