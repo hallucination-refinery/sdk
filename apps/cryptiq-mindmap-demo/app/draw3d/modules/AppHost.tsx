@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import DoodleCanvas from './canvas/DoodleCanvas'
 import { make28x28Canvas } from './canvas/preprocess'
 import { classify, loadDoodleNet } from './ml/doodlenet'
+import type { DoodleCanvasHandle } from './types'
 import FormationView from './renderer/FormationView'
 import HUD from './ui/HUD'
 
@@ -60,6 +61,49 @@ export default function AppHost() {
   const [loadMs, setLoadMs] = useState(0)
   const [inferMs, setInferMs] = useState(0)
   const [fps, setFps] = useState(0)
+  const canvasRef = useRef<DoodleCanvasHandle>(null)
+  const inferRef = useRef(false)
+
+  const classifyNow = async () => {
+    if (inferRef.current) return
+    const canvas = canvasRef.current?.toCanvas()
+    if (!canvas) return
+    inferRef.current = true
+    try {
+      const preStart = performance.now()
+      const off = make28x28Canvas(canvas)
+      const preMs = performance.now() - preStart
+
+      let lMs = loadMs
+      if (!ready) {
+        const loadStart = performance.now()
+        await loadDoodleNet()
+        lMs = performance.now() - loadStart
+        setLoadMs(lMs)
+        setReady(true)
+      }
+
+      const inferStart = performance.now()
+      const [pred] = await classify(off, 1)
+      const iMs = performance.now() - inferStart
+      setInferMs(iMs)
+
+      console.log(`pre ${preMs.toFixed(1)}ms load ${lMs.toFixed(1)}ms infer ${iMs.toFixed(1)}ms`)
+
+      const label = pred?.label
+      if (label) {
+        const normalized = aliasMap[label] ?? (seeded.has(label) ? label : 'unknown')
+        try {
+          const form = await fetchFormation(normalized)
+          setPositions(form)
+        } catch {
+          setPositions(fallbackFormation())
+        }
+      }
+    } finally {
+      inferRef.current = false
+    }
+  }
 
   // simple fps tracker
   useEffect(() => {
@@ -80,38 +124,12 @@ export default function AppHost() {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  const handleEnd = async (c: HTMLCanvasElement) => {
-    const preStart = performance.now()
-    const off = make28x28Canvas(c)
-    const preMs = performance.now() - preStart
-
-    let lMs = loadMs
-    if (!ready) {
-      const loadStart = performance.now()
-      await loadDoodleNet()
-      lMs = performance.now() - loadStart
-      setLoadMs(lMs)
-      setReady(true)
+  useEffect(() => {
+    ;(window as any).classifyNow = classifyNow
+    return () => {
+      delete (window as any).classifyNow
     }
-
-    const inferStart = performance.now()
-    const [pred] = await classify(off, 1)
-    const iMs = performance.now() - inferStart
-    setInferMs(iMs)
-
-    console.log(`pre ${preMs.toFixed(1)}ms load ${lMs.toFixed(1)}ms infer ${iMs.toFixed(1)}ms`)
-
-    const label = pred?.label
-    if (label) {
-      const normalized = aliasMap[label] ?? (seeded.has(label) ? label : 'unknown')
-      try {
-        const form = await fetchFormation(normalized)
-        setPositions(form)
-      } catch {
-        setPositions(fallbackFormation())
-      }
-    }
-  }
+  }, [classifyNow])
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#000' }}>
@@ -122,7 +140,7 @@ export default function AppHost() {
         fps={fps}
         instances={positions ? positions.length / 3 : 0}
       />
-      <DoodleCanvas onEnd={handleEnd} />
+      <DoodleCanvas ref={canvasRef} />
       {positions && <FormationView positions={positions} />}
     </div>
   )

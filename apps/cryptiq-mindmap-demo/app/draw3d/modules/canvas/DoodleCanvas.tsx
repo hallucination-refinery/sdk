@@ -1,20 +1,39 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import type { DoodleCanvasHandle } from '../types'
 
-export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasElement): void }) {
-  const ref = useRef<HTMLCanvasElement>(null)
-  const drawing = useRef(false)
-  const last = useRef<{ x: number; y: number } | null>(null)
+type Point = { x: number; y: number }
+type BBox = { minX: number; minY: number; maxX: number; maxY: number }
+
+function union(b: BBox | null, x: number, y: number): BBox {
+  if (!b) return { minX: x, minY: y, maxX: x, maxY: y }
+  if (x < b.minX) b.minX = x
+  if (y < b.minY) b.minY = y
+  if (x > b.maxX) b.maxX = x
+  if (y > b.maxY) b.maxY = y
+  return b
+}
+
+const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const dpr = useRef(1)
+  const isDrawing = useRef(false)
+  const last = useRef<Point | null>(null)
+  const strokes = useRef<Point[][]>([])
+  const bbox = useRef<BBox | null>(null)
 
   const start = (x: number, y: number) => {
-    drawing.current = true
+    isDrawing.current = true
     last.current = { x, y }
+    strokes.current.push([{ x, y }])
+    bbox.current = union(bbox.current, x, y)
   }
 
   const move = (x: number, y: number) => {
-    const canvas = ref.current
+    const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
-    if (!drawing.current || !ctx || !last.current) return
+    const stroke = strokes.current[strokes.current.length - 1]
+    if (!isDrawing.current || !ctx || !last.current || !stroke) return
+    stroke.push({ x, y })
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     ctx.lineWidth = 16 * dpr.current
@@ -27,15 +46,64 @@ export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasEleme
     ctx.quadraticCurveTo(lx, ly, mx, my)
     ctx.stroke()
     last.current = { x, y }
+    bbox.current = union(bbox.current, x, y)
   }
 
   const end = () => {
-    drawing.current = false
+    isDrawing.current = false
     last.current = null
   }
 
+  const redraw = () => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    for (const stroke of strokes.current) {
+      if (!stroke.length) continue
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+      ctx.lineWidth = 16 * dpr.current
+      ctx.strokeStyle = 'rgba(255,255,255,0.8)'
+      ctx.beginPath()
+      const [p0, ...rest] = stroke
+      ctx.moveTo(p0.x, p0.y)
+      let prev = p0
+      for (const p of rest) {
+        const mx = (prev.x + p.x) / 2
+        const my = (prev.y + p.y) / 2
+        ctx.quadraticCurveTo(prev.x, prev.y, mx, my)
+        prev = p
+      }
+      ctx.stroke()
+    }
+  }
+
+  const clear = () => {
+    strokes.current = []
+    bbox.current = null
+    redraw()
+  }
+
+  const undo = () => {
+    strokes.current.pop()
+    bbox.current = null
+    for (const stroke of strokes.current) {
+      for (const p of stroke) {
+        bbox.current = union(bbox.current, p.x, p.y)
+      }
+    }
+    redraw()
+  }
+
+  useImperativeHandle(ref, () => ({
+    clear,
+    undo,
+    toCanvas: () => canvasRef.current,
+  }))
+
   useEffect(() => {
-    const canvas = ref.current
+    const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext('2d')
@@ -57,15 +125,15 @@ export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasEleme
       start(e.clientX - r.left, e.clientY - r.top)
     }
     const onPointerMove = (e: PointerEvent) => {
-      if (!drawing.current) return
+      if (!isDrawing.current) return
       e.preventDefault()
       const r = rect()
       move(e.clientX - r.left, e.clientY - r.top)
     }
     const onPointerUp = (e: PointerEvent) => {
+      if (!isDrawing.current) return
       e.preventDefault()
       end()
-      onEnd?.(canvas)
     }
 
     canvas.addEventListener('pointerdown', onPointerDown, { passive: false })
@@ -77,12 +145,17 @@ export default function DoodleCanvas({ onEnd }: { onEnd?(canvas: HTMLCanvasEleme
       canvas.removeEventListener('pointermove', onPointerMove)
       canvas.removeEventListener('pointerup', onPointerUp)
     }
-  }, [onEnd])
+  }, [])
 
   return (
     <canvas
-      ref={ref}
+      ref={canvasRef}
       style={{ position: 'absolute', inset: 0, zIndex: 1, touchAction: 'none' }}
     />
   )
-}
+})
+
+// for clearer debugging and linting
+DoodleCanvas.displayName = 'DoodleCanvas'
+
+export default DoodleCanvas
