@@ -1,8 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import type { DoodleCanvasHandle } from '../types'
 
-type DoodleCanvasProps = { onStrokeEnd?: () => void }
-
 type Point = { x: number; y: number }
 type BBox = { minX: number; minY: number; maxX: number; maxY: number }
 
@@ -15,7 +13,7 @@ function union(b: BBox | null, x: number, y: number): BBox {
   return b
 }
 
-const DoodleCanvas = forwardRef<DoodleCanvasHandle, DoodleCanvasProps>(({ onStrokeEnd }, ref) => {
+const DoodleCanvas = forwardRef<DoodleCanvasHandle>((_, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dpr = useRef(1)
   const isDrawing = useRef(false)
@@ -58,7 +56,6 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle, DoodleCanvasProps>(({ onStro
   const end = () => {
     isDrawing.current = false
     last.current = null
-    onStrokeEnd?.()
   }
 
   const redraw = () => {
