@@ -36,7 +36,10 @@ function InstancedFormation({ positions }: FormationViewProps) {
 
 export default function FormationView({ positions }: FormationViewProps) {
   return (
-    <Canvas dpr={[1, 2]} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+    <Canvas
+      dpr={[1, 2]}
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}
+    >
       <InstancedFormation positions={positions} />
     </Canvas>
   )
