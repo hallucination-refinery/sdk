@@ -35,8 +35,13 @@ export async function loadDoodleNet(): Promise<DoodleClassifier> {
     doodlePromise = loadMl5().then((ml5) => {
       const originalWarn = console.warn
       console.warn = (msg?: any, ...rest: any[]) => {
-        const s = String(msg ?? '')
-        if (s.includes('The shape of the input tensor') && s.includes('conv2d_1')) return
+        if (
+          typeof msg === 'string' &&
+          msg.includes('The shape of the input tensor') &&
+          msg.includes('conv2d_1')
+        ) {
+          return
+        }
         originalWarn(msg, ...rest)
       }
       return ml5.imageClassifier('DoodleNet').finally(() => {
