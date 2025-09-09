@@ -47,15 +47,13 @@ export default function HUD({
       <div>fps: {fps}</div>
       <div>instances: {instances}</div>
       <div style={{ marginTop: 4 }}>
-        {(devControls || autoEnabled === false) && (
-          <button
-            style={{ marginRight: 4, fontSize: 10 }}
-            onClick={onClassify}
-            disabled={!onClassify || !!busy}
-          >
-            Classify
-          </button>
-        )}
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={() => onToggleAuto?.(!autoEnabled)}
+          disabled={!onToggleAuto || !!busy}
+        >
+          Auto {autoEnabled ? 'On' : 'Off'}
+        </button>
         <button
           style={{ marginRight: 4, fontSize: 10 }}
           onClick={onClear}
@@ -70,13 +68,15 @@ export default function HUD({
         >
           Undo
         </button>
-        <button
-          style={{ marginRight: 4, fontSize: 10 }}
-          onClick={() => onToggleAuto?.(!autoEnabled)}
-          disabled={!onToggleAuto || !!busy}
-        >
-          Auto {autoEnabled ? 'On' : 'Off'}
-        </button>
+        {devControls && (
+          <button
+            style={{ marginRight: 4, fontSize: 10 }}
+            onClick={onClassify}
+            disabled={!onClassify || !!busy}
+          >
+            Classify
+          </button>
+        )}
         {busy && <span style={{ marginLeft: 4 }}>inference…</span>}
       </div>
     </div>
