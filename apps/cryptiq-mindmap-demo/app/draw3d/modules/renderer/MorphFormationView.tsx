@@ -42,7 +42,7 @@ function InstancedMorph({
 
   const data = useMemo(() => {
     const maxCount = Math.max(source ? source.length : 0, target.length) / 3
-    const count = capInstances(maxCount)
+    const count = capInstances(maxCount) // respect device/env caps
     const tgt = resampleCloud(target, count)
     const src = source ? resampleCloud(source, count) : undefined
     const map = src ? computeMorphMap(src, tgt) : undefined
