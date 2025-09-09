@@ -1,50 +1,43 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import DoodleCanvas from './canvas/DoodleCanvas'
 import { make28x28Canvas } from './canvas/preprocess'
 import { classify, loadDoodleNet } from './ml/doodlenet'
 import type { DoodleCanvasHandle } from './types'
 import FormationView from './renderer/FormationView'
 import HUD from './ui/HUD'
+import { normalizeLabel } from './data/labelMap'
 
-const aliasMap: Record<string, string> = {
-  ship: 'boat',
-  cellphone: 'phone',
-  mobile: 'phone',
-  leaf: 'flower',
-  mug: 'phone',
-  telephone: 'phone',
-}
-
-const seeded = new Set([
-  'balloon',
-  'bird',
-  'boat',
-  'car',
-  'cat',
-  'cup',
-  'fish',
-  'flower',
-  'house',
-  'phone',
-  'tree',
-])
+const formationCache = new Map<string, Promise<Float32Array>>()
 
 const MIN_AREA = 32 * 32
 const MIN_LENGTH = 80
+const IDLE_MS = 1500
 
 async function fetchFormation(name: string): Promise<Float32Array> {
-  const url = `/formations/${name}.json`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const json = await res.json()
-  const raw = Array.isArray(json) ? json : json.positions
-  const flat: number[] = Array.isArray(raw?.[0])
-    ? (raw as number[][]).flat()
-    : ((raw as number[]) ?? [])
-  if (flat.length % 3 !== 0) throw new Error('invalid formation')
-  return new Float32Array(flat)
+  let promise = formationCache.get(name)
+  if (!promise) {
+    promise = (async () => {
+      const url = `/formations/${name}.json`
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      const raw = Array.isArray(json) ? json : json.positions
+      const flat: number[] = Array.isArray(raw?.[0])
+        ? (raw as number[][]).flat()
+        : ((raw as number[]) ?? [])
+      if (flat.length % 3 !== 0) throw new Error('invalid formation')
+      return new Float32Array(flat)
+    })()
+    formationCache.set(name, promise)
+  }
+  try {
+    return await promise
+  } catch (e) {
+    formationCache.delete(name)
+    throw e
+  }
 }
 
 function fallbackFormation(count = 256, scale = 1.8): Float32Array {
@@ -69,6 +62,13 @@ export default function AppHost() {
   const canvasRef = useRef<DoodleCanvasHandle>(null)
   const inferRef = useRef(false)
   const timerRef = useRef<number | null>(null)
+  const devControls = useMemo(() => {
+    if (process.env.NEXT_PUBLIC_DRAW3D_DEBUG_UI === '1') return true
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).has('debug')
+    }
+    return false
+  }, [])
 
   const meetsInk = () => {
     const m = canvasRef.current?.getInkMetrics()
@@ -113,15 +113,15 @@ export default function AppHost() {
       }
 
       const inferStart = performance.now()
-      const [pred] = await classify(off, 1)
+      const preds = await classify(off, 5)
       const iMs = performance.now() - inferStart
       setInferMs(iMs)
 
       console.log(`pre ${preMs.toFixed(1)}ms load ${lMs.toFixed(1)}ms infer ${iMs.toFixed(1)}ms`)
 
-      const label = pred?.label
-      if (label) {
-        const normalized = aliasMap[label] ?? (seeded.has(label) ? label : 'unknown')
+      const primary = preds[0]?.label ?? ''
+      const normalized = normalizeLabel(primary, preds)
+      if (normalized) {
         try {
           const form = await fetchFormation(normalized)
           setPositions(form)
@@ -148,8 +148,8 @@ export default function AppHost() {
       timerRef.current = null
       console.log('[timerFired]')
       if (!inferRef.current && meetsInk()) classifyNow()
-    }, 800)
-    console.log('[timerScheduled] 800ms')
+    }, IDLE_MS)
+    console.log(`[timerScheduled] ${IDLE_MS}ms`)
   }
 
   useEffect(() => {
@@ -179,11 +179,12 @@ export default function AppHost() {
   }, [])
 
   useEffect(() => {
+    if (!devControls) return
     ;(window as any).classifyNow = classifyNow
     return () => {
       delete (window as any).classifyNow
     }
-  }, [classifyNow])
+  }, [classifyNow, devControls])
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#000' }}>
@@ -193,7 +194,7 @@ export default function AppHost() {
         inferMs={Math.round(inferMs)}
         fps={fps}
         instances={positions ? positions.length / 3 : 0}
-        onClassify={classifyNow}
+        onClassify={devControls ? classifyNow : undefined}
         onClear={() => {
           canvasRef.current?.clear()
           setPositions(null)
@@ -210,8 +211,9 @@ export default function AppHost() {
           }
         }}
         autoEnabled={autoEnabled}
-        onToggleAuto={setAutoEnabled}
+        onToggleAuto={devControls ? setAutoEnabled : undefined}
         busy={busy}
+        devControls={devControls}
       />
       <DoodleCanvas ref={canvasRef} onStrokeEnd={resetTimer} />
       {positions && <FormationView positions={positions} />}
