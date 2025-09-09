@@ -71,7 +71,7 @@ export function computeMorphMap(
   src: Float32Array,
   dst: Float32Array
 ): Uint32Array {
-  const count = Math.max(src.length, dst.length) / 3
+  const count = Math.floor(Math.max(src.length, dst.length) / 3)
   const resSrc = resampleCloud(src, count)
   const resDst = resampleCloud(dst, count)
   const srcOrder = orderRadial(resSrc)
