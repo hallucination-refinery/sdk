@@ -24,20 +24,18 @@ describe('rasterToCloud', () => {
     expect(pts.length).toBe(0)
   })
 
-  it('samples dense stroke up to max points', () => {
-    const max = 256
+  it('samples dense stroke with grid stride deterministically', () => {
     const c = makeCanvas(32, 32, [0, 0, 0, 255])
-    const pts = rasterToCloud(c, { max })
+    const pts = rasterToCloud(c, { gridStride: 8, minCount: 0 })
     expect(pts.length % 3).toBe(0)
     const count = pts.length / 3
-    expect(count).toBeGreaterThan(max * 0.9)
-    expect(count).toBeLessThanOrEqual(max)
+    expect(count).toBe(16)
     for (const v of pts) {
       expect(v).toBeGreaterThanOrEqual(-1)
       expect(v).toBeLessThanOrEqual(1)
     }
     // determinism
-    const pts2 = rasterToCloud(c, { max })
+    const pts2 = rasterToCloud(c, { gridStride: 8, minCount: 0 })
     expect(Array.from(pts)).toEqual(Array.from(pts2))
   })
 

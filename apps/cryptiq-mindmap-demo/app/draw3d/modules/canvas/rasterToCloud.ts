@@ -1,23 +1,23 @@
 export function rasterToCloud(
   src: HTMLCanvasElement,
-  opts?: { max?: number; threshold?: number; jitter?: number }
+  opts?: { threshold?: number; gridStride?: number; minCount?: number }
 ): Float32Array {
-  const max = opts?.max ?? 256
-  const threshold = opts?.threshold ?? 250
-  const jitter = opts?.jitter ?? 1 / 256
+  const threshold = opts?.threshold ?? 180
+  const stride = opts?.gridStride ?? 2
+  const minCount = opts?.minCount ?? 200
+  const jitter = 1 / 256
   const w = src.width
   const h = src.height
   if (!w || !h) return new Float32Array(0)
-  const ctx = src.getContext('2d')
+  const ctx = src.getContext('2d', { willReadFrequently: true })
   if (!ctx) return new Float32Array(0)
   const { data } = ctx.getImageData(0, 0, w, h)
-  const step = Math.max(1, Math.sqrt((w * h) / max))
-  const half = step / 2
+  const half = stride / 2
   const rnd = mulberry32(1)
   const out: number[] = []
-  for (let y = half; y < h; y += step) {
+  for (let y = half; y < h; y += stride) {
     const yi = Math.floor(y)
-    for (let x = half; x < w; x += step) {
+    for (let x = half; x < w; x += stride) {
       const xi = Math.floor(x)
       const idx = (yi * w + xi) * 4
       const a = data[idx + 3]
@@ -34,30 +34,40 @@ export function rasterToCloud(
           clamp(ny + jy),
           clamp(jz)
         )
-        if (out.length / 3 >= max) return new Float32Array(out)
       }
     }
   }
-  return new Float32Array(out)
+  let pts = new Float32Array(out)
+  if (pts.length / 3 < minCount) pts = resampleCloud(pts, minCount)
+  return pts
 }
 
 export function resampleCloud(pts: Float32Array, count: number): Float32Array {
   const n = pts.length / 3
-  if (n <= count) return pts.slice()
+  if (n === 0) return new Float32Array(0)
   const rnd = mulberry32(2)
-  const idx = Array.from({ length: n }, (_, i) => i)
-  for (let i = idx.length - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1))
-    const t = idx[i]
-    idx[i] = idx[j]
-    idx[j] = t
-  }
   const out = new Float32Array(count * 3)
-  for (let i = 0; i < count; i++) {
-    const k = idx[i] * 3
-    out[i * 3] = pts[k]
-    out[i * 3 + 1] = pts[k + 1]
-    out[i * 3 + 2] = pts[k + 2]
+  if (n >= count) {
+    const idx = Array.from({ length: n }, (_, i) => i)
+    for (let i = idx.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1))
+      const t = idx[i]
+      idx[i] = idx[j]
+      idx[j] = t
+    }
+    for (let i = 0; i < count; i++) {
+      const k = idx[i] * 3
+      out[i * 3] = pts[k]
+      out[i * 3 + 1] = pts[k + 1]
+      out[i * 3 + 2] = pts[k + 2]
+    }
+  } else {
+    for (let i = 0; i < count; i++) {
+      const j = Math.floor(rnd() * n) * 3
+      out[i * 3] = pts[j]
+      out[i * 3 + 1] = pts[j + 1]
+      out[i * 3 + 2] = pts[j + 2]
+    }
   }
   return out
 }
