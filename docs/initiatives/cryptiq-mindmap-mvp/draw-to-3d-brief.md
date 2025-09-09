@@ -25,7 +25,7 @@
 
 ## 5) Architecture overview
 
-- Pipeline: Full‑viewport transparent overlay collects a multi‑stroke session → auto‑commit after ~1.5s idle (no manual button) → preprocess to 28×28 → ml5.js DoodleNet classify (top‑k, curated‑first) → map label to formation with fallback content → transition: strokes fade to gray (300ms) → brief processing pause (200ms) → center‑out, slightly bouncy InstancedMesh reveal (≈500ms), centered and bbox‑fit.
+- Pipeline: Full‑viewport transparent overlay collects a multi‑stroke session → **strict** auto‑commit after ~1.5s idle → preprocess to 28×28 → ml5.js DoodleNet classify (`k=5`, curated‑first) → map label to formation JSON, generating a simple ring if missing → transition: strokes fade to gray (300ms) → 200ms hold → stroke cloud morphs to a centered, slightly bouncy InstancedMesh reveal (≈500ms), bbox‑fit.
 - Data: Curate ~30 categories (subset of 345). Store normalized point clouds under `public/formations/<label>.json` (≤ 10 KB each).
 - Rendering: Single InstancedMesh (spheres), 200–320 instances; DPR clamp and lean materials for mobile.
 
@@ -41,8 +41,8 @@
 - `app/draw3d/DoodleCanvas.tsx`:
   - Full‑viewport transparent overlay capturing multiple strokes; `preventDefault()` to avoid scroll.
   - Simple smoothing (lerp last→current); strokes remain visible until recognition; fade to gray occurs only during the transition.
-  - Multi‑stroke session with `clear()`, `undo()`, and idle‑driven `commit()` helper (no manual button in normal UX).
-  - Auto‑commit after ~1.5s inactivity; coalesce while drawing; guard single in‑flight.
+  - Multi‑stroke session with `clear()` and `undo()`; commit is strictly auto‑only via idle timer.
+  - Auto‑commit fires after ~1.5s inactivity; coalesce while drawing; guard single in‑flight.
   - `get28x28Gray(canvas): Uint8ClampedArray` (center/crop/scale; 0–255 grayscale)
 
 ### 2) DoodleNet (ml5.js) integration (1h)
@@ -56,12 +56,12 @@
 ### 3) Category curation & label map (0.5h)
 
 - `app/draw3d/labelMap.ts`: choose ~30 high‑signal categories (e.g., cat, tree, house, car, balloon, flower, fish, bird, cup, phone, star, sun…).
-- Map from DoodleNet label → formation id; define fallback "unknown".
+- Map from DoodleNet label → formation id; unknown falls back to a procedural ring.
 
 ### 4) Formation data & loader (1h)
 
 - `public/formations/<label>.json` with `{ positions: number[][] }` normalized to −1..1 in X/Y/Z around origin (150–300 points).
-- `app/draw3d/useFormation.ts` loads JSON and memoizes; small procedural fallback if missing.
+- `app/draw3d/useFormation.ts` loads JSON and memoizes; procedural ring fallback if missing.
 
 ### 5) InstancedMesh renderer (2h)
 
@@ -72,12 +72,12 @@
 
 ### 6) Transition system (1h)
 
-- On commit: strokes fade to gray over 300ms → processing pause 200ms → center‑out InstancedMesh generation with slight bounce over ≈500ms (reuse buffers to avoid GC churn); debounced/guarded.
+- On commit: strokes fade to gray over 300ms → 200ms pause → stroke cloud morphs to a center‑out InstancedMesh with slight bounce over ≈500ms (reuse buffers to avoid GC churn); debounced/guarded.
 
 ### 7) Wire page logic (0.5h)
 
-- In `page.tsx`: load classifier on mount; show Ready when loaded. Auto‑commit the current multi‑stroke session after ~1.5s idle; no manual button in normal UX. After commit, preprocess + classify (top‑k, curated‑first; confidence gate, e.g., ≥ 0.25). Fetch formation → fit to drawing bbox → render, or show fallback if unknown.
-- Optional: show top‑2 labels unobtrusively for diagnostics.
+- In `page.tsx`: load classifier on mount; show Ready when loaded. Auto‑commit the current multi‑stroke session after ~1.5s idle (no manual path). After commit, preprocess + classify (`k=5`, curated‑first; confidence gate, e.g., ≥ 0.25). Fetch formation → fit to drawing bbox → render, or generate a simple ring if unknown.
+- Optional: show top‑5 labels unobtrusively for diagnostics.
 
 ### 8) Metrics & guardrails (0.5h)
 
@@ -117,14 +117,14 @@ apps/cryptiq-mindmap-demo/
 ## 8) Risks & mitigations
 
 - **Model size on mobile**: lazy‑load; show progress; rely on CDN cache; keep rest of page usable.
-- **Recognition accuracy**: top‑k curated‑first selection; confidence gate; log candidates; unobtrusive nudge if needed.
+  - **Recognition accuracy**: `k=5` curated‑first selection; confidence gate; log candidates; unobtrusive nudge if needed.
 - **Rendering perf**: cap instances, clamp DPR, no post, lean materials.
 - **Premature/late commits**: idle‑timer coalescing, single in‑flight guard, minimum ink gates (bbox/length/area), and explicit instrumentation logs.
 
 ## 9) Success metrics (MVP)
 
-- Auto‑commit fires ~1.5s after last stroke; exactly one commit per session; Ready ≤ 4s first run; subsequent commits inference ≤ 200ms.
-- Strokes fade (300ms) → pause (200ms) → center‑out reveal (≈500ms); formation centered and bbox‑fit; ≥30 FPS at ~200–320 spheres on an iPhone‑class device.
+- Auto‑commit fires ~1.5s after last stroke with no manual path; exactly one commit per session; Ready ≤ 4s first run; subsequent commits inference ≤ 200ms.
+- Strokes fade (300ms) → 200ms hold → center‑out morph to reveal (≈500ms); formation centered and bbox‑fit; ≥30 FPS at ~200–320 spheres on an iPhone‑class device.
 - Smooth touch drawing; no inadvertent scrolling.
 
 ## 10) App vs SDK extraction (post‑MVP)
