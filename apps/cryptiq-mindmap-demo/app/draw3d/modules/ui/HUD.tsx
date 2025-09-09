@@ -47,7 +47,7 @@ export default function HUD({
       <div>fps: {fps}</div>
       <div>instances: {instances}</div>
       <div style={{ marginTop: 4 }}>
-        {devControls && (
+        {(devControls || autoEnabled === false) && (
           <button
             style={{ marginRight: 4, fontSize: 10 }}
             onClick={onClassify}
