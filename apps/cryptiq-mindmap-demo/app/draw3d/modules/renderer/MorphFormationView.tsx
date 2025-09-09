@@ -4,53 +4,94 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { clampDpr, capInstances } from './perf'
-import { pairAndMorph } from './morph'
+import {
+  resampleCloud,
+  computeMorphMap,
+  easeOutBack,
+  easeOutQuad,
+} from './morph'
 
 export type MorphFormationViewProps = {
-  source: Float32Array
+  source?: Float32Array
   target: Float32Array
   durationMs?: number
+  bounce?: boolean
+  fitScale?: number
 }
 
-function InstancedMorph({ source, target, durationMs }: MorphFormationViewProps) {
+function InstancedMorph({
+  source,
+  target,
+  durationMs = 500,
+  bounce = true,
+  fitScale = 1,
+}: MorphFormationViewProps) {
   const { gl } = useThree()
   const mesh = useRef<any>(null)
   const dummy = useRef<any>(new THREE.Object3D())
   const anim = useRef<{ start: number; duration: number; active: boolean }>({
     start: 0,
-    duration: 300,
+    duration: durationMs,
     active: false,
   })
 
+  // limit device pixel ratio to reduce GPU load
   useEffect(() => {
     clampDpr(gl)
   }, [gl])
 
   const data = useMemo(() => {
-    const maxCount = Math.max(source.length, target.length) / 3
+    const maxCount = Math.max(source ? source.length : 0, target.length) / 3
     const count = capInstances(maxCount)
-    return pairAndMorph(source, target, count)
+    const tgt = resampleCloud(target, count)
+    const src = source ? resampleCloud(source, count) : undefined
+    const map = src ? computeMorphMap(src, tgt) : undefined
+    return { count, src, tgt, map }
   }, [source, target])
 
-  const count = data.source.length / 3
+  const radii = useMemo(() => {
+    const arr = new Float32Array(data.count)
+    let maxR = 0
+    const t = data.tgt
+    for (let i = 0; i < data.count; i++) {
+      const i3 = i * 3
+      const x = t[i3]
+      const y = t[i3 + 1]
+      const z = t[i3 + 2]
+      const r = Math.sqrt(x * x + y * y + z * z)
+      arr[i] = r
+      if (r > maxR) maxR = r
+    }
+    if (maxR > 0) {
+      for (let i = 0; i < data.count; i++) arr[i] /= maxR
+    }
+    return arr
+  }, [data])
 
+  // Initialize instance positions and scales
   useEffect(() => {
     const m = mesh.current
     if (!m) return
-    const src = data.source
-    for (let i = 0; i < count; i++) {
+    const { src, tgt, map } = data
+    for (let i = 0; i < data.count; i++) {
       const i3 = i * 3
-      dummy.current.position.set(src[i3], src[i3 + 1], src[i3 + 2])
+      if (src && map) {
+        const sIdx = map[i] * 3
+        dummy.current.position.set(src[sIdx], src[sIdx + 1], src[sIdx + 2])
+      } else {
+        dummy.current.position.set(tgt[i3], tgt[i3 + 1], tgt[i3 + 2])
+      }
+      dummy.current.scale.setScalar(0)
       dummy.current.updateMatrix()
       m.setMatrixAt(i, dummy.current.matrix)
     }
     m.instanceMatrix.needsUpdate = true
     anim.current = {
       start: performance.now(),
-      duration: durationMs ?? 300 + Math.random() * 200,
+      duration: durationMs,
       active: true,
     }
-  }, [data, durationMs, count])
+  }, [data, durationMs])
 
   useFrame(() => {
     const m = mesh.current
@@ -58,28 +99,40 @@ function InstancedMorph({ source, target, durationMs }: MorphFormationViewProps)
     const { start, duration, active } = anim.current
     if (!active) return
     const t = Math.min((performance.now() - start) / duration, 1)
-    const src = data.source
-    const tgt = data.target
-    for (let i = 0; i < count; i++) {
+    const eased = easeOutQuad(t)
+    const scaleVal = bounce ? easeOutBack(eased) : eased
+    const thresh = eased
+
+    const tgt = data.tgt
+    const src = data.src
+    const map = data.map
+
+    for (let i = 0; i < data.count; i++) {
       const i3 = i * 3
-      dummy.current.position.set(
-        src[i3] + (tgt[i3] - src[i3]) * t,
-        src[i3 + 1] + (tgt[i3 + 1] - src[i3 + 1]) * t,
-        src[i3 + 2] + (tgt[i3 + 2] - src[i3 + 2]) * t
-      )
+      if (src && map) {
+        const sIdx = map[i] * 3
+        dummy.current.position.set(
+          src[sIdx] + (tgt[i3] - src[sIdx]) * eased,
+          src[sIdx + 1] + (tgt[i3 + 1] - src[sIdx + 1]) * eased,
+          src[sIdx + 2] + (tgt[i3 + 2] - src[sIdx + 2]) * eased
+        )
+      } else {
+        dummy.current.position.set(tgt[i3], tgt[i3 + 1], tgt[i3 + 2])
+      }
+
+      const visible = radii[i] <= thresh
+      dummy.current.scale.setScalar(visible ? scaleVal : 0)
       dummy.current.updateMatrix()
       m.setMatrixAt(i, dummy.current.matrix)
     }
     m.instanceMatrix.needsUpdate = true
-    if (t >= 1) {
-      anim.current.active = false
-    }
+    if (t >= 1) anim.current.active = false
   })
 
   return (
-    <group scale={1.8}>
+    <group scale={1.8 * fitScale}>
       {/* @ts-expect-error r3f intrinsic */}
-      <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+      <instancedMesh ref={mesh} args={[undefined, undefined, data.count]}>
         {/* @ts-expect-error r3f intrinsic */}
         <sphereGeometry args={[0.045, 6, 6]} />
         <meshBasicMaterial color={0xffffff} toneMapped={false} transparent opacity={1} />
@@ -96,3 +149,4 @@ export default function MorphFormationView(props: MorphFormationViewProps) {
     </Canvas>
   )
 }
+
