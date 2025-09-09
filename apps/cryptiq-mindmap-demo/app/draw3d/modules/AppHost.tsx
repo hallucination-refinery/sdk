@@ -15,7 +15,7 @@ const formationCache = new Map<string, Promise<Float32Array>>()
 
 const MIN_AREA = 32 * 32
 const MIN_LENGTH = 80
-const IDLE_MS = 1500
+const IDLE_MS = 3000
 
 async function fetchFormation(name: string): Promise<Float32Array> {
   let promise = formationCache.get(name)
@@ -54,10 +54,12 @@ function fallbackFormation(count = 256, scale = 1.8): Float32Array {
 }
 
 export default function AppHost() {
-  const [morph, setMorph] = useState<
-    | null
-    | { source: Float32Array; target: Float32Array; fitScale?: number; bounce?: boolean }
-  >(null)
+  const [morph, setMorph] = useState<null | {
+    source: Float32Array
+    target: Float32Array
+    fitScale?: number
+    bounce?: boolean
+  }>(null)
   const [ready, setReady] = useState(false)
   const [loadMs, setLoadMs] = useState(0)
   const [inferMs, setInferMs] = useState(0)
