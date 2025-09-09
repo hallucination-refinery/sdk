@@ -5,9 +5,11 @@ import DoodleCanvas from './canvas/DoodleCanvas'
 import { make28x28Canvas } from './canvas/preprocess'
 import { classify, loadDoodleNet } from './ml/doodlenet'
 import type { DoodleCanvasHandle } from './types'
-import FormationView from './renderer/FormationView'
+import MorphFormationView from './renderer/MorphFormationView'
 import HUD from './ui/HUD'
 import { normalizeLabel } from './data/labelMap'
+import { rasterToCloud } from './canvas/rasterToCloud'
+import '../styles/draw3d.css'
 
 const formationCache = new Map<string, Promise<Float32Array>>()
 
@@ -52,7 +54,10 @@ function fallbackFormation(count = 256, scale = 1.8): Float32Array {
 }
 
 export default function AppHost() {
-  const [positions, setPositions] = useState<Float32Array | null>(null)
+  const [morph, setMorph] = useState<
+    | null
+    | { source: Float32Array; target: Float32Array; fitScale?: number; bounce?: boolean }
+  >(null)
   const [ready, setReady] = useState(false)
   const [loadMs, setLoadMs] = useState(0)
   const [inferMs, setInferMs] = useState(0)
@@ -60,6 +65,7 @@ export default function AppHost() {
   const [busy, setBusy] = useState(false)
   const [autoEnabled, setAutoEnabled] = useState(true)
   const canvasRef = useRef<DoodleCanvasHandle>(null)
+  const canvasWrapRef = useRef<HTMLDivElement>(null)
   const inferRef = useRef(false)
   const timerRef = useRef<number | null>(null)
   const devControls = useMemo(() => {
@@ -93,14 +99,18 @@ export default function AppHost() {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
+    setMorph(null)
     const canvas = canvasRef.current?.toCanvas()
     if (!canvas) return
     inferRef.current = true
     setBusy(true)
+    const fadeStart = performance.now()
+    canvasWrapRef.current?.classList.add('stroke-fade')
     try {
       console.log('[commitFired]')
       const preStart = performance.now()
       const off = make28x28Canvas(canvas)
+      const strokeCloud = rasterToCloud(canvas, { max: 256, threshold: 200 })
       const preMs = performance.now() - preStart
 
       let lMs = loadMs
@@ -119,16 +129,37 @@ export default function AppHost() {
 
       console.log(`pre ${preMs.toFixed(1)}ms load ${lMs.toFixed(1)}ms infer ${iMs.toFixed(1)}ms`)
 
-      const primary = preds[0]?.label ?? ''
-      const normalized = normalizeLabel(primary, preds)
-      if (normalized) {
+      const normalized = normalizeLabel(preds[0]?.label ?? '', preds)
+      let target: Float32Array
+      let fitScale: number | undefined
+      let bounce = true
+
+      if (normalized === 'unknown') {
+        target = strokeCloud
+        bounce = false
+      } else if (normalized) {
         try {
-          const form = await fetchFormation(normalized)
-          setPositions(form)
+          target = await fetchFormation(normalized)
         } catch {
-          setPositions(fallbackFormation())
+          target = fallbackFormation()
         }
+        const m = canvasRef.current?.getInkMetrics()
+        const cw = canvas.width
+        const ch = canvas.height
+        const bw = m?.bbox.width ?? 0
+        const bh = m?.bbox.height ?? 0
+        const maxDim = Math.max(bw, bh)
+        const maxCanvas = Math.max(cw, ch)
+        fitScale = maxDim > 0 ? maxDim / maxCanvas : 1
+      } else {
+        target = fallbackFormation()
       }
+
+      const revealTime = fadeStart + 300 + 200
+      const delay = revealTime - performance.now()
+      if (delay > 0) await new Promise((r) => setTimeout(r, delay))
+
+      setMorph({ source: strokeCloud, target, fitScale, bounce })
     } finally {
       inferRef.current = false
       setBusy(false)
@@ -193,11 +224,12 @@ export default function AppHost() {
         loadMs={Math.round(loadMs)}
         inferMs={Math.round(inferMs)}
         fps={fps}
-        instances={positions ? positions.length / 3 : 0}
+        instances={morph ? morph.target.length / 3 : 0}
         onClassify={devControls ? classifyNow : undefined}
         onClear={() => {
           canvasRef.current?.clear()
-          setPositions(null)
+          setMorph(null)
+          canvasWrapRef.current?.classList.remove('stroke-fade')
           if (timerRef.current) {
             clearTimeout(timerRef.current)
             timerRef.current = null
@@ -215,8 +247,18 @@ export default function AppHost() {
         busy={busy}
         devControls={devControls}
       />
-      <DoodleCanvas ref={canvasRef} onStrokeEnd={resetTimer} />
-      {positions && <FormationView positions={positions} />}
+      <div ref={canvasWrapRef} style={{ position: 'absolute', inset: 0 }}>
+        <DoodleCanvas ref={canvasRef} onStrokeEnd={resetTimer} />
+      </div>
+      {morph && (
+        <MorphFormationView
+          source={morph.source}
+          target={morph.target}
+          fitScale={morph.fitScale}
+          durationMs={500}
+          bounce={morph.bounce}
+        />
+      )}
     </div>
   )
 }
