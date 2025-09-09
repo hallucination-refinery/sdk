@@ -23,7 +23,7 @@ function InstancedMorph({
   source,
   target,
   durationMs = 500,
-  bounce = true,
+  bounce = false,
   fitScale = 1,
 }: MorphFormationViewProps) {
   const { gl } = useThree()
