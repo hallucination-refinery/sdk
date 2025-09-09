@@ -25,7 +25,7 @@
 
 ## 5) Architecture overview
 
-- Pipeline: Full‑viewport transparent overlay collects a multi‑stroke session → **strict** auto‑commit after ~1.5s idle → preprocess to 28×28 → ml5.js DoodleNet classify (`k=5`, curated‑first) → map label to formation with stroke‑cloud fallback for unknown → transition: strokes fade to gray (300ms) → 200ms hold → stroke cloud morphs to a centered, slightly bouncy InstancedMesh reveal (≈500ms), bbox‑fit.
+- Pipeline: Full‑viewport transparent overlay collects a multi‑stroke session → **strict** auto‑commit after ~1.5s idle → preprocess to 28×28 → ml5.js DoodleNet classify (`k=5`, curated‑first) → map label to formation JSON, generating a simple ring if missing → transition: strokes fade to gray (300ms) → 200ms hold → stroke cloud morphs to a centered, slightly bouncy InstancedMesh reveal (≈500ms), bbox‑fit.
 - Data: Curate ~30 categories (subset of 345). Store normalized point clouds under `public/formations/<label>.json` (≤ 10 KB each).
 - Rendering: Single InstancedMesh (spheres), 200–320 instances; DPR clamp and lean materials for mobile.
 
@@ -56,12 +56,12 @@
 ### 3) Category curation & label map (0.5h)
 
 - `app/draw3d/labelMap.ts`: choose ~30 high‑signal categories (e.g., cat, tree, house, car, balloon, flower, fish, bird, cup, phone, star, sun…).
-- Map from DoodleNet label → formation id; unknown falls back to a stroke‑cloud.
+- Map from DoodleNet label → formation id; unknown falls back to a procedural ring.
 
 ### 4) Formation data & loader (1h)
 
 - `public/formations/<label>.json` with `{ positions: number[][] }` normalized to −1..1 in X/Y/Z around origin (150–300 points).
-- `app/draw3d/useFormation.ts` loads JSON and memoizes; stroke‑cloud fallback if missing.
+- `app/draw3d/useFormation.ts` loads JSON and memoizes; procedural ring fallback if missing.
 
 ### 5) InstancedMesh renderer (2h)
 
@@ -76,7 +76,7 @@
 
 ### 7) Wire page logic (0.5h)
 
-- In `page.tsx`: load classifier on mount; show Ready when loaded. Auto‑commit the current multi‑stroke session after ~1.5s idle (no manual path). After commit, preprocess + classify (`k=5`, curated‑first; confidence gate, e.g., ≥ 0.25). Fetch formation → fit to drawing bbox → render, or extrude a stroke‑cloud if unknown.
+- In `page.tsx`: load classifier on mount; show Ready when loaded. Auto‑commit the current multi‑stroke session after ~1.5s idle (no manual path). After commit, preprocess + classify (`k=5`, curated‑first; confidence gate, e.g., ≥ 0.25). Fetch formation → fit to drawing bbox → render, or generate a simple ring if unknown.
 - Optional: show top‑5 labels unobtrusively for diagnostics.
 
 ### 8) Metrics & guardrails (0.5h)
