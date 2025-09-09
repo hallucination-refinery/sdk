@@ -10,6 +10,7 @@ export interface HUDProps {
   autoEnabled?: boolean
   onToggleAuto?(next: boolean): void
   busy?: boolean
+  devControls?: boolean
 }
 
 export default function HUD({
@@ -24,6 +25,7 @@ export default function HUD({
   autoEnabled,
   onToggleAuto,
   busy,
+  devControls,
 }: HUDProps) {
   return (
     <div
@@ -45,13 +47,15 @@ export default function HUD({
       <div>fps: {fps}</div>
       <div>instances: {instances}</div>
       <div style={{ marginTop: 4 }}>
-        <button
-          style={{ marginRight: 4, fontSize: 10 }}
-          onClick={onClassify}
-          disabled={!onClassify || !!busy}
-        >
-          Classify
-        </button>
+        {(devControls || autoEnabled === false) && (
+          <button
+            style={{ marginRight: 4, fontSize: 10 }}
+            onClick={onClassify}
+            disabled={!onClassify || !!busy}
+          >
+            Classify
+          </button>
+        )}
         <button
           style={{ marginRight: 4, fontSize: 10 }}
           onClick={onClear}
