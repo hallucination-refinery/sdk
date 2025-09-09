@@ -45,7 +45,7 @@ export function normalizeLabel(
   const primary = normalize(raw);
   if (CURATED.has(primary)) return primary;
 
-  for (const { label } of topK) {
+  for (const { label } of topK.slice(0, 5)) {
     const mapped = normalize(label);
     if (CURATED.has(mapped)) return mapped;
   }
