@@ -18,6 +18,7 @@ function InstancedFormation({ positions }: FormationViewProps) {
     clampDpr(gl)
   }, [gl])
 
+  // respect device/env caps on instance count
   const maxInstances = capInstances(positions.length / 3)
   const count = useFormationTransition(mesh, positions, maxInstances)
 
