@@ -8,7 +8,7 @@ import type { DoodleCanvasHandle } from './types'
 import MorphFormationView from './renderer/MorphFormationView'
 import HUD from './ui/HUD'
 import { normalizeLabel } from './data/labelMap'
-import { rasterToCloud } from './canvas/rasterToCloud'
+import { rasterToCloud, resampleCloud } from './canvas/rasterToCloud'
 import '../styles/draw3d.css'
 
 const formationCache = new Map<string, Promise<Float32Array>>()
@@ -112,7 +112,13 @@ export default function AppHost() {
       console.log('[commitFired]')
       const preStart = performance.now()
       const off = make28x28Canvas(canvas)
-      const strokeCloud = rasterToCloud(canvas, { max: 256, threshold: 200 })
+      let strokeCloud = rasterToCloud(canvas, {
+        threshold: 200,
+        gridStride: 4
+      })
+      if (strokeCloud.length / 3 > 256) {
+        strokeCloud = resampleCloud(strokeCloud, 256)
+      }
       const preMs = performance.now() - preStart
 
       let lMs = loadMs
