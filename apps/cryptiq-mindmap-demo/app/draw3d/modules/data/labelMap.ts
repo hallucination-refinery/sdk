@@ -5,22 +5,32 @@ export const ALIASES: Record<string, string> = {
   telephone: 'phone',
   mug: 'cup',
   leaf: 'flower',
+  airplane: 'plane',
+  eyeglasses: 'glasses',
 };
 
 export const CURATED = new Set<string>([
+  'apple',
   'balloon',
   'bird',
   'boat',
+  'book',
   'car',
   'cat',
   'cup',
   'fish',
   'flower',
+  'glasses',
+  'heart',
   'house',
+  'moon',
   'phone',
-  'tree',
+  'plane',
+  'shoe',
   'star',
   'sun',
+  'tree',
+  'umbrella',
 ]);
 
 export function normalizeLabel(
