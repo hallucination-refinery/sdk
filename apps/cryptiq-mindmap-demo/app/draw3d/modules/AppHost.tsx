@@ -65,18 +65,30 @@ export default function AppHost() {
   const [inferMs, setInferMs] = useState(0)
   const [fps, setFps] = useState(0)
   const [busy, setBusy] = useState(false)
-  const [autoEnabled, setAutoEnabled] = useState(false)
+  const [autoEnabled, setAutoEnabled] = useState(true)
   const canvasRef = useRef<DoodleCanvasHandle>(null)
   const inferRef = useRef(false)
   const timerRef = useRef<number | null>(null)
 
   const meetsInk = () => {
-    const { area, length } = canvasRef.current?.getInkMetrics() ?? { area: 0, length: 0 }
-    return area > MIN_AREA && length > MIN_LENGTH
+    const m = canvasRef.current?.getInkMetrics()
+    const area = m?.area ?? 0
+    const length = m?.length ?? 0
+    const w = m?.bbox.width ?? 0
+    const h = m?.bbox.height ?? 0
+    const ok = area > MIN_AREA && length > MIN_LENGTH && w >= 32 && h >= 32
+    if (!ok) {
+      console.log('[gateRejected]', { area, length, w, h, MIN_AREA, MIN_LENGTH })
+    }
+    return ok
   }
 
   const classifyNow = async () => {
-    if (inferRef.current || !meetsInk()) return
+    if (inferRef.current) {
+      console.log('[commitSuppressed] inFlight')
+      return
+    }
+    if (!meetsInk()) return
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
@@ -86,6 +98,7 @@ export default function AppHost() {
     inferRef.current = true
     setBusy(true)
     try {
+      console.log('[commitFired]')
       const preStart = performance.now()
       const off = make28x28Canvas(canvas)
       const preMs = performance.now() - preStart
@@ -123,12 +136,20 @@ export default function AppHost() {
   }
 
   const resetTimer = () => {
-    if (!autoEnabled || inferRef.current || !meetsInk()) return
+    console.log('[strokeEnd]')
+    if (!autoEnabled) return
+    if (inferRef.current) {
+      console.log('[timerCancelled] inFlight')
+      return
+    }
+    if (!meetsInk()) return
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null
+      console.log('[timerFired]')
       if (!inferRef.current && meetsInk()) classifyNow()
     }, 800)
+    console.log('[timerScheduled] 800ms')
   }
 
   useEffect(() => {

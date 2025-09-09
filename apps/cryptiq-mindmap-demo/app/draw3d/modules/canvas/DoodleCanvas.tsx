@@ -124,8 +124,10 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle, DoodleCanvasProps>(
       toCanvas: () => canvasRef.current,
       getInkMetrics: () => {
         const b = bbox.current
-        const area = b ? (b.maxX - b.minX) * (b.maxY - b.minY) : 0
-        return { area, length: length.current }
+        const w = b ? b.maxX - b.minX : 0
+        const h = b ? b.maxY - b.minY : 0
+        const area = w * h
+        return { area, length: length.current, bbox: { width: w, height: h } }
       },
     }))
 
