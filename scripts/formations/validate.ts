@@ -1,27 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
-const formations = [
-  'house',
-  'cat',
-  'car',
-  'tree',
-  'cup',
-  'phone',
-  'boat',
-  'bird',
-  'fish',
-  'balloon',
-  'unknown'
-];
+import { CURATED } from '../../apps/cryptiq-mindmap-demo/app/draw3d/modules/data/labelMap';
 
 const dir = path.resolve('public/formations');
 let hasError = false;
 
-for (const name of formations) {
-  const file = path.join(dir, `${name}.json`);
-  const raw = fs.readFileSync(file, 'utf8');
-  const data = JSON.parse(raw);
+for (const name of CURATED) {
+  const filePath = path.join(dir, `${name}.json`);
+  const raw = fs.readFileSync(filePath, 'utf8');
+  if (Buffer.byteLength(raw, 'utf8') > 10 * 1024) {
+    console.error(`${name}.json: file exceeds 10KB`);
+    hasError = true;
+  }
+  let data: any;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    console.error(`${name}.json: invalid JSON`);
+    hasError = true;
+    continue;
+  }
   const positions = data.positions;
   if (!Array.isArray(positions)) {
     console.error(`${name}: positions is not an array`);
