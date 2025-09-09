@@ -6,6 +6,7 @@ export const ALIASES: Record<string, string> = {
   mug: 'cup',
   leaf: 'flower',
   airplane: 'plane',
+  eyeglasses: 'glasses',
 };
 
 export const CURATED = new Set<string>([
