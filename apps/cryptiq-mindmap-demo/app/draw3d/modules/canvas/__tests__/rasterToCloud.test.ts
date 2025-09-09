@@ -40,6 +40,12 @@ describe('rasterToCloud', () => {
     const pts2 = rasterToCloud(c, { max })
     expect(Array.from(pts)).toEqual(Array.from(pts2))
   })
+
+  it('keeps fully saturated colored strokes', () => {
+    const c = makeCanvas(16, 16, [255, 0, 0, 255])
+    const pts = rasterToCloud(c)
+    expect(pts.length).toBeGreaterThan(0)
+  })
 })
 
 describe('resampleCloud', () => {
