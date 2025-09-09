@@ -72,10 +72,15 @@ function InstancedMorph({
   useEffect(() => {
     const m = mesh.current
     if (!m) return
-    const startPos = data.src ?? data.tgt
+    const { src, tgt, map } = data
     for (let i = 0; i < data.count; i++) {
       const i3 = i * 3
-      dummy.current.position.set(startPos[i3], startPos[i3 + 1], startPos[i3 + 2])
+      if (src && map) {
+        const sIdx = map[i] * 3
+        dummy.current.position.set(src[sIdx], src[sIdx + 1], src[sIdx + 2])
+      } else {
+        dummy.current.position.set(tgt[i3], tgt[i3 + 1], tgt[i3 + 2])
+      }
       dummy.current.scale.setScalar(0)
       dummy.current.updateMatrix()
       m.setMatrixAt(i, dummy.current.matrix)
