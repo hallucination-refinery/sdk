@@ -17,7 +17,6 @@
     "type-check": "tsc -b --clean tsconfig.build.json && tsc -b tsconfig.build.json",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
-    "dev:trace": "node -e \"console.log(JSON.stringify(globalThis.__draw3dTraces||[],null,2))\"",
     "docs": "typedoc --plugin typedoc-plugin-markdown --entryPointStrategy Packages --entryPoints packages/* --skipErrorChecking --githubPages false --tsconfig tsconfig.build.json",
     "docs:watch": "typedoc --watch",
     "watch-smoke": "node scripts/watch-smoke.cjs",
