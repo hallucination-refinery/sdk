@@ -1,11 +1,28 @@
+let effectiveConfig = {
+  threshold: 180,
+  stride: 2,
+  minCount: 200,
+  jitter: 1 / 256
+}
+
+export function getEffectiveRasterConfig() {
+  return effectiveConfig
+}
+
 export function rasterToCloud(
   src: HTMLCanvasElement,
-  opts?: { threshold?: number; gridStride?: number; minCount?: number }
+  opts?: {
+    threshold?: number
+    stride?: number
+    minCount?: number
+    jitter?: number
+  }
 ): Float32Array {
   const threshold = opts?.threshold ?? 180
-  const stride = opts?.gridStride ?? 2
-  const minCount = opts?.minCount ?? 200
-  const jitter = 1 / 256
+  const stride = opts?.stride ?? 2
+  const minCount = Math.max(opts?.minCount ?? 200, 200)
+  const jitter = opts?.jitter ?? 1 / 256
+  effectiveConfig = { threshold, stride, minCount, jitter }
   const w = src.width
   const h = src.height
   if (!w || !h) return new Float32Array(0)
