@@ -21,7 +21,9 @@ function InstancedFormation({ positions }: FormationViewProps) {
   // respect device/env caps on instance count and keep mesh mounted
   const maxInstances = useRef(0)
   const capped = capInstances(positions.length / 3)
-  if (capped > maxInstances.current) maxInstances.current = capped
+  if (capped > maxInstances.current) {
+    maxInstances.current = capped
+  }
   const visibleCount = useFormationTransition(mesh, positions, maxInstances.current)
 
   // expose visible count instead of remounting
