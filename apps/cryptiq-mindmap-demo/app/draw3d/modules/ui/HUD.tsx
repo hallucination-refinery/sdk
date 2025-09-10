@@ -27,6 +27,12 @@ export default function HUD({
   busy,
   devControls,
 }: HUDProps) {
+  const onCopyTrace = () => {
+    const traces = (window as any).__draw3dTraces
+    const trace = traces?.at?.(-1) ?? traces
+    const text = JSON.stringify(trace ?? [])
+    navigator.clipboard.writeText(text).catch(() => {})
+  }
   return (
     <div
       style={{
@@ -69,13 +75,21 @@ export default function HUD({
           Undo
         </button>
         {devControls && (
-          <button
-            style={{ marginRight: 4, fontSize: 10 }}
-            onClick={onClassify}
-            disabled={!onClassify || !!busy}
-          >
-            Classify
-          </button>
+          <>
+            <button
+              style={{ marginRight: 4, fontSize: 10 }}
+              onClick={onClassify}
+              disabled={!onClassify || !!busy}
+            >
+              Classify
+            </button>
+            <button
+              style={{ marginRight: 4, fontSize: 10 }}
+              onClick={onCopyTrace}
+            >
+              Copy trace
+            </button>
+          </>
         )}
         {busy && <span style={{ marginLeft: 4 }}>inference…</span>}
       </div>
