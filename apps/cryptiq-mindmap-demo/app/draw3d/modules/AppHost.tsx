@@ -173,11 +173,16 @@ export default function AppHost() {
         traceRef.current = traceRef.current || {}
         traceRef.current.commitFired = performance.now()
       }
+      // Defer heavy canvas readbacks until after paint to avoid long-task warnings
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      )
       const preStart = performance.now()
       const off = make28x28Canvas(canvas)
       let strokeCloud = rasterToCloud(canvas, {
         threshold: 185,
-        stride: 3
+        stride: 3,
+        jitter: 0,
       })
       if (strokeCloud.length / 3 > 256) {
         strokeCloud = resampleCloud(strokeCloud, 256)
@@ -209,8 +214,7 @@ export default function AppHost() {
       console.log(`pre ${preMs.toFixed(1)}ms load ${lMs.toFixed(1)}ms infer ${iMs.toFixed(1)}ms`)
 
       const normalized = normalizeLabel(preds[0]?.label ?? '', preds)
-      if (traceEnabled && traceRef.current)
-        traceRef.current.classify = { topK: preds, normalized }
+      if (traceEnabled && traceRef.current) traceRef.current.classify = { topK: preds, normalized }
       let target: Float32Array
       let fitScale: number | undefined
       let bounce = true
@@ -254,9 +258,7 @@ export default function AppHost() {
       setMorph({ source: strokeCloud, target, fitScale, bounce })
       if (traceEnabled && traceRef.current) {
         const t = Object.freeze({ ...traceRef.current })
-        ;(window as any).__draw3dTraces = (
-          (window as any).__draw3dTraces || []
-        ) as any[]
+        ;(window as any).__draw3dTraces = ((window as any).__draw3dTraces || []) as any[]
         ;(window as any).__draw3dTraces.push(t)
         console.debug('[trace]', t)
         traceRef.current = null
@@ -287,8 +289,7 @@ export default function AppHost() {
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null
       console.log('[timerFired]')
-      if (traceEnabled && traceRef.current)
-        traceRef.current.timerFired = performance.now()
+      if (traceEnabled && traceRef.current) traceRef.current.timerFired = performance.now()
       if (!inferRef.current && meetsInk()) classifyNow()
     }, IDLE_MS)
     console.log(`[timerScheduled] ${IDLE_MS}ms`)
@@ -341,7 +342,12 @@ export default function AppHost() {
         onClassify={devControls ? classifyNow : undefined}
         onClear={() => {
           canvasRef.current?.clear()
-          setMorph((m) => ({ ...m, source: undefined, target: new Float32Array(), fitScale: undefined }))
+          setMorph((m) => ({
+            ...m,
+            source: undefined,
+            target: new Float32Array(),
+            fitScale: undefined,
+          }))
           canvasWrapRef.current?.classList.remove('stroke-fade')
           if (timerRef.current) {
             clearTimeout(timerRef.current)
@@ -360,13 +366,10 @@ export default function AppHost() {
         onToggleAuto={devControls ? setAutoEnabled : undefined}
         busy={busy}
         devControls={devControls}
+        showCopyTrace={traceEnabled}
       />
       <div ref={canvasWrapRef} style={{ position: 'absolute', inset: 0 }}>
-        <DoodleCanvas
-          ref={canvasRef}
-          onStrokeStart={cancelTimer}
-          onStrokeEnd={resetTimer}
-        />
+        <DoodleCanvas ref={canvasRef} onStrokeStart={cancelTimer} onStrokeEnd={resetTimer} />
       </div>
       <MorphFormationView
         source={morph.source}
