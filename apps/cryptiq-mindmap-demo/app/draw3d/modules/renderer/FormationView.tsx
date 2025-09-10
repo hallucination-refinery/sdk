@@ -35,11 +35,7 @@ function InstancedFormation({ positions }: FormationViewProps) {
   return (
     <group scale={1.8}>
       {/* @ts-expect-error r3f intrinsic */}
-      <instancedMesh
-        key={maxInstances.current}
-        ref={mesh}
-        args={[undefined, undefined, maxInstances.current]}
-      >
+      <instancedMesh ref={mesh} args={[undefined, undefined, maxInstances.current]}>
         {/* @ts-expect-error r3f intrinsic */}
         <sphereGeometry args={[0.045, 6, 6]} />
         <meshBasicMaterial color={0xffffff} toneMapped={false} transparent opacity={1} />
