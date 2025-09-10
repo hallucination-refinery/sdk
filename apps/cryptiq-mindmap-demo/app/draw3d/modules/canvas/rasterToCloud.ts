@@ -38,9 +38,8 @@ export function rasterToCloud(
       const xi = Math.floor(x)
       const idx = (yi * w + xi) * 4
       const a = data[idx + 3]
-      const isWhite =
-        data[idx] === 255 && data[idx + 1] === 255 && data[idx + 2] === 255
-      if (a >= threshold && !isWhite) {
+      // Treat any sufficiently opaque pixel as ink; do NOT exclude white
+      if (a >= threshold) {
         const nx = (x / w) * 2 - 1
         const ny = (y / h) * 2 - 1
         const jx = (rnd() - 0.5) * jitter

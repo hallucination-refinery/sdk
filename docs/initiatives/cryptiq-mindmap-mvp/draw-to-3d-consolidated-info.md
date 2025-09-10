@@ -201,6 +201,7 @@ Matches fields emitted by AppHost trace.
 ## S2) Smoke Test (2025-09-10)
 
 ### Observations
+
 - Launched `/draw3d?trace=1`; black viewport with neon HUD top-left; no "Copy trace" button visible (controls likely behind `?debug=1`).
 - Drew house (square then roof). Auto-commit fired between strokes (before triangle completed). Strokes faded; an odd blotchy circle of dots appeared.
 - Clearing did not trigger WebGL context loss this time.
@@ -217,6 +218,7 @@ pre 115.8ms load 792.2ms infer 47.1ms
 ```
 
 ### Analysis vs expectations
+
 - Auto-only idle commit: PARTIAL — idle fired as expected but was not cancelled by the second stroke start, causing premature commit mid-session.
 - Transition and morphology: PARTIAL — fade occurred; morph showed a blotchy circle (unknown fallback produced a uniform ring/cloud rather than stroke-sampled points).
 - HUD/telemetry: PARTIAL — metrics present; "Copy trace" button absent (controls gated behind `NEXT_PUBLIC_DRAW3D_DEBUG_UI=1` or `?debug=1`).
@@ -225,24 +227,32 @@ pre 115.8ms load 792.2ms infer 47.1ms
 - Performance notes: WARN — `willReadFrequently` hint missing; single long-timer (~117ms) during readback.
 
 ### Spec Conformance Matrix (S2 deltas)
-| Spec Item | S2 Status | Evidence | Action |
-| --- | --- | --- | --- |
-| Auto-only, multi-stroke idle commit | FAIL (fires between strokes) | `[timerScheduled] → [timerFired]` before second stroke end | Cancel timer on stroke start; coalesce sessions |
-| Transition timings & morph aesthetics | PARTIAL | Blotchy circle (unknown) | Prefer stroke-sampled cloud; reduce jitter; enforce minCount≥200 |
-| Instances ≥200 and bbox-fit | PASS (unknown path) | `morph.targetCount:200, visibleCount:200, fitScale:1` | None |
-| HUD readable + trace UX | PARTIAL | No "Copy trace" button | Show Copy when `trace` enabled or use `?debug=1` |
-| Context-loss handling | PASS | No loss on Clear | Keep Canvas persistent; handler in place |
+
+| Spec Item                             | S2 Status                    | Evidence                                                   | Action                                                           |
+| ------------------------------------- | ---------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| Auto-only, multi-stroke idle commit   | FAIL (fires between strokes) | `[timerScheduled] → [timerFired]` before second stroke end | Cancel timer on stroke start; coalesce sessions                  |
+| Transition timings & morph aesthetics | PARTIAL                      | Blotchy circle (unknown)                                   | Prefer stroke-sampled cloud; reduce jitter; enforce minCount≥200 |
+| Instances ≥200 and bbox-fit           | PASS (unknown path)          | `morph.targetCount:200, visibleCount:200, fitScale:1`      | None                                                             |
+| HUD readable + trace UX               | PARTIAL                      | No "Copy trace" button                                     | Show Copy when `trace` enabled or use `?debug=1`                 |
+| Context-loss handling                 | PASS                         | No loss on Clear                                           | Keep Canvas persistent; handler in place                         |
 
 ### Actions before next test
+
 - Timer/session coalescing: Add `onStrokeStart` to `DoodleCanvas` and wire `resetTimer(cancelOnly=true)` in `AppHost` to clear any pending idle timeout on new pointerdown; only schedule on stroke end.
 - Raster cloud robustness: In `rasterToCloud`, acquire context with `{ willReadFrequently:true }`, lower threshold to ≈170–185, keep stride grid (≈3–4 px), ensure `minCount≥200` via resample/upsample, and prefer stroke-sampled positions over a synthetic ring for unknown.
 - Trace UX: Expose "Copy trace" whenever `trace` is enabled (no `?debug` needed), or document `?debug=1` as the toggle for dev controls.
 - Scheduling: Perform readback after `requestAnimationFrame` to avoid long tasks delaying timers; keep one ROI read per commit.
 
 ### S2 Trace (summary)
+
 ```json
 {
-  "classify": { "normalized": "unknown", "topK": [/* elided */] },
+  "classify": {
+    "normalized": "unknown",
+    "topK": [
+      /* elided */
+    ]
+  },
   "morph": { "targetCount": 200, "visibleCount": 200, "capApplied": false, "fitScale": 1 },
   "warnings": ["willReadFrequently missing", "setTimeout took ~117ms"],
   "notes": ["auto fired mid-session before second stroke end"]
@@ -250,9 +260,63 @@ pre 115.8ms load 792.2ms infer 47.1ms
 ```
 
 ### Acceptance gates for S3
+
 - Commit triggers only after last stroke idle (3s) — no mid-session commits while drawing additional strokes.
 - Unknown path uses stroke-sampled cloud (tidy, centered) rather than blotchy jitter; counts ≥ 200.
 - "Copy trace" available when `trace=1` is set; telemetry contains counts, top‑k, normalized label, DPR.
 - No `willReadFrequently` warning; no `Context Lost`; long task < 50 ms during commit on mid‑range device.
+
+---
+## S3) Smoke Test (2025-09-10 later)
+
+### Observations
+- Launched `/draw3d?trace=1`; black viewport with neon HUD; Auto toggle present but disabled (dev controls off); no "Copy trace" button.
+- Drew house (square, then roof). Auto-commit still fired before the second stroke completed. Strokes faded → blotchy circular cloud appeared. No context-loss on Clear.
+- Console shows: willReadFrequently hint warning; long `setTimeout` (~111ms); timings `pre ~110ms / load ~1236ms / infer ~55ms`; label normalized to `unknown`; trace emitted.
+
+Key console lines:
+
+```text
+[strokeEnd] → [timerScheduled] 3000ms → [timerFired] → [commitFired]
+Canvas2D: willReadFrequently recommendation (rasterToCloud.ts)
+[Violation] 'setTimeout' handler took 111ms
+pre 109.8ms load 1235.7ms infer 54.9ms
+[labelMap] chosen: 'unknown'
+```
+
+### Analysis vs expectations
+- Auto-only multi-stroke commit: FAIL — timer not cancelled on new stroke start; commit triggers mid-session.
+- Unknown fallback quality: PARTIAL/POOR — blotchy circle suggests stroke sampling path is not used; synthetic ring/cloud is being shown.
+- Telemetry/HUD: PARTIAL — metrics present; "Copy trace" missing when only `trace=1` is set; Auto toggle disabled (expected with devControls off).
+- Stability: PASS — no context loss on Clear/Undo.
+- Performance: WARN — willReadFrequently warning persists; single readback causing long task (~111ms).
+
+### Likely root causes
+- Timer coalescing missing: `resetTimer` runs only on stroke end; we do not cancel pending idle on stroke start.
+- Raster sampling misclassifies ink: current `rasterToCloud` excludes white pixels (`!isWhite`) but our strokes are white on transparent, yielding sparse/zero cloud and forcing synthetic fallback.
+- willReadFrequently was requested only on the later readback context; initial `2d` context is created in `DoodleCanvas` without the flag, so the hint is not applied.
+
+### Spec Conformance Matrix (S3 deltas)
+| Spec Item                             | S3 Status                    | Evidence                                        | Action                                                                 |
+| ------------------------------------- | ---------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------- |
+| Auto-only, multi-stroke idle commit   | FAIL (fires between strokes) | Logs show commit before second stroke completes | Cancel idle on pointerdown; schedule only on stroke end                |
+| Transition & unknown aesthetics       | PARTIAL                      | Blotchy circle                                  | Use stroke-sampled cloud; remove white-pixel exclusion; minCount ≥ 200 |
+| Instances ≥200 and bbox-fit           | PASS (unknown path)          | Visible, targetCount=200                        | None                                                                   |
+| HUD readable + trace UX               | PARTIAL                      | No Copy button under `trace=1`                  | Show Copy when `trace` enabled or document `?debug=1`                  |
+| Context-loss handling                 | PASS                         | No loss on Clear                                | Keep Canvas persistent; guard remains                                   |
+| Readback performance                  | WARN                         | Long task ~111ms; warning present               | Apply willReadFrequently on first 2D context; single ROI read          |
+
+### Actions before next test (S3 → S4)
+- Session coalescing: Add `onStrokeStart` to `DoodleCanvas`; in `AppHost`, cancel any pending idle timer on pointerdown; only schedule on stroke end; ignore while busy.
+- Raster sampling fix: In `rasterToCloud`, treat ink as `alpha >= αMin` (e.g., 170–190) without excluding white; keep stride grid (3–4 px); enforce `minCount ≥ 200` via `resampleCloud`.
+- Apply willReadFrequently at source: Create the initial 2D context in `DoodleCanvas` with `{ willReadFrequently:true }` so subsequent readbacks benefit.
+- Trace UX: Expose "Copy trace" when `trace=1` (independent of devControls) or document `?debug=1` for controls; include counts, DPR, top‑k in trace.
+- Timer scheduling hygiene: Defer readback by one `requestAnimationFrame` inside commit to reduce long task impact on timers.
+
+### S3 Acceptance gates for S4
+- No mid-stroke commits: timer reliably cancels on stroke start, and commits only after 3s idle following the last stroke.
+- Unknown uses stroke-sampled cloud (tidy, centered), not synthetic blotches; counts ≥ 200.
+- No `willReadFrequently` warning; `setTimeout` long-task log does not appear on commit.
+- Copy trace available under `trace=1`; context remains stable on Clear/Undo.
 
 ---

@@ -267,6 +267,13 @@ export default function AppHost() {
     }
   }
 
+  const cancelTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
   const resetTimer = () => {
     console.log('[strokeEnd]')
     if (traceEnabled) traceRef.current = { strokeEnd: performance.now() }
@@ -355,7 +362,11 @@ export default function AppHost() {
         devControls={devControls}
       />
       <div ref={canvasWrapRef} style={{ position: 'absolute', inset: 0 }}>
-        <DoodleCanvas ref={canvasRef} onStrokeEnd={resetTimer} />
+        <DoodleCanvas
+          ref={canvasRef}
+          onStrokeStart={cancelTimer}
+          onStrokeEnd={resetTimer}
+        />
       </div>
       <MorphFormationView
         source={morph.source}

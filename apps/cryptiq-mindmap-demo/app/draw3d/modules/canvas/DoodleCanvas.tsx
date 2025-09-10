@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import type { DoodleCanvasHandle } from '../types'
 
 interface DoodleCanvasProps {
+  onStrokeStart?(): void
   onStrokeEnd?(): void
 }
 
@@ -18,7 +19,7 @@ function union(b: BBox | null, x: number, y: number): BBox {
 }
 
 const DoodleCanvas = forwardRef<DoodleCanvasHandle, DoodleCanvasProps>(
-  ({ onStrokeEnd }, ref) => {
+  ({ onStrokeStart, onStrokeEnd }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const dpr = useRef(1)
     const isDrawing = useRef(false)
@@ -26,17 +27,20 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle, DoodleCanvasProps>(
     const strokes = useRef<Point[][]>([])
     const bbox = useRef<BBox | null>(null)
     const length = useRef(0)
+    const strokeStartRef = useRef<(() => void) | null>(null)
     const strokeEndRef = useRef<(() => void) | null>(null)
 
     useEffect(() => {
+      strokeStartRef.current = onStrokeStart ?? null
       strokeEndRef.current = onStrokeEnd ?? null
-    }, [onStrokeEnd])
+    }, [onStrokeStart, onStrokeEnd])
 
     const start = (x: number, y: number) => {
       isDrawing.current = true
       last.current = { x, y }
       strokes.current.push([{ x, y }])
       bbox.current = union(bbox.current, x, y)
+      strokeStartRef.current?.()
     }
 
     const move = (x: number, y: number) => {
