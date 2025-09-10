@@ -4,12 +4,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { clampDpr, capInstances } from './perf'
-import {
-  resampleCloud,
-  computeMorphMap,
-  easeOutBack,
-  easeOutQuad,
-} from './morph'
+import { resampleCloud, computeMorphMap, easeOutBack, easeOutQuad } from './morph'
 
 export type MorphFormationViewProps = {
   source?: Float32Array
@@ -79,14 +74,21 @@ function InstancedMorph({
     const m = mesh.current
     if (!m) return
     if (capacity.current < data.count) {
-      m.instanceMatrix?.dispose()
+      // Guard disposal to avoid leaking the previous GPU buffer when resizing capacity
+      if ((m.instanceMatrix as any)?.dispose) {
+        ;(m.instanceMatrix as any).dispose()
+      }
+      // If instanceColor gets introduced later, dispose it here as well to avoid a parallel leak
+      if ((m.instanceColor as any)?.dispose) {
+        ;(m.instanceColor as any).dispose()
+      }
       capacity.current = data.count
-      m.instanceMatrix = new THREE.InstancedBufferAttribute(
+      m.instanceMatrix = new (THREE as any).InstancedBufferAttribute(
         new Float32Array(capacity.current * 16),
         16
       )
     }
-    m.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+    m.instanceMatrix.setUsage((THREE as any).DynamicDrawUsage)
     m.count = data.count
     const { src, tgt, map } = data
     for (let i = 0; i < data.count; i++) {
@@ -162,11 +164,18 @@ export default function MorphFormationView(props: MorphFormationViewProps) {
   return (
     <Canvas
       dpr={[1, 2]}
-      onContextLost={(e) => e.preventDefault()}
+      gl={{ powerPreference: 'high-performance' }}
       style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
     >
+      {/* Prevent default teardown on context loss */}
+      {/* @ts-expect-error r3f Canvas event not typed here */}
+      <primitive
+        object={null as unknown as THREE.Object3D}
+        onContextLost={(e: Event) => {
+          e.preventDefault()
+        }}
+      />
       <InstancedMorph {...props} />
     </Canvas>
   )
 }
-
