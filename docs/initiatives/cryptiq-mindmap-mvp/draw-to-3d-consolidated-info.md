@@ -112,6 +112,30 @@ type Draw3DResult = {
 
 - **Emit when:** after successful classify+formation selection or fallback synthesis.
 
+### Trace template
+
+Matches fields emitted by AppHost trace.
+
+```json
+{
+  "timestamps": {},
+  "inkMetrics": {},
+  "rasterConfig": {},
+  "topK": [],
+  "normalized": "",
+  "counts": {},
+  "caps": {},
+  "fetch": {},
+  "env": {},
+  "fps": 0
+}
+```
+
+### How to collect
+
+- **DevTools:** copy from `[trace]` or `window.__draw3dTraces`
+- **CLI:** `pnpm run dev:trace`
+
 ---
 
 ## 6) Risks and Mitigations
