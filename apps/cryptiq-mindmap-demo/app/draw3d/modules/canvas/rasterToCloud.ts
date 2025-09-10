@@ -41,7 +41,8 @@ export function rasterToCloud(
       // Treat any sufficiently opaque pixel as ink; do NOT exclude white
       if (a >= threshold) {
         const nx = (x / w) * 2 - 1
-        const ny = (y / h) * 2 - 1
+        // Flip Y so canvas top appears up (+Y) in 3D space
+        const ny = -((y / h) * 2 - 1)
         const jx = (rnd() - 0.5) * jitter
         const jy = (rnd() - 0.5) * jitter
         const jz = (rnd() - 0.5) * jitter

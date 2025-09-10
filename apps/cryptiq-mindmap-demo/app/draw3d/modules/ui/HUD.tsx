@@ -74,7 +74,7 @@ export default function HUD({
         >
           Undo
         </button>
-        {(devControls || typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('trace')) && (
+        {(devControls || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('trace'))) && (
           <>
             <button
               style={{ marginRight: 4, fontSize: 10 }}

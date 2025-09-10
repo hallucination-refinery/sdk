@@ -176,8 +176,8 @@ export default function AppHost() {
       const preStart = performance.now()
       const off = make28x28Canvas(canvas)
       let strokeCloud = rasterToCloud(canvas, {
-        threshold: 200,
-        stride: 4
+        threshold: 185,
+        stride: 3
       })
       if (strokeCloud.length / 3 > 256) {
         strokeCloud = resampleCloud(strokeCloud, 256)
