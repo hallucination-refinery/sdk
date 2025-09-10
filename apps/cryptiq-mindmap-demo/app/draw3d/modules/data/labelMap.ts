@@ -33,6 +33,10 @@ export const CURATED = new Set<string>([
   'umbrella',
 ]);
 
+const TRACE =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).has('trace');
+
 export function normalizeLabel(
   raw: string,
   topK: Array<{ label: string; confidence: number }> = [],
@@ -43,12 +47,20 @@ export function normalizeLabel(
   };
 
   const primary = normalize(raw);
-  if (CURATED.has(primary)) return primary;
+  let chosen = 'unknown';
 
-  for (const { label } of topK.slice(0, 5)) {
-    const mapped = normalize(label);
-    if (CURATED.has(mapped)) return mapped;
+  if (CURATED.has(primary)) {
+    chosen = primary;
+  } else {
+    for (const { label } of topK.slice(0, 5)) {
+      const mapped = normalize(label);
+      if (CURATED.has(mapped)) {
+        chosen = mapped;
+        break;
+      }
+    }
   }
 
-  return 'unknown';
+  if (TRACE) console.debug('[labelMap]', { topK, chosen });
+  return chosen;
 }
