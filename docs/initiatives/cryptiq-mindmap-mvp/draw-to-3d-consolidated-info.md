@@ -197,3 +197,62 @@ Matches fields emitted by AppHost trace.
 - [S1] Latest Smoke Test Results (this doc's logs and observations)
 
 ---
+
+## S2) Smoke Test (2025-09-10)
+
+### Observations
+- Launched `/draw3d?trace=1`; black viewport with neon HUD top-left; no "Copy trace" button visible (controls likely behind `?debug=1`).
+- Drew house (square then roof). Auto-commit fired between strokes (before triangle completed). Strokes faded; an odd blotchy circle of dots appeared.
+- Clearing did not trigger WebGL context loss this time.
+
+Key console lines:
+
+```text
+[strokeEnd] → [timerScheduled] 3000ms → [timerFired] → [commitFired]
+Canvas2D: willReadFrequently hint (rasterToCloud.ts)
+[Violation] 'setTimeout' handler took 117ms
+pre 115.8ms load 792.2ms infer 47.1ms
+[labelMap] { chosen: 'unknown' }
+[trace] { classify.topK, classify.normalized:'unknown', morph:{ targetCount:200, visibleCount:200, capApplied:false, fitScale:1, env, fps } }
+```
+
+### Analysis vs expectations
+- Auto-only idle commit: PARTIAL — idle fired as expected but was not cancelled by the second stroke start, causing premature commit mid-session.
+- Transition and morphology: PARTIAL — fade occurred; morph showed a blotchy circle (unknown fallback produced a uniform ring/cloud rather than stroke-sampled points).
+- HUD/telemetry: PARTIAL — metrics present; "Copy trace" button absent (controls gated behind `NEXT_PUBLIC_DRAW3D_DEBUG_UI=1` or `?debug=1`).
+- Instances and fit: PASS (counts 200, fitScale 1 for unknown path) — visible output non-zero.
+- WebGL context stability: PASS — no context-lost on Clear.
+- Performance notes: WARN — `willReadFrequently` hint missing; single long-timer (~117ms) during readback.
+
+### Spec Conformance Matrix (S2 deltas)
+| Spec Item | S2 Status | Evidence | Action |
+| --- | --- | --- | --- |
+| Auto-only, multi-stroke idle commit | FAIL (fires between strokes) | `[timerScheduled] → [timerFired]` before second stroke end | Cancel timer on stroke start; coalesce sessions |
+| Transition timings & morph aesthetics | PARTIAL | Blotchy circle (unknown) | Prefer stroke-sampled cloud; reduce jitter; enforce minCount≥200 |
+| Instances ≥200 and bbox-fit | PASS (unknown path) | `morph.targetCount:200, visibleCount:200, fitScale:1` | None |
+| HUD readable + trace UX | PARTIAL | No "Copy trace" button | Show Copy when `trace` enabled or use `?debug=1` |
+| Context-loss handling | PASS | No loss on Clear | Keep Canvas persistent; handler in place |
+
+### Actions before next test
+- Timer/session coalescing: Add `onStrokeStart` to `DoodleCanvas` and wire `resetTimer(cancelOnly=true)` in `AppHost` to clear any pending idle timeout on new pointerdown; only schedule on stroke end.
+- Raster cloud robustness: In `rasterToCloud`, acquire context with `{ willReadFrequently:true }`, lower threshold to ≈170–185, keep stride grid (≈3–4 px), ensure `minCount≥200` via resample/upsample, and prefer stroke-sampled positions over a synthetic ring for unknown.
+- Trace UX: Expose "Copy trace" whenever `trace` is enabled (no `?debug` needed), or document `?debug=1` as the toggle for dev controls.
+- Scheduling: Perform readback after `requestAnimationFrame` to avoid long tasks delaying timers; keep one ROI read per commit.
+
+### S2 Trace (summary)
+```json
+{
+  "classify": { "normalized": "unknown", "topK": [/* elided */] },
+  "morph": { "targetCount": 200, "visibleCount": 200, "capApplied": false, "fitScale": 1 },
+  "warnings": ["willReadFrequently missing", "setTimeout took ~117ms"],
+  "notes": ["auto fired mid-session before second stroke end"]
+}
+```
+
+### Acceptance gates for S3
+- Commit triggers only after last stroke idle (3s) — no mid-session commits while drawing additional strokes.
+- Unknown path uses stroke-sampled cloud (tidy, centered) rather than blotchy jitter; counts ≥ 200.
+- "Copy trace" available when `trace=1` is set; telemetry contains counts, top‑k, normalized label, DPR.
+- No `willReadFrequently` warning; no `Context Lost`; long task < 50 ms during commit on mid‑range device.
+
+---

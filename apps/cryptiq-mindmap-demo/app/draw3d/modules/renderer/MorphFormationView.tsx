@@ -164,17 +164,12 @@ export default function MorphFormationView(props: MorphFormationViewProps) {
   return (
     <Canvas
       dpr={[1, 2]}
-      gl={{ powerPreference: 'high-performance' }}
       style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+      onCreated={({ gl }) => {
+        gl.domElement.addEventListener('webglcontextlost', (e: any) => e.preventDefault())
+      }}
+      gl={{ powerPreference: 'high-performance' }}
     >
-      {/* Prevent default teardown on context loss */}
-      {/* @ts-expect-error r3f Canvas event not typed here */}
-      <primitive
-        object={null as unknown as THREE.Object3D}
-        onContextLost={(e: Event) => {
-          e.preventDefault()
-        }}
-      />
       <InstancedMorph {...props} />
     </Canvas>
   )
