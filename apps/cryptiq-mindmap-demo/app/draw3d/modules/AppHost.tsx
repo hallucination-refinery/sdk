@@ -8,7 +8,7 @@ import type { DoodleCanvasHandle } from './types'
 import MorphFormationView from './renderer/MorphFormationView'
 import HUD from './ui/HUD'
 import { normalizeLabel } from './data/labelMap'
-import { rasterToCloud, resampleCloud } from './canvas/rasterToCloud'
+import { rasterToCloud, resampleCloud, getEffectiveRasterConfig } from './canvas/rasterToCloud'
 import { capInstances } from './renderer/perf'
 import '../styles/draw3d.css'
 
@@ -137,6 +137,20 @@ export default function AppHost() {
     return false
   }, [])
 
+  // Integration seam: emit result payload for Mindmap
+  const onResult = (payload: {
+    label: string
+    confidence: number
+    topK: Array<{ label: string; confidence: number }>
+    formation: Float32Array
+    fitScale: number
+    counts: { cloud: number; target: number }
+    timings: { pre: number; load: number; infer: number }
+  }) => {
+    // For now, log once per commit to validate payload shape
+    console.debug('[result]', payload)
+  }
+
   const meetsInk = () => {
     const m = canvasRef.current?.getInkMetrics()
     const area = m?.area ?? 0
@@ -193,8 +207,16 @@ export default function AppHost() {
         cloudCount = strokeCloud.length / 3
         if (traceEnabled && traceRef.current) traceRef.current.synthesized = true
       }
-      if (traceEnabled && traceRef.current)
-        traceRef.current.raster = { count: cloudCount, threshold: 200, stride: 4 }
+      if (traceEnabled && traceRef.current) {
+        const cfg = getEffectiveRasterConfig()
+        traceRef.current.raster = {
+          count: cloudCount,
+          threshold: cfg.threshold,
+          stride: cfg.stride,
+          minCount: cfg.minCount,
+          jitter: cfg.jitter,
+        }
+      }
       const preMs = performance.now() - preStart
 
       let lMs = loadMs
@@ -256,6 +278,20 @@ export default function AppHost() {
           fps,
         }
       setMorph({ source: strokeCloud, target, fitScale, bounce })
+      // Emit result payload for integration validation
+      try {
+        onResult({
+          label: normalized || 'unknown',
+          confidence: preds[0]?.confidence ?? 0,
+          topK: preds as any,
+          formation: target,
+          fitScale: fitScale ?? 1,
+          counts: { cloud: cloudCount, target: target.length / 3 },
+          timings: { pre: preMs, load: lMs, infer: iMs },
+        })
+      } catch (err) {
+        console.warn('[result] emit failed', err)
+      }
       if (traceEnabled && traceRef.current) {
         const t = Object.freeze({ ...traceRef.current })
         ;(window as any).__draw3dTraces = ((window as any).__draw3dTraces || []) as any[]

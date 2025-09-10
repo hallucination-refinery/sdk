@@ -11,7 +11,10 @@ export interface HUDProps {
   onToggleAuto?(next: boolean): void
   busy?: boolean
   devControls?: boolean
+  showCopyTrace?: boolean
 }
+
+import { useEffect, useState } from 'react'
 
 export default function HUD({
   ready,
@@ -26,7 +29,10 @@ export default function HUD({
   onToggleAuto,
   busy,
   devControls,
+  showCopyTrace,
 }: HUDProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
   const onCopyTrace = () => {
     const traces = (window as any).__draw3dTraces
     const trace = traces?.at?.(-1) ?? traces
@@ -74,7 +80,7 @@ export default function HUD({
         >
           Undo
         </button>
-        {(devControls || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('trace'))) && (
+        {(devControls || (showCopyTrace && mounted)) && (
           <>
             <button
               style={{ marginRight: 4, fontSize: 10 }}
@@ -83,10 +89,7 @@ export default function HUD({
             >
               Classify
             </button>
-            <button
-              style={{ marginRight: 4, fontSize: 10 }}
-              onClick={onCopyTrace}
-            >
+            <button style={{ marginRight: 4, fontSize: 10 }} onClick={onCopyTrace}>
               Copy trace
             </button>
           </>
