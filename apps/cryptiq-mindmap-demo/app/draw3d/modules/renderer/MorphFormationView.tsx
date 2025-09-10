@@ -79,12 +79,14 @@ function InstancedMorph({
     const m = mesh.current
     if (!m) return
     if (capacity.current < data.count) {
+      m.instanceMatrix?.dispose()
       capacity.current = data.count
       m.instanceMatrix = new THREE.InstancedBufferAttribute(
         new Float32Array(capacity.current * 16),
         16
       )
     }
+    m.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
     m.count = data.count
     const { src, tgt, map } = data
     for (let i = 0; i < data.count; i++) {
