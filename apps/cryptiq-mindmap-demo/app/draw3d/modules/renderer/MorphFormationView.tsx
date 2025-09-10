@@ -29,11 +29,17 @@ function InstancedMorph({
   const { gl } = useThree()
   const mesh = useRef<any>(null)
   const dummy = useRef<any>(new THREE.Object3D())
+  const capacity = useRef(0)
   const anim = useRef<{ start: number; duration: number; active: boolean }>({
     start: 0,
     duration: durationMs,
     active: false,
   })
+
+  if (capacity.current === 0) {
+    const maxCount = Math.max(source ? source.length : 0, target.length) / 3
+    capacity.current = capInstances(maxCount)
+  }
 
   // limit device pixel ratio to reduce GPU load
   useEffect(() => {
@@ -72,6 +78,14 @@ function InstancedMorph({
   useEffect(() => {
     const m = mesh.current
     if (!m) return
+    if (capacity.current < data.count) {
+      capacity.current = data.count
+      m.instanceMatrix = new THREE.InstancedBufferAttribute(
+        new Float32Array(capacity.current * 16),
+        16
+      )
+    }
+    m.count = data.count
     const { src, tgt, map } = data
     for (let i = 0; i < data.count; i++) {
       const i3 = i * 3
@@ -132,7 +146,7 @@ function InstancedMorph({
   return (
     <group scale={1.8 * fitScale}>
       {/* @ts-expect-error r3f intrinsic */}
-      <instancedMesh ref={mesh} args={[undefined, undefined, data.count]}>
+      <instancedMesh ref={mesh} args={[undefined, undefined, capacity.current]}>
         {/* @ts-expect-error r3f intrinsic */}
         <sphereGeometry args={[0.045, 6, 6]} />
         <meshBasicMaterial color={0xffffff} toneMapped={false} transparent opacity={1} />
@@ -144,7 +158,11 @@ function InstancedMorph({
 
 export default function MorphFormationView(props: MorphFormationViewProps) {
   return (
-    <Canvas dpr={[1, 2]} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+    <Canvas
+      dpr={[1, 2]}
+      onContextLost={(e) => e.preventDefault()}
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+    >
       <InstancedMorph {...props} />
     </Canvas>
   )
