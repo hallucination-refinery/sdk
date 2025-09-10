@@ -2,7 +2,7 @@ let effectiveConfig = {
   threshold: 180,
   stride: 2,
   minCount: 200,
-  jitter: 1 / 256
+  jitter: 1 / 256,
 }
 
 export function getEffectiveRasterConfig() {
@@ -46,11 +46,7 @@ export function rasterToCloud(
         const jx = (rnd() - 0.5) * jitter
         const jy = (rnd() - 0.5) * jitter
         const jz = (rnd() - 0.5) * jitter
-        out.push(
-          clamp(nx + jx),
-          clamp(ny + jy),
-          clamp(jz)
-        )
+        out.push(clamp(nx + jx), clamp(ny + jy), clamp(jz))
       }
     }
   }
@@ -101,4 +97,3 @@ function mulberry32(a: number) {
 function clamp(v: number) {
   return v < -1 ? -1 : v > 1 ? 1 : v
 }
-

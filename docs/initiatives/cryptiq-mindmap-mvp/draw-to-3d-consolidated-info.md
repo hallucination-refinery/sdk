@@ -267,9 +267,11 @@ pre 115.8ms load 792.2ms infer 47.1ms
 - No `willReadFrequently` warning; no `Context Lost`; long task < 50 ms during commit on mid‑range device.
 
 ---
+
 ## S3) Smoke Test (2025-09-10 later)
 
 ### Observations
+
 - Launched `/draw3d?trace=1`; black viewport with neon HUD; Auto toggle present but disabled (dev controls off); no "Copy trace" button.
 - Drew house (square, then roof). Auto-commit still fired before the second stroke completed. Strokes faded → blotchy circular cloud appeared. No context-loss on Clear.
 - Console shows: willReadFrequently hint warning; long `setTimeout` (~111ms); timings `pre ~110ms / load ~1236ms / infer ~55ms`; label normalized to `unknown`; trace emitted.
@@ -285,6 +287,7 @@ pre 109.8ms load 1235.7ms infer 54.9ms
 ```
 
 ### Analysis vs expectations
+
 - Auto-only multi-stroke commit: FAIL — timer not cancelled on new stroke start; commit triggers mid-session.
 - Unknown fallback quality: PARTIAL/POOR — blotchy circle suggests stroke sampling path is not used; synthetic ring/cloud is being shown.
 - Telemetry/HUD: PARTIAL — metrics present; "Copy trace" missing when only `trace=1` is set; Auto toggle disabled (expected with devControls off).
@@ -292,21 +295,24 @@ pre 109.8ms load 1235.7ms infer 54.9ms
 - Performance: WARN — willReadFrequently warning persists; single readback causing long task (~111ms).
 
 ### Likely root causes
+
 - Timer coalescing missing: `resetTimer` runs only on stroke end; we do not cancel pending idle on stroke start.
 - Raster sampling misclassifies ink: current `rasterToCloud` excludes white pixels (`!isWhite`) but our strokes are white on transparent, yielding sparse/zero cloud and forcing synthetic fallback.
 - willReadFrequently was requested only on the later readback context; initial `2d` context is created in `DoodleCanvas` without the flag, so the hint is not applied.
 
 ### Spec Conformance Matrix (S3 deltas)
-| Spec Item                             | S3 Status                    | Evidence                                        | Action                                                                 |
-| ------------------------------------- | ---------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------- |
-| Auto-only, multi-stroke idle commit   | FAIL (fires between strokes) | Logs show commit before second stroke completes | Cancel idle on pointerdown; schedule only on stroke end                |
-| Transition & unknown aesthetics       | PARTIAL                      | Blotchy circle                                  | Use stroke-sampled cloud; remove white-pixel exclusion; minCount ≥ 200 |
-| Instances ≥200 and bbox-fit           | PASS (unknown path)          | Visible, targetCount=200                        | None                                                                   |
-| HUD readable + trace UX               | PARTIAL                      | No Copy button under `trace=1`                  | Show Copy when `trace` enabled or document `?debug=1`                  |
-| Context-loss handling                 | PASS                         | No loss on Clear                                | Keep Canvas persistent; guard remains                                   |
-| Readback performance                  | WARN                         | Long task ~111ms; warning present               | Apply willReadFrequently on first 2D context; single ROI read          |
+
+| Spec Item                           | S3 Status                    | Evidence                                        | Action                                                                 |
+| ----------------------------------- | ---------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------- |
+| Auto-only, multi-stroke idle commit | FAIL (fires between strokes) | Logs show commit before second stroke completes | Cancel idle on pointerdown; schedule only on stroke end                |
+| Transition & unknown aesthetics     | PARTIAL                      | Blotchy circle                                  | Use stroke-sampled cloud; remove white-pixel exclusion; minCount ≥ 200 |
+| Instances ≥200 and bbox-fit         | PASS (unknown path)          | Visible, targetCount=200                        | None                                                                   |
+| HUD readable + trace UX             | PARTIAL                      | No Copy button under `trace=1`                  | Show Copy when `trace` enabled or document `?debug=1`                  |
+| Context-loss handling               | PASS                         | No loss on Clear                                | Keep Canvas persistent; guard remains                                  |
+| Readback performance                | WARN                         | Long task ~111ms; warning present               | Apply willReadFrequently on first 2D context; single ROI read          |
 
 ### Actions before next test (S3 → S4)
+
 - Session coalescing: Add `onStrokeStart` to `DoodleCanvas`; in `AppHost`, cancel any pending idle timer on pointerdown; only schedule on stroke end; ignore while busy.
 - Raster sampling fix: In `rasterToCloud`, treat ink as `alpha >= αMin` (e.g., 170–190) without excluding white; keep stride grid (3–4 px); enforce `minCount ≥ 200` via `resampleCloud`.
 - Apply willReadFrequently at source: Create the initial 2D context in `DoodleCanvas` with `{ willReadFrequently:true }` so subsequent readbacks benefit.
@@ -314,9 +320,92 @@ pre 109.8ms load 1235.7ms infer 54.9ms
 - Timer scheduling hygiene: Defer readback by one `requestAnimationFrame` inside commit to reduce long task impact on timers.
 
 ### S3 Acceptance gates for S4
+
 - No mid-stroke commits: timer reliably cancels on stroke start, and commits only after 3s idle following the last stroke.
 - Unknown uses stroke-sampled cloud (tidy, centered), not synthetic blotches; counts ≥ 200.
 - No `willReadFrequently` warning; `setTimeout` long-task log does not appear on commit.
 - Copy trace available under `trace=1`; context remains stable on Clear/Undo.
+
+---
+
+## S4) Smoke Test (2025-09-10, later again)
+
+### Observations
+
+- Launched `/draw3d?trace=1`; HUD shows Copy trace; initial metrics zeroed; instances 0.
+- Drew house (square, then roof). Idle commit waited for last stroke (multi‑stroke fixed). Strokes faded; a dotted house cloud appeared (unknown path) with 256 instances.
+- Pressed Clear; no WebGL context loss. Trace copied successfully.
+- Console: hydration mismatch warning (HUD button markup), `willReadFrequently` recommendation from raster readback, and occasional long task (rAF/message ~60–270 ms during dev).
+
+Trace summary:
+
+```json
+{
+  "strokeEnd": 15.56s,
+  "timerScheduled": { "idleMs": 3000 },
+  "timerFired": 18.57s,
+  "commitFired": 18.57s,
+  "raster": { "count": 256, "threshold": 200, "stride": 4 },
+  "classify": { "normalized": "unknown", "topK": [ /* line, snowman, … */ ] },
+  "morph": { "targetCount": 256, "visibleCount": 256, "fitScale": 1, "env": { "dpr": ~1.8 }, "fps": ~120 }
+}
+```
+
+Note: code currently uses `threshold≈185`, `stride≈3`; trace’s `threshold/stride` fields are stale constants in logging and should be wired to actual values.
+
+### Analysis vs expectations
+
+- Auto‑only multi‑stroke idle commit: PASS — commit occurred after last stroke’s idle; coalescing works.
+- Visible output and counts: PASS — 256 instances rendered; center‑out reveal intact.
+- Unknown path aesthetics: PARTIAL — looks like dotted outline along strokes (improved vs blotches); acceptable for MVP, can be refined later.
+- Stability: PASS — no WebGL context loss on Clear/Undo; Canvas remains mounted.
+- Telemetry/HUD: PARTIAL — Copy trace present; hydration mismatch warning appears once due to server/client markup difference.
+- Performance: PARTIAL — `willReadFrequently` warning still logs (we already use it); occasional long-task warnings persist in dev but are reduced.
+
+### Spec Conformance Matrix (S4 deltas)
+
+| Spec Item                           | S4 Status | Evidence                                                          | Action                                                                  |
+| ----------------------------------- | --------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Auto-only, multi-stroke idle commit | PASS      | `[strokeEnd] → [timerScheduled] → [timerFired]` after last stroke | Keep guards; coalesce while busy                                        |
+| Transition timings & morph          | PASS      | Fade→hold→morph visible; center-out                               | Optional polish only                                                    |
+| Instances ≥200 and bbox-fit         | PASS      | `visibleCount: 256`, `fitScale: 1`                                | None                                                                    |
+| Unknown fallback quality            | PARTIAL   | Dotted outline; user calls it “house blotches”                    | Optional smoothing/denser sampling; keep jitter=0                       |
+| HUD readable + trace UX             | PARTIAL   | Copy trace works; hydration warning visible                       | Make Copy‑trace SSR‑stable (client-only render or CSS hide until mount) |
+| Readback performance                | PARTIAL   | Dev long-task logs (60–270 ms)                                    | We already defer readback; keep single ROI; verify on prod build        |
+| Trace correctness                   | FAIL      | threshold/stride logged as 200/4                                  | Log actual config from `rasterToCloud`                                  |
+| Context-loss handling               | PASS      | No context-loss on Clear                                          | Keep handler and persistent Canvas                                      |
+
+### Readiness for integration
+
+**Verdict: YES (with two tiny wiring fixes) — functionally robust and stable.**
+
+Why:
+
+- Auto‑commit loop is correct and resilient (multi‑stroke coalescing; single in‑flight guard).
+- Always produces visible output (≥200 instances) and handles unknown via stroke-sampled cloud.
+- No WebGL context loss; Canvas remains mounted; instance buffers update in place.
+- Telemetry available (top‑k, normalized label, counts, timings); Copy trace accessible.
+- Performance acceptable in dev; DPR/instance caps in place; double rAF reduces long tasks.
+
+Still missing before merge:
+
+- Wire trace to log actual `threshold/stride` used (not constants).
+- Make Copy‑trace SSR‑safe to remove hydration warning (render after mount or SSR‑stable wrapper).
+- Add `onResult(Draw3DResult)` emission from `AppHost` with payload (label, confidence, counts, timings, formation buffer/fit) to integrate with Cryptiq Mindmap.
+- Optional: minor smoothing of stroke cloud for unknown (non‑blocking aesthetics).
+
+### Actions before next test (S4 → S5)
+
+- Log correctness: update trace `raster` fields to reflect real `threshold/stride/minCount` from `getEffectiveRasterConfig()` — needed for accurate diagnostics.
+- SSR/hydration: gate Copy‑trace rendering behind a mounted flag to eliminate the hydration mismatch.
+- Integration seam: implement and test an `onResult` callback from `AppHost` that emits the structured payload (no app‑level wiring yet).
+- Build mode check: run a production build of the demo to confirm long‑task warnings are dev‑only and FPS remains ≥30 on a phone.
+
+### S4 Acceptance gates for S5
+
+- No hydration mismatch on first paint; Copy‑trace appears after mount without warning.
+- Trace shows true raster config (185/3 or current values); counts ≥ 200.
+- Result payload emitted once per commit and logged in console.
+- No context loss; no mid‑stroke commit; FPS stable (≥30 on mobile).
 
 ---

@@ -135,77 +135,78 @@ const DoodleCanvas = forwardRef<DoodleCanvasHandle, DoodleCanvasProps>(
       },
     }))
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    useEffect(() => {
+      const canvas = canvasRef.current
+      if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-    canvas.style.width = '100%'
-    canvas.style.height = '100%'
+      canvas.style.width = '100%'
+      canvas.style.height = '100%'
 
-    const rect = () => canvas.getBoundingClientRect()
+      const rect = () => canvas.getBoundingClientRect()
 
-    const resize = () => {
-      dpr.current = Math.min(window.devicePixelRatio || 1, 1.5)
-      const { width, height } = rect()
-      canvas.width = width * dpr.current
-      canvas.height = height * dpr.current
-      ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0)
-      redraw()
-    }
+      const resize = () => {
+        dpr.current = Math.min(window.devicePixelRatio || 1, 1.5)
+        const { width, height } = rect()
+        canvas.width = width * dpr.current
+        canvas.height = height * dpr.current
+        ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0)
+        redraw()
+      }
 
-    resize()
+      resize()
 
-    let frame = 0
-    const onResize = () => {
-      if (frame) cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        frame = 0
-        resize()
-      })
-    }
-    window.addEventListener('resize', onResize)
+      let frame = 0
+      const onResize = () => {
+        if (frame) cancelAnimationFrame(frame)
+        frame = requestAnimationFrame(() => {
+          frame = 0
+          resize()
+        })
+      }
+      window.addEventListener('resize', onResize)
 
-    const onPointerDown = (e: PointerEvent) => {
-      e.preventDefault()
-      canvas.setPointerCapture(e.pointerId)
-      const r = rect()
-      start(e.clientX - r.left, e.clientY - r.top)
-    }
-    const onPointerMove = (e: PointerEvent) => {
-      if (!isDrawing.current) return
-      e.preventDefault()
-      const r = rect()
-      move(e.clientX - r.left, e.clientY - r.top)
-    }
-    const onPointerUp = (e: PointerEvent) => {
-      if (!isDrawing.current) return
-      e.preventDefault()
-      end()
-    }
+      const onPointerDown = (e: PointerEvent) => {
+        e.preventDefault()
+        canvas.setPointerCapture(e.pointerId)
+        const r = rect()
+        start(e.clientX - r.left, e.clientY - r.top)
+      }
+      const onPointerMove = (e: PointerEvent) => {
+        if (!isDrawing.current) return
+        e.preventDefault()
+        const r = rect()
+        move(e.clientX - r.left, e.clientY - r.top)
+      }
+      const onPointerUp = (e: PointerEvent) => {
+        if (!isDrawing.current) return
+        e.preventDefault()
+        end()
+      }
 
-    canvas.addEventListener('pointerdown', onPointerDown, { passive: false })
-    canvas.addEventListener('pointermove', onPointerMove, { passive: false })
-    canvas.addEventListener('pointerup', onPointerUp, { passive: false })
+      canvas.addEventListener('pointerdown', onPointerDown, { passive: false })
+      canvas.addEventListener('pointermove', onPointerMove, { passive: false })
+      canvas.addEventListener('pointerup', onPointerUp, { passive: false })
 
-    return () => {
-      window.removeEventListener('resize', onResize)
-      if (frame) cancelAnimationFrame(frame)
-      canvas.removeEventListener('pointerdown', onPointerDown)
-      canvas.removeEventListener('pointermove', onPointerMove)
-      canvas.removeEventListener('pointerup', onPointerUp)
-    }
-  }, [])
+      return () => {
+        window.removeEventListener('resize', onResize)
+        if (frame) cancelAnimationFrame(frame)
+        canvas.removeEventListener('pointerdown', onPointerDown)
+        canvas.removeEventListener('pointermove', onPointerMove)
+        canvas.removeEventListener('pointerup', onPointerUp)
+      }
+    }, [])
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, zIndex: 1, touchAction: 'none' }}
-    />
-  )
-})
+    return (
+      <canvas
+        ref={canvasRef}
+        style={{ position: 'absolute', inset: 0, zIndex: 1, touchAction: 'none' }}
+      />
+    )
+  }
+)
 
 // for clearer debugging and linting
 DoodleCanvas.displayName = 'DoodleCanvas'
