@@ -1,37 +1,37 @@
-export const ALIASES: Record<string, string> = {
-  ship: 'boat',
-  cellphone: 'phone',
-  mobile: 'phone',
-  telephone: 'phone',
-  mug: 'cup',
-  leaf: 'flower',
-  airplane: 'plane',
-  eyeglasses: 'glasses',
-};
+const CURATED_LIST: Array<[string, ...string[]]> = [
+  ['house', 'home', 'building'],
+  ['cat', 'kitty', 'kitten', 'feline'],
+  ['circle', 'round', 'ring'],
+  ['triangle', 'pyramid', 'delta'],
+  ['star', 'asterisk'],
+  ['face', 'smile', 'smiley', 'head', 'emoji'],
+  ['apple'],
+  ['balloon'],
+  ['bird'],
+  ['boat', 'ship'],
+  ['book'],
+  ['car'],
+  ['cup', 'mug'],
+  ['fish'],
+  ['flower', 'leaf'],
+  ['glasses', 'eyeglasses'],
+  ['heart'],
+  ['moon'],
+  ['phone', 'cellphone', 'mobile', 'telephone'],
+  ['plane', 'airplane'],
+  ['shoe'],
+  ['sun'],
+  ['tree'],
+  ['umbrella'],
+];
 
-export const CURATED = new Set<string>([
-  'apple',
-  'balloon',
-  'bird',
-  'boat',
-  'book',
-  'car',
-  'cat',
-  'cup',
-  'fish',
-  'flower',
-  'glasses',
-  'heart',
-  'house',
-  'moon',
-  'phone',
-  'plane',
-  'shoe',
-  'star',
-  'sun',
-  'tree',
-  'umbrella',
-]);
+export const CURATED = new Set<string>(CURATED_LIST.map(([primary]) => primary));
+
+export const ALIASES: Record<string, string> = Object.fromEntries(
+  CURATED_LIST.flatMap(([primary, ...aliases]) =>
+    aliases.map((alias) => [alias, primary]),
+  ),
+);
 
 const TRACE =
   typeof window !== 'undefined' &&
