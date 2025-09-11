@@ -409,3 +409,39 @@ Still missing before merge:
 - No context loss; no mid‑stroke commit; FPS stable (≥30 on mobile).
 
 ---
+## Integration seam (`onResult`)
+
+- `AppHost` emits `onResult(result: Draw3DResult)` once per commit with:
+  - `label`: normalized label or `unknown`
+  - `confidence`: top confidence score
+  - `counts`: `{ raster, target, visible }`
+  - `timings`: `{ loadMs?, inferMs?, morphMs? }`
+  - `formation`: `{ buffer, fitScale }`
+- Enables Cryptiq Mindmap to react to recognized drawings.
+
+## Formation asset spec
+
+- Location: `apps/cryptiq-mindmap-demo/public/formations/<label>.json`
+- Format:
+  ```json
+  { "positions": number[] | number[][] }
+  ```
+- Values normalized to `-1..1` around origin; keep files tiny (<2 KB) with no extra keys.
+
+## Trace fields & collection
+
+- Enable by visiting `/draw3d?trace=1` or setting `NEXT_PUBLIC_DRAW3D_DEBUG_UI=1`.
+- Each commit logs:
+  - `strokeEnd`, `timerScheduled`, `timerFired`, `commitFired`
+  - `raster`: `count`, `threshold`, `stride`, `minCount`
+  - `classify`: `normalized`, `topK`
+  - `morph`: `targetCount`, `visibleCount`, `fitScale`, `env` (`dpr`), `fps`
+- "Copy trace" button copies the JSON for diagnostics.
+
+## Production sanity checklist
+
+- Build the demo (`pnpm --filter cryptiq-mindmap-demo run build`) and open `/draw3d` on phone and desktop.
+- Confirm formation JSON exists for each curated label; unknown uses stroke cloud.
+- `onResult` payload logs once per commit.
+- No console warnings (`willReadFrequently`, hydration, context loss).
+- FPS ≥30 on phone; instance counts obey env caps; traces log actual raster config.
