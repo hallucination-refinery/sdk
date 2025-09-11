@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import DoodleCanvas from './canvas/DoodleCanvas'
 import { make28x28Canvas } from './canvas/preprocess'
 import { classify, loadDoodleNet } from './ml/doodlenet'
-import type { DoodleCanvasHandle } from './types'
+import type { DoodleCanvasHandle, Draw3DResult } from './types'
 import MorphFormationView from './renderer/MorphFormationView'
 import HUD from './ui/HUD'
 import { normalizeLabel } from './data/labelMap'
@@ -104,7 +104,11 @@ function getEnv() {
   return { browser, os, gpu, dpr: window.devicePixelRatio }
 }
 
-export default function AppHost() {
+export interface AppHostProps {
+  onResult?: (r: Draw3DResult) => void
+}
+
+export default function AppHost({ onResult }: AppHostProps) {
   const [morph, setMorph] = useState<{
     source?: Float32Array
     target: Float32Array
@@ -136,20 +140,6 @@ export default function AppHost() {
     }
     return false
   }, [])
-
-  // Integration seam: emit result payload for Mindmap
-  const onResult = (payload: {
-    label: string
-    confidence: number
-    topK: Array<{ label: string; confidence: number }>
-    formation: Float32Array
-    fitScale: number
-    counts: { cloud: number; target: number }
-    timings: { pre: number; load: number; infer: number }
-  }) => {
-    // For now, log once per commit to validate payload shape
-    console.debug('[result]', payload)
-  }
 
   const meetsInk = () => {
     const m = canvasRef.current?.getInkMetrics()
@@ -278,9 +268,9 @@ export default function AppHost() {
           fps,
         }
       setMorph({ source: strokeCloud, target, fitScale, bounce })
-      // Emit result payload for integration validation
+      // Emit result payload for integration
       try {
-        onResult({
+        onResult?.({
           label: normalized || 'unknown',
           confidence: preds[0]?.confidence ?? 0,
           topK: preds as any,
