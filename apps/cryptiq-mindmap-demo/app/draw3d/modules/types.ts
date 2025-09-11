@@ -15,3 +15,13 @@ export type DoodleCanvasHandle = {
   toCanvas(): HTMLCanvasElement | null
   getInkMetrics(): InkMetrics
 }
+
+export type Draw3DResult = {
+  label: string
+  confidence: number
+  topK: Array<{ label: string; confidence: number }>
+  formation: Float32Array
+  fitScale: number
+  counts: { cloud: number; target: number }
+  timings: { pre: number; load: number; infer: number }
+}
