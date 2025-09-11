@@ -25,7 +25,9 @@
     "smoke:brain": "playwright test tests/brain.smoke.spec.ts --reporter=line",
     "test:smoke:draw3d": "playwright test tests/draw3d.smoke.spec.ts --reporter=line",
     "vggt:readme": "node -e \"require('fs').createReadStream('tools/vggt-cli/README.md').pipe(process.stdout)\"",
-    "validate:formations": "node --import=tsx apps/cryptiq-mindmap-demo/scripts/formations/validate.ts"
+    "validate:formations": "node --import=tsx apps/cryptiq-mindmap-demo/scripts/formations/validate.ts",
+    "build:demo": "pnpm --filter cryptiq-mindmap-demo run build",
+    "start:demo": "pnpm --filter cryptiq-mindmap-demo run start"
   },
   "devDependencies": {
     "husky": "^9.1.7",
