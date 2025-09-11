@@ -142,3 +142,10 @@ apps/cryptiq-mindmap-demo/
 2. Harden cloud sampling (adaptive threshold/stride; guaranteed min‑count) and log cloud/target counts.
 3. Add explicit context‑loss prevention/handlers to `MorphFormationView` and avoid remounts.
 4. Add a CI‑safe smoke that boots `/draw3d` (no inference).
+
+## 12) Readiness & Runbook
+
+- **Integration seam**: `AppHost` exposes `onResult(result)` after each commit so host apps can receive the normalized label, confidence, counts, timings, and formation fit.
+- **Formation asset spec**: curated labels resolve to `/formations/<label>.json` with `{ positions: number[] | number[][] }` normalized to `-1..1`.
+- **Trace fields & collection**: running with `?trace=1` records `strokeEnd`, timer events, `raster` (`threshold`,`stride`,`minCount`), `classify` (`normalized`,`topK`), and `morph` (`targetCount`,`visibleCount`,`fitScale`,`env.dpr`,`fps`).
+- **Prod sanity checklist**: ensure no WebGL context loss, traces log actual raster config, formations load for curated labels, and `/draw3d` sustains ≥30 FPS on a phone.
