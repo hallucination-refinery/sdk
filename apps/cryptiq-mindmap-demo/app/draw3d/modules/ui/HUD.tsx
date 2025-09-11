@@ -39,6 +39,11 @@ export default function HUD({
     const text = JSON.stringify(trace ?? [])
     navigator.clipboard.writeText(text).catch(() => {})
   }
+  const lastTrace =
+    mounted && typeof window !== 'undefined'
+      ? (window as any).__draw3dTraces?.at?.(-1) ??
+        (window as any).__draw3dTraces
+      : null
   return (
     <div
       style={{
@@ -58,6 +63,12 @@ export default function HUD({
       <div>infer: {inferMs}ms</div>
       <div>fps: {fps}</div>
       <div>instances: {instances}</div>
+      {mounted && (devControls || showCopyTrace) && lastTrace?.classify && (
+        <div>
+          label: {lastTrace.classify.normalized} (
+          {(lastTrace.classify.topK?.[0]?.confidence ?? 0).toFixed(2)})
+        </div>
+      )}
       <div style={{ marginTop: 4 }}>
         <button
           style={{ marginRight: 4, fontSize: 10 }}
