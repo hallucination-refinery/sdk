@@ -17,7 +17,9 @@ function flatten(input: unknown): number[] {
 
 async function main() {
   const dir = path.resolve(__dirname, '../../public/formations');
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.json') && f !== 'unknown.json');
   let failed = false;
   for (const file of files) {
     const fp = path.join(dir, file);
