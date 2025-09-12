@@ -6,15 +6,25 @@ import { useRouter } from 'next/navigation'
 import { getRootState } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
 import { tweenCamera } from './components/anim/camera'
+import RoundCountdown from './components/overlays/RoundCountdown'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
+  const [showRound, setShowRound] = useState(false)
   useEffect(() => {
     // telemetry stub
     console.log('[Landing] viewed')
     const t = setTimeout(() => setPreloading(false), 2200)
     return () => clearTimeout(t)
   }, [])
+
+  useEffect(() => {
+    if (!preloading) {
+      setShowRound(true)
+      const { camera } = getRootState()
+      tweenCamera(camera as PerspectiveCamera)
+    }
+  }, [preloading])
 
   const BackgroundBrain = useMemo(
     () => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }),
@@ -171,6 +181,11 @@ export default function Home() {
           aria-hidden
           style={{ position: 'absolute', inset: 0, background: '#00041A', zIndex: 20 }}
         />
+      )}
+
+      {/* Round 1 countdown overlay */}
+      {showRound && (
+        <RoundCountdown onDone={() => setShowRound(false)} />
       )}
     </main>
   )
