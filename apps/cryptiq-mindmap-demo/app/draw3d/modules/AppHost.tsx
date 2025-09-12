@@ -273,7 +273,7 @@ export default function AppHost({ onResult }: AppHostProps) {
         onResult?.({
           label: normalized || 'unknown',
           confidence: preds[0]?.confidence ?? 0,
-          topK: preds as any,
+          topK: preds.map((p) => ({ label: p.label, confidence: p.confidence })),
           formation: target,
           fitScale: fitScale ?? 1,
           counts: { cloud: cloudCount, target: target.length / 3 },

@@ -16,7 +16,7 @@ export type DoodleCanvasHandle = {
   getInkMetrics(): InkMetrics
 }
 
-export interface Draw3DResult {
+export type Draw3DResult = {
   label: string
   confidence: number
   topK: Array<{ label: string; confidence: number }>
