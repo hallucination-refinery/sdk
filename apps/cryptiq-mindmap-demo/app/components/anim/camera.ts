@@ -1,12 +1,57 @@
-'use client'
+import * as THREE from 'three'
 
-import type { PerspectiveCamera } from 'three'
+export type TweenCameraParams = {
+  camera: THREE.PerspectiveCamera
+  to: { position: [number, number, number]; lookAt: [number, number, number] }
+  durationMs?: number
+  easing?: (t: number) => number
+  cancelRef?: { current: boolean }
+}
 
-export function tweenCamera(
-  camera: PerspectiveCamera,
-  position: [number, number, number] = [0, 0, 5],
-  lookAt: [number, number, number] = [0, 0, 0]
-) {
-  camera.position.set(...position)
-  camera.lookAt(...lookAt)
+export function easeInOutCubic(t: number) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
+
+export function tweenCamera({
+  camera,
+  to,
+  durationMs = 1000,
+  easing = easeInOutCubic,
+  cancelRef,
+}: TweenCameraParams) {
+  const fromPos = camera.position.clone()
+  const fromLook = camera
+    .position
+    .clone()
+    .add(camera.getWorldDirection(new THREE.Vector3()))
+  const toPos = new THREE.Vector3(...to.position)
+  const toLook = new THREE.Vector3(...to.lookAt)
+
+  return new Promise<void>((resolve) => {
+    const start = performance.now()
+    let raf = 0
+    const step = (now: number) => {
+      if (cancelRef?.current) {
+        cancelAnimationFrame(raf)
+        resolve()
+        return
+      }
+      const t = Math.min(1, (now - start) / durationMs)
+      const k = easing(t)
+
+      const pos = fromPos.clone().lerp(toPos, k)
+      const look = fromLook.clone().lerp(toLook, k)
+
+      camera.position.copy(pos)
+      camera.lookAt(look.x, look.y, look.z)
+      camera.updateProjectionMatrix()
+
+      if (t < 1) {
+        raf = requestAnimationFrame(step)
+      } else {
+        resolve()
+      }
+    }
+    raf = requestAnimationFrame(step)
+  })
 }
