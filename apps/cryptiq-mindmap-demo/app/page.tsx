@@ -5,12 +5,14 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { getRootState } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
-import { tweenCamera } from './components/anim/camera'
+import { tweenCamera, zoomOutAndIn } from './components/anim/camera'
+import ProgressPill from './components/ui/ProgressPill'
 import RoundCountdown from './components/overlays/RoundCountdown'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
   const [showRound, setShowRound] = useState(false)
+  const [showProgress, setShowProgress] = useState(false)
   useEffect(() => {
     // telemetry stub
     console.log('[Landing] viewed')
@@ -21,8 +23,6 @@ export default function Home() {
   useEffect(() => {
     if (!preloading) {
       setShowRound(true)
-      const { camera } = getRootState()
-      tweenCamera(camera as PerspectiveCamera)
     }
   }, [preloading])
 
@@ -33,6 +33,12 @@ export default function Home() {
 
   const router = useRouter()
   const cancelRef = useRef(false)
+  const handleMorphEnd = useCallback(async () => {
+    const { camera } = getRootState()
+    setShowProgress(true)
+    await zoomOutAndIn(camera as PerspectiveCamera)
+    setShowProgress(false)
+  }, [])
   const begin = useCallback(() => {
     if (preloading || cancelRef.current) return
     const canvas = document.querySelector('canvas') as HTMLCanvasElement | null
@@ -185,8 +191,15 @@ export default function Home() {
 
       {/* Round 1 countdown overlay */}
       {showRound && (
-        <RoundCountdown onDone={() => setShowRound(false)} />
+        <RoundCountdown
+          onDone={() => {
+            setShowRound(false)
+            handleMorphEnd()
+          }}
+        />
       )}
+
+      <ProgressPill show={showProgress} />
     </main>
   )
 }
