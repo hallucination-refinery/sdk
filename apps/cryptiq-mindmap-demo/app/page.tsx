@@ -7,10 +7,11 @@ import { getRootState } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
 import { tweenCamera } from './components/anim/camera'
 import RoundCountdown from './components/overlays/RoundCountdown'
+import useRoundOne from './rounds/useRoundOne'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
-  const [showRound, setShowRound] = useState(false)
+  const round = useRoundOne()
   useEffect(() => {
     // telemetry stub
     console.log('[Landing] viewed')
@@ -20,11 +21,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!preloading) {
-      setShowRound(true)
       const { camera } = getRootState()
-      tweenCamera(camera as PerspectiveCamera)
+      tweenCamera(camera as PerspectiveCamera).then(() => {
+        round.hyperdriveDone()
+        round.startCountdown()
+      })
     }
-  }, [preloading])
+  }, [preloading, round])
 
   const BackgroundBrain = useMemo(
     () => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }),
@@ -34,7 +37,7 @@ export default function Home() {
   const router = useRouter()
   const cancelRef = useRef(false)
   const begin = useCallback(() => {
-    if (preloading || cancelRef.current) return
+    if (preloading || cancelRef.current || round.state !== 'drawingEnabled') return
     const canvas = document.querySelector('canvas') as HTMLCanvasElement | null
     const state = canvas ? getRootState(canvas) : undefined
     const cam = state?.camera as PerspectiveCamera | undefined
@@ -53,17 +56,17 @@ export default function Home() {
     }).finally(() => {
       router.push('/quiz/archetype-v1')
     })
-  }, [preloading, router])
+  }, [preloading, router, round.state])
   useEffect(() => {
     cancelRef.current = false
     const onKey = (e: KeyboardEvent) => {
-      if ((e.code === 'Space' || e.code === 'Enter') && !preloading) {
+      if ((e.code === 'Space' || e.code === 'Enter') && round.state === 'drawingEnabled') {
         e.preventDefault()
         begin()
       }
     }
     const onClick = () => {
-      if (!preloading) begin()
+      if (round.state === 'drawingEnabled') begin()
     }
     window.addEventListener('keydown', onKey)
     window.addEventListener('click', onClick)
@@ -72,7 +75,7 @@ export default function Home() {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('click', onClick)
     }
-  }, [preloading, begin])
+  }, [round.state, begin])
 
   return (
     <main
@@ -184,8 +187,8 @@ export default function Home() {
       )}
 
       {/* Round 1 countdown overlay */}
-      {showRound && (
-        <RoundCountdown onDone={() => setShowRound(false)} />
+      {round.state === 'countdown' && (
+        <RoundCountdown onDone={round.enableDrawing} />
       )}
     </main>
   )
