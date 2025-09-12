@@ -1,5 +1,7 @@
 # Draw‑to‑3D Replication Brief (App‑first, SDK‑aware)
 
+> See also: `mindmap-experience-vision.md` for the high-level experience bullets and verbatim transcript.
+
 ## 1) What we’re shipping (goal)
 
 - A minimal, robust “draw → recognize → show 3D formation” loop that runs well on mobile and desktop.
