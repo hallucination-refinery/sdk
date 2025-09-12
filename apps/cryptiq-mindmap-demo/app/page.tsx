@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import { getRootState } from '@react-three/fiber'
+import type { PerspectiveCamera } from 'three'
+import { tweenCamera } from './components/anim/camera'
 import RoundCountdown from './components/overlays/RoundCountdown'
 
 export default function Home() {
@@ -16,7 +19,11 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    if (!preloading) setShowRound(true)
+    if (!preloading) {
+      setShowRound(true)
+      const { camera } = getRootState()
+      tweenCamera(camera as PerspectiveCamera)
+    }
   }, [preloading])
 
   const BackgroundBrain = useMemo(
