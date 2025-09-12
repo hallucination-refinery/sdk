@@ -37,6 +37,11 @@ const TRACE =
   typeof window !== 'undefined' &&
   new URLSearchParams(window.location.search).has('trace');
 
+const R1_HOUSE =
+  (typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('r1') === 'house') ||
+  process.env.NEXT_PUBLIC_R1 === 'house';
+
 export function normalizeLabel(
   raw: string,
   topK: Array<{ label: string; confidence: number }> = [],
@@ -49,10 +54,17 @@ export function normalizeLabel(
   const primary = normalize(raw);
   let chosen = 'unknown';
 
-  if (CURATED.has(primary)) {
+  const candidates = topK.slice(0, 5);
+
+  if (
+    R1_HOUSE &&
+    candidates.some(({ label }) => normalize(label) === 'house')
+  ) {
+    chosen = 'house';
+  } else if (CURATED.has(primary)) {
     chosen = primary;
   } else {
-    for (const { label } of topK.slice(0, 5)) {
+    for (const { label } of candidates) {
       const mapped = normalize(label);
       if (CURATED.has(mapped)) {
         chosen = mapped;
