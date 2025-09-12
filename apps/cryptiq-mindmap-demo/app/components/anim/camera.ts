@@ -55,3 +55,26 @@ export function tweenCamera({
     raf = requestAnimationFrame(step)
   })
 }
+
+export async function zoomOutAndIn(camera: THREE.PerspectiveCamera, cancelRef?: { current: boolean }) {
+  const startPos = camera.position.clone()
+  const startLook = startPos.clone().add(camera.getWorldDirection(new THREE.Vector3()))
+
+  // zoom out
+  const outPos = startPos.clone().multiplyScalar(2)
+  const outLook = startLook.clone().multiplyScalar(2)
+  await tweenCamera({
+    camera,
+    to: { position: [outPos.x, outPos.y, outPos.z], lookAt: [outLook.x, outLook.y, outLook.z] },
+    durationMs: 800,
+    cancelRef,
+  })
+
+  // zoom into stub next node
+  await tweenCamera({
+    camera,
+    to: { position: [1, 0, 2], lookAt: [0, 0, 0] },
+    durationMs: 800,
+    cancelRef,
+  })
+}
