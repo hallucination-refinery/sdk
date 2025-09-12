@@ -1,8 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import { getRootState } from '@react-three/fiber'
+import type { PerspectiveCamera } from 'three'
+import { tweenCamera } from './components/anim/camera'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
@@ -19,16 +22,47 @@ export default function Home() {
   )
 
   const router = useRouter()
+  const cancelRef = useRef(false)
+  const begin = useCallback(() => {
+    if (preloading || cancelRef.current) return
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement | null
+    const state = canvas ? getRootState(canvas) : undefined
+    const cam = state?.camera as PerspectiveCamera | undefined
+    if (!cam) {
+      router.push('/quiz/archetype-v1')
+      return
+    }
+    tweenCamera({
+      camera: cam,
+      to: {
+        position: [cam.position.x, cam.position.y, cam.position.z * 0.3],
+        lookAt: [0, 0, 0],
+      },
+      durationMs: 1200,
+      cancelRef,
+    }).finally(() => {
+      router.push('/quiz/archetype-v1')
+    })
+  }, [preloading, router])
   useEffect(() => {
+    cancelRef.current = false
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !preloading) {
+      if ((e.code === 'Space' || e.code === 'Enter') && !preloading) {
         e.preventDefault()
-        router.push('/quiz/archetype-v1')
+        begin()
       }
     }
+    const onClick = () => {
+      if (!preloading) begin()
+    }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [preloading, router])
+    window.addEventListener('click', onClick)
+    return () => {
+      cancelRef.current = true
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('click', onClick)
+    }
+  }, [preloading, begin])
 
   return (
     <main
