@@ -3,15 +3,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import RoundCountdown from './components/overlays/RoundCountdown'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
+  const [showRound, setShowRound] = useState(false)
   useEffect(() => {
     // telemetry stub
     console.log('[Landing] viewed')
     const t = setTimeout(() => setPreloading(false), 2200)
     return () => clearTimeout(t)
   }, [])
+
+  useEffect(() => {
+    if (!preloading) setShowRound(true)
+  }, [preloading])
 
   const BackgroundBrain = useMemo(
     () => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }),
@@ -137,6 +143,11 @@ export default function Home() {
           aria-hidden
           style={{ position: 'absolute', inset: 0, background: '#00041A', zIndex: 20 }}
         />
+      )}
+
+      {/* Round 1 countdown overlay */}
+      {showRound && (
+        <RoundCountdown onDone={() => setShowRound(false)} />
       )}
     </main>
   )
