@@ -9,11 +9,12 @@ import { tweenCamera } from './components/anim/camera'
 import ProgressPill from './components/ui/ProgressPill'
 import RoundCountdown from './components/overlays/RoundCountdown'
 import useRoundOne from './rounds/useRoundOne'
+import { applyResult } from './integration/mindmapAdapter'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
   const round = useRoundOne()
-  const { hyperdriveDone, startCountdown } = round
+  const { hyperdriveDone, startCountdown, result } = round
   const [showProgress] = useState(false)
   useEffect(() => {
     // telemetry stub
@@ -31,6 +32,12 @@ export default function Home() {
       })
     }
   }, [preloading, hyperdriveDone, startCountdown])
+
+  useEffect(() => {
+    if (!result) return
+    const outcome = applyResult(result)
+    console.log('[mindmap] applied', outcome)
+  }, [result])
 
   const BackgroundBrain = useMemo(
     () => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }),
