@@ -5,14 +5,16 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { getRootState } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
-import { tweenCamera, zoomOutAndIn } from './components/anim/camera'
+import { tweenCamera } from './components/anim/camera'
 import ProgressPill from './components/ui/ProgressPill'
 import RoundCountdown from './components/overlays/RoundCountdown'
+import useRoundOne from './rounds/useRoundOne'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
-  const [showRound, setShowRound] = useState(false)
-  const [showProgress, setShowProgress] = useState(false)
+  const round = useRoundOne()
+  const { hyperdriveDone, startCountdown } = round
+  const [showProgress] = useState(false)
   useEffect(() => {
     // telemetry stub
     console.log('[Landing] viewed')
@@ -22,9 +24,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!preloading) {
-      setShowRound(true)
+      const { camera } = getRootState()
+      tweenCamera(camera as PerspectiveCamera).then(() => {
+        hyperdriveDone()
+        startCountdown()
+      })
     }
-  }, [preloading])
+  }, [preloading, hyperdriveDone, startCountdown])
 
   const BackgroundBrain = useMemo(
     () => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }),
@@ -33,14 +39,8 @@ export default function Home() {
 
   const router = useRouter()
   const cancelRef = useRef(false)
-  const handleMorphEnd = useCallback(async () => {
-    const { camera } = getRootState()
-    setShowProgress(true)
-    await zoomOutAndIn(camera as PerspectiveCamera)
-    setShowProgress(false)
-  }, [])
   const begin = useCallback(() => {
-    if (preloading || cancelRef.current) return
+    if (preloading || cancelRef.current || round.state !== 'drawingEnabled') return
     const canvas = document.querySelector('canvas') as HTMLCanvasElement | null
     const state = canvas ? getRootState(canvas) : undefined
     const cam = state?.camera as PerspectiveCamera | undefined
@@ -59,17 +59,17 @@ export default function Home() {
     }).finally(() => {
       router.push('/quiz/archetype-v1')
     })
-  }, [preloading, router])
+  }, [preloading, router, round.state])
   useEffect(() => {
     cancelRef.current = false
     const onKey = (e: KeyboardEvent) => {
-      if ((e.code === 'Space' || e.code === 'Enter') && !preloading) {
+      if ((e.code === 'Space' || e.code === 'Enter') && round.state === 'drawingEnabled') {
         e.preventDefault()
         begin()
       }
     }
     const onClick = () => {
-      if (!preloading) begin()
+      if (round.state === 'drawingEnabled') begin()
     }
     window.addEventListener('keydown', onKey)
     window.addEventListener('click', onClick)
@@ -78,7 +78,7 @@ export default function Home() {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('click', onClick)
     }
-  }, [preloading, begin])
+  }, [round.state, begin])
 
   return (
     <main
@@ -190,14 +190,7 @@ export default function Home() {
       )}
 
       {/* Round 1 countdown overlay */}
-      {showRound && (
-        <RoundCountdown
-          onDone={() => {
-            setShowRound(false)
-            handleMorphEnd()
-          }}
-        />
-      )}
+      {round.state === 'countdown' && <RoundCountdown onDone={round.enableDrawing} />}
 
       <ProgressPill show={showProgress} />
     </main>
