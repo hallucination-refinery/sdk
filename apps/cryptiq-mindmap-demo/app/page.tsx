@@ -12,6 +12,7 @@ import useRoundOne from './rounds/useRoundOne'
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
   const round = useRoundOne()
+  const { hyperdriveDone, startCountdown } = round
   useEffect(() => {
     // telemetry stub
     console.log('[Landing] viewed')
@@ -23,11 +24,11 @@ export default function Home() {
     if (!preloading) {
       const { camera } = getRootState()
       tweenCamera(camera as PerspectiveCamera).then(() => {
-        round.hyperdriveDone()
-        round.startCountdown()
+        hyperdriveDone()
+        startCountdown()
       })
     }
-  }, [preloading, round])
+  }, [preloading, hyperdriveDone, startCountdown])
 
   const BackgroundBrain = useMemo(
     () => dynamic(() => import('./components/BackgroundBrain'), { ssr: false }),
