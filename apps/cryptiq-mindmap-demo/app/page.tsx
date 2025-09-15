@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { getRootState } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
 import { tweenCamera } from './components/anim/camera'
+import ProgressPill from './components/ui/ProgressPill'
 import RoundCountdown from './components/overlays/RoundCountdown'
 import useRoundOne from './rounds/useRoundOne'
 
@@ -13,6 +14,7 @@ export default function Home() {
   const [preloading, setPreloading] = useState(true)
   const round = useRoundOne()
   const { hyperdriveDone, startCountdown } = round
+  const [showProgress] = useState(false)
   useEffect(() => {
     // telemetry stub
     console.log('[Landing] viewed')
@@ -188,9 +190,9 @@ export default function Home() {
       )}
 
       {/* Round 1 countdown overlay */}
-      {round.state === 'countdown' && (
-        <RoundCountdown onDone={round.enableDrawing} />
-      )}
+      {round.state === 'countdown' && <RoundCountdown onDone={round.enableDrawing} />}
+
+      <ProgressPill show={showProgress} />
     </main>
   )
 }
