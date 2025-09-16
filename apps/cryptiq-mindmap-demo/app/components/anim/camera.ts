@@ -1,5 +1,11 @@
 import * as THREE from 'three'
 
+const FIT_EPSILON = 1e-6
+
+function isVector3(value: unknown): value is THREE.Vector3 {
+  return Boolean(value) && typeof value === 'object' && (value as THREE.Vector3).isVector3 === true
+}
+
 export type TweenCameraParams = {
   camera: THREE.PerspectiveCamera
   to: { position: [number, number, number]; lookAt: [number, number, number] }
@@ -10,6 +16,113 @@ export type TweenCameraParams = {
 
 export function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
+
+/**
+ * Computes the perspective camera distance required to contain a bounding sphere.
+ *
+ * Trig derivation:
+ *   At distance `d`, the half-viewport height is `d * tan(fov / 2)`.
+ *   To fit a sphere of radius `r`, ensure `r <= d * tan(fov / 2)` → `d >= r / tan(fov / 2)`.
+ *   Horizontal fit uses `tan(fov / 2) * aspect`, so take the tighter (max) constraint.
+ */
+export function fitPerspective(
+  fovDeg: number,
+  radius: number,
+  aspect: number,
+  margin = 1.1
+): number {
+  const safeFovDeg = Math.min(179.999, Math.max(1e-3, fovDeg))
+  const safeAspect = Math.max(FIT_EPSILON, aspect)
+  const safeMargin = Math.max(0, margin)
+  const paddedRadius = Math.max(0, radius) * safeMargin
+  if (paddedRadius === 0) return 0
+
+  const halfFovRad = THREE.MathUtils.degToRad(safeFovDeg) * 0.5
+  const tanHalfVertical = Math.tan(halfFovRad)
+  const tanHalfHorizontal = tanHalfVertical * safeAspect
+  const verticalDistance = tanHalfVertical > FIT_EPSILON ? paddedRadius / tanHalfVertical : Infinity
+  const horizontalDistance = tanHalfHorizontal > FIT_EPSILON ? paddedRadius / tanHalfHorizontal : Infinity
+  const distance = Math.max(verticalDistance, horizontalDistance)
+
+  if (process.env.NODE_ENV !== 'production') {
+    if (!Number.isFinite(distance)) {
+      console.warn('[camera] fitPerspective produced invalid distance', {
+        fovDeg,
+        radius,
+        aspect,
+        margin,
+        distance,
+      })
+    } else if (fovDeg !== safeFovDeg || aspect !== safeAspect || margin !== safeMargin) {
+      console.warn('[camera] fitPerspective clamped inputs', {
+        fovDeg,
+        safeFovDeg,
+        aspect,
+        safeAspect,
+        margin,
+        safeMargin,
+      })
+    }
+  }
+
+  return distance
+}
+
+/**
+ * Applies {@link fitPerspective} to a Three.js perspective camera, moving it along its
+ * current view ray so the given bounding radius fits inside the frustum.
+ */
+export function applyPerspectiveFit(
+  camera: THREE.PerspectiveCamera,
+  radius: number,
+  margin = 1.1
+) {
+  const distance = fitPerspective(camera.fov, radius, camera.aspect, margin)
+  if (distance <= 0) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[camera] applyPerspectiveFit skipped due to non-positive distance', {
+        distance,
+        radius,
+        margin,
+      })
+    }
+    return distance
+  }
+
+  const data = camera.userData as {
+    fitTarget?: THREE.Vector3
+    target?: THREE.Vector3
+    fitDistance?: number
+  }
+
+  let target: THREE.Vector3
+  if (isVector3(data?.fitTarget)) target = data.fitTarget.clone()
+  else if (isVector3(data?.target)) target = data.target.clone()
+  else target = new THREE.Vector3()
+
+  const direction = target.clone().sub(camera.position)
+  if (direction.lengthSq() < FIT_EPSILON) {
+    camera.getWorldDirection(direction)
+    if (direction.lengthSq() < FIT_EPSILON) direction.set(0, 0, -1)
+    target = camera.position.clone().add(direction)
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[camera] applyPerspectiveFit using fallback target at look direction')
+    }
+  } else {
+    direction.normalize()
+  }
+
+  const offset = direction.clone().multiplyScalar(distance)
+  const newPosition = target.clone().sub(offset)
+  camera.position.copy(newPosition)
+  camera.lookAt(target)
+  camera.updateProjectionMatrix()
+
+  data.fitTarget = target.clone()
+  data.fitDistance = distance
+
+  return distance
 }
 
 export function tweenCamera({
