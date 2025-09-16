@@ -16,6 +16,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
+import { applyPerspectiveFit } from './anim/camera'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -855,6 +856,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     keepRatio: number
     bloom: boolean
     fovDeg: number
+    reveal: number
     flipUp?: boolean
     flipNormal?: boolean
     mirrorLR?: boolean
@@ -866,12 +868,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     keepRatio: 1,
     bloom: false,
     fovDeg: 20,
+    reveal: 1,
     flipUp: false,
     flipNormal: false,
     mirrorLR: false,
     mirrorUD: true,
     roll180: false,
   })
+  const [fitRequest, setFitRequest] = React.useState(0)
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -891,6 +895,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     ui.keepRatio,
     ui.bloom,
     ui.fovDeg,
+    ui.reveal,
     ui.flipUp,
     ui.flipNormal,
     ui.mirrorLR,
@@ -1014,6 +1019,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return [ui.mirrorLR ? -1 : 1, ui.mirrorUD ? -1 : 1, 1] as [number, number, number]
   }, [ui.mirrorLR, ui.mirrorUD])
 
+  const cameraFitTarget = React.useMemo(() => [0, 0, 0] as [number, number, number], [])
+  const cameraFitRadius = React.useMemo(() => {
+    if (prebakedTransform) return prebakedTransform.radius
+    if (color.width > 0 && color.height > 0) {
+      const heightUnits = 1000
+      const aspect = color.width / Math.max(1, color.height)
+      const widthUnits = heightUnits * aspect
+      return 0.5 * Math.hypot(widthUnits, heightUnits)
+    }
+    return 600
+  }, [prebakedTransform, color.width, color.height])
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
@@ -1059,6 +1076,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         <CameraSync
           fovDeg={ui.fovDeg}
           distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined}
+          fitRequest={fitRequest}
+          fitRadius={cameraFitRadius}
+          fitTarget={cameraFitTarget}
         />
         <ambientLight intensity={1} />
         <directionalLight position={[2, 3, 4]} intensity={0.6} />
@@ -1192,6 +1212,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 onChange={(e) => setUi((s) => ({ ...s, keepRatio: Number(e.target.value) }))}
               />
             </label>
+            <button
+              type="button"
+              onClick={() => setFitRequest((n) => n + 1)}
+              style={{
+                padding: '6px 8px',
+                borderRadius: 6,
+                border: '1px solid rgba(255,255,255,0.25)',
+                background: 'rgba(255,255,255,0.08)',
+                color: '#fff',
+                fontWeight: 600,
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              Fit
+            </button>
             <label>
               fov: {Math.round(ui.fovDeg)}°
               <input
@@ -1201,6 +1237,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 step={1}
                 value={ui.fovDeg}
                 onChange={(e) => setUi((s) => ({ ...s, fovDeg: Number(e.target.value) }))}
+              />
+            </label>
+            <label>
+              reveal: {ui.reveal.toFixed(2)}
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={ui.reveal}
+                onChange={(e) => setUi((s) => ({ ...s, reveal: Number(e.target.value) }))}
               />
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1258,7 +1305,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   )
 }
 
-function CameraSync({ fovDeg, distance }: { fovDeg: number; distance?: number }) {
+function CameraSync({
+  fovDeg,
+  distance,
+  fitRequest,
+  fitRadius,
+  fitMargin = 1.1,
+  fitTarget,
+}: {
+  fovDeg: number
+  distance?: number
+  fitRequest?: number
+  fitRadius?: number
+  fitMargin?: number
+  fitTarget?: [number, number, number]
+}) {
   const { camera } = useThree()
   React.useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera
@@ -1274,5 +1335,25 @@ function CameraSync({ fovDeg, distance }: { fovDeg: number; distance?: number })
       cam.updateProjectionMatrix()
     }
   }, [camera, distance])
+  React.useEffect(() => {
+    if (!fitTarget) return
+    const cam = camera as THREE.PerspectiveCamera
+    if (!cam || cam.isPerspectiveCamera !== true) return
+    const targetVec = new THREE.Vector3(fitTarget[0], fitTarget[1], fitTarget[2])
+    const data = cam.userData as { target?: THREE.Vector3 }
+    data.target = targetVec.clone()
+  }, [camera, fitTarget])
+  React.useEffect(() => {
+    if (!fitRequest || !fitRadius || fitRadius <= 0) return
+    const cam = camera as THREE.PerspectiveCamera
+    if (!cam || cam.isPerspectiveCamera !== true) return
+    if (fitTarget) {
+      const targetVec = new THREE.Vector3(fitTarget[0], fitTarget[1], fitTarget[2])
+      const data = cam.userData as { target?: THREE.Vector3; fitTarget?: THREE.Vector3 }
+      data.target = targetVec.clone()
+      data.fitTarget = targetVec.clone()
+    }
+    applyPerspectiveFit(cam, fitRadius, fitMargin)
+  }, [camera, fitRequest, fitRadius, fitMargin, fitTarget])
   return null
 }
