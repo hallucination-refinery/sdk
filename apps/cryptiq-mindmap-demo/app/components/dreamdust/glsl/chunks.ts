@@ -117,7 +117,6 @@ export type GlslChunkKey = keyof typeof glslChunks
  * consume a consistent set of helper snippets. We retain our existing helper
  * snippets above (NOISE_HASH/FBM2/SCREEN_PX_TO_CLIP/SAT/REMAP) for reuse.
  */
-
 export const DREAMDUST_NOISE_CHUNK = /* glsl */ `
 float dreamdustHash(vec3 p) {
   p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
@@ -160,7 +159,7 @@ float dreamdustFbm(vec3 p) {
   }
   return value;
 }
-`
+`;
 
 export const DREAMDUST_DRIFT_CHUNK = /* glsl */ `
 vec3 dreamdustDrift(vec3 pos, float time, float scale, float speed, float amp) {
@@ -173,7 +172,7 @@ vec3 dreamdustDrift(vec3 pos, float time, float scale, float speed, float amp) {
   dir /= len;
   return dir * amp;
 }
-`
+`;
 
 export const DREAMDUST_INK_SAMPLE_CHUNK = /* glsl */ `
 struct DreamdustInkSample {
@@ -192,7 +191,7 @@ DreamdustInkSample dreamdustSampleInk(sampler2D tex, vec2 uv) {
   sample.tint = ink.rgb;
   return sample;
 }
-`
+`;
 
 export const DREAMDUST_DEPTH_FADE_CHUNK = /* glsl */ `
 float dreamdustDepthFade(float viewDist, float bias) {
@@ -201,7 +200,7 @@ float dreamdustDepthFade(float viewDist, float bias) {
   }
   return clamp(exp(-viewDist * bias), 0.0, 1.0);
 }
-`
+`;
 
 export const DREAMDUST_POINT_SHAPE_CHUNK = /* glsl */ `
 float dreamdustPointShape(vec2 coord) {
@@ -211,7 +210,7 @@ float dreamdustPointShape(vec2 coord) {
   float feather = smoothstep(1.0, 0.6, r2);
   return core * feather;
 }
-`
+`;
 
 export const DREAMDUST_COLOR_CHUNK = /* glsl */ `
 vec3 dreamdustApplyInkTint(vec3 baseColor, vec3 tintColor, float amount) {
@@ -219,4 +218,4 @@ vec3 dreamdustApplyInkTint(vec3 baseColor, vec3 tintColor, float amount) {
   vec3 tinted = baseColor + tintColor * mixAmt;
   return mix(baseColor, tinted, mixAmt);
 }
-`
+`;
