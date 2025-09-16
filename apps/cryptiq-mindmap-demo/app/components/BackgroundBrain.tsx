@@ -2,6 +2,7 @@
 
 import { Suspense, useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
+import type { RootState } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
@@ -162,7 +163,8 @@ function PostProcessing({
 
 export default function BackgroundBrain({
   forceControls = false,
-}: { forceControls?: boolean } = {}) {
+  onReady,
+}: { forceControls?: boolean; onReady?: (state: RootState) => void } = {}) {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
@@ -509,7 +511,11 @@ export default function BackgroundBrain({
       }}
       aria-hidden={!enableControls}
     >
-      <Canvas camera={{ position: [0, 80, 220], fov: 90 }} gl={{ antialias: true, alpha: true }}>
+      <Canvas
+        camera={{ position: [0, 80, 220], fov: 90 }}
+        gl={{ antialias: true, alpha: true }}
+        onCreated={(state) => onReady?.(state)}
+      >
         {/* CameraFitter: primary zoom fit (tunable via ?fit) */}
         <CameraFitter target={fitControls.fit} active={!userInteractedRef.current} />
         {/* Lights */}

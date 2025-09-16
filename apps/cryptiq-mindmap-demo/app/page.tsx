@@ -2,14 +2,15 @@
 
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
-import { getRootState } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
+import type { RootState } from '@react-three/fiber'
 import { tweenCamera } from './components/anim/camera'
+import { getR3FStateOrNull } from './components/anim/r3fSafe'
 import ProgressPill from './components/ui/ProgressPill'
 import RoundCountdown from './components/overlays/RoundCountdown'
 import useRoundOne from './rounds/useRoundOne'
 import { applyResult } from './integration/mindmapAdapter'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const [preloading, setPreloading] = useState(true)
@@ -24,16 +25,6 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    if (!preloading) {
-      const { camera } = getRootState()
-      tweenCamera(camera as PerspectiveCamera).then(() => {
-        hyperdriveDone()
-        startCountdown()
-      })
-    }
-  }, [preloading, hyperdriveDone, startCountdown])
-
-  useEffect(() => {
     if (!result) return
     const outcome = applyResult(result)
     console.log('[mindmap] applied', outcome)
@@ -46,46 +37,38 @@ export default function Home() {
 
   const router = useRouter()
   const cancelRef = useRef(false)
-  const begin = useCallback(() => {
-    if (preloading || cancelRef.current || round.state !== 'drawingEnabled') return
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement | null
-    const state = canvas ? getRootState(canvas) : undefined
-    const cam = state?.camera as PerspectiveCamera | undefined
-    if (!cam) {
-      router.push('/quiz/archetype-v1')
-      return
+  // R3F readiness and camera reference
+  const cameraRef = useRef<PerspectiveCamera | null>(null)
+  const storeReadyRef = useRef(false)
+
+  const onReady = useCallback((state: RootState) => {
+    try {
+      cameraRef.current = (state.camera as PerspectiveCamera) ?? null
+      storeReadyRef.current = true
+    } catch {
+      // ignore
     }
-    tweenCamera({
-      camera: cam,
-      to: {
-        position: [cam.position.x, cam.position.y, cam.position.z * 0.3],
-        lookAt: [0, 0, 0],
-      },
-      durationMs: 1200,
-      cancelRef,
-    }).finally(() => {
-      router.push('/quiz/archetype-v1')
-    })
-  }, [preloading, router, round.state])
+  }, [])
+
+  // Begin: immediately route to mask page on Space/Begin
+  const begin = useCallback(() => {
+    router.push('/quiz/archetype-v1')
+  }, [router])
+
   useEffect(() => {
     cancelRef.current = false
     const onKey = (e: KeyboardEvent) => {
-      if ((e.code === 'Space' || e.code === 'Enter') && round.state === 'drawingEnabled') {
+      if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault()
         begin()
       }
     }
-    const onClick = () => {
-      if (round.state === 'drawingEnabled') begin()
-    }
     window.addEventListener('keydown', onKey)
-    window.addEventListener('click', onClick)
     return () => {
       cancelRef.current = true
       window.removeEventListener('keydown', onKey)
-      window.removeEventListener('click', onClick)
     }
-  }, [round.state, begin])
+  }, [begin])
 
   return (
     <main
@@ -100,7 +83,7 @@ export default function Home() {
     >
       {/* Brain fills entire viewport */}
       <div style={{ position: 'absolute', inset: 0 }}>
-        <BackgroundBrain />
+        <BackgroundBrain onReady={onReady} />
       </div>
 
       {/* Foreground chrome: column with space-between, safe-area paddings */}
@@ -196,8 +179,8 @@ export default function Home() {
         />
       )}
 
-      {/* Round 1 countdown overlay */}
-      {round.state === 'countdown' && <RoundCountdown onDone={round.enableDrawing} />}
+      {/* Round 1 countdown overlay (not used when immediate routing) */}
+      {false && round.state === 'countdown' && <RoundCountdown onDone={round.enableDrawing} />}
 
       <ProgressPill show={showProgress} />
     </main>

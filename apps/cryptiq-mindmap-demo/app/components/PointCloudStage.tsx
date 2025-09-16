@@ -496,7 +496,7 @@ function SceneControls({ radius }: { radius?: number }) {
       makeDefault
       enableRotate
       enableZoom
-      enablePan={false}
+      enablePan={true}
       enableDamping
       dampingFactor={0.1}
       minDistance={Math.max(0.1, radius ? radius * 0.02 : 100)}
@@ -504,6 +504,11 @@ function SceneControls({ radius }: { radius?: number }) {
       target={[0, 0, 0]}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
+      mouseButtons={{
+        LEFT: (THREE as any).MOUSE.ROTATE,
+        MIDDLE: (THREE as any).MOUSE.DOLLY,
+        RIGHT: (THREE as any).MOUSE.PAN,
+      }}
       onStart={() => console.log('[PC] controls start')}
     />
   )
@@ -856,15 +861,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     mirrorUD?: boolean
     roll180?: boolean
   }>({
-    thickness: 0.2,
+    thickness: 0.4,
     pointSizeScale: 1.1,
     keepRatio: 1,
     bloom: false,
-    fovDeg: 80,
+    fovDeg: 20,
     flipUp: false,
     flipNormal: false,
     mirrorLR: false,
-    mirrorUD: false,
+    mirrorUD: true,
     roll180: false,
   })
   React.useEffect(() => {
@@ -917,7 +922,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
 
     const outPos = new Float32Array(outCount * 3)
-    let outCol: Uint8Array | undefined = srcColors ? new Uint8Array(outCount * 3) : undefined
+    const outCol: Uint8Array | undefined = srcColors ? new Uint8Array(outCount * 3) : undefined
 
     for (let i = 0, j = 0; i < srcCount && j < outCount; i += step, j++) {
       outPos[j * 3 + 0] = srcPos[i * 3 + 0]
@@ -1016,6 +1021,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         camera={{ position: [0, 0, 1200], fov: ui.fovDeg, near: 0.1, far: 5000 }}
         gl={{ antialias: true, alpha: true }}
         style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
+        onContextMenu={(e) => e.preventDefault()}
         onPointerDown={(e) => {
           // simple signal that canvas receives input
 
@@ -1169,7 +1175,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               <input
                 type="range"
                 min={0.8}
-                max={1.5}
+                max={2}
                 step={0.01}
                 value={ui.pointSizeScale}
                 onChange={(e) => setUi((s) => ({ ...s, pointSizeScale: Number(e.target.value) }))}
@@ -1190,7 +1196,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               fov: {Math.round(ui.fovDeg)}°
               <input
                 type="range"
-                min={30}
+                min={10}
                 max={100}
                 step={1}
                 value={ui.fovDeg}

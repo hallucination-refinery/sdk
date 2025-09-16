@@ -358,7 +358,7 @@ export default function AppHost({ onResult }: AppHostProps) {
   }, [classifyNow, devControls])
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#000' }}>
+    <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
       <HUD
         ready={ready}
         loadMs={Math.round(loadMs)}
