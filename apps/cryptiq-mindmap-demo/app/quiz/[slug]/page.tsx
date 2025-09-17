@@ -7,6 +7,8 @@ import dynamic from 'next/dynamic'
 import RoundCountdown from '../../components/overlays/RoundCountdown'
 // import AppHost from '../../draw3d/modules/AppHost'
 import ProgressPill from '../../components/ui/ProgressPill'
+import { DreamdustProvider } from '../../components/dreamdust/context'
+import { InkFieldHost } from '../../components/dreamdust/InkFieldHost'
 const PointCloudStage = dynamic(() => import('../../components/PointCloudStage'), { ssr: false })
 
 type MaskOption = { id: string; label: string; vector?: Record<string, number> }
@@ -101,19 +103,25 @@ export default function QuizPage() {
   //   }, 1200)
   // }
 
-  if (loading) return <div style={{ padding: 24, color: '#9ab' }}>Loading…</div>
+  if (loading)
+    return (
+      <DreamdustProvider>
+        <div style={{ padding: 24, color: '#9ab' }}>Loading…</div>
+      </DreamdustProvider>
+    )
 
   return (
-    <main
-      ref={mainRef}
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        background: '#00041A',
-        overflow: 'hidden',
-      }}
-    >
+    <DreamdustProvider>
+      <main
+        ref={mainRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          background: '#00041A',
+          overflow: 'hidden',
+        }}
+      >
       {/* Stage fills viewport */}
       <div
         style={{
@@ -143,6 +151,8 @@ export default function QuizPage() {
         <AppHost onResult={handleResult} />
       </div>
       */}
+
+      <InkFieldHost />
 
       {/* Top overlay: progress + prompt */}
       <div
@@ -217,6 +227,7 @@ export default function QuizPage() {
 
       {/* Countdown overlay */}
       {showCountdown && <RoundCountdown seconds={3} onDone={() => setShowCountdown(false)} />}
-    </main>
+      </main>
+    </DreamdustProvider>
   )
 }
