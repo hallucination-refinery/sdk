@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import type { CSSProperties } from 'react'
+import * as React from 'react'
 
 export type StrokePoint = {
   x: number
@@ -19,150 +18,179 @@ export type StrokeSegment = {
 
 export type StrokeCaptureCanvasProps = {
   className?: string
-  style?: CSSProperties
-  strokeStyle?: string
-  lineWidth?: number
+  style?: React.CSSProperties
   onStrokeStart?(point: StrokePoint): void
   onStrokeSegment?(segment: StrokeSegment): void
   onStrokeEnd?(): void
 }
 
-const DEFAULT_STROKE_STYLE = 'rgba(255,255,255,0.8)'
-const DEFAULT_LINE_WIDTH = 16
 const MAX_DPR = 1.5
+const DEFAULT_PRESSURE = 0.5
 
-const StrokeCaptureCanvas = ({
+const clamp01 = (value: number): number => {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+  if (value <= 0) return 0
+  if (value >= 1) return 1
+  return value
+}
+
+const resolvePressure = (event: PointerEvent): number => {
+  const { pressure, buttons, pointerType } = event
+  if (typeof pressure === 'number' && pressure > 0) {
+    return pressure > 1 ? 1 : pressure
+  }
+  if (pointerType === 'mouse') {
+    return buttons ? DEFAULT_PRESSURE : 0
+  }
+  if (typeof pressure === 'number') {
+    return pressure
+  }
+  return DEFAULT_PRESSURE
+}
+
+export function StrokeCaptureCanvas({
   className,
   style,
-  strokeStyle = DEFAULT_STROKE_STYLE,
-  lineWidth = DEFAULT_LINE_WIDTH,
   onStrokeStart,
   onStrokeSegment,
   onStrokeEnd,
-}: StrokeCaptureCanvasProps) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
-  const dprRef = useRef(1)
-  const isDrawingRef = useRef(false)
-  const lastPointRef = useRef<StrokePoint | null>(null)
+}: StrokeCaptureCanvasProps): React.JSX.Element {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
+  const pointerIdRef = React.useRef<number | null>(null)
+  const isDrawingRef = React.useRef(false)
+  const lastPointRef = React.useRef<StrokePoint | null>(null)
+  const lastSmoothedRef = React.useRef<StrokePoint | null>(null)
 
-  const startCallbackRef = useRef<((point: StrokePoint) => void) | null>(
-    onStrokeStart ?? null,
+  const startCallbackRef = React.useRef<StrokeCaptureCanvasProps['onStrokeStart']>(
+    onStrokeStart,
   )
-  const segmentCallbackRef = useRef<((segment: StrokeSegment) => void) | null>(
-    onStrokeSegment ?? null,
+  const segmentCallbackRef = React.useRef<StrokeCaptureCanvasProps['onStrokeSegment']>(
+    onStrokeSegment,
   )
-  const endCallbackRef = useRef<(() => void) | null>(onStrokeEnd ?? null)
-  const strokeStyleRef = useRef(strokeStyle)
-  const lineWidthRef = useRef(lineWidth)
+  const endCallbackRef = React.useRef<StrokeCaptureCanvasProps['onStrokeEnd']>(
+    onStrokeEnd,
+  )
 
-  useEffect(() => {
-    startCallbackRef.current = onStrokeStart ?? null
+  React.useEffect(() => {
+    startCallbackRef.current = onStrokeStart
   }, [onStrokeStart])
 
-  useEffect(() => {
-    segmentCallbackRef.current = onStrokeSegment ?? null
+  React.useEffect(() => {
+    segmentCallbackRef.current = onStrokeSegment
   }, [onStrokeSegment])
 
-  useEffect(() => {
-    endCallbackRef.current = onStrokeEnd ?? null
+  React.useEffect(() => {
+    endCallbackRef.current = onStrokeEnd
   }, [onStrokeEnd])
 
-  useEffect(() => {
-    strokeStyleRef.current = strokeStyle
-  }, [strokeStyle])
-
-  useEffect(() => {
-    lineWidthRef.current = lineWidth
-  }, [lineWidth])
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (typeof window === 'undefined') {
-      return
+      return undefined
     }
 
     const canvas = canvasRef.current
-    if (!canvas) return
-
-    const context = canvas.getContext('2d')
-    if (!context) return
-
-    ctxRef.current = context
-
-    const applyStrokeStyle = () => {
-      const ctx = ctxRef.current
-      if (!ctx) return
-      ctx.lineCap = 'round'
-      ctx.lineJoin = 'round'
-      ctx.strokeStyle = strokeStyleRef.current
-      ctx.lineWidth = lineWidthRef.current * dprRef.current
+    if (!canvas) {
+      return undefined
     }
 
-    const rect = () => canvas.getBoundingClientRect()
+    const updateCanvasSize = () => {
+      if (!canvasRef.current) {
+        return
+      }
+      const rect = canvasRef.current.getBoundingClientRect()
+      const width = rect.width || 0
+      const height = rect.height || 0
 
-    const resize = () => {
-      dprRef.current = Math.min(window.devicePixelRatio || 1, MAX_DPR)
-      const { width, height } = rect()
-      const nextWidth = Math.max(Math.floor(width * dprRef.current), 1)
-      const nextHeight = Math.max(Math.floor(height * dprRef.current), 1)
-      if (canvas.width !== nextWidth) {
-        canvas.width = nextWidth
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
+      const nextWidth = Math.max(1, Math.round(width * dpr))
+      const nextHeight = Math.max(1, Math.round(height * dpr))
+      if (canvasRef.current.width !== nextWidth) {
+        canvasRef.current.width = nextWidth
       }
-      if (canvas.height !== nextHeight) {
-        canvas.height = nextHeight
+      if (canvasRef.current.height !== nextHeight) {
+        canvasRef.current.height = nextHeight
       }
-      context.setTransform(dprRef.current, 0, 0, dprRef.current, 0, 0)
-      context.clearRect(0, 0, canvas.width, canvas.height)
-      applyStrokeStyle()
     }
 
-    resize()
+    updateCanvasSize()
 
     let resizeFrame = 0
-    const onResize = () => {
-      if (resizeFrame) cancelAnimationFrame(resizeFrame)
-      resizeFrame = requestAnimationFrame(() => {
+    const handleResize = () => {
+      if (resizeFrame) {
+        window.cancelAnimationFrame(resizeFrame)
+      }
+      resizeFrame = window.requestAnimationFrame(() => {
         resizeFrame = 0
-        resize()
+        updateCanvasSize()
       })
     }
 
-    window.addEventListener('resize', onResize)
+    window.addEventListener('resize', handleResize)
 
-    const toPoint = (event: PointerEvent): StrokePoint => {
-      const bounds = rect()
-      const x = event.clientX - bounds.left
-      const y = event.clientY - bounds.top
-      let pressure = event.pressure
-      if (pressure === undefined) {
-        pressure = event.buttons ? 0.5 : 0
-      } else if (pressure === 0 && event.buttons) {
-        pressure = 0.5
+    const resolvePoint = (event: PointerEvent): StrokePoint | null => {
+      const canvasElement = canvasRef.current
+      if (!canvasElement) {
+        return null
       }
+      const rect = canvasElement.getBoundingClientRect()
+      const width = rect.width || 0
+      const height = rect.height || 0
+      if (width <= 0 || height <= 0) {
+        return null
+      }
+
+      const normalizedX = clamp01((event.clientX - rect.left) / width)
+      const normalizedY = clamp01((event.clientY - rect.top) / height)
+      const pressure = resolvePressure(event)
+
       return {
-        x,
-        y,
+        x: normalizedX,
+        y: normalizedY,
         pressure,
         t: event.timeStamp,
       }
     }
 
-    const drawSegment = (from: StrokePoint, to: StrokePoint) => {
-      const ctx = ctxRef.current
-      if (!ctx) return
-      applyStrokeStyle()
-      ctx.beginPath()
-      ctx.moveTo(from.x, from.y)
-      const mx = (from.x + to.x) / 2
-      const my = (from.y + to.y) / 2
-      ctx.quadraticCurveTo(from.x, from.y, mx, my)
-      ctx.stroke()
-    }
+    const finishStroke = (event?: PointerEvent) => {
+      if (!isDrawingRef.current) {
+        return
+      }
 
-    const finishStroke = () => {
-      if (!isDrawingRef.current) return
+      const pointerId = pointerIdRef.current
+      if (pointerId !== null && canvas.hasPointerCapture?.(pointerId)) {
+        try {
+          canvas.releasePointerCapture(pointerId)
+        } catch {
+          // Ignore capture release errors (e.g., Safari quirks)
+        }
+      }
+
+      let terminalPoint = lastPointRef.current
+      if (event) {
+        const maybePoint = resolvePoint(event)
+        if (maybePoint) {
+          terminalPoint = maybePoint
+        }
+      }
+
+      if (terminalPoint && lastSmoothedRef.current && segmentCallbackRef.current) {
+        const from = lastSmoothedRef.current
+        const to = terminalPoint
+        const pressure = to.pressure > 0 ? to.pressure : from.pressure || DEFAULT_PRESSURE
+        segmentCallbackRef.current({
+          from: { ...from, t: to.t },
+          to: { ...to },
+          pressure,
+          t: to.t,
+        })
+      }
+
       isDrawingRef.current = false
+      pointerIdRef.current = null
       lastPointRef.current = null
+      lastSmoothedRef.current = null
       endCallbackRef.current?.()
     }
 
@@ -170,56 +198,88 @@ const StrokeCaptureCanvas = ({
       if (event.pointerType === 'mouse' && event.button !== 0) {
         return
       }
+      if (isDrawingRef.current && pointerIdRef.current !== event.pointerId) {
+        return
+      }
+
+      const point = resolvePoint(event)
+      if (!point) {
+        return
+      }
+
       event.preventDefault()
-      canvas.setPointerCapture(event.pointerId)
-      const point = toPoint(event)
+
+      pointerIdRef.current = event.pointerId
       isDrawingRef.current = true
       lastPointRef.current = point
-      applyStrokeStyle()
+      lastSmoothedRef.current = point
+
+      try {
+        canvas.setPointerCapture(event.pointerId)
+      } catch {
+        // ignore pointer capture failures (e.g., Safari)
+      }
+
       startCallbackRef.current?.(point)
     }
 
     const handlePointerMove = (event: PointerEvent) => {
-      if (!isDrawingRef.current) return
-      event.preventDefault()
-      const point = toPoint(event)
-      const last = lastPointRef.current
-      if (!last) {
-        lastPointRef.current = point
+      if (!isDrawingRef.current || pointerIdRef.current !== event.pointerId) {
         return
       }
-      drawSegment(last, point)
-      segmentCallbackRef.current?.({
-        from: last,
-        to: point,
-        pressure: point.pressure,
+
+      const point = resolvePoint(event)
+      if (!point) {
+        return
+      }
+
+      const lastPoint = lastPointRef.current
+      if (!lastPoint) {
+        lastPointRef.current = point
+        lastSmoothedRef.current = point
+        return
+      }
+
+      const smoothingStart = lastSmoothedRef.current ?? lastPoint
+      const midPoint: StrokePoint = {
+        x: (lastPoint.x + point.x) / 2,
+        y: (lastPoint.y + point.y) / 2,
+        pressure: point.pressure > 0 ? point.pressure : lastPoint.pressure || DEFAULT_PRESSURE,
         t: point.t,
-      })
+      }
+
+      if (segmentCallbackRef.current) {
+        const segment: StrokeSegment = {
+          from: {
+            x: smoothingStart.x,
+            y: smoothingStart.y,
+            pressure: smoothingStart.pressure,
+            t: lastPoint.t,
+          },
+          to: midPoint,
+          pressure: midPoint.pressure,
+          t: point.t,
+        }
+        segmentCallbackRef.current(segment)
+      }
+
       lastPointRef.current = point
+      lastSmoothedRef.current = midPoint
     }
 
     const handlePointerUp = (event: PointerEvent) => {
-      if (!isDrawingRef.current) return
-      event.preventDefault()
-      if (canvas.hasPointerCapture?.(event.pointerId)) {
-        try {
-          canvas.releasePointerCapture(event.pointerId)
-        } catch {
-          // ignore release errors
-        }
+      if (!isDrawingRef.current || pointerIdRef.current !== event.pointerId) {
+        return
       }
-      finishStroke()
+      event.preventDefault()
+      finishStroke(event)
     }
 
     const handlePointerCancel = (event: PointerEvent) => {
-      if (canvas.hasPointerCapture?.(event.pointerId)) {
-        try {
-          canvas.releasePointerCapture(event.pointerId)
-        } catch {
-          // ignore release errors
-        }
+      if (pointerIdRef.current !== event.pointerId) {
+        return
       }
-      finishStroke()
+      finishStroke(event)
     }
 
     canvas.addEventListener('pointerdown', handlePointerDown, { passive: false })
@@ -229,15 +289,15 @@ const StrokeCaptureCanvas = ({
     canvas.addEventListener('pointerleave', handlePointerCancel)
 
     return () => {
-      window.removeEventListener('resize', onResize)
-      if (resizeFrame) cancelAnimationFrame(resizeFrame)
+      window.removeEventListener('resize', handleResize)
+      if (resizeFrame) {
+        window.cancelAnimationFrame(resizeFrame)
+      }
       canvas.removeEventListener('pointerdown', handlePointerDown)
       canvas.removeEventListener('pointermove', handlePointerMove)
       canvas.removeEventListener('pointerup', handlePointerUp)
       canvas.removeEventListener('pointercancel', handlePointerCancel)
       canvas.removeEventListener('pointerleave', handlePointerCancel)
-      finishStroke()
-      ctxRef.current = null
     }
   }, [])
 
@@ -245,9 +305,15 @@ const StrokeCaptureCanvas = ({
     <canvas
       ref={canvasRef}
       className={className}
-      style={{ ...style, touchAction: 'none' }}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'block',
+        touchAction: 'none',
+        pointerEvents: 'auto',
+        background: 'transparent',
+        ...style,
+      }}
     />
   )
 }
-
-export default StrokeCaptureCanvas

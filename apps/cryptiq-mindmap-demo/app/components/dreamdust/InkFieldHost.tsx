@@ -5,173 +5,25 @@ import * as React from 'react'
 import { getR3FStateOrNull } from '../anim/r3fSafe'
 import { detectVertexTextureSupport } from './capabilities'
 import { createInkField, type InkField } from './InkField'
+import { StrokeCaptureCanvas, type StrokePoint, type StrokeSegment } from './StrokeCaptureCanvas'
 import { useDreamdustCtx } from './context'
 
-const DEFAULT_PRESSURE = 0.5
+type RendererLike = {
+  getContext: () => WebGLRenderingContext | WebGL2RenderingContext
+}
+
+type CanvasTextureLike = {
+  needsUpdate?: boolean
+  dispose?: () => void
+}
+
+const FIELD_SIZE = 128
+const MAX_DPR = 1.5
+const UPLOAD_HZ = 60
+const DECAY_BASE = 0.96
 const INTENSITY_EPSILON = 0.01
 const INTENSITY_IDLE_ZERO_MS = 2400
-const DECAY_BASE = 0.96
-
-interface StrokePoint {
-  x: number
-  y: number
-}
-
-interface StrokeSegment {
-  points: StrokePoint[]
-  pressure: number
-}
-
-type StrokeCaptureSubscriber = (segment: StrokeSegment) => void
-
-type StrokeCaptureCanvasHandle = {
-  subscribe(handler: StrokeCaptureSubscriber): () => void
-}
-
-function clamp01(value: number): number {
-  if (value <= 0) return 0
-  if (value >= 1) return 1
-  return value
-}
-
-const StrokeCaptureCanvas = React.forwardRef<StrokeCaptureCanvasHandle>((_, ref) => {
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
-  const subscribersRef = React.useRef(new Set<StrokeCaptureSubscriber>())
-  const pointerIdRef = React.useRef<number | null>(null)
-  const lastPointRef = React.useRef<StrokePoint | null>(null)
-
-  const emitSegment = React.useCallback((points: StrokePoint[], pressure: number) => {
-    if (!points.length) return
-    const normalizedPressure = pressure > 0 ? pressure : DEFAULT_PRESSURE
-    const clampedPressure = clamp01(normalizedPressure)
-    const segment: StrokeSegment = { points, pressure: clampedPressure }
-    subscribersRef.current.forEach((handler) => handler(segment))
-  }, [])
-
-  React.useImperativeHandle(
-    ref,
-    () => ({
-      subscribe(handler: StrokeCaptureSubscriber) {
-        subscribersRef.current.add(handler)
-        return () => {
-          subscribersRef.current.delete(handler)
-        }
-      },
-    }),
-    [],
-  )
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return undefined
-
-    const resize = () => {
-      const parent = canvas.parentElement
-      if (!parent) return
-      const rect = parent.getBoundingClientRect()
-      canvas.width = rect.width
-      canvas.height = rect.height
-    }
-
-    resize()
-    window.addEventListener('resize', resize)
-
-    const resolvePoint = (event: PointerEvent): StrokePoint | null => {
-      const rect = canvas.getBoundingClientRect()
-      const width = rect.width || 1
-      const height = rect.height || 1
-      if (width <= 0 || height <= 0) {
-        return null
-      }
-      const x = clamp01((event.clientX - rect.left) / width)
-      const y = clamp01((event.clientY - rect.top) / height)
-      return { x, y }
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (pointerIdRef.current !== null && pointerIdRef.current !== event.pointerId) {
-        return
-      }
-      const point = resolvePoint(event)
-      if (!point) return
-      pointerIdRef.current = event.pointerId
-      lastPointRef.current = point
-      try {
-        canvas.setPointerCapture(event.pointerId)
-      } catch {
-        // ignore pointer capture failures (e.g., Safari)
-      }
-      emitSegment([point], event.pressure)
-      event.preventDefault()
-    }
-
-    const handlePointerMove = (event: PointerEvent) => {
-      if (pointerIdRef.current !== event.pointerId) return
-      const point = resolvePoint(event)
-      if (!point) return
-      const lastPoint = lastPointRef.current
-      lastPointRef.current = point
-      if (lastPoint) {
-        emitSegment([lastPoint, point], event.pressure)
-      } else {
-        emitSegment([point], event.pressure)
-      }
-      event.preventDefault()
-    }
-
-    const finishStroke = (event: PointerEvent) => {
-      if (pointerIdRef.current !== event.pointerId) return
-      pointerIdRef.current = null
-      lastPointRef.current = null
-      try {
-        if (canvas.hasPointerCapture(event.pointerId)) {
-          canvas.releasePointerCapture(event.pointerId)
-        }
-      } catch {
-        // ignore errors when releasing pointer capture
-      }
-      event.preventDefault()
-    }
-
-    canvas.addEventListener('pointerdown', handlePointerDown, { passive: false })
-    canvas.addEventListener('pointermove', handlePointerMove, { passive: false })
-    canvas.addEventListener('pointerup', finishStroke, { passive: false })
-    canvas.addEventListener('pointercancel', finishStroke, { passive: false })
-    canvas.addEventListener('pointerleave', finishStroke, { passive: false })
-
-    return () => {
-      window.removeEventListener('resize', resize)
-      canvas.removeEventListener('pointerdown', handlePointerDown)
-      canvas.removeEventListener('pointermove', handlePointerMove)
-      canvas.removeEventListener('pointerup', finishStroke)
-      canvas.removeEventListener('pointercancel', finishStroke)
-      canvas.removeEventListener('pointerleave', finishStroke)
-    }
-  }, [emitSegment])
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'block',
-        pointerEvents: 'auto',
-        touchAction: 'none',
-        background: 'transparent',
-        cursor: 'crosshair',
-      }}
-    />
-  )
-})
-
-StrokeCaptureCanvas.displayName = 'StrokeCaptureCanvas'
-
-function decayRateFromDelta(deltaMs: number): number {
-  if (deltaMs <= 0) return DECAY_BASE
-  const steps = Math.max(1, (deltaMs / 1000) * 60)
-  return Math.pow(DECAY_BASE, steps)
-}
+const DEFAULT_PRESSURE = 0.5
 
 function nowMs(): number {
   if (typeof performance !== 'undefined') {
@@ -180,24 +32,74 @@ function nowMs(): number {
   return Date.now()
 }
 
-export function InkFieldHost(): JSX.Element {
+function decayRateFromDelta(deltaMs: number): number {
+  if (deltaMs <= 0) {
+    return DECAY_BASE
+  }
+  const steps = Math.max(1, (deltaMs / 1000) * 60)
+  return Math.pow(DECAY_BASE, steps)
+}
+
+export function InkFieldHost(): React.JSX.Element {
   const { setInkTex, setInkIntensity, setVertexInkOk } = useDreamdustCtx()
-  const [captureHandle, setCaptureHandle] = React.useState<StrokeCaptureCanvasHandle | null>(null)
+  type InkTexState = Parameters<typeof setInkTex>[0]
 
   const inkFieldRef = React.useRef<InkField | null>(null)
-  const rendererRef = React.useRef<import('three').WebGLRenderer | null>(null)
-  const textureRef = React.useRef<import('three').CanvasTexture | null>(null)
-  const lastStrokeRef = React.useRef<number>(0)
-  const intensityRef = React.useRef<number>(0)
+  const rendererRef = React.useRef<RendererLike | null>(null)
+  const textureRef = React.useRef<CanvasTextureLike | null>(null)
+  const lastStrokeRef = React.useRef(0)
+  const intensityRef = React.useRef(0)
   const vertexInkOkRef = React.useRef<boolean | null>(null)
 
-  const lastHandleRef = React.useRef<StrokeCaptureCanvasHandle | null>(null)
-  const handleCaptureRef = React.useCallback((handle: StrokeCaptureCanvasHandle | null) => {
-    if (lastHandleRef.current !== handle) {
-      lastHandleRef.current = handle
-      setCaptureHandle(handle)
-    }
-  }, [])
+  const handleStrokeStart = React.useCallback(
+    (_point: StrokePoint) => {
+      const now = nowMs()
+      lastStrokeRef.current = now
+      if (intensityRef.current !== 1) {
+        intensityRef.current = 1
+        setInkIntensity(1)
+      }
+    },
+    [setInkIntensity],
+  )
+
+  const handleStrokeSegment = React.useCallback(
+    (segment: StrokeSegment) => {
+      const field = inkFieldRef.current
+      if (!field) {
+        return
+      }
+
+      const pressure = segment.pressure > 0 ? segment.pressure : DEFAULT_PRESSURE
+      field.drawStroke(
+        [
+          { x: segment.from.x, y: segment.from.y },
+          { x: segment.to.x, y: segment.to.y },
+        ],
+        pressure,
+      )
+
+      const now = nowMs()
+      lastStrokeRef.current = now
+      if (intensityRef.current !== 1) {
+        intensityRef.current = 1
+        setInkIntensity(1)
+      }
+
+      const renderer = rendererRef.current
+      if (renderer) {
+        const texture = field.toCanvasTexture(
+          renderer as Parameters<InkField['toCanvasTexture']>[0],
+          UPLOAD_HZ,
+        )
+        if (textureRef.current !== texture) {
+          textureRef.current = texture
+          setInkTex(texture as InkTexState)
+        }
+      }
+    },
+    [setInkIntensity, setInkTex],
+  )
 
   React.useEffect(() => {
     setInkIntensity(0)
@@ -213,91 +115,103 @@ export function InkFieldHost(): JSX.Element {
   }, [setInkIntensity, setInkTex, setVertexInkOk])
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-    const field = createInkField(128, dpr)
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+
+    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
+    const field = createInkField(FIELD_SIZE, dpr)
     inkFieldRef.current = field
+
     return () => {
+      if (inkFieldRef.current === field) {
+        inkFieldRef.current = null
+      }
       field.dispose()
-      inkFieldRef.current = null
     }
   }, [])
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+
     let cancelled = false
     let frame = 0
 
     const tryAcquireRenderer = () => {
-      if (cancelled) return
-      const state = getR3FStateOrNull()
-      const renderer = state?.gl ?? null
-      if (renderer) {
-        rendererRef.current = renderer
-        const gl = renderer.getContext()
-        const supported = detectVertexTextureSupport(gl)
-        if (vertexInkOkRef.current !== supported) {
-          vertexInkOkRef.current = supported
-          setVertexInkOk(supported)
-        }
-        const field = inkFieldRef.current
-        if (field) {
-          const texture = field.toCanvasTexture(renderer, 60)
-          textureRef.current = texture
-          setInkTex(texture)
-        }
+      if (cancelled) {
         return
       }
-      frame = window.requestAnimationFrame(tryAcquireRenderer)
+
+      const state = getR3FStateOrNull()
+      const renderer = state?.gl ?? null
+      if (!renderer) {
+        frame = window.requestAnimationFrame(tryAcquireRenderer)
+        return
+      }
+
+      rendererRef.current = renderer
+      const gl = renderer.getContext()
+      const supported = detectVertexTextureSupport(gl)
+      if (vertexInkOkRef.current !== supported) {
+        vertexInkOkRef.current = supported
+        setVertexInkOk(supported)
+      }
+
+      const field = inkFieldRef.current
+      if (field) {
+        const texture = field.toCanvasTexture(
+          renderer as Parameters<InkField['toCanvasTexture']>[0],
+          UPLOAD_HZ,
+        )
+        if (!cancelled) {
+          textureRef.current = texture
+          setInkTex(texture as InkTexState)
+        }
+      }
     }
 
     frame = window.requestAnimationFrame(tryAcquireRenderer)
 
     return () => {
       cancelled = true
-      if (frame) window.cancelAnimationFrame(frame)
+      if (frame) {
+        window.cancelAnimationFrame(frame)
+      }
     }
   }, [setInkTex, setVertexInkOk])
 
   React.useEffect(() => {
-    if (!captureHandle) return undefined
-    const field = inkFieldRef.current
-    if (!field) return undefined
-
-    const unsubscribe = captureHandle.subscribe((segment) => {
-      if (!segment.points.length) return
-      const activeField = inkFieldRef.current
-      if (!activeField) return
-      activeField.drawStroke(segment.points, segment.pressure)
-      const now = nowMs()
-      lastStrokeRef.current = now
-      intensityRef.current = 1
-      setInkIntensity(1)
-    })
-
-    return () => {
-      unsubscribe()
+    if (typeof window === 'undefined') {
+      return undefined
     }
-  }, [captureHandle, setInkIntensity])
 
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return
+    let cancelled = false
     let frame = 0
     let lastTick = nowMs()
 
     const loop = (timestamp: number) => {
+      if (cancelled) {
+        return
+      }
+
+      const delta = timestamp - lastTick
+      lastTick = timestamp
+
       const field = inkFieldRef.current
       if (field) {
-        const delta = timestamp - lastTick
-        lastTick = timestamp
-        const rate = decayRateFromDelta(delta)
-        field.decay(rate)
+        const decayRate = decayRateFromDelta(delta)
+        field.decay(decayRate)
         const renderer = rendererRef.current
         if (renderer) {
-          const texture = field.toCanvasTexture(renderer, 60)
-          if (textureRef.current !== texture) {
+          const texture = field.toCanvasTexture(
+            renderer as Parameters<InkField['toCanvasTexture']>[0],
+            UPLOAD_HZ,
+          )
+          if (!cancelled && textureRef.current !== texture) {
             textureRef.current = texture
-            setInkTex(texture)
+            setInkTex(texture as InkTexState)
           }
         }
       }
@@ -310,18 +224,20 @@ export function InkFieldHost(): JSX.Element {
           targetIntensity = 1
         } else if (idle < INTENSITY_IDLE_ZERO_MS) {
           targetIntensity = Math.exp(-idle / 900)
-        } else {
-          targetIntensity = 0
         }
       }
 
-      const current = intensityRef.current
-      if (Math.abs(targetIntensity - current) > INTENSITY_EPSILON) {
-        intensityRef.current = targetIntensity
-        setInkIntensity(targetIntensity)
-      } else if (targetIntensity === 0 && current !== 0) {
-        intensityRef.current = 0
-        setInkIntensity(0)
+      const currentIntensity = intensityRef.current
+      if (Math.abs(targetIntensity - currentIntensity) > INTENSITY_EPSILON) {
+        if (!cancelled) {
+          intensityRef.current = targetIntensity
+          setInkIntensity(targetIntensity)
+        }
+      } else if (targetIntensity === 0 && currentIntensity !== 0) {
+        if (!cancelled) {
+          intensityRef.current = 0
+          setInkIntensity(0)
+        }
       }
 
       frame = window.requestAnimationFrame(loop)
@@ -330,7 +246,10 @@ export function InkFieldHost(): JSX.Element {
     frame = window.requestAnimationFrame(loop)
 
     return () => {
-      if (frame) window.cancelAnimationFrame(frame)
+      cancelled = true
+      if (frame) {
+        window.cancelAnimationFrame(frame)
+      }
     }
   }, [setInkIntensity, setInkTex])
 
@@ -344,7 +263,10 @@ export function InkFieldHost(): JSX.Element {
         pointerEvents: 'none',
       }}
     >
-      <StrokeCaptureCanvas ref={handleCaptureRef} />
+      <StrokeCaptureCanvas
+        onStrokeStart={handleStrokeStart}
+        onStrokeSegment={handleStrokeSegment}
+      />
     </div>
   )
 }
