@@ -17,6 +17,11 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import { applyPerspectiveFit } from './anim/camera'
+import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
+import { detectVertexTextureSupport } from './dreamdust/capabilities'
+import { useDreamdustCtx } from './dreamdust/context'
+import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
+import { applyDprClamp, pointCap } from './pointcloud/budget'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -29,8 +34,28 @@ type PointCloudStageProps = {
   perspective?: boolean
 }
 
-// Toggle between shader path and baseline PointsMaterial
-const USE_SHADER = true
+type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'] & {
+  uBaseSize: { value: number }
+  uDepthMin: { value: number }
+  uDepthMax: { value: number }
+  uGamma: { value: number }
+  uInvertDepth: { value: number }
+  uPVInvCapture: { value: THREE.Matrix4 }
+  uHasCapture: { value: number }
+  uZNearNdc: { value: number }
+  uZFarNdc: { value: number }
+  uInkOffsetGain: { value: number }
+  uInkSizeGain: { value: number }
+  uInkTintGain: { value: number }
+}
+
+function useOptionalDreamdustCtx() {
+  try {
+    return useDreamdustCtx()
+  } catch {
+    return null
+  }
+}
 
 function useImageData(url: string | null): {
   data: ImageData | null
@@ -234,37 +259,32 @@ function buildAttributes(
   }
 }
 
+
 function PointsMesh({
   colorImage,
   depth16,
   stride = 2,
-  // zScale retained for future shader path; unused in baseline
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  zScale = 0.5,
-  pointSize = 1.5,
+  pointBudget,
+  material,
+  uniforms,
   onMaterialValid,
 }: {
   colorImage: { data: ImageData; width: number; height: number }
   depth16: { data16: Uint16Array; width: number; height: number }
   stride?: number
-  zScale?: number
-  pointSize?: number
+  pointBudget: number
+  material: THREE.ShaderMaterial
+  uniforms: DreamdustStageUniforms
   onMaterialValid?: () => void
 }) {
-  const geomRef = React.useRef<unknown>(null)
-  const matRef = React.useRef<THREE.ShaderMaterial | null>(null)
+  const geomRef = React.useRef<THREE.BufferGeometry | null>(null)
+  const materialRef = React.useRef<THREE.ShaderMaterial | null>(material)
   const materialValidRef = React.useRef(false)
-  // no-op: camera accessed via useFrame
-  const {
-    /* camera */
-  } = useThree()
 
-  // Build attributes (uv, depth01, color); position computed in shader via unprojection
   const { positions, uvs, depths, colors, gridW, gridH } = React.useMemo(() => {
-    return buildAttributes(colorImage, depth16, stride, 150_000)
-  }, [colorImage, depth16, stride])
+    return buildAttributes(colorImage, depth16, stride, pointBudget)
+  }, [colorImage, depth16, stride, pointBudget])
 
-  // CPU baseline plane positions (centered at origin, z=0) sized to preserve aspect
   const planePositions = React.useMemo(() => {
     const n = uvs.length / 2
     const out = new Float32Array(n * 3)
@@ -281,15 +301,21 @@ function PointsMesh({
   }, [uvs, gridW, gridH])
 
   React.useEffect(() => {
-    const g = geomRef.current as { computeBoundingSphere?: () => void } | null
+    materialRef.current = material
+    return () => {
+      materialValidRef.current = false
+    }
+  }, [material])
+
+  React.useEffect(() => {
+    const g = geomRef.current
     if (!g) return
     if (typeof g.computeBoundingSphere === 'function') g.computeBoundingSphere()
   }, [positions, colors])
-  // Log geometry attribute inventory once to verify bindings
   const loggedAttrsRef = React.useRef(false)
   React.useEffect(() => {
     if (loggedAttrsRef.current) return
-    const g = geomRef.current as unknown as THREE.BufferGeometry | null
+    const g = geomRef.current
     if (!g) return
     const stat = (name: string) => {
       const a = g.getAttribute(name) as THREE.BufferAttribute | undefined
@@ -304,15 +330,16 @@ function PointsMesh({
     loggedAttrsRef.current = true
   }, [])
 
-  // Poll once until the material compiles, then notify parent to enable bloom
   React.useEffect(() => {
-    if (!USE_SHADER) return
+    if (!onMaterialValid) return
     let raf = 0
     const check = () => {
-      const m = matRef.current as unknown as { program?: { glProgram?: unknown } }
+      const m = materialRef.current as unknown as { program?: { glProgram?: unknown } }
       if (m && m.program && m.program.glProgram) {
-        materialValidRef.current = true
-        if (onMaterialValid) onMaterialValid()
+        if (!materialValidRef.current) {
+          materialValidRef.current = true
+          onMaterialValid()
+        }
         return
       }
       raf = requestAnimationFrame(check)
@@ -321,31 +348,33 @@ function PointsMesh({
     return () => cancelAnimationFrame(raf)
   }, [onMaterialValid])
 
-  // Animate time and capture PV^-1 once for world-space reconstruction
   const capturedRef = React.useRef(false)
   const captureDelayRef = React.useRef(2)
-  useFrame(({ camera }, dt) => {
-    const mat = matRef.current
-    if (!mat) return
-    const u = mat.uniforms as {
-      uTime?: { value: number }
-      uPVInvCapture?: { value: THREE.Matrix4 }
-      uHasCapture?: { value: number }
+
+  React.useEffect(() => {
+    capturedRef.current = false
+    captureDelayRef.current = 2
+    if (uniforms.uHasCapture) {
+      uniforms.uHasCapture.value = 0
     }
-    if (u.uTime) u.uTime.value += dt
-    if (!capturedRef.current && u.uPVInvCapture) {
-      if (captureDelayRef.current > 0) {
-        captureDelayRef.current -= 1
-        return
-      }
-      const pvInv = new THREE.Matrix4()
-        .copy((camera as THREE.PerspectiveCamera).matrixWorld)
-        .multiply((camera as THREE.PerspectiveCamera).projectionMatrixInverse)
-      u.uPVInvCapture.value.copy(pvInv)
-      if (u.uHasCapture) u.uHasCapture.value = 1.0
-      capturedRef.current = true
-      console.log('[PC] captured PV^-1 (delayed)')
+  }, [uniforms, positions])
+
+  useFrame(({ camera }) => {
+    if (capturedRef.current) return
+    if (captureDelayRef.current > 0) {
+      captureDelayRef.current -= 1
+      return
     }
+    const pvUniform = uniforms.uPVInvCapture
+    const hasCaptureUniform = uniforms.uHasCapture
+    if (!pvUniform || !hasCaptureUniform) return
+    const pvInv = new THREE.Matrix4()
+      .copy((camera as THREE.PerspectiveCamera).matrixWorld)
+      .multiply((camera as THREE.PerspectiveCamera).projectionMatrixInverse)
+    pvUniform.value.copy(pvInv)
+    hasCaptureUniform.value = 1
+    capturedRef.current = true
+    console.log('[PC] captured PV^-1 (delayed)')
   })
 
   return (
@@ -355,96 +384,16 @@ function PointsMesh({
         <bufferAttribute attach="attributes-position" args={[planePositions, 3]} />
         {/* uv and depth attributes for shader unprojection */}
         {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
+        <bufferAttribute attachObject={["attributes", "aUv"]} args={[uvs, 2]} />
         {/* also bind built-in uv for isolation tests */}
         <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
         {/* custom float attribute for normalized depth */}
         {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
+        <bufferAttribute attachObject={["attributes", "aDepth"]} args={[depths, 1]} />
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      {/* Rendering path */}
-      {USE_SHADER ? (
-        <shaderMaterial
-          ref={matRef as React.MutableRefObject<THREE.ShaderMaterial | null>}
-          args={[
-            {
-              uniforms: {
-                uBaseSize: { value: pointSize },
-                uPVInvCapture: { value: new THREE.Matrix4() },
-                uHasCapture: { value: 0 },
-                uZNearNdc: { value: -0.85 },
-                uZFarNdc: { value: 0.15 },
-                uGamma: { value: 0.8 },
-                uFocal: { value: 1600.0 },
-                uMinSize: { value: 0.75 },
-                uMaxSize: { value: 10.0 },
-                uDepthMin: { value: 0.05 },
-                uDepthMax: { value: 0.95 },
-                uInvertDepth: { value: 0.0 },
-              },
-              vertexShader: `
-              precision highp float;
-              uniform float uBaseSize;
-              uniform mat4 uPVInvCapture;
-              uniform float uHasCapture;
-              uniform float uZNearNdc;
-              uniform float uZFarNdc;
-              uniform float uGamma;
-              uniform float uFocal;
-              uniform float uMinSize;
-              uniform float uMaxSize;
-              uniform float uDepthMin;
-              uniform float uDepthMax;
-              uniform float uInvertDepth;
-              attribute float aDepth;
-              attribute vec3 color;
-              varying vec3 vColor;
-              void main(){
-                vColor = color;
-                vec4 posMV;
-                if (uHasCapture > 0.5) {
-                  vec2 ndc = uv * 2.0 - 1.0;
-                  // Unproject to two planes in world space
-                  vec4 wNear = uPVInvCapture * vec4(ndc.x, ndc.y, uZNearNdc, 1.0);
-                  wNear.xyz /= wNear.w; wNear.w = 1.0;
-                  vec4 wFar = uPVInvCapture * vec4(ndc.x, ndc.y, uZFarNdc, 1.0);
-                  wFar.xyz /= wFar.w; wFar.w = 1.0;
-                  float t01 = clamp((aDepth - uDepthMin) / max(1e-5, (uDepthMax - uDepthMin)), 0.0, 1.0);
-                  t01 = pow(t01, uGamma);
-                  if (uInvertDepth > 0.5) t01 = 1.0 - t01;
-                  float t = t01;
-                  vec4 world = mix(wNear, wFar, t);
-                  posMV = viewMatrix * world;
-                } else {
-                  posMV = modelViewMatrix * vec4(position, 1.0);
-                }
-                gl_Position = projectionMatrix * posMV;
-                float dist = max(1e-3, -posMV.z);
-                float atten = clamp(uFocal / dist, uMinSize, uMaxSize);
-                gl_PointSize = uBaseSize * atten;
-              }
-            `,
-              fragmentShader: `
-              precision highp float;
-              varying vec3 vColor;
-              void main(){ gl_FragColor = vec4(vColor, 1.0); }
-            `,
-              transparent: false,
-              depthWrite: false,
-              depthTest: true,
-              blending: THREE.NormalBlending,
-              fog: false,
-              lights: false,
-              dithering: false,
-              toneMapped: false,
-            },
-          ]}
-        />
-      ) : (
-        <pointsMaterial size={pointSize} sizeAttenuation vertexColors />
-      )}
+      <primitive object={material} attach="material" />
     </points>
   )
 }
@@ -549,7 +498,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     colorUrl: colorUrlProp,
     depthUrl: depthUrlProp,
     depthRgUrl,
-    zScale = 2.5,
     pointSize = 2.0,
     stride = 1,
     // omit perspective in baseline
@@ -576,6 +524,75 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const readyPacked = !!color.data && !!packed.data16 && color.width > 0 && packed.width > 0
   const readyFallback = !!color.data && !!depth16From8
+  const pointBudget = React.useMemo(() => pointCap(), [])
+
+  const { uniforms: baseUniforms, setUniform, updateInkTexture } = useDreamdustUniforms()
+  const uniforms = React.useMemo<DreamdustStageUniforms>(() => {
+    const u = baseUniforms as DreamdustStageUniforms
+    if (!u.uBaseSize) u.uBaseSize = { value: pointSize }
+    if (!u.uDepthMin) u.uDepthMin = { value: 0.05 }
+    if (!u.uDepthMax) u.uDepthMax = { value: 0.95 }
+    if (!u.uInvertDepth) u.uInvertDepth = { value: 0 }
+    if (!u.uPVInvCapture) u.uPVInvCapture = { value: new THREE.Matrix4() }
+    if (!u.uHasCapture) u.uHasCapture = { value: 0 }
+    if (!u.uZNearNdc) u.uZNearNdc = { value: -0.85 }
+    if (!u.uZFarNdc) u.uZFarNdc = { value: 0.15 }
+    if (!u.uInkOffsetGain) u.uInkOffsetGain = u.uOffsetGain as typeof u.uOffsetGain
+    if (!u.uInkSizeGain) u.uInkSizeGain = u.uSizeGain as typeof u.uSizeGain
+    if (!u.uInkTintGain) u.uInkTintGain = u.uTintGain as typeof u.uTintGain
+    return u
+  }, [baseUniforms, pointSize])
+
+  React.useEffect(() => {
+    setUniform('uGamma', 0.82)
+    setUniform('uFocal', 1600)
+    setUniform('uMinSize', 0.75)
+    setUniform('uMaxSize', 9.5)
+    setUniform('uDepthBias', 0.14)
+    setUniform('uNoiseScale', 0.0025)
+    setUniform('uNoiseSpeed', 0.24)
+    setUniform('uDriftAmp', 16)
+    setUniform('uSizeGain', 1)
+    setUniform('uOffsetGain', 1)
+    setUniform('uTintGain', 1)
+  }, [setUniform])
+
+  React.useEffect(() => {
+    uniforms.uDepthMin.value = 0.05
+    uniforms.uDepthMax.value = 0.95
+    uniforms.uZNearNdc.value = -0.85
+    uniforms.uZFarNdc.value = 0.15
+    uniforms.uInvertDepth.value = 0
+  }, [uniforms])
+
+  const dreamdustCtx = useOptionalDreamdustCtx()
+  const inkTex = dreamdustCtx?.inkTex ?? null
+  const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
+  const vertexInkOk = dreamdustCtx?.vertexInkOk ?? false
+
+  React.useEffect(() => {
+    updateInkTexture(inkTex)
+  }, [inkTex, updateInkTexture])
+
+  React.useEffect(() => {
+    setUniform('uInkIntensity', inkIntensity)
+  }, [inkIntensity, setUniform])
+
+  React.useEffect(() => {
+    setUniform('uVertexInkOk', vertexInkOk ? 1 : 0)
+  }, [setUniform, vertexInkOk])
+
+  const fallbackMaterial = React.useMemo(
+    () => createDreamdustMaterial(uniforms, { unproject: true }),
+    [uniforms],
+  )
+  const prebakedMaterial = React.useMemo(
+    () => createDreamdustMaterial(uniforms, { unproject: false }),
+    [uniforms],
+  )
+
+  React.useEffect(() => () => fallbackMaterial.dispose(), [fallbackMaterial])
+  React.useEffect(() => () => prebakedMaterial.dispose(), [prebakedMaterial])
 
   // Prebaked positions path (VGGT exporter). If positions.f32 exists for the scene, prefer it.
   const [prebaked, setPrebaked] = React.useState<{
@@ -876,6 +893,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     roll180: false,
   })
   const [fitRequest, setFitRequest] = React.useState(0)
+  const { bloom, pointSizeScale, reveal, thickness } = ui
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -905,8 +923,23 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
-    setBloomEnabled(ui.bloom)
-  }, [ui.bloom])
+    setBloomEnabled(bloom)
+  }, [bloom])
+
+  React.useEffect(() => {
+    uniforms.uBaseSize.value = pointSize * pointSizeScale
+  }, [pointSize, pointSizeScale, uniforms, ui])
+
+  React.useEffect(() => {
+    const clamped = Math.min(1, Math.max(0, reveal))
+    const threshold = 1 - clamped
+    setUniform('uNoiseThreshold', threshold)
+  }, [reveal, setUniform, ui])
+
+  React.useEffect(() => {
+    const depthBias = 0.08 + (1 - Math.min(1, Math.max(0.1, thickness))) * 0.5
+    setUniform('uDepthBias', depthBias)
+  }, [setUniform, thickness, ui])
 
   // Derive reduced, matched buffers for prebaked positions/colors
   const renderBuffers = React.useMemo(() => {
@@ -916,14 +949,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const srcColors =
       prebaked.colors && prebaked.colors.length >= srcCount * 3 ? prebaked.colors : undefined
 
-    const cap = 150_000
+    const cap = pointBudget
     const keep = Math.min(ui.keepRatio, cap / Math.max(1, srcCount))
     const step = Math.max(1, Math.floor(1 / Math.max(1e-6, keep)))
     const outCount = keep >= 0.999 ? srcCount : Math.max(1, Math.floor(srcCount / step))
 
     // Fast-path: no decimation and colors already match
     if (outCount === srcCount) {
-      return { positions: srcPos, colors: srcColors, keptCount: srcCount }
+      return { positions: srcPos, colors: srcColors, keptCount: srcCount, cap }
     }
 
     const outPos = new Float32Array(outCount * 3)
@@ -940,8 +973,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
     }
 
-    return { positions: outPos, colors: outCol, keptCount: outCount }
-  }, [prebaked, ui.keepRatio])
+    return { positions: outPos, colors: outCol, keptCount: outCount, cap }
+  }, [pointBudget, prebaked, ui.keepRatio])
 
   // Compose world-space debug flips with the PCA quaternion so toggles work live
   const appliedQuaternion = React.useMemo(() => {
@@ -1045,6 +1078,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           console.log('[PC] pointer down', e.clientX, e.clientY)
         }}
         onCreated={({ gl }) => {
+          const clampedDpr = applyDprClamp(gl, 2)
+          console.log('[PC] DPR clamp applied', clampedDpr.toFixed(2))
           // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -1065,6 +1100,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               // @ts-ignore
               const range = ctx.getParameter(ctx.ALIASED_POINT_SIZE_RANGE)
               console.log('[PC] ALIASED_POINT_SIZE_RANGE', range)
+              const vertexInk = detectVertexTextureSupport(ctx)
+              setUniform('uVertexInkOk', vertexInk ? 1 : 0)
+              if (dreamdustCtx) dreamdustCtx.setVertexInkOk(vertexInk)
             }
           } catch {}
           // ensure browser gesture handling doesn't block wheel/touch
@@ -1123,17 +1161,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                       ) : null
                     })()}
                   </bufferGeometry>
-                  <pointsMaterial
-                    size={pointSize * ui.pointSizeScale}
-                    sizeAttenuation
-                    vertexColors={(() => {
-                      const src = renderBuffers?.colors ?? recolored ?? null
-                      const posCount = Math.floor(
-                        (renderBuffers?.positions ?? prebaked.positions).length / 3
-                      )
-                      return !!(src && Math.floor(src.length / 3) === posCount)
-                    })()}
-                  />
+                  <primitive object={prebakedMaterial} attach="material" />
                 </points>
               </group>
             </group>
@@ -1143,8 +1171,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             colorImage={{ data: color.data!, width: color.width, height: color.height }}
             depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
             stride={stride}
-            zScale={zScale}
-            pointSize={pointSize}
+            pointBudget={pointBudget}
+            material={fallbackMaterial}
+            uniforms={uniforms}
             onMaterialValid={() => setBloomEnabled(true)}
           />
         ) : prebakedStatus === 'absent' ? (
@@ -1153,8 +1182,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               colorImage={{ data: color.data!, width: color.width, height: color.height }}
               depth16={depth16From8!}
               stride={stride}
-              zScale={zScale}
-              pointSize={pointSize}
+              pointBudget={pointBudget}
+              material={fallbackMaterial}
+              uniforms={uniforms}
               onMaterialValid={() => setBloomEnabled(true)}
             />
           )
@@ -1179,6 +1209,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         >
           <div style={{ fontWeight: 700, marginBottom: 6 }}>PC Debug</div>
           <div style={{ display: 'grid', rowGap: 8 }}>
+            <div>
+              prebaked:{' '}
+              {renderBuffers
+                ? `${renderBuffers.keptCount.toLocaleString()} / ${renderBuffers.cap.toLocaleString()}`
+                : prebaked
+                  ? `${prebaked.count.toLocaleString()} / ${pointBudget.toLocaleString()}`
+                  : '—'}
+            </div>
             <label>
               thickness: {ui.thickness.toFixed(2)}
               <input
