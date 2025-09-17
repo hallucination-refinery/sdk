@@ -56,6 +56,9 @@ const mapPoint = (
   }
 };
 
+const DECAY_FLOOR_EPSILON = 1 / 512;
+const BRUSH_IDLE_WINDOW_MS = 240;
+
 const createCanvas = (size: number, dpr: number): { canvas: CanvasLike | null; context: Canvas2DContext | null } => {
   const width = Math.max(1, Math.round(size * dpr));
   const height = width;
@@ -95,6 +98,8 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
   let texture: THREE.CanvasTexture | null = null;
   let dirty = true;
   let lastUploadTime = 0;
+  let lastBrushTime = 0;
+  let decayFloor = 0;
   let disposed = false;
 
   const ensureContext = (): { canvas: CanvasLike; context: Canvas2DContext } => {
@@ -116,6 +121,9 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
     if (normalizedPressure === 0) {
       return;
     }
+
+    lastBrushTime = getNow();
+    decayFloor = Math.max(decayFloor, Math.min(normalizedPressure, 1));
 
     const resolvedPoints = points.map(resolvePoint);
     const mode = determineCoordinateMode(resolvedPoints);
@@ -184,9 +192,23 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
     context.fillRect(0, 0, resolvedSize, resolvedSize);
     context.restore();
 
-    dirty = true;
+    const now = getNow();
+    const idle = now - lastBrushTime > BRUSH_IDLE_WINDOW_MS;
+    const previousFloor = decayFloor;
+    decayFloor = previousFloor > 0 ? Math.min(previousFloor * clamped, 1) : 0;
+
+    if (!idle || previousFloor > DECAY_FLOOR_EPSILON) {
+      dirty = true;
+    }
   };
 
+  /**
+   * Upload throttle timeline (not to scale):
+   *   t0 ─ drawStroke ─┐  dirty ← true
+   *   t0 + Δ ─ decay ──┤  throttle window (1000 / throttleHz)
+   *   t0 + Δ ≥ interval ──► upload & reset dirty
+   *   idle ≥ window & decayFloor ≤ ε ─┬─► skip uploads (GPU stays steady)
+   */
   const toCanvasTexture = (renderer: THREE.WebGLRenderer, throttleHz = 60) => {
     if (disposed) {
       throw new Error('InkField has been disposed.');
