@@ -2,12 +2,12 @@
 
 import * as React from 'react'
 
-type InkTexture = import('three').Texture | null | undefined
+type InkTexture = import('three').Texture | null
 
 type DreamdustContextValue = {
-  inkTex?: import('three').Texture | null
+  inkTex?: InkTexture
   inkIntensity: number
-  setInkTex: React.Dispatch<React.SetStateAction<InkTexture>>
+  setInkTex: React.Dispatch<React.SetStateAction<InkTexture | undefined>>
   setInkIntensity: React.Dispatch<React.SetStateAction<number>>
   vertexInkOk: boolean
   setVertexInkOk: React.Dispatch<React.SetStateAction<boolean>>
