@@ -5,6 +5,16 @@
 const emittedLogs = new Set<string>();
 
 /**
+ * Cached query string that was last evaluated for debug logging.
+ */
+let cachedSearch: string | undefined;
+
+/**
+ * Cached result of the debug flag evaluation for the associated {@link cachedSearch}.
+ */
+let cachedDebugEnabled: boolean | undefined;
+
+/**
  * Checks whether debug logging is enabled via the `?debug=1` query string.
  */
 function isDebugEnabled(): boolean {
@@ -12,13 +22,22 @@ function isDebugEnabled(): boolean {
     return false;
   }
 
+  const { search } = window.location;
+
+  if (cachedSearch === search && typeof cachedDebugEnabled !== 'undefined') {
+    return cachedDebugEnabled;
+  }
+
   try {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('debug') === '1';
+    const params = new URLSearchParams(search);
+    cachedDebugEnabled = params.get('debug') === '1';
   } catch {
     // If URL parsing fails for any reason, fall back to disabled logging.
-    return false;
+    cachedDebugEnabled = false;
   }
+
+  cachedSearch = search;
+  return cachedDebugEnabled ?? false;
 }
 
 /**
@@ -61,15 +80,17 @@ export type FpsListener = (fps: number) => void;
  * stop();
  * ```
  */
+const noop = () => {};
+
 export function fpsMeter(onFps: FpsListener): () => void {
   if (typeof window === 'undefined') {
-    return () => {};
+    return noop;
   }
 
   const { requestAnimationFrame, cancelAnimationFrame, performance } = window;
 
   if (typeof requestAnimationFrame !== 'function' || typeof cancelAnimationFrame !== 'function') {
-    return () => {};
+    return noop;
   }
 
   let frameCount = 0;
