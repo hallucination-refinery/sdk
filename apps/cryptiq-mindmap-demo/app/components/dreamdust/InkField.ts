@@ -205,7 +205,7 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
   /**
    * Upload throttle timeline (not to scale):
    *   t0 ─ drawStroke ─┐  dirty ← true
-   *   t0 + Δ ─ decay ──┤  throttle window (1000 / throttleHz)
+   *   t0 + Δ ─ decay ──┤  throttle window (1000 / min(throttleHz, 60))
    *   t0 + Δ ≥ interval ──► upload & reset dirty
    *   idle ≥ window & decayFloor ≤ ε ─┬─► skip uploads (GPU stays steady)
    */
@@ -216,7 +216,10 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
     const { canvas: activeCanvas } = ensureContext();
 
     const now = getNow();
-    const interval = throttleHz > 0 ? 1000 / throttleHz : 0;
+    const cappedHz = throttleHz > 0 ? Math.min(throttleHz, 60) : 0;
+    const interval = cappedHz > 0 ? 1000 / cappedHz : 0;
+    const brushActive = now - lastBrushTime <= BRUSH_IDLE_WINDOW_MS;
+    const pendingBrushUpload = lastBrushTime > lastUploadTime;
 
     if (!texture) {
       texture = new THREE.CanvasTexture(activeCanvas as unknown as HTMLCanvasElement);
@@ -231,10 +234,13 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
       return texture;
     }
 
-    if (dirty && (interval === 0 || now - lastUploadTime >= interval)) {
-      texture.needsUpdate = true;
-      lastUploadTime = now;
-      dirty = false;
+    if (dirty) {
+      const uploadDue = interval === 0 || now - lastUploadTime >= interval;
+      if (uploadDue || (brushActive && pendingBrushUpload)) {
+        texture.needsUpdate = true;
+        lastUploadTime = now;
+        dirty = false;
+      }
     }
 
     return texture;
