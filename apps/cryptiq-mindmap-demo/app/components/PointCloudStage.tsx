@@ -16,7 +16,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
-import { applyPerspectiveFit } from './anim/camera'
+import { applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { detectVertexTextureSupport } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
@@ -894,6 +894,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   })
   const [fitRequest, setFitRequest] = React.useState(0)
   const { bloom, pointSizeScale, reveal, thickness } = ui
+  const thicknessScale = React.useMemo(
+    () => Math.max(0.05, Math.min(1.0, thickness)),
+    [thickness],
+  )
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -933,13 +937,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     const clamped = Math.min(1, Math.max(0, reveal))
     const threshold = 1 - clamped
-    setUniform('uNoiseThreshold', threshold)
-  }, [reveal, setUniform, ui])
-
-  React.useEffect(() => {
-    const depthBias = 0.08 + (1 - Math.min(1, Math.max(0.1, thickness))) * 0.5
-    setUniform('uDepthBias', depthBias)
-  }, [setUniform, thickness, ui])
+    if (uniforms.uNoiseThreshold) uniforms.uNoiseThreshold.value = threshold
+    else setUniform('uNoiseThreshold', threshold)
+  }, [reveal, setUniform, uniforms])
 
   // Derive reduced, matched buffers for prebaked positions/colors
   const renderBuffers = React.useMemo(() => {
@@ -1064,6 +1064,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return 600
   }, [prebakedTransform, color.width, color.height])
 
+  React.useEffect(() => {
+    if (!uniforms.uDepthNormScale) return
+    const radius = prebakedTransform?.radius ?? cameraFitRadius
+    const depthScale = depthNormScaleFromRadius(radius) * thicknessScale
+    uniforms.uDepthNormScale.value = depthScale
+  }, [cameraFitRadius, prebakedTransform, thicknessScale, uniforms, fitRequest])
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
@@ -1141,7 +1148,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             matrixAutoUpdate
           >
             <group scale={mirrorScale}>
-              <group scale={[1, 1, Math.max(0.05, Math.min(1.0, ui.thickness))]}>
+              <group scale={[1, 1, thicknessScale]}>
                 <points frustumCulled={false} renderOrder={1}>
                   <bufferGeometry>
                     <bufferAttribute
