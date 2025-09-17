@@ -159,6 +159,26 @@ float dreamdustFbm(vec3 p) {
   }
   return value;
 }
+
+float dd_noise2(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+
+  float n00 = dreamdustHash(vec3(i, 0.0));
+  float n10 = dreamdustHash(vec3(i + vec2(1.0, 0.0), 0.0));
+  float n01 = dreamdustHash(vec3(i + vec2(0.0, 1.0), 0.0));
+  float n11 = dreamdustHash(vec3(i + vec2(1.0), 0.0));
+
+  float nx0 = mix(n00, n10, f.x);
+  float nx1 = mix(n01, n11, f.x);
+
+  return mix(nx0, nx1, f.y);
+}
+
+float dd_noise2(vec3 p) {
+  return dd_noise2(p.xy + vec2(p.z));
+}
 `;
 
 export const DREAMDUST_DRIFT_CHUNK = /* glsl */ `
@@ -200,6 +220,15 @@ float dreamdustDepthFade(float viewDist, float bias) {
   }
   return clamp(exp(-viewDist * bias), 0.0, 1.0);
 }
+
+float dd_depthAlpha(float depthNorm, float bias) {
+  if (bias <= 0.0) {
+    return 1.0;
+  }
+  return clamp(exp(-depthNorm * bias), 0.0, 1.0);
+}
+
+#define DD_DEPTH_ALPHA(depthNorm, bias) dd_depthAlpha(depthNorm, bias)
 `;
 
 export const DREAMDUST_POINT_SHAPE_CHUNK = /* glsl */ `

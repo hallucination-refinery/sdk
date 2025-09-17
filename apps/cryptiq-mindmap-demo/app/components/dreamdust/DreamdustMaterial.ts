@@ -3,11 +3,11 @@ import type { IUniform, ShaderMaterialParameters } from 'three'
 
 import {
   DREAMDUST_COLOR_CHUNK,
-  DREAMDUST_DEPTH_FADE_CHUNK,
   DREAMDUST_DRIFT_CHUNK,
   DREAMDUST_INK_SAMPLE_CHUNK,
   DREAMDUST_NOISE_CHUNK,
   DREAMDUST_POINT_SHAPE_CHUNK,
+  DREAMDUST_DEPTH_FADE_CHUNK,
 } from './glsl/chunks'
 
 type UniformRecord = Record<string, IUniform>
@@ -35,7 +35,6 @@ uniform float uInkIntensity;
 uniform float uInkOffsetGain;
 uniform float uInkSizeGain;
 uniform float uInkTintGain;
-uniform float uDepthBias;
 uniform float uVertexInkOk;
 uniform float uHasCapture;
 uniform float uZNearNdc;
@@ -49,16 +48,15 @@ attribute float aDepth;
 attribute vec3 color;
 
 varying vec3 vColor;
-varying float vDepthAlpha;
 varying vec3 vNoiseCoord;
 varying vec3 vInkTint;
 varying float vInkMix;
 varying vec2 vInkUv;
+varying vec3 vPosMV;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_DRIFT_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
-${DREAMDUST_DEPTH_FADE_CHUNK}
 
 vec4 dreamdustUnproject(vec2 captureUv, float depth01) {
 #ifdef USE_UNPROJECT
@@ -109,11 +107,11 @@ void main() {
   gl_PointSize = max(0.0, uBaseSize * atten + inkSizeBoost);
 
   vColor = color;
-  vDepthAlpha = dreamdustDepthFade(viewDist, uDepthBias);
   vNoiseCoord = worldPos.xyz * uNoiseScale;
   vInkTint = inkTint;
   vInkMix = inkMix;
   vInkUv = aUv;
+  vPosMV = viewPos.xyz;
 
   gl_Position = projectionMatrix * viewPos;
 }
@@ -128,20 +126,23 @@ uniform float uNoiseThreshold;
 uniform float uInkIntensity;
 uniform float uInkTintGain;
 uniform float uVertexInkOk;
+uniform float uDepthBias;
+uniform float uDepthNormScale;
 
 uniform sampler2D uInkTex;
 
 varying vec3 vColor;
-varying float vDepthAlpha;
 varying vec3 vNoiseCoord;
 varying vec3 vInkTint;
 varying float vInkMix;
 varying vec2 vInkUv;
+varying vec3 vPosMV;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_POINT_SHAPE_CHUNK}
 ${DREAMDUST_COLOR_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
+${DREAMDUST_DEPTH_FADE_CHUNK}
 
 void main() {
   float shape = dreamdustPointShape(gl_PointCoord);
@@ -149,9 +150,16 @@ void main() {
     discard;
   }
 
-  float noiseValue = dreamdustNoise3d(vNoiseCoord + vec3(0.0, 0.0, uTime * uNoiseSpeed));
-  float reveal = smoothstep(uNoiseThreshold - 0.12, uNoiseThreshold + 0.02, noiseValue);
-  float alpha = shape * vDepthAlpha * reveal;
+  vec3 posMV = vPosMV;
+  float distNorm = clamp(-posMV.z * uDepthNormScale, 0.0, 10.0);
+
+  vec2 revealCoord = vec2(vNoiseCoord.x + uTime * uNoiseSpeed, vNoiseCoord.y);
+  if (dd_noise2(revealCoord) < uNoiseThreshold) {
+    discard;
+  }
+
+  float alpha = shape;
+  alpha *= DD_DEPTH_ALPHA(distNorm, uDepthBias);
   if (alpha <= 0.0) {
     discard;
   }
@@ -181,6 +189,10 @@ export function createDreamdustMaterial(
   uniforms: UniformRecord,
   opts: DreamdustMaterialOptions
 ) {
+  if (uniforms.uDepthNormScale === undefined) {
+    uniforms.uDepthNormScale = { value: 1 } as IUniform
+  }
+
   const defines: ShaderMaterialParameters['defines'] = opts.unproject
     ? { USE_UNPROJECT: 1 }
     : {}
