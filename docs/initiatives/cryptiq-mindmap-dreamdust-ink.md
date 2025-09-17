@@ -5,7 +5,12 @@
 - Implementation: [useDreamdustUniforms.ts](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/useDreamdustUniforms.ts).
 - Exposes `DreamdustUniforms` with time, viewport, ink, and noise/depth tuning slots. Defaults establish neutral baselines (e.g. `uInkIntensity=1`, `uNoiseThreshold=0.5`, `uVertexInkOk=0`) and are lazily cloned so callers can mutate in place without reallocation.
 - `useDreamdustUniforms` double-sources frame timing: it increments `uTime` via both `requestAnimationFrame` and `useFrame` to tolerate SSR/rAF gaps, and updates `uViewport` from R3F state when available, falling back to window size otherwise for GL safety.
-- Setter helpers wrap uniform mutation so arrays update in place (preserving references used by `three`), and `updateInkTexture` simply forwards through `setUniform('uInkTex', texture)`.
+- Setter helpers wrap uniform mutation so arrays update in place (preserving references used by `three`), and `updateInkTexture` simply forwards through `setUniform('uInkTex', texture)`. Depth fade strength (`uDepthNormScale`) is provisioned even before a renderer mounts so `PointCloudStage` can safely inject camera-tuned values later.
+
+## Depth normalization & reveal
+- Vertex normalization in [DreamdustMaterial.ts](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts) remaps `aDepth` into `[uDepthMin,uDepthMax]`, applies gamma/invert toggles, then feeds drift/unprojection. Fragment depth fade relies on the same normalized metric so both passes react consistently to tuning defaults.
+- `uDepthNormScale` comes from [depthNormScaleFromRadius](../../apps/cryptiq-mindmap-demo/app/components/anim/camera.ts) and is updated by [PointCloudStage.tsx](../../apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx) after fitting scene radius; this keeps `DD_DEPTH_ALPHA` falloff stable as assets change size or when quiz UI scales thickness.
+- Reveal noise gates each point in [DreamdustMaterial.ts](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts) using the FBM helpers from [`glsl/chunks.ts`](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts). `uNoiseThreshold` and `uNoiseSpeed` expose defaults for slow fades that authors can override via debug UI, while fragment fallbacks continue to respect ink intensity.
 
 ## InkField
 - Core object: [InkField.ts](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/InkField.ts) returns a brushable 2D intensity canvas sized by `size` × DPR.
@@ -14,19 +19,21 @@
 - Host overlay: [InkFieldHost.tsx](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/InkFieldHost.tsx) captures pointer strokes, instantiates the field at `128px` with DPR clamped to ≤1.5, and hands textures to the Dreamdust context while tracking intensity falloff over ~2.4 s.
 - Capability checks use [capabilities.ts](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/capabilities.ts) to test `MAX_VERTEX_TEXTURE_IMAGE_UNITS` before enabling vertex ink influence.
 
-## Material
+## Material & ink paths
 - Shader factory: [DreamdustMaterial.ts](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts) wraps GLSL chunks from [`glsl/chunks.ts`](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts) and exposes an `unproject` toggle.
 - Vertex shader unprojects capture-space UVs via `uPVInvCapture` when prebaked data is absent, layers procedural drift (`uNoise*`, `uDriftAmp`), and applies ink-driven size/offset/tint boosts gated by `uInkIntensity` and `uVertexInkOk`.
-- Fragment shader reuses ink sampling when vertex textures are unavailable, blending tint and alpha based on `uNoiseThreshold` reveal and depth fade (`uDepthBias`). Material instances share uniform objects to keep GPU bindings hot.
+- Fragment shader reuses ink sampling when vertex textures are unavailable, blending tint and alpha based on reveal/discard rules plus depth fade (`uDepthBias`). Vertex and fragment ink paths share `DreamdustInkSample` helpers so swapping between them keeps brush feel identical.
 
 ## Stage wiring
-- Stage container: [PointCloudStage.tsx](../../apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx) derives scene asset URLs, loads color/depth images, and inflates depth RG data to 16-bit when needed. It memoizes Dreamdust uniforms, adds derived uniforms (e.g. `uBaseSize`, `uHasCapture`), and writes tuning defaults (`uGamma=0.82`, `uFocal=1600`, `uNoiseScale=0.0025`, etc.).
+- Stage container: [PointCloudStage.tsx](../../apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx) derives scene asset URLs, loads color/depth images, inflates depth RG data to 16-bit when needed, and memoizes Dreamdust uniforms. It adds derived slots (`uBaseSize`, `uHasCapture`) plus tuning defaults (`uGamma=0.82`, `uFocal=1600`, `uNoiseScale=0.0025`, etc.) before render.
+- Point budgets clamp work via [`pointCap`](../../apps/cryptiq-mindmap-demo/app/components/pointcloud/budget.ts), while [`applyDprClamp`](../../apps/cryptiq-mindmap-demo/app/components/pointcloud/budget.ts) keeps renderers under the requested DPR during `onCreated` — together they provide predictable GPU cost on mobile and desktop.
 - Two materials are created per stage: prebaked (`unproject:false`) for VGGT exports and fallback (`unproject:true`) for depth-unproject pipelines. When `positions.f32` exists the prebaked path wins; otherwise the stage uses depth reprojection, with both materials disposed on unmount.
 - Stage listens to [`DreamdustProvider`](../../apps/cryptiq-mindmap-demo/app/components/dreamdust/context.tsx) for ink textures/intensity and writes them into uniforms. Vertex texture capability updates flow from `InkFieldHost` via context (`setVertexInkOk`).
 - UI integration: the quiz page wraps the stage and overlay hosts in `DreamdustProvider` and mounts [`InkFieldHost`](../../apps/cryptiq-mindmap-demo/app/quiz/%5Bslug%5D/page.tsx) above the canvas so pointer capture stays in sync with R3F.
 
 ## Performance
 - `InkField` skips uploads while idle (decay floor ≤ ε) and throttles `texture.needsUpdate` to the requested Hz. `InkFieldHost` also throttles renderer acquisition via `requestAnimationFrame` and only recalculates ink intensity when the exponential falloff changes by >0.01.
+- Point count and DPR controls ([`pointCap`](../../apps/cryptiq-mindmap-demo/app/components/pointcloud/budget.ts), [`applyDprClamp`](../../apps/cryptiq-mindmap-demo/app/components/pointcloud/budget.ts)) live alongside the stage so capacity can be tuned via env vars without code changes, keeping budgets predictable on SSR replays or low-power devices.
 - Vertex texture paths are optional: if `MAX_VERTEX_TEXTURE_IMAGE_UNITS` is zero the material falls back to fragment-only tint/alpha, avoiding GPU errors on low-end hardware.
 - Uniform hooks avoid crashes during SSR/hydration by guarding `useThree`/`useFrame` calls and checking for `window` before reading viewport sizes. `getR3FStateOrNull` similarly bails until a canvas is registered.
 
