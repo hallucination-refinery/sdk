@@ -53,6 +53,7 @@ varying float vDepthAlpha;
 varying vec3 vNoiseCoord;
 varying vec3 vInkTint;
 varying float vInkMix;
+varying vec2 vInkUv;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_DRIFT_CHUNK}
@@ -112,6 +113,7 @@ void main() {
   vNoiseCoord = worldPos.xyz * uNoiseScale;
   vInkTint = inkTint;
   vInkMix = inkMix;
+  vInkUv = aUv;
 
   gl_Position = projectionMatrix * viewPos;
 }
@@ -123,16 +125,23 @@ precision highp float;
 uniform float uTime;
 uniform float uNoiseSpeed;
 uniform float uNoiseThreshold;
+uniform float uInkIntensity;
+uniform float uInkTintGain;
+uniform float uVertexInkOk;
+
+uniform sampler2D uInkTex;
 
 varying vec3 vColor;
 varying float vDepthAlpha;
 varying vec3 vNoiseCoord;
 varying vec3 vInkTint;
 varying float vInkMix;
+varying vec2 vInkUv;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_POINT_SHAPE_CHUNK}
 ${DREAMDUST_COLOR_CHUNK}
+${DREAMDUST_INK_SAMPLE_CHUNK}
 
 void main() {
   float shape = dreamdustPointShape(gl_PointCoord);
@@ -150,6 +159,18 @@ void main() {
   vec3 color = vColor;
   if (vInkMix > 1e-5) {
     color = dreamdustApplyInkTint(color, vInkTint, vInkMix);
+  }
+
+  if (uVertexInkOk <= 0.5 && uInkIntensity > 0.0) {
+    DreamdustInkSample fragInk = dreamdustSampleInk(uInkTex, vInkUv);
+    float localIntensity = fragInk.intensity * uInkIntensity;
+    if (localIntensity > 1e-5) {
+      float tintMix = localIntensity * uInkTintGain;
+      if (tintMix > 1e-5) {
+        color = dreamdustApplyInkTint(color, fragInk.tint, tintMix);
+      }
+      alpha *= clamp(localIntensity, 0.0, 1.0);
+    }
   }
 
   gl_FragColor = vec4(color, alpha);
@@ -177,6 +198,12 @@ export function createDreamdustMaterial(
 
   const material = new ShaderMaterial(params)
   material.uniforms = uniforms
+  material.defines = material.defines ?? {}
+  if (opts.unproject) {
+    material.defines.USE_UNPROJECT = 1
+  } else {
+    delete material.defines.USE_UNPROJECT
+  }
   return material
 }
 
