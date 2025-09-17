@@ -125,6 +125,16 @@ export function applyPerspectiveFit(
   return distance
 }
 
+/**
+ * Computes a normalization scale for depth buffers based on a bounding sphere radius.
+ *
+ * Values smaller than one retain their proportional scale, while larger radii are
+ * clamped to avoid excessively small depth precision values.
+ */
+export function depthNormScaleFromRadius(radius: number): number {
+  return 1 / Math.max(1, radius)
+}
+
 export function tweenCamera({
   camera,
   to,
