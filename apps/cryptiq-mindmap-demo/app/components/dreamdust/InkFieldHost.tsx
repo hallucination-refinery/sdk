@@ -187,8 +187,12 @@ export function InkFieldHost(): JSX.Element {
   const intensityRef = React.useRef<number>(0)
   const vertexInkOkRef = React.useRef<boolean | null>(null)
 
+  const lastHandleRef = React.useRef<StrokeCaptureCanvasHandle | null>(null)
   const handleCaptureRef = React.useCallback((handle: StrokeCaptureCanvasHandle | null) => {
-    setCaptureHandle(handle)
+    if (lastHandleRef.current !== handle) {
+      lastHandleRef.current = handle
+      setCaptureHandle(handle)
+    }
   }, [])
 
   React.useEffect(() => {
