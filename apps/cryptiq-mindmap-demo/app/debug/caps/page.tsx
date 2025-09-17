@@ -30,7 +30,7 @@ function formatRange(range: Float32Array): string {
   return `[${Array.from(range).map((value) => value.toFixed(2)).join(', ')}]`
 }
 
-export default function CapsPage(): JSX.Element {
+export default function Page(): JSX.Element {
   const [{ caps, vertexInkSupported, error }, setCapsState] =
     React.useState<CapsState>({
       caps: null,
