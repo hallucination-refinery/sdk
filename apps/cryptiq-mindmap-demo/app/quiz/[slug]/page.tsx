@@ -103,25 +103,19 @@ export default function QuizPage() {
   //   }, 1200)
   // }
 
-  if (loading)
-    return (
-      <DreamdustProvider>
-        <div style={{ padding: 24, color: '#9ab' }}>Loading…</div>
-      </DreamdustProvider>
-    )
-
-  return (
-    <DreamdustProvider>
-      <main
-        ref={mainRef}
-        style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
-          background: '#00041A',
-          overflow: 'hidden',
-        }}
-      >
+  const content = loading ? (
+    <div style={{ padding: 24, color: '#9ab' }}>Loading…</div>
+  ) : (
+    <main
+      ref={mainRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        background: '#00041A',
+        overflow: 'hidden',
+      }}
+    >
       {/* Stage fills viewport */}
       <div
         style={{
@@ -227,7 +221,8 @@ export default function QuizPage() {
 
       {/* Countdown overlay */}
       {showCountdown && <RoundCountdown seconds={3} onDone={() => setShowCountdown(false)} />}
-      </main>
-    </DreamdustProvider>
+    </main>
   )
+
+  return <DreamdustProvider>{content}</DreamdustProvider>
 }
