@@ -48,14 +48,18 @@ const StrokeCaptureCanvas = React.forwardRef<StrokeCaptureCanvasHandle>((_, ref)
     subscribersRef.current.forEach((handler) => handler(segment))
   }, [])
 
-  React.useImperativeHandle(ref, () => ({
-    subscribe(handler: StrokeCaptureSubscriber) {
-      subscribersRef.current.add(handler)
-      return () => {
-        subscribersRef.current.delete(handler)
-      }
-    },
-  }))
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      subscribe(handler: StrokeCaptureSubscriber) {
+        subscribersRef.current.add(handler)
+        return () => {
+          subscribersRef.current.delete(handler)
+        }
+      },
+    }),
+    [],
+  )
 
   React.useEffect(() => {
     const canvas = canvasRef.current
