@@ -1,0 +1,161 @@
+'use client'
+
+import * as React from 'react'
+
+import {
+  detectVertexTextureSupport,
+  readCaps,
+  type DreamdustCaps,
+} from '../../components/dreamdust/capabilities'
+
+type CapsState = {
+  caps: DreamdustCaps | null
+  vertexInkSupported: boolean | null
+  error: string | null
+}
+
+const gridStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'max-content 1fr',
+  gap: '0.5rem 1rem',
+  alignItems: 'baseline',
+  maxWidth: '520px',
+}
+
+const labelStyle: React.CSSProperties = {
+  fontWeight: 600,
+}
+
+function formatRange(range: Float32Array): string {
+  return `[${Array.from(range).map((value) => value.toFixed(2)).join(', ')}]`
+}
+
+export default function CapsPage(): JSX.Element {
+  const [{ caps, vertexInkSupported, error }, setCapsState] =
+    React.useState<CapsState>({
+      caps: null,
+      vertexInkSupported: null,
+      error: null,
+    })
+  const [devicePixelRatio, setDevicePixelRatio] = React.useState<number | null>(
+    null,
+  )
+  const [fps, setFps] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+
+    const updateDpr = () => {
+      setDevicePixelRatio(window.devicePixelRatio || 1)
+    }
+
+    updateDpr()
+    window.addEventListener('resize', updateDpr)
+
+    const canvas = document.createElement('canvas')
+    const gl =
+      (canvas.getContext('webgl2') as WebGL2RenderingContext | null) ??
+      (canvas.getContext('webgl') as WebGLRenderingContext | null)
+
+    if (!gl) {
+      setCapsState({
+        caps: null,
+        vertexInkSupported: null,
+        error: 'WebGL context unavailable',
+      })
+    } else {
+      setCapsState({
+        caps: readCaps(gl),
+        vertexInkSupported: detectVertexTextureSupport(gl),
+        error: null,
+      })
+    }
+
+    let rafId = 0
+    let frameCount = 0
+    let lastSampleTime = performance.now()
+
+    const measure = (now: number) => {
+      frameCount += 1
+      const elapsed = now - lastSampleTime
+
+      if (elapsed >= 500) {
+        const nextFps = (frameCount * 1000) / elapsed
+        setFps(Number(nextFps.toFixed(1)))
+        frameCount = 0
+        lastSampleTime = now
+      }
+
+      rafId = window.requestAnimationFrame(measure)
+    }
+
+    rafId = window.requestAnimationFrame(measure)
+
+    return () => {
+      window.removeEventListener('resize', updateDpr)
+      if (rafId !== 0) {
+        window.cancelAnimationFrame(rafId)
+      }
+    }
+  }, [])
+
+  const rows: Array<{ label: string; value: string }> = []
+
+  rows.push({
+    label: 'Device Pixel Ratio',
+    value:
+      devicePixelRatio === null
+        ? '—'
+        : devicePixelRatio.toFixed(2).replace(/\.00$/, ''),
+  })
+  rows.push({
+    label: 'FPS',
+    value: fps === null ? '—' : fps.toFixed(1),
+  })
+  rows.push({
+    label: 'Vertex Ink Supported',
+    value:
+      vertexInkSupported === null
+        ? '—'
+        : vertexInkSupported
+          ? 'Yes'
+          : 'No',
+  })
+
+  if (caps) {
+    rows.push(
+      {
+        label: 'Aliased Point Size Range',
+        value: formatRange(caps.aliasedPointSizeRange),
+      },
+      { label: 'Max Vertex Attribs', value: caps.maxVertexAttribs.toString() },
+      { label: 'Max Texture Size', value: caps.maxTextureSize.toString() },
+      {
+        label: 'Max Vertex Texture Image Units',
+        value: caps.maxVertexTextureImageUnits.toString(),
+      },
+    )
+  } else if (error) {
+    rows.push({ label: 'WebGL', value: error })
+  } else {
+    rows.push({ label: 'WebGL', value: 'Detecting…' })
+  }
+
+  return (
+    <main style={{ padding: '1.5rem', fontFamily: 'sans-serif' }}>
+      <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
+        GL Capabilities
+      </h1>
+      <div style={gridStyle}>
+        {rows.map(({ label, value }) => (
+          <React.Fragment key={label}>
+            <div style={labelStyle}>{label}</div>
+            <div>{value}</div>
+          </React.Fragment>
+        ))}
+      </div>
+    </main>
+  )
+}
