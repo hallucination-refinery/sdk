@@ -16,6 +16,7 @@ type DreamdustUniformValueMap = {
   uNoiseThreshold: number
   uDriftAmp: number
   uDepthBias: number
+  uDepthNormScale: number
   uGamma: number
   uFocal: number
   uMinSize: number
@@ -39,9 +40,10 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uInkIntensity: 1,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
-  uNoiseThreshold: 0.5,
+  uNoiseThreshold: 1,
   uDriftAmp: 0,
-  uDepthBias: 0,
+  uDepthBias: 1.8,
+  uDepthNormScale: 0.001,
   uGamma: 1,
   uFocal: 1,
   uMinSize: 1,
@@ -97,6 +99,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uNoiseThreshold: { value: DEFAULT_UNIFORM_VALUES.uNoiseThreshold },
       uDriftAmp: { value: DEFAULT_UNIFORM_VALUES.uDriftAmp },
       uDepthBias: { value: DEFAULT_UNIFORM_VALUES.uDepthBias },
+      uDepthNormScale: { value: DEFAULT_UNIFORM_VALUES.uDepthNormScale },
       uGamma: { value: DEFAULT_UNIFORM_VALUES.uGamma },
       uFocal: { value: DEFAULT_UNIFORM_VALUES.uFocal },
       uMinSize: { value: DEFAULT_UNIFORM_VALUES.uMinSize },
