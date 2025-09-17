@@ -7,7 +7,11 @@ export type DreamdustCaps = {
 
 type GLContext = WebGLRenderingContext | WebGL2RenderingContext
 
-function safeGetParameter<T>(gl: GLContext, parameter: number, fallback: T): T {
+function safeGetParameter<T>(
+  gl: GLContext,
+  parameter: number,
+  fallback: () => T,
+): T {
   try {
     const value = gl.getParameter(parameter) as T | null | undefined
     if (value !== null && value !== undefined) {
@@ -16,11 +20,11 @@ function safeGetParameter<T>(gl: GLContext, parameter: number, fallback: T): T {
   } catch {
     // Ignore errors and use the fallback value below.
   }
-  return fallback
+  return fallback()
 }
 
 export function detectVertexTextureSupport(gl: GLContext): boolean {
-  const units = safeGetParameter<number>(gl, gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS, 0)
+  const units = safeGetParameter<number>(gl, gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS, () => 0)
   return units > 0
 }
 
@@ -28,14 +32,14 @@ export function readCaps(gl: GLContext): DreamdustCaps {
   const aliasedPointSizeRange = safeGetParameter<Float32Array>(
     gl,
     gl.ALIASED_POINT_SIZE_RANGE,
-    new Float32Array([1, 1]),
+    () => new Float32Array([1, 1]),
   )
-  const maxVertexAttribs = safeGetParameter<number>(gl, gl.MAX_VERTEX_ATTRIBS, 0)
-  const maxTextureSize = safeGetParameter<number>(gl, gl.MAX_TEXTURE_SIZE, 0)
+  const maxVertexAttribs = safeGetParameter<number>(gl, gl.MAX_VERTEX_ATTRIBS, () => 0)
+  const maxTextureSize = safeGetParameter<number>(gl, gl.MAX_TEXTURE_SIZE, () => 0)
   const maxVertexTextureImageUnits = safeGetParameter<number>(
     gl,
     gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS,
-    0,
+    () => 0,
   )
 
   return {
