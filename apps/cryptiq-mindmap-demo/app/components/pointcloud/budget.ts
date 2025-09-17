@@ -4,6 +4,22 @@
  */
 const MOBILE_USER_AGENT_PATTERN = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
 
+function parseBudgetOverride(value: string | undefined): number | undefined {
+  if (!value) return undefined
+  const parsed = Number.parseInt(value, 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function parsePositiveNumber(value: string | undefined): number | undefined {
+  if (!value) return undefined
+  const parsed = Number.parseFloat(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+const ENV_MOBILE_POINT_CAP = parseBudgetOverride(process.env.NEXT_PUBLIC_POINTCLOUD_BUDGET_MOBILE)
+const ENV_DESKTOP_POINT_CAP = parseBudgetOverride(process.env.NEXT_PUBLIC_POINTCLOUD_BUDGET_DESKTOP)
+const ENV_MAX_DPR = parsePositiveNumber(process.env.NEXT_PUBLIC_POINTCLOUD_MAX_DPR)
+
 /**
  * Detect whether the provided user-agent string represents a mobile device.
  *
@@ -34,10 +50,13 @@ export type PointCapOptions = {
 
 /**
  * Pick an appropriate point budget for the current device class.
+ *
+ * Defaults can be overridden via `NEXT_PUBLIC_POINTCLOUD_BUDGET_MOBILE` and
+ * `NEXT_PUBLIC_POINTCLOUD_BUDGET_DESKTOP` environment variables.
  */
 export function pointCap({
-  mobile = 60_000,
-  desktop = 150_000,
+  mobile = ENV_MOBILE_POINT_CAP ?? 60_000,
+  desktop = ENV_DESKTOP_POINT_CAP ?? 150_000,
   userAgent,
 }: PointCapOptions = {}): number {
   return detectMobile(userAgent) ? mobile : desktop
@@ -56,9 +75,15 @@ export type PixelRatioController = {
  * (when available) and the provided `max`. The previous DPR, if exposed, is used as
  * a fallback to keep the renderer consistent in non-browser contexts.
  *
+ * Defaults can be overridden via the `NEXT_PUBLIC_POINTCLOUD_MAX_DPR`
+ * environment variable.
+ *
  * @returns The pixel ratio that was applied to the renderer.
  */
-export function applyDprClamp<T extends PixelRatioController>(gl: T, max = 2): number {
+export function applyDprClamp<T extends PixelRatioController>(
+  gl: T,
+  max = ENV_MAX_DPR ?? 2,
+): number {
   const requestedDpr =
     typeof window !== 'undefined' && typeof window.devicePixelRatio === 'number'
       ? window.devicePixelRatio
