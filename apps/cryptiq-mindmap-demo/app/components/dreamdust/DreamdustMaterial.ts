@@ -90,7 +90,9 @@ void main() {
   vec3 inkTint = vec3(0.0);
   float inkMix = 0.0;
   float inkSizeBoost = 0.0;
-  if (uVertexInkOk > 0.5 && uInkIntensity > 0.0) {
+  bool vertexInkSupported = uVertexInkOk > 0.5;
+  bool applyVertexInk = vertexInkSupported && uInkIntensity > 0.0;
+  if (applyVertexInk) {
     DreamdustInkSample inkSample = dreamdustSampleInk(uInkTex, aUv);
     float localIntensity = inkSample.intensity * uInkIntensity;
     if (localIntensity > 1e-5) {
@@ -169,7 +171,9 @@ void main() {
     color = dreamdustApplyInkTint(color, vInkTint, vInkMix);
   }
 
-  if (uVertexInkOk <= 0.5 && uInkIntensity > 0.0) {
+  bool vertexInkSupported = uVertexInkOk > 0.5;
+  bool applyFragmentInk = !vertexInkSupported && uInkIntensity > 0.0;
+  if (applyFragmentInk) {
     DreamdustInkSample fragInk = dreamdustSampleInk(uInkTex, vInkUv);
     float localIntensity = fragInk.intensity * uInkIntensity;
     if (localIntensity > 1e-5) {
