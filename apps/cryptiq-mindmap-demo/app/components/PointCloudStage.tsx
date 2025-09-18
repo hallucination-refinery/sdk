@@ -640,7 +640,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const u = baseUniforms as DreamdustStageUniforms
     if (!u.uBaseSize) u.uBaseSize = { value: pointSize }
     if (!u.uDepthMin) u.uDepthMin = { value: 0.05 }
+    else u.uDepthMin.value = 0.05
     if (!u.uDepthMax) u.uDepthMax = { value: 0.95 }
+    else u.uDepthMax.value = 0.95
     if (!u.uInvertDepth) u.uInvertDepth = { value: 0 }
     if (!u.uPVInvCapture) u.uPVInvCapture = { value: new THREE.Matrix4() }
     if (!u.uHasCapture) u.uHasCapture = { value: 0 }
