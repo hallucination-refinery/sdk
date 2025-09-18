@@ -17,7 +17,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import { applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
-import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
+import { makeDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { getDreamdustCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
 import { logOnce } from './dreamdust/metrics'
@@ -681,12 +681,20 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [setUniform, vertexInkOk])
 
   const fallbackMaterial = React.useMemo(
-    () => createDreamdustMaterial(uniforms, { unproject: true }),
-    [uniforms]
+    () =>
+      makeDreamdustMaterial(uniforms, {
+        unproject: true,
+        vertexInkOk,
+      }),
+    [uniforms, vertexInkOk],
   )
   const prebakedMaterial = React.useMemo(
-    () => createDreamdustMaterial(uniforms, { unproject: false }),
-    [uniforms]
+    () =>
+      makeDreamdustMaterial(uniforms, {
+        unproject: false,
+        vertexInkOk,
+      }),
+    [uniforms, vertexInkOk],
   )
 
   React.useEffect(() => () => fallbackMaterial.dispose(), [fallbackMaterial])

@@ -1,12 +1,14 @@
 /**
- * Unified Dreamdust GLSL chunks
- * - Provides DD_* helpers used by newer shaders
- * - Retains DREAMDUST_* exports consumed by DreamdustMaterial
+ * Shared Dreamdust GLSL chunks.
+ *
+ * These helpers expose a soft sprite profile, exponential depth fade,
+ * lightweight value-noise/FBM utilities, and ink sampling stubs so the
+ * Dreamdust material can compile before ink features land in later PRs.
  */
 
-// Noise/hash helpers (2D value noise, 3D fbm), and screen helpers
+// Hash + noise -----------------------------------------------------------------
+
 export const DREAMDUST_NOISE_CHUNK = /* glsl */ `
-// 3D hash (iq-style)
 vec3 dd_hash33(vec3 dd_p) {
   vec3 dd_hashScale3 = vec3(0.1031, 0.1030, 0.0973);
   vec3 dd_q = fract(dd_p * dd_hashScale3);
@@ -14,76 +16,107 @@ vec3 dd_hash33(vec3 dd_p) {
   return fract((dd_q.xxy + dd_q.yzz) * dd_q.zyx);
 }
 
-float dd_hash13(vec3 dd_p) { return dd_hash33(dd_p).x; }
-
-// 2D value noise used for reveal thresholding
-float dd_noise2(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-
-  float n00 = dd_hash13(vec3(i, 0.0));
-  float n10 = dd_hash13(vec3(i + vec2(1.0, 0.0), 0.0));
-  float n01 = dd_hash13(vec3(i + vec2(0.0, 1.0), 0.0));
-  float n11 = dd_hash13(vec3(i + vec2(1.0), 0.0));
-
-  float nx0 = mix(n00, n10, f.x);
-  float nx1 = mix(n01, n11, f.x);
-  return mix(nx0, nx1, f.y);
+float dd_hash13(vec3 dd_p) {
+  return dd_hash33(dd_p).x;
 }
 
-float dd_noise2(vec3 p) { return dd_noise2(p.xy + vec2(p.z)); }
-
-// 3D fbm used by drift
-float dreamdustHash(vec3 p) { return dd_hash13(p); }
-
-float dreamdustNoise3d(vec3 p) {
-  vec3 i = floor(p);
-  vec3 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-
-  float n000 = dreamdustHash(i + vec3(0.0, 0.0, 0.0));
-  float n100 = dreamdustHash(i + vec3(1.0, 0.0, 0.0));
-  float n010 = dreamdustHash(i + vec3(0.0, 1.0, 0.0));
-  float n110 = dreamdustHash(i + vec3(1.0, 1.0, 0.0));
-  float n001 = dreamdustHash(i + vec3(0.0, 0.0, 1.0));
-  float n101 = dreamdustHash(i + vec3(1.0, 0.0, 1.0));
-  float n011 = dreamdustHash(i + vec3(0.0, 1.0, 1.0));
-  float n111 = dreamdustHash(i + vec3(1.0, 1.0, 1.0));
-
-  float nx00 = mix(n000, n100, f.x);
-  float nx10 = mix(n010, n110, f.x);
-  float nx01 = mix(n001, n101, f.x);
-  float nx11 = mix(n011, n111, f.x);
-  float nxy0 = mix(nx00, nx10, f.y);
-  float nxy1 = mix(nx01, nx11, f.y);
-  return mix(nxy0, nxy1, f.z);
+vec3 dd_hash33_signed(vec3 dd_p) {
+  return dd_hash33(dd_p) * 2.0 - 1.0;
 }
 
-float dreamdustFbm(vec3 p) {
-  float value = 0.0;
-  float amplitude = 0.5;
-  for (int i = 0; i < 4; i++) {
-    value += dreamdustNoise3d(p) * amplitude;
-    p *= 2.0;
-    amplitude *= 0.5;
+// 2D value noise used for reveal gating
+float dd_noise2(vec2 dd_p) {
+  vec2 dd_i = floor(dd_p);
+  vec2 dd_f = fract(dd_p);
+  vec2 dd_u = dd_f * dd_f * (3.0 - 2.0 * dd_f);
+
+  float dd_n00 = dd_hash13(vec3(dd_i, 0.0));
+  float dd_n10 = dd_hash13(vec3(dd_i + vec2(1.0, 0.0), 0.0));
+  float dd_n01 = dd_hash13(vec3(dd_i + vec2(0.0, 1.0), 0.0));
+  float dd_n11 = dd_hash13(vec3(dd_i + vec2(1.0), 0.0));
+
+  float dd_x1 = mix(dd_n00, dd_n10, dd_u.x);
+  float dd_x2 = mix(dd_n01, dd_n11, dd_u.x);
+  return mix(dd_x1, dd_x2, dd_u.y);
+}
+
+float dd_noise2(vec3 dd_p) {
+  return dd_noise2(dd_p.xy + vec2(dd_p.z));
+}
+
+float dreamdustHash(vec3 dd_p) {
+  return dd_hash13(dd_p);
+}
+
+float dreamdustNoise3d(vec3 dd_p) {
+  vec3 dd_i = floor(dd_p);
+  vec3 dd_f = fract(dd_p);
+  vec3 dd_u = dd_f * dd_f * (3.0 - 2.0 * dd_f);
+
+  float dd_n000 = dreamdustHash(dd_i + vec3(0.0, 0.0, 0.0));
+  float dd_n100 = dreamdustHash(dd_i + vec3(1.0, 0.0, 0.0));
+  float dd_n010 = dreamdustHash(dd_i + vec3(0.0, 1.0, 0.0));
+  float dd_n110 = dreamdustHash(dd_i + vec3(1.0, 1.0, 0.0));
+  float dd_n001 = dreamdustHash(dd_i + vec3(0.0, 0.0, 1.0));
+  float dd_n101 = dreamdustHash(dd_i + vec3(1.0, 0.0, 1.0));
+  float dd_n011 = dreamdustHash(dd_i + vec3(0.0, 1.0, 1.0));
+  float dd_n111 = dreamdustHash(dd_i + vec3(1.0, 1.0, 1.0));
+
+  float dd_nx00 = mix(dd_n000, dd_n100, dd_u.x);
+  float dd_nx10 = mix(dd_n010, dd_n110, dd_u.x);
+  float dd_nx01 = mix(dd_n001, dd_n101, dd_u.x);
+  float dd_nx11 = mix(dd_n011, dd_n111, dd_u.x);
+  float dd_nxy0 = mix(dd_nx00, dd_nx10, dd_u.y);
+  float dd_nxy1 = mix(dd_nx01, dd_nx11, dd_u.y);
+  return mix(dd_nxy0, dd_nxy1, dd_u.z);
+}
+
+float dreamdustFbm(vec3 dd_p) {
+  float dd_value = 0.0;
+  float dd_amp = 0.5;
+  vec3 dd_pos = dd_p;
+  for (int dd_octave = 0; dd_octave < 4; dd_octave++) {
+    dd_value += dreamdustNoise3d(dd_pos) * dd_amp;
+    dd_pos *= 2.0;
+    dd_amp *= 0.5;
   }
-  return value;
+  return dd_value;
 }
-`
+`;
 
-export const DREAMDUST_DRIFT_CHUNK = /* glsl */ `
-vec3 dreamdustDrift(vec3 pos, float time, float scale, float speed, float amp) {
-  vec3 base = pos * scale + vec3(0.0, 0.0, time * speed);
-  float nx = dreamdustFbm(base + vec3(37.2, 11.8, 5.4));
-  float ny = dreamdustFbm(base + vec3(5.3, 27.1, 19.7));
-  float nz = dreamdustFbm(base + vec3(11.1, 41.3, 7.9));
-  vec3 dir = vec3(nx, ny, nz) * 2.0 - 1.0;
-  float len = max(1e-3, length(dir));
-  dir /= len;
-  return dir * amp;
+// Depth fade -------------------------------------------------------------------
+
+export const DREAMDUST_DEPTH_FADE_CHUNK = /* glsl */ `
+float dd_depthAlpha(float dd_depthNorm, float dd_bias) {
+  if (dd_bias <= 0.0) {
+    return 1.0;
+  }
+  return clamp(exp(-dd_depthNorm * dd_bias), 0.0, 1.0);
 }
-`
+
+float dreamdustDepthFade(float dd_viewDist, float dd_bias) {
+  float dd_norm = clamp(dd_viewDist * uDepthNormScale, 0.0, 10.0);
+  return dd_depthAlpha(dd_norm, dd_bias);
+}
+
+#define DD_DEPTH_ALPHA(depthNorm, bias) dd_depthAlpha(depthNorm, bias)
+`;
+
+// Soft sprite ------------------------------------------------------------------
+
+export const DREAMDUST_SOFT_SPRITE_CHUNK = /* glsl */ `
+float dreamdustSoftSprite(vec2 dd_coord) {
+  vec2 dd_delta = dd_coord * 2.0 - 1.0;
+  float dd_r2 = dot(dd_delta, dd_delta);
+  float dd_core = smoothstep(1.0, 0.0, dd_r2);
+  float dd_feather = smoothstep(1.0, 0.55, dd_r2);
+  return dd_core * dd_feather;
+}
+
+#define DD_SOFT_SPRITE(coord) dreamdustSoftSprite(coord)
+`;
+
+// Ink sampling -----------------------------------------------------------------
 
 export const DREAMDUST_INK_SAMPLE_CHUNK = /* glsl */ `
 struct DreamdustInkSample {
@@ -93,57 +126,18 @@ struct DreamdustInkSample {
   vec3 tint;
 };
 
-DreamdustInkSample dreamdustSampleInk(sampler2D tex, vec2 uv) {
-  vec4 ink = texture2D(tex, uv);
-  DreamdustInkSample inkS;
-  inkS.offset = ink.rg * 2.0 - 1.0;
-  inkS.swell = ink.b;
-  inkS.intensity = ink.a;
-  inkS.tint = ink.rgb;
-  return inkS;
+DreamdustInkSample dreamdustSampleInk(sampler2D dd_tex, vec2 dd_uv) {
+  DreamdustInkSample dd_sample;
+  dd_sample.offset = vec2(0.0);
+  dd_sample.swell = 0.0;
+  dd_sample.intensity = 0.0;
+  dd_sample.tint = vec3(0.0);
+  return dd_sample;
 }
-`
+`;
 
-export const DREAMDUST_DEPTH_FADE_CHUNK = /* glsl */ `
-float dreamdustDepthFade(float viewDist, float bias) {
-  if (bias <= 0.0) { return 1.0; }
-  return clamp(exp(-viewDist * bias), 0.0, 1.0);
-}
-
-float dd_depthAlpha(float depthNorm, float bias) {
-  if (bias <= 0.0) { return 1.0; }
-  return clamp(exp(-depthNorm * bias), 0.0, 1.0);
-}
-
-#define DD_DEPTH_ALPHA(depthNorm, bias) dd_depthAlpha(depthNorm, bias)
-`
-
-export const DREAMDUST_POINT_SHAPE_CHUNK = /* glsl */ `
-float dreamdustPointShape(vec2 coord) {
-  vec2 delta = coord * 2.0 - 1.0;
-  float r2 = dot(delta, delta);
-  float core = smoothstep(1.0, 0.0, r2);
-  float feather = smoothstep(1.0, 0.6, r2);
-  return core * feather;
-}
-`
-
-export const DREAMDUST_COLOR_CHUNK = /* glsl */ `
-vec3 dreamdustApplyInkTint(vec3 baseColor, vec3 tintColor, float amount) {
-  float mixAmt = clamp(amount, 0.0, 1.0);
-  vec3 tinted = baseColor + tintColor * mixAmt;
-  return mix(baseColor, tinted, mixAmt);
-}
-`
-
-// (registry removed; DREAMDUST_* chunks are imported directly by consumers)
-/**
- * Shared Dreamdust GLSL chunks for shader composition.
- *
- * Each chunk is exported as a raw GLSL string and is intended to be interpolated
- * into shader sources. Helper identifiers follow the `dd_` / `DD_` naming
- * convention to avoid collisions with reserved names.
- */
+// -----------------------------------------------------------------------------
+// Retain DD_* chunk exports consumed by other tooling/tests.
 
 /**
  * Saturation helper that clamps a scalar to the [0, 1] range.
