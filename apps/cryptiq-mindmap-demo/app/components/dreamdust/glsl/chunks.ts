@@ -6,7 +6,7 @@
 
 // Noise/hash helpers (2D value noise, 3D fbm), and screen helpers
 export const DREAMDUST_NOISE_CHUNK = /* glsl */ `
-// 3D hash (iq-style)
+// Branchless IQ-style hashes
 vec3 dd_hash33(vec3 dd_p) {
   vec3 dd_hashScale3 = vec3(0.1031, 0.1030, 0.0973);
   vec3 dd_q = fract(dd_p * dd_hashScale3);
@@ -14,61 +14,68 @@ vec3 dd_hash33(vec3 dd_p) {
   return fract((dd_q.xxy + dd_q.yzz) * dd_q.zyx);
 }
 
-float dd_hash13(vec3 dd_p) { return dd_hash33(dd_p).x; }
-
-// 2D value noise used for reveal thresholding
-float dd_noise2(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-
-  float n00 = dd_hash13(vec3(i, 0.0));
-  float n10 = dd_hash13(vec3(i + vec2(1.0, 0.0), 0.0));
-  float n01 = dd_hash13(vec3(i + vec2(0.0, 1.0), 0.0));
-  float n11 = dd_hash13(vec3(i + vec2(1.0), 0.0));
-
-  float nx0 = mix(n00, n10, f.x);
-  float nx1 = mix(n01, n11, f.x);
-  return mix(nx0, nx1, f.y);
+float dd_hash13(vec3 dd_p) {
+  return dd_hash33(dd_p).x;
 }
 
-float dd_noise2(vec3 p) { return dd_noise2(p.xy + vec2(p.z)); }
-
-// 3D fbm used by drift
-float dreamdustHash(vec3 p) { return dd_hash13(p); }
-
-float dreamdustNoise3d(vec3 p) {
-  vec3 i = floor(p);
-  vec3 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-
-  float n000 = dreamdustHash(i + vec3(0.0, 0.0, 0.0));
-  float n100 = dreamdustHash(i + vec3(1.0, 0.0, 0.0));
-  float n010 = dreamdustHash(i + vec3(0.0, 1.0, 0.0));
-  float n110 = dreamdustHash(i + vec3(1.0, 1.0, 0.0));
-  float n001 = dreamdustHash(i + vec3(0.0, 0.0, 1.0));
-  float n101 = dreamdustHash(i + vec3(1.0, 0.0, 1.0));
-  float n011 = dreamdustHash(i + vec3(0.0, 1.0, 1.0));
-  float n111 = dreamdustHash(i + vec3(1.0, 1.0, 1.0));
-
-  float nx00 = mix(n000, n100, f.x);
-  float nx10 = mix(n010, n110, f.x);
-  float nx01 = mix(n001, n101, f.x);
-  float nx11 = mix(n011, n111, f.x);
-  float nxy0 = mix(nx00, nx10, f.y);
-  float nxy1 = mix(nx01, nx11, f.y);
-  return mix(nxy0, nxy1, f.z);
+float dd_hash12(vec2 dd_p) {
+  return dd_hash13(vec3(dd_p, 0.0));
 }
 
-float dreamdustFbm(vec3 p) {
-  float value = 0.0;
-  float amplitude = 0.5;
-  for (int i = 0; i < 4; i++) {
-    value += dreamdustNoise3d(p) * amplitude;
-    p *= 2.0;
-    amplitude *= 0.5;
+// 2D value noise used by reveal flow
+float dd_noise2(vec2 dd_p) {
+  vec2 dd_i = floor(dd_p);
+  vec2 dd_f = fract(dd_p);
+  vec2 dd_u = dd_f * dd_f * (3.0 - 2.0 * dd_f);
+
+  float dd_n00 = dd_hash12(dd_i);
+  float dd_n10 = dd_hash12(dd_i + vec2(1.0, 0.0));
+  float dd_n01 = dd_hash12(dd_i + vec2(0.0, 1.0));
+  float dd_n11 = dd_hash12(dd_i + vec2(1.0, 1.0));
+
+  float dd_x0 = mix(dd_n00, dd_n10, dd_u.x);
+  float dd_x1 = mix(dd_n01, dd_n11, dd_u.x);
+  return mix(dd_x0, dd_x1, dd_u.y);
+}
+
+float dd_noise2(vec3 dd_p) {
+  return dd_noise2(dd_p.xy + vec2(dd_p.z));
+}
+
+// Smoothed value noise for drift fields
+float dreamdustNoise3d(vec3 dd_p) {
+  vec3 dd_i = floor(dd_p);
+  vec3 dd_f = fract(dd_p);
+  vec3 dd_u = dd_f * dd_f * (3.0 - 2.0 * dd_f);
+
+  float dd_n000 = dd_hash13(dd_i);
+  float dd_n100 = dd_hash13(dd_i + vec3(1.0, 0.0, 0.0));
+  float dd_n010 = dd_hash13(dd_i + vec3(0.0, 1.0, 0.0));
+  float dd_n110 = dd_hash13(dd_i + vec3(1.0, 1.0, 0.0));
+  float dd_n001 = dd_hash13(dd_i + vec3(0.0, 0.0, 1.0));
+  float dd_n101 = dd_hash13(dd_i + vec3(1.0, 0.0, 1.0));
+  float dd_n011 = dd_hash13(dd_i + vec3(0.0, 1.0, 1.0));
+  float dd_n111 = dd_hash13(dd_i + vec3(1.0, 1.0, 1.0));
+
+  float dd_nx00 = mix(dd_n000, dd_n100, dd_u.x);
+  float dd_nx10 = mix(dd_n010, dd_n110, dd_u.x);
+  float dd_nx01 = mix(dd_n001, dd_n101, dd_u.x);
+  float dd_nx11 = mix(dd_n011, dd_n111, dd_u.x);
+  float dd_nxy0 = mix(dd_nx00, dd_nx10, dd_u.y);
+  float dd_nxy1 = mix(dd_nx01, dd_nx11, dd_u.y);
+  return mix(dd_nxy0, dd_nxy1, dd_u.z);
+}
+
+float dreamdustFbm(vec3 dd_p) {
+  float dd_value = 0.0;
+  float dd_amplitude = 0.5;
+  const int dd_octaves = 4;
+  for (int dd_i = 0; dd_i < dd_octaves; ++dd_i) {
+    dd_value += dreamdustNoise3d(dd_p) * dd_amplitude;
+    dd_p *= 2.0;
+    dd_amplitude *= 0.5;
   }
-  return value;
+  return dd_value;
 }
 `
 
@@ -106,33 +113,47 @@ DreamdustInkSample dreamdustSampleInk(sampler2D tex, vec2 uv) {
 
 export const DREAMDUST_DEPTH_FADE_CHUNK = /* glsl */ `
 float dreamdustDepthFade(float viewDist, float bias) {
-  if (bias <= 0.0) { return 1.0; }
+  if (bias <= 0.0) {
+    return 1.0;
+  }
   return clamp(exp(-viewDist * bias), 0.0, 1.0);
 }
 
-float dd_depthAlpha(float depthNorm, float bias) {
-  if (bias <= 0.0) { return 1.0; }
+float dreamdustViewDepthNorm(vec3 posMV, float scale) {
+  return clamp(-posMV.z * scale, 0.0, 10.0);
+}
+
+float dreamdustDepthAlpha(float depthNorm, float bias) {
+  if (bias <= 0.0) {
+    return 1.0;
+  }
   return clamp(exp(-depthNorm * bias), 0.0, 1.0);
 }
 
-#define DD_DEPTH_ALPHA(depthNorm, bias) dd_depthAlpha(depthNorm, bias)
+#define DD_DEPTH_ALPHA(depthNorm, bias) dreamdustDepthAlpha(depthNorm, bias)
 `
 
-export const DREAMDUST_POINT_SHAPE_CHUNK = /* glsl */ `
-float dreamdustPointShape(vec2 coord) {
+export const DREAMDUST_SOFT_SPRITE_CHUNK = /* glsl */ `
+float dreamdustSoftSprite(vec2 coord) {
   vec2 delta = coord * 2.0 - 1.0;
   float r2 = dot(delta, delta);
-  float core = smoothstep(1.0, 0.0, r2);
-  float feather = smoothstep(1.0, 0.6, r2);
-  return core * feather;
+  float inner = smoothstep(0.95, 0.0, r2);
+  float fringe = smoothstep(1.3, 0.3, r2);
+  return clamp(inner * fringe, 0.0, 1.0);
 }
 `
 
 export const DREAMDUST_COLOR_CHUNK = /* glsl */ `
 vec3 dreamdustApplyInkTint(vec3 baseColor, vec3 tintColor, float amount) {
   float mixAmt = clamp(amount, 0.0, 1.0);
-  vec3 tinted = baseColor + tintColor * mixAmt;
+  vec3 tinted = mix(baseColor, tintColor, mixAmt);
   return mix(baseColor, tinted, mixAmt);
+}
+
+vec3 dreamdustApplyGamma(vec3 color, float gamma) {
+  float g = max(gamma, 1e-3);
+  vec3 safe = max(color, vec3(0.0));
+  return pow(safe, vec3(1.0 / g));
 }
 `
 
