@@ -27,6 +27,7 @@ export type StrokeCaptureCanvasProps = {
   onStrokeStart?(point: StrokePoint): void
   onStrokeSegment?(segment: StrokeSegment): void
   onStrokeEnd?(): void
+  onCanvasElement?(canvas: HTMLCanvasElement | null): void
 }
 
 const MAX_DPR = 1.5
@@ -62,6 +63,7 @@ export function StrokeCaptureCanvas({
   onStrokeStart,
   onStrokeSegment,
   onStrokeEnd,
+  onCanvasElement,
 }: StrokeCaptureCanvasProps): React.JSX.Element {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
   const pointerIdRef = React.useRef<number | null>(null)
@@ -91,6 +93,13 @@ export function StrokeCaptureCanvas({
   React.useEffect(() => {
     endCallbackRef.current = onStrokeEnd
   }, [onStrokeEnd])
+
+  React.useEffect(() => {
+    onCanvasElement?.(canvasRef.current)
+    return () => {
+      onCanvasElement?.(null)
+    }
+  }, [onCanvasElement])
 
   React.useEffect(() => {
     enabledRef.current = enabled

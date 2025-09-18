@@ -25,6 +25,41 @@ const DECAY_BASE = 0.98
 const INTENSITY_EPSILON = 0.01
 const INTENSITY_IDLE_ZERO_MS = 2400
 const DEFAULT_PRESSURE = 0.5
+const SHORT_TAP_MS = 120
+const LONG_STROKE_MS = 250
+const SHORT_TRAVEL_PX = 20
+const LONG_TRAVEL_PX = 120
+
+const clamp = (value: number, min: number, max: number) => {
+  if (value < min) return min
+  if (value > max) return max
+  return value
+}
+
+const hueToRgb = (hue: number): [number, number, number] => {
+  const normalized = ((hue % 1) + 1) % 1
+  const sector = Math.floor(normalized * 6)
+  const f = normalized * 6 - sector
+  const saturation = 0.85
+  const value = 1
+  const p = value * (1 - saturation)
+  const q = value * (1 - saturation * f)
+  const t = value * (1 - saturation * (1 - f))
+  switch (sector % 6) {
+    case 0:
+      return [value, t, p]
+    case 1:
+      return [q, value, p]
+    case 2:
+      return [p, value, t]
+    case 3:
+      return [p, q, value]
+    case 4:
+      return [t, p, value]
+    default:
+      return [value, p, q]
+  }
+}
 
 function nowMs(): number {
   if (typeof performance !== 'undefined') {
@@ -43,6 +78,7 @@ function decayRateFromDelta(deltaMs: number): number {
 
 export function InkFieldHost(): React.JSX.Element {
   const {
+    startCascade,
     setInkTex,
     setInkIntensity,
     setVertexInkOk,
@@ -64,6 +100,18 @@ export function InkFieldHost(): React.JSX.Element {
     null,
   )
   const loggedInkOnceRef = React.useRef(false)
+  type StrokeStats = {
+    startTime: number
+    lastTime: number
+    totalTravelPx: number
+    sumPressure: number
+    sampleCount: number
+    sumSin: number
+    sumCos: number
+    sumWeight: number
+  }
+  const strokeStatsRef = React.useRef<StrokeStats | null>(null)
+  const strokeCanvasElementRef = React.useRef<HTMLCanvasElement | null>(null)
 
   const lockControls = React.useCallback(() => {
     try {
@@ -94,16 +142,64 @@ export function InkFieldHost(): React.JSX.Element {
     }
   }, [])
 
+  const pushTextureUpdate = React.useCallback(
+    (field: InkField) => {
+      const renderer = rendererRef.current
+      if (!renderer) {
+        return
+      }
+      const texture = field.toCanvasTexture(
+        renderer as Parameters<InkField['toCanvasTexture']>[0],
+        UPLOAD_HZ,
+      )
+      if (textureRef.current !== texture) {
+        textureRef.current = texture
+        setInkTex(texture as InkTexState)
+      }
+    },
+    [setInkTex],
+  )
+
+  const handleCanvasElement = React.useCallback((canvas: HTMLCanvasElement | null) => {
+    strokeCanvasElementRef.current = canvas
+  }, [])
+
   const handleStrokeStart = React.useCallback(
-    (_point: StrokePoint) => {
-      void _point
+    (point: StrokePoint) => {
       lockControls()
       setControlsLocked(true)
       const now = nowMs()
       lastStrokeRef.current = now
-      if (intensityRef.current !== 1) {
-        intensityRef.current = 1
-        setInkIntensity(1)
+      const pressure = clamp(point.pressure > 0 ? point.pressure : DEFAULT_PRESSURE, 0, 1)
+      const baseImpulse = clamp(0.55 + pressure * 0.4, 0, 1)
+      if (Math.abs(baseImpulse - intensityRef.current) > INTENSITY_EPSILON) {
+        intensityRef.current = baseImpulse
+        setInkIntensity(baseImpulse)
+      }
+      strokeStatsRef.current = {
+        startTime: point.t,
+        lastTime: point.t,
+        totalTravelPx: 0,
+        sumPressure: pressure,
+        sampleCount: 1,
+        sumSin: 0,
+        sumCos: 0,
+        sumWeight: 0,
+      }
+      const field = inkFieldRef.current
+      if (field) {
+        field.drawStroke(
+          [
+            {
+              x: point.x,
+              y: point.y,
+              t: point.t,
+              pressure: point.pressure,
+            },
+          ],
+          pressure,
+        )
+        pushTextureUpdate(field)
       }
       // One-time debug of caps/viewport/intensity on first stroke
       if (!loggedInkOnceRef.current) {
@@ -115,7 +211,7 @@ export function InkFieldHost(): React.JSX.Element {
             console.warn('[PC] ink debug (host)', {
               vertexInkOk: !!vertexInkOkRef.current,
               uViewport: [vpW, vpH],
-              inkIntensity: 1,
+              inkIntensity: baseImpulse,
             })
           } catch (error) {
             console.warn('[PC] ink debug (host) failed', error)
@@ -124,7 +220,7 @@ export function InkFieldHost(): React.JSX.Element {
         loggedInkOnceRef.current = true
       }
     },
-    [lockControls, setControlsLocked, setInkIntensity],
+    [lockControls, pushTextureUpdate, setControlsLocked, setInkIntensity],
   )
 
   const handleStrokeSegment = React.useCallback(
@@ -134,41 +230,109 @@ export function InkFieldHost(): React.JSX.Element {
         return
       }
 
-      const pressure = segment.pressure > 0 ? segment.pressure : DEFAULT_PRESSURE
+      const pressure = clamp(segment.pressure > 0 ? segment.pressure : DEFAULT_PRESSURE, 0, 1)
       field.drawStroke(
         [
-          { x: segment.from.x, y: segment.from.y },
-          { x: segment.to.x, y: segment.to.y },
+          { ...segment.from },
+          { ...segment.to },
         ],
         pressure,
       )
 
-      const now = nowMs()
-      lastStrokeRef.current = now
-      if (intensityRef.current !== 1) {
-        intensityRef.current = 1
-        setInkIntensity(1)
+      const stats = strokeStatsRef.current
+      let pxPerFrame = 0
+      if (stats) {
+        const canvas = strokeCanvasElementRef.current
+        const rect = canvas?.getBoundingClientRect()
+        let width = rect?.width ?? 0
+        let height = rect?.height ?? 0
+        if (width <= 0 && canvas?.width) {
+          width = canvas.width
+        }
+        if (height <= 0 && canvas?.height) {
+          height = canvas.height
+        }
+        if ((width <= 0 || height <= 0) && typeof window !== 'undefined') {
+          width = width || window.innerWidth || 0
+          height = height || window.innerHeight || 0
+        }
+        const dxPx = (segment.to.x - segment.from.x) * width
+        const dyPx = (segment.to.y - segment.from.y) * height
+        const distancePx = Math.hypot(dxPx, dyPx)
+        if (Number.isFinite(distancePx) && distancePx > 0) {
+          const previousTime = Number.isFinite(stats.lastTime)
+            ? stats.lastTime
+            : segment.t
+          const deltaMs = Math.max(1, segment.t - previousTime)
+          pxPerFrame = (distancePx / deltaMs) * 16
+          const weight = distancePx
+          const angle = Math.atan2(dyPx, dxPx)
+          stats.totalTravelPx += distancePx
+          stats.sumSin += Math.sin(angle) * weight
+          stats.sumCos += Math.cos(angle) * weight
+          stats.sumWeight += weight
+        }
+        stats.sumPressure += pressure
+        stats.sampleCount += 1
+        stats.lastTime = segment.t
       }
 
-      const renderer = rendererRef.current
-      if (renderer) {
-        const texture = field.toCanvasTexture(
-          renderer as Parameters<InkField['toCanvasTexture']>[0],
-          UPLOAD_HZ,
-        )
-        if (textureRef.current !== texture) {
-          textureRef.current = texture
-          setInkTex(texture as InkTexState)
-        }
+      const now = nowMs()
+      lastStrokeRef.current = now
+      const velocityBoost = Math.min(0.35, Math.max(0, pxPerFrame) * 0.02)
+      const dynamicIntensity = clamp(0.65 + pressure * 0.35 + velocityBoost, 0, 1)
+      if (dynamicIntensity - intensityRef.current > INTENSITY_EPSILON) {
+        intensityRef.current = dynamicIntensity
+        setInkIntensity(dynamicIntensity)
       }
+
+      pushTextureUpdate(field)
     },
-    [setInkIntensity, setInkTex],
+    [pushTextureUpdate, setInkIntensity],
   )
 
   const handleStrokeEnd = React.useCallback(() => {
     unlockControls()
     setControlsLocked(false)
-  }, [setControlsLocked, unlockControls])
+
+    const stats = strokeStatsRef.current
+    strokeStatsRef.current = null
+
+    const now = nowMs()
+    lastStrokeRef.current = now
+
+    if (!stats) {
+      return
+    }
+
+    const endTime = Number.isFinite(stats.lastTime) ? stats.lastTime : stats.startTime
+    const durationMs = Math.max(0, endTime - stats.startTime)
+    const travelPx = Number.isFinite(stats.totalTravelPx) ? stats.totalTravelPx : 0
+    const averagePressure = clamp(stats.sumPressure / Math.max(1, stats.sampleCount), 0, 1)
+
+    if (durationMs < SHORT_TAP_MS || travelPx < SHORT_TRAVEL_PX) {
+      const impulse = clamp(Math.max(intensityRef.current, 0.45 + averagePressure * 0.4), 0, 1)
+      if (Math.abs(impulse - intensityRef.current) > INTENSITY_EPSILON) {
+        intensityRef.current = impulse
+        setInkIntensity(impulse)
+      }
+      return
+    }
+
+    if (durationMs > LONG_STROKE_MS && travelPx > LONG_TRAVEL_PX) {
+      const weight = stats.sumWeight
+      let avgHue = null as number | null
+      if (weight > 0) {
+        const avgSin = stats.sumSin / weight
+        const avgCos = stats.sumCos / weight
+        if (Number.isFinite(avgSin) && Number.isFinite(avgCos) && (avgSin !== 0 || avgCos !== 0)) {
+          avgHue = ((Math.atan2(avgSin, avgCos) / (Math.PI * 2)) % 1 + 1) % 1
+        }
+      }
+      const cascadeColor = hueToRgb(avgHue ?? averagePressure)
+      startCascade(cascadeColor)
+    }
+  }, [setControlsLocked, setInkIntensity, startCascade, unlockControls])
 
   React.useEffect(() => {
     setInkIntensity(0)
@@ -182,6 +346,8 @@ export function InkFieldHost(): React.JSX.Element {
       inkFieldRef.current = null
       rendererRef.current = null
       textureRef.current = null
+      strokeStatsRef.current = null
+      strokeCanvasElementRef.current = null
     }
   }, [setControlsLocked, setInkIntensity, setInkTex, setVertexInkOk, unlockControls])
 
@@ -350,19 +516,32 @@ export function InkFieldHost(): React.JSX.Element {
           const src = tex.image as HTMLCanvasElement | OffscreenCanvas
           const renderer = rendererRef.current
           const glCanvas = renderer?.domElement ?? null
-          const viewportWidth = glCanvas?.width ?? 0
-          const viewportHeight = glCanvas?.height ?? 0
-          if (viewportWidth > 0 && canvas.width !== viewportWidth) {
-            canvas.width = viewportWidth
+          const rect = glCanvas?.getBoundingClientRect()
+          const fallbackWidth = window.innerWidth || 0
+          const fallbackHeight = window.innerHeight || 0
+          const cssWidth = rect?.width ?? glCanvas?.clientWidth ?? fallbackWidth
+          const cssHeight = rect?.height ?? glCanvas?.clientHeight ?? fallbackHeight
+          const pixelWidth = glCanvas?.width ?? Math.max(1, Math.round(cssWidth * (window.devicePixelRatio || 1)))
+          const pixelHeight = glCanvas?.height ?? Math.max(1, Math.round(cssHeight * (window.devicePixelRatio || 1)))
+          if (pixelWidth > 0 && canvas.width !== pixelWidth) {
+            canvas.width = pixelWidth
           }
-          if (viewportHeight > 0 && canvas.height !== viewportHeight) {
-            canvas.height = viewportHeight
+          if (pixelHeight > 0 && canvas.height !== pixelHeight) {
+            canvas.height = pixelHeight
+          }
+          if (cssWidth > 0) {
+            canvas.style.width = `${cssWidth}px`
+          }
+          if (cssHeight > 0) {
+            canvas.style.height = `${cssHeight}px`
           }
           if (canvas.width === 0 || canvas.height === 0) {
-            const fallbackWidth = 256
-            const fallbackHeight = 256
-            canvas.width = fallbackWidth
-            canvas.height = fallbackHeight
+            const fallbackPixelWidth = Math.max(256, Math.round(fallbackWidth || 256))
+            const fallbackPixelHeight = Math.max(256, Math.round(fallbackHeight || 256))
+            canvas.width = fallbackPixelWidth
+            canvas.height = fallbackPixelHeight
+            canvas.style.width = `${fallbackPixelWidth}px`
+            canvas.style.height = `${fallbackPixelHeight}px`
           }
           ctx.imageSmoothingEnabled = false
           ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -403,6 +582,7 @@ export function InkFieldHost(): React.JSX.Element {
         onStrokeStart={handleStrokeStart}
         onStrokeSegment={handleStrokeSegment}
         onStrokeEnd={handleStrokeEnd}
+        onCanvasElement={handleCanvasElement}
       />
       {heatmapVisible && (
         <canvas

@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
-export type InkFieldPoint = { x: number; y: number } | [number, number];
+export type InkFieldPoint =
+  | { x: number; y: number; t?: number; pressure?: number }
+  | [number, number];
 
 export interface InkField {
   readonly size: number;
@@ -19,12 +21,20 @@ type CanvasLike = HTMLCanvasElement | OffscreenCanvas;
 
 type CoordinateMode = 'pixel' | 'zeroToOne' | 'minusOneToOne';
 
-const resolvePoint = (point: InkFieldPoint): { x: number; y: number } => {
+type ResolvedInkPoint = { x: number; y: number; t?: number; pressure?: number };
+
+const resolvePoint = (point: InkFieldPoint): ResolvedInkPoint => {
   if (Array.isArray(point)) {
     const [x, y] = point;
     return { x, y };
   }
-  return point;
+  const { x, y } = point;
+  const t = typeof point.t === 'number' && Number.isFinite(point.t) ? point.t : undefined;
+  const pressure =
+    typeof point.pressure === 'number' && Number.isFinite(point.pressure)
+      ? point.pressure
+      : undefined;
+  return { x, y, t, pressure };
 };
 
 const determineCoordinateMode = (points: Array<{ x: number; y: number }>): CoordinateMode => {
@@ -41,16 +51,16 @@ const determineCoordinateMode = (points: Array<{ x: number; y: number }>): Coord
   return 'pixel';
 };
 
-const mapPoint = (
-  point: { x: number; y: number },
-  mode: CoordinateMode,
-  size: number,
-): { x: number; y: number } => {
+const mapPoint = (point: ResolvedInkPoint, mode: CoordinateMode, size: number): ResolvedInkPoint => {
   switch (mode) {
     case 'zeroToOne':
-      return { x: point.x * size, y: point.y * size };
+      return { ...point, x: point.x * size, y: point.y * size };
     case 'minusOneToOne':
-      return { x: (point.x * 0.5 + 0.5) * size, y: (point.y * 0.5 + 0.5) * size };
+      return {
+        ...point,
+        x: (point.x * 0.5 + 0.5) * size,
+        y: (point.y * 0.5 + 0.5) * size,
+      };
     default:
       return point;
   }
@@ -58,6 +68,91 @@ const mapPoint = (
 
 const DECAY_FLOOR_EPSILON = 1 / 512;
 const BRUSH_IDLE_WINDOW_MS = 240;
+const MIN_FIELD_SIZE = 256;
+const MAX_FIELD_SIZE = 512;
+const DEFAULT_FIELD_SIZE = 384;
+
+const clamp01 = (value: number) => {
+  if (!Number.isFinite(value)) return 0;
+  if (value <= 0) return 0;
+  if (value >= 1) return 1;
+  return value;
+};
+
+const resolvePointPressure = (point: ResolvedInkPoint | undefined, fallback: number) => {
+  if (!point) {
+    return fallback;
+  }
+  if (typeof point.pressure === 'number' && Number.isFinite(point.pressure)) {
+    return clamp01(point.pressure);
+  }
+  return fallback;
+};
+
+const resolvePointTime = (point: ResolvedInkPoint | undefined) => {
+  if (!point) return undefined;
+  if (typeof point.t === 'number' && Number.isFinite(point.t)) {
+    return point.t;
+  }
+  return undefined;
+};
+
+const quantizeFieldSize = (size: number) => {
+  if (size >= 480) return 512;
+  if (size >= 352) return 384;
+  return 256;
+};
+
+const chooseFieldSize = (requestedSize: number, dpr: number) => {
+  const clamped = Math.min(Math.max(requestedSize, MIN_FIELD_SIZE), MAX_FIELD_SIZE);
+  let target = quantizeFieldSize(clamped);
+
+  if (typeof navigator !== 'undefined') {
+    const cores = navigator.hardwareConcurrency ?? 4;
+    if (cores <= 2) {
+      target = 256;
+    } else if (cores <= 4) {
+      target = Math.min(target, 384);
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    const width = window.innerWidth || 0;
+    const height = window.innerHeight || 0;
+    const maxDim = Math.max(width, height);
+    if (maxDim > 0 && maxDim < 900) {
+      target = Math.min(target, 384);
+    }
+  }
+
+  if (dpr > 1.6) {
+    target = Math.min(target, 384);
+  }
+
+  return Math.min(Math.max(target, MIN_FIELD_SIZE), MAX_FIELD_SIZE);
+};
+
+const computeVelocityScale = (distance: number, deltaMs: number) => {
+  if (!(Number.isFinite(distance) && Number.isFinite(deltaMs))) {
+    return 1;
+  }
+  const ms = Math.max(4, deltaMs);
+  const pxPerFrame = (distance / ms) * 16;
+  const bonus = Math.min(1.75, Math.max(0, pxPerFrame) * 0.03);
+  return 0.85 + bonus;
+};
+
+const computeRadius = (baseRadius: number, pressure: number, velocityScale: number) => {
+  const pressureScale = 0.55 + pressure * 0.75;
+  const dynamic = baseRadius * pressureScale * velocityScale;
+  return Math.max(1.5, dynamic);
+};
+
+const computeStampIntensity = (pressure: number, velocityScale: number) => {
+  const base = 0.55 + pressure * 0.4;
+  const velocityBonus = Math.min(0.25, Math.max(0, velocityScale - 1) * 0.12);
+  return Math.min(0.95, base + velocityBonus);
+};
 
 const createCanvas = (size: number, dpr: number): { canvas: CanvasLike | null; context: Canvas2DContext | null } => {
   const width = Math.max(1, Math.round(size * dpr));
@@ -90,9 +185,10 @@ const createCanvas = (size: number, dpr: number): { canvas: CanvasLike | null; c
   return { canvas, context };
 };
 
-export const createInkField = (size = 128, dpr = 1): InkField => {
-  const resolvedSize = Math.max(1, size);
+export const createInkField = (size = DEFAULT_FIELD_SIZE, dpr = 1): InkField => {
+  const requestedSize = Math.max(1, size);
   const resolvedDpr = Math.max(0.5, dpr);
+  const resolvedSize = chooseFieldSize(requestedSize, resolvedDpr);
   const { canvas, context } = createCanvas(resolvedSize, resolvedDpr);
 
   let texture: THREE.CanvasTexture | null = null;
@@ -127,26 +223,28 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
 
     const resolvedPoints = points.map(resolvePoint);
     const mode = determineCoordinateMode(resolvedPoints);
-    const baseRadius = Math.max(resolvedSize * 0.10, 1);
-    const radius = Math.max(baseRadius * normalizedPressure, 0.5);
-    const step = Math.max(radius * 0.5, 1);
+    const baseRadius = Math.max(resolvedSize * 0.06, 5);
 
     context.save();
     context.globalCompositeOperation = 'lighter';
     context.globalAlpha = 1;
 
-    const stamp = (sx: number, sy: number) => {
-      const gradient = context.createRadialGradient(sx, sy, 0, sx, sy, radius);
-      gradient.addColorStop(0, 'rgba(255,255,255,0.9)');
+    const stamp = (sx: number, sy: number, stampRadius: number, strength: number) => {
+      const clampedStrength = Math.min(Math.max(strength, 0), 1);
+      const gradient = context.createRadialGradient(sx, sy, 0, sx, sy, stampRadius);
+      gradient.addColorStop(0, `rgba(255,255,255,${clampedStrength.toFixed(3)})`);
       gradient.addColorStop(1, 'rgba(255,255,255,0)');
       context.fillStyle = gradient;
       context.beginPath();
-      context.arc(sx, sy, radius, 0, Math.PI * 2);
+      context.arc(sx, sy, stampRadius, 0, Math.PI * 2);
       context.fill();
     };
 
     let previous = mapPoint(resolvedPoints[0], mode, resolvedSize);
-    stamp(previous.x, previous.y);
+    const initialPressure = resolvePointPressure(previous, normalizedPressure);
+    const initialRadius = computeRadius(baseRadius, initialPressure, 1);
+    const initialIntensity = computeStampIntensity(initialPressure, 1);
+    stamp(previous.x, previous.y, initialRadius, initialIntensity);
 
     for (let i = 1; i < resolvedPoints.length; i += 1) {
       const current = mapPoint(resolvedPoints[i], mode, resolvedSize);
@@ -157,12 +255,24 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
         previous = current;
         continue;
       }
+
+      const currentTime = resolvePointTime(current);
+      const previousTime = resolvePointTime(previous);
+      const deltaMs = currentTime !== undefined && previousTime !== undefined ? currentTime - previousTime : NaN;
+      const velocityScale = computeVelocityScale(distance, Number.isFinite(deltaMs) ? deltaMs : 16);
+      const previousPressure = resolvePointPressure(previous, normalizedPressure);
+      const currentPressure = resolvePointPressure(current, normalizedPressure);
+      const segmentPressure = (previousPressure + currentPressure) * 0.5;
+      const radiusForSegment = computeRadius(baseRadius, segmentPressure, velocityScale);
+      const intensityForSegment = computeStampIntensity(segmentPressure, velocityScale);
+      const step = Math.max(radiusForSegment * 0.35, 0.85);
       const segments = Math.max(1, Math.ceil(distance / step));
       for (let segment = 1; segment <= segments; segment += 1) {
         const t = segment / segments;
         const sx = previous.x + dx * t;
         const sy = previous.y + dy * t;
-        stamp(sx, sy);
+        const falloff = 0.85 + Math.min(0.15, (1 - Math.abs(0.5 - t) * 2) * 0.15);
+        stamp(sx, sy, radiusForSegment * falloff, intensityForSegment);
       }
       previous = current;
     }
@@ -217,8 +327,10 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
 
     const now = getNow();
     const cappedHz = throttleHz > 0 ? Math.min(throttleHz, 60) : 0;
-    const interval = cappedHz > 0 ? 1000 / cappedHz : 0;
     const brushActive = now - lastBrushTime <= BRUSH_IDLE_WINDOW_MS;
+    const idleHz = cappedHz > 0 ? Math.min(24, cappedHz) : 0;
+    const effectiveHz = brushActive ? cappedHz : idleHz;
+    const interval = effectiveHz > 0 ? 1000 / effectiveHz : 0;
     const pendingBrushUpload = lastBrushTime > lastUploadTime;
 
     if (!texture) {
