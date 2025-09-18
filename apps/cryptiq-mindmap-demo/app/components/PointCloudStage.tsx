@@ -717,21 +717,37 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const fallbackMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
-    const material = createDreamdustMaterial(uniforms, { unproject: true })
-    material.defines = {
-      ...(material.defines ?? {}),
-      VERTEX_INK_OK: runtimeCaps.vertexInkOk ? 1 : 0,
+    const material = createDreamdustMaterial(uniforms, {
+      unproject: true,
+      vertexInkOk: runtimeCaps.vertexInkOk ?? false,
+    })
+    const defines = material.defines ?? {}
+    const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
+    defines.VERTEX_INK_OK = vertexInkDefine
+    if (vertexInkDefine) {
+      defines.USE_VERTEX_INK = 1
+    } else {
+      delete defines.USE_VERTEX_INK
     }
+    material.defines = defines
     material.needsUpdate = true
     return material
   }, [runtimeCaps, uniforms])
   const prebakedMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
-    const material = createDreamdustMaterial(uniforms, { unproject: false })
-    material.defines = {
-      ...(material.defines ?? {}),
-      VERTEX_INK_OK: runtimeCaps.vertexInkOk ? 1 : 0,
+    const material = createDreamdustMaterial(uniforms, {
+      unproject: false,
+      vertexInkOk: runtimeCaps.vertexInkOk ?? false,
+    })
+    const defines = material.defines ?? {}
+    const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
+    defines.VERTEX_INK_OK = vertexInkDefine
+    if (vertexInkDefine) {
+      defines.USE_VERTEX_INK = 1
+    } else {
+      delete defines.USE_VERTEX_INK
     }
+    material.defines = defines
     material.needsUpdate = true
     return material
   }, [runtimeCaps, uniforms])
