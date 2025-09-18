@@ -261,6 +261,89 @@ float dd_noise2Fbm(vec2 dd_p, float dd_lacunarity, float dd_gain, int dd_octaves
 `;
 
 /**
+ * 3D value noise and fractal brownian motion helpers built on {@link DD_HASH3}.
+ *
+ * @glslUniforms None
+ */
+export const DD_FBM3 = /* glsl */ `
+float dd_noise3Value(vec3 dd_p) {
+  vec3 dd_i = floor(dd_p);
+  vec3 dd_f = fract(dd_p);
+  vec3 dd_u = dd_f * dd_f * (3.0 - 2.0 * dd_f);
+
+  float dd_n000 = dd_hash13(dd_i);
+  float dd_n100 = dd_hash13(dd_i + vec3(1.0, 0.0, 0.0));
+  float dd_n010 = dd_hash13(dd_i + vec3(0.0, 1.0, 0.0));
+  float dd_n110 = dd_hash13(dd_i + vec3(1.0, 1.0, 0.0));
+  float dd_n001 = dd_hash13(dd_i + vec3(0.0, 0.0, 1.0));
+  float dd_n101 = dd_hash13(dd_i + vec3(1.0, 0.0, 1.0));
+  float dd_n011 = dd_hash13(dd_i + vec3(0.0, 1.0, 1.0));
+  float dd_n111 = dd_hash13(dd_i + vec3(1.0, 1.0, 1.0));
+
+  float dd_nx00 = mix(dd_n000, dd_n100, dd_u.x);
+  float dd_nx10 = mix(dd_n010, dd_n110, dd_u.x);
+  float dd_nx01 = mix(dd_n001, dd_n101, dd_u.x);
+  float dd_nx11 = mix(dd_n011, dd_n111, dd_u.x);
+  float dd_nxy0 = mix(dd_nx00, dd_nx10, dd_u.y);
+  float dd_nxy1 = mix(dd_nx01, dd_nx11, dd_u.y);
+  return mix(dd_nxy0, dd_nxy1, dd_u.z);
+}
+
+float dd_fbm3(vec3 dd_p) {
+  float dd_value = 0.0;
+  float dd_amplitude = 0.5;
+  const int dd_octaves = 4;
+  for (int dd_index = 0; dd_index < dd_octaves; ++dd_index) {
+    dd_value += dd_noise3Value(dd_p) * dd_amplitude;
+    dd_p *= 2.0;
+    dd_amplitude *= 0.5;
+  }
+  return dd_value;
+}
+
+#define DD_FBM3(p) dd_fbm3(p)
+`;
+
+/**
+ * Curl noise derived from {@link DD_FBM3} for divergence-free flow fields.
+ *
+ * @glslUniforms None
+ */
+export const DD_CURL3 = /* glsl */ `
+vec3 dd_fbm3Vec(vec3 dd_p) {
+  return vec3(
+    dd_fbm3(dd_p + vec3(37.2, 11.8, 5.4)),
+    dd_fbm3(dd_p + vec3(5.3, 27.1, 19.7)),
+    dd_fbm3(dd_p + vec3(11.1, 41.3, 7.9))
+  );
+}
+
+vec3 dd_curl3(vec3 dd_p) {
+  const float dd_eps = 0.35;
+  vec3 dd_dx = vec3(dd_eps, 0.0, 0.0);
+  vec3 dd_dy = vec3(0.0, dd_eps, 0.0);
+  vec3 dd_dz = vec3(0.0, 0.0, dd_eps);
+
+  vec3 dd_ny1 = dd_fbm3Vec(dd_p + dd_dy);
+  vec3 dd_ny2 = dd_fbm3Vec(dd_p - dd_dy);
+  vec3 dd_nz1 = dd_fbm3Vec(dd_p + dd_dz);
+  vec3 dd_nz2 = dd_fbm3Vec(dd_p - dd_dz);
+  vec3 dd_nx1 = dd_fbm3Vec(dd_p + dd_dx);
+  vec3 dd_nx2 = dd_fbm3Vec(dd_p - dd_dx);
+
+  vec3 dd_curl;
+  dd_curl.x = dd_nz1.y - dd_nz2.y - dd_ny1.z + dd_ny2.z;
+  dd_curl.y = dd_nx1.z - dd_nx2.z - dd_nz1.x + dd_nz2.x;
+  dd_curl.z = dd_ny1.x - dd_ny2.x - dd_nx1.y + dd_nx2.y;
+
+  float dd_len = max(length(dd_curl), 1e-4);
+  return dd_curl / dd_len;
+}
+
+#define DD_CURL3(p) dd_curl3(p)
+`;
+
+/**
  * Converts absolute screen-space pixels into clip-space coordinates.
  *
  * @glslUniforms uViewport (vec2) viewport resolution in pixels
@@ -298,6 +381,8 @@ export const glslChunks = {
   remap: DD_REMAP,
   hash3: DD_HASH3,
   fbm2: DD_NOISE2_FBM,
+  fbm3: DD_FBM3,
+  curl3: DD_CURL3,
   screenPxToClip: DD_SCREEN_PX_TO_CLIP,
   depthAlpha: DD_DEPTH_ALPHA,
 } as const;

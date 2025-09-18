@@ -2,9 +2,10 @@ import { Matrix4, ShaderMaterial } from 'three'
 import type { IUniform, ShaderMaterialParameters } from 'three'
 
 import {
+  DD_CURL3,
+  DD_FBM3,
   DREAMDUST_COLOR_CHUNK,
   DREAMDUST_DEPTH_FADE_CHUNK,
-  DREAMDUST_DRIFT_CHUNK,
   DREAMDUST_INK_SAMPLE_CHUNK,
   DREAMDUST_NOISE_CHUNK,
   DREAMDUST_SOFT_SPRITE_CHUNK,
@@ -30,6 +31,11 @@ const DEFAULT_UNIFORM_VALUES = {
   uNoiseSpeed: 1,
   uNoiseThreshold: 1,
   uDriftAmp: 0,
+  uCurlFreq: 1,
+  uCurlAmp: 1,
+  uDriftSpeed: 1,
+  uTapGain: 0.5,
+  uTapTau: 2,
   uPointBaseSize: 1,
   uFocal: 1,
   uMinSize: 1,
@@ -41,6 +47,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uDepthMin: 0,
   uDepthMax: 1,
   uGamma: 1,
+  uRimGamma: 2,
   uDepthBias: 1.8,
   uDepthNormScale: 0.001,
   uHasCapture: 0,
@@ -136,6 +143,11 @@ uniform float uBreath;
 uniform float uNoiseScale;
 uniform float uNoiseSpeed;
 uniform float uDriftAmp;
+uniform float uCurlFreq;
+uniform float uCurlAmp;
+uniform float uDriftSpeed;
+uniform float uTapGain;
+uniform float uTapTau;
 uniform float uPointBaseSize;
 uniform float uFocal;
 uniform float uMinSize;
@@ -171,8 +183,9 @@ varying vec2 vRevealCoord;
 varying vec3 vPosMV;
 
 ${DREAMDUST_NOISE_CHUNK}
-${DREAMDUST_DRIFT_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
+${DD_FBM3}
+${DD_CURL3}
 
 vec4 dreamdustUnproject(vec3 localPos, vec2 captureUv, float depth01) {
 #ifdef USE_UNPROJECT
@@ -210,7 +223,40 @@ void main() {
   mistPos += mistDir * (breathPhase * 0.08);
 
   vec3 revealPos = mix(mistPos, basePos, revealGate);
-  revealPos += dreamdustDrift(revealPos, uTime, uNoiseScale, uNoiseSpeed, uDriftAmp);
+
+  float tapImpulse = 0.0;
+  vec2 inkSampleOffset = vec2(0.0);
+  float inkSampleSwell = 0.0;
+  vec3 inkSampleTint = vec3(0.0);
+  float inkSampleIntensity = 0.0;
+
+#ifdef USE_VERTEX_INK
+  if (uInkIntensity > 1e-5 && uVertexInkOk > 0.5) {
+    DreamdustInkSample inkSample = dreamdustSampleInk(uInkTex, aUv);
+    float localIntensity = inkSample.intensity * uInkIntensity;
+    if (localIntensity > 1e-5) {
+      inkSampleOffset = inkSample.offset;
+      inkSampleSwell = inkSample.swell;
+      inkSampleTint = inkSample.tint;
+      inkSampleIntensity = localIntensity;
+
+      float tapPhase = clamp(inkSample.swell, 0.0, 1.0);
+      if (uTapTau > 1e-3) {
+        float baseDecay = exp(-uTapTau);
+        float tapDecay = exp(-max(0.0, 1.0 - tapPhase) * uTapTau);
+        float denom = max(1.0 - baseDecay, 1e-3);
+        float tapMix = clamp((tapDecay - baseDecay) / denom, 0.0, 1.0);
+        tapImpulse = tapMix * localIntensity * uTapGain;
+      } else {
+        tapImpulse = tapPhase * localIntensity * uTapGain;
+      }
+    }
+  }
+#endif
+
+  vec3 curlSample = revealPos * uCurlFreq + vec3(uTime * uDriftSpeed);
+  float curlAmp = uCurlAmp * (uDriftAmp + tapImpulse);
+  revealPos += dd_curl3(curlSample) * curlAmp;
 
   vec4 viewPos = viewMatrix * vec4(revealPos, 1.0);
   float viewDist = max(1e-3, -viewPos.z);
@@ -222,17 +268,13 @@ void main() {
   float inkMix = 0.0;
 
 #ifdef USE_VERTEX_INK
-  if (uInkIntensity > 1e-5 && uVertexInkOk > 0.5) {
-    DreamdustInkSample inkSample = dreamdustSampleInk(uInkTex, aUv);
-    float localIntensity = inkSample.intensity * uInkIntensity;
-    if (localIntensity > 1e-5) {
-      float pxScale = viewDist / max(1e-3, uFocal);
-      vec2 inkOffset = inkSample.offset * (localIntensity * uOffsetGain * pxScale);
-      viewPos.xy += inkOffset;
-      pointSize += inkSample.swell * localIntensity * uSizeGain;
-      inkTint = inkSample.tint;
-      inkMix = localIntensity * uTintGain;
-    }
+  if (inkSampleIntensity > 1e-5) {
+    float pxScale = viewDist / max(1e-3, uFocal);
+    vec2 inkOffset = inkSampleOffset * (inkSampleIntensity * uOffsetGain * pxScale);
+    viewPos.xy += inkOffset;
+    pointSize += inkSampleSwell * inkSampleIntensity * uSizeGain;
+    inkTint = inkSampleTint;
+    inkMix = inkSampleIntensity * uTintGain;
   }
 #endif
 
@@ -264,6 +306,7 @@ uniform float uTintGain;
 uniform float uDepthBias;
 uniform float uDepthNormScale;
 uniform float uGamma;
+uniform float uRimGamma;
 uniform float uCascade;
 uniform vec3 uCascadeColor;
 
@@ -327,6 +370,11 @@ void main() {
   if (uCascade > 0.0) {
     color = mix(color, uCascadeColor, clamp(uCascade, 0.0, 1.0));
   }
+
+  float pointShape = clamp(1.0 - sprite, 0.0, 1.0);
+  float rim = pow(pointShape, max(uRimGamma, 1e-3));
+  color = mix(color, vec3(1.0), rim * 0.2);
+  alpha *= mix(1.0, 0.9, rim);
 
   color = dreamdustApplyGamma(color, uGamma);
 
