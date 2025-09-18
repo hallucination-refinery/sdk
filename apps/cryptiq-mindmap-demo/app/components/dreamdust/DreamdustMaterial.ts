@@ -241,22 +241,21 @@ void main() {
       inkSampleIntensity = localIntensity;
 
       float tapPhase = clamp(inkSample.swell, 0.0, 1.0);
+      float tapMix = tapPhase;
       if (uTapTau > 1e-3) {
         float baseDecay = exp(-uTapTau);
         float tapDecay = exp(-max(0.0, 1.0 - tapPhase) * uTapTau);
         float denom = max(1.0 - baseDecay, 1e-3);
-        float tapMix = clamp((tapDecay - baseDecay) / denom, 0.0, 1.0);
-        tapImpulse = tapMix * localIntensity * uTapGain;
-      } else {
-        tapImpulse = tapPhase * localIntensity * uTapGain;
+        tapMix = clamp((tapDecay - baseDecay) / denom, 0.0, 1.0);
       }
+      tapImpulse = tapMix * localIntensity * uTapGain;
     }
   }
 #endif
 
   vec3 curlSample = revealPos * uCurlFreq + vec3(uTime * uDriftSpeed);
-  float curlAmp = uCurlAmp * (uDriftAmp + tapImpulse);
-  revealPos += dd_curl3(curlSample) * curlAmp;
+  float curlMix = (uDriftAmp + tapImpulse) * uCurlAmp;
+  revealPos += dd_curl3(curlSample) * curlMix;
 
   vec4 viewPos = viewMatrix * vec4(revealPos, 1.0);
   float viewDist = max(1e-3, -viewPos.z);
