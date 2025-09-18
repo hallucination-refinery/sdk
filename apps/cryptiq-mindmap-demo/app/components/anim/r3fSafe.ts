@@ -19,3 +19,14 @@ export function getR3FStateOrNull(): RootState | null {
   }
 }
 
+export type WithR3FCallback<T> = (state: RootState) => T
+export type WithR3FFallback<T> = () => T
+
+export function withR3F<T>(callback: WithR3FCallback<T>, fallback?: WithR3FFallback<T>): T | null {
+  const state = getR3FStateOrNull()
+  if (state) {
+    return callback(state)
+  }
+  return fallback ? fallback() : null
+}
+
