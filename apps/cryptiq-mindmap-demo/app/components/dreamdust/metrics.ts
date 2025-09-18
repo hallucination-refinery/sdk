@@ -57,7 +57,6 @@ export function logOnce<T>(key: string, payload: T): void {
   }
 
   emittedLogs.add(key);
-  // eslint-disable-next-line no-console
   console.info(`[dreamdust] ${key}`, payload);
 }
 
@@ -130,4 +129,325 @@ export function fpsMeter(onFps: FpsListener): () => void {
       cancelAnimationFrame(rafId);
     }
   };
+}
+
+const DREAMDUST_TUNABLE_STORAGE_KEY = 'dreamdust:tunables';
+
+export type DreamdustTunables = {
+  curlFreq: number;
+  curlAmp: number;
+  tapGain: number;
+  tapTau: number;
+  decay: number;
+  revealMs: number;
+};
+
+const DEFAULT_TUNABLES: DreamdustTunables = {
+  curlFreq: 0.0025,
+  curlAmp: 8,
+  tapGain: 1,
+  tapTau: 900,
+  decay: 0.98,
+  revealMs: 2000,
+};
+
+type TunablesListener = (tunables: DreamdustTunables) => void;
+
+const tunablesListeners = new Set<TunablesListener>();
+
+function clamp(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) return min;
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}
+
+function sanitizeTunables(update: Partial<DreamdustTunables>): Partial<DreamdustTunables> {
+  const next: Partial<DreamdustTunables> = {};
+  if (Object.prototype.hasOwnProperty.call(update, 'curlFreq')) {
+    const value = Number(update.curlFreq);
+    if (Number.isFinite(value)) {
+      next.curlFreq = clamp(value, 0.0005, 0.02);
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(update, 'curlAmp')) {
+    const value = Number(update.curlAmp);
+    if (Number.isFinite(value)) {
+      next.curlAmp = clamp(value, 0, 16);
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(update, 'tapGain')) {
+    const value = Number(update.tapGain);
+    if (Number.isFinite(value)) {
+      next.tapGain = clamp(value, 0, 3);
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(update, 'tapTau')) {
+    const value = Number(update.tapTau);
+    if (Number.isFinite(value)) {
+      next.tapTau = clamp(value, 120, 6000);
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(update, 'decay')) {
+    const value = Number(update.decay);
+    if (Number.isFinite(value)) {
+      next.decay = clamp(value, 0.9, 0.9999);
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(update, 'revealMs')) {
+    const value = Number(update.revealMs);
+    if (Number.isFinite(value)) {
+      next.revealMs = clamp(value, 300, 8000);
+    }
+  }
+  return next;
+}
+
+function readStoredTunables(): Partial<DreamdustTunables> {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+  try {
+    const stored = window.localStorage?.getItem(DREAMDUST_TUNABLE_STORAGE_KEY);
+    if (!stored) {
+      return {};
+    }
+    const parsed = JSON.parse(stored) as Partial<DreamdustTunables>;
+    return sanitizeTunables(parsed);
+  } catch {
+    return {};
+  }
+}
+
+let currentTunables: DreamdustTunables = {
+  ...DEFAULT_TUNABLES,
+  ...readStoredTunables(),
+};
+
+function persistTunables(tunables: DreamdustTunables) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  try {
+    window.localStorage?.setItem(
+      DREAMDUST_TUNABLE_STORAGE_KEY,
+      JSON.stringify(tunables),
+    );
+  } catch {
+    // Ignore persistence failures (e.g., private mode, SSR).
+  }
+}
+
+function emitTunables(next: DreamdustTunables) {
+  if (tunablesListeners.size === 0) {
+    return;
+  }
+  const snapshot = { ...next };
+  tunablesListeners.forEach((listener) => {
+    try {
+      listener(snapshot);
+    } catch {
+      // Ignore listener errors to avoid breaking other subscribers.
+    }
+  });
+}
+
+export function getDreamdustTunables(): DreamdustTunables {
+  return currentTunables;
+}
+
+export function updateDreamdustTunables(
+  update: Partial<DreamdustTunables>,
+): DreamdustTunables {
+  if (!update || typeof update !== 'object') {
+    return currentTunables;
+  }
+  const sanitized = sanitizeTunables(update);
+  if (Object.keys(sanitized).length === 0) {
+    return currentTunables;
+  }
+  currentTunables = {
+    ...currentTunables,
+    ...sanitized,
+  };
+  persistTunables(currentTunables);
+  emitTunables(currentTunables);
+  return currentTunables;
+}
+
+export function subscribeDreamdustTunables(
+  listener: TunablesListener,
+): () => void {
+  tunablesListeners.add(listener);
+  try {
+    listener({ ...currentTunables });
+  } catch {
+    // Ignore listener errors on initial emit.
+  }
+  return () => {
+    tunablesListeners.delete(listener);
+  };
+}
+
+type InkLatencyState = {
+  start: number | null;
+  measured: boolean;
+  rafId: number | null;
+  resetTimer: ReturnType<typeof setTimeout> | null;
+};
+
+const inkLatencyState: InkLatencyState = {
+  start: null,
+  measured: false,
+  rafId: null,
+  resetTimer: null,
+};
+
+function nowMs(): number {
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    return performance.now();
+  }
+  return Date.now();
+}
+
+function finalizeInkLatency(endTime: number) {
+  if (inkLatencyState.start === null || inkLatencyState.measured) {
+    return;
+  }
+  const deltaMs = Math.max(0, endTime - inkLatencyState.start);
+  inkLatencyState.measured = true;
+  inkLatencyState.start = null;
+  if (inkLatencyState.resetTimer) {
+    clearTimeout(inkLatencyState.resetTimer);
+    inkLatencyState.resetTimer = null;
+  }
+  if (inkLatencyState.rafId !== null && typeof window !== 'undefined') {
+    try {
+      window.cancelAnimationFrame(inkLatencyState.rafId);
+    } catch {
+      // Ignore cancellation failures.
+    }
+    inkLatencyState.rafId = null;
+  }
+  const frames = deltaMs / 16.6667;
+  logOnce('ink-latency', {
+    ms: Number(deltaMs.toFixed(3)),
+    frames: Number(frames.toFixed(2)),
+  });
+}
+
+export function markInkPenDown(timestamp: number = nowMs()): void {
+  if (inkLatencyState.measured) {
+    return;
+  }
+  inkLatencyState.start = timestamp;
+  if (inkLatencyState.resetTimer) {
+    clearTimeout(inkLatencyState.resetTimer);
+  }
+  if (typeof setTimeout === 'function') {
+    inkLatencyState.resetTimer = setTimeout(() => {
+      inkLatencyState.resetTimer = null;
+      if (!inkLatencyState.measured) {
+        inkLatencyState.start = null;
+      }
+    }, 2000);
+  }
+}
+
+export function markInkFrameCandidate(): void {
+  if (inkLatencyState.measured || inkLatencyState.start === null) {
+    return;
+  }
+  if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+    finalizeInkLatency(nowMs());
+    return;
+  }
+  if (inkLatencyState.rafId !== null) {
+    return;
+  }
+  inkLatencyState.rafId = window.requestAnimationFrame(() => {
+    inkLatencyState.rafId = null;
+    finalizeInkLatency(nowMs());
+  });
+}
+
+type FrameSampleState = {
+  last: number | null;
+  samples: number[];
+  rafId: number | null;
+  logged: boolean;
+};
+
+const frameSampleState: FrameSampleState = {
+  last: null,
+  samples: [],
+  rafId: null,
+  logged: false,
+};
+
+function logFramePercentiles(samples: number[]): void {
+  if (!isDebugEnabled() || samples.length === 0) {
+    return;
+  }
+  const sorted = [...samples].sort((a, b) => a - b);
+  const p50Index = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.5));
+  const p90Index = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.9));
+  const p50 = sorted[p50Index];
+  const p90 = sorted[p90Index];
+  logOnce('frame-percentiles', {
+    sampleCount: sorted.length,
+    p50Ms: Number(p50.toFixed(3)),
+    p90Ms: Number(p90.toFixed(3)),
+  });
+}
+
+function sampleFrameTimes(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  const { requestAnimationFrame } = window;
+  if (typeof requestAnimationFrame !== 'function') {
+    return;
+  }
+
+  const maxSamples = 240;
+
+  const step = (timestamp: number) => {
+    if (frameSampleState.last !== null) {
+      const delta = timestamp - frameSampleState.last;
+      if (Number.isFinite(delta) && delta > 0) {
+        frameSampleState.samples.push(delta);
+      }
+    }
+    frameSampleState.last = timestamp;
+
+    if (!frameSampleState.logged && frameSampleState.samples.length >= maxSamples) {
+      frameSampleState.logged = true;
+      logFramePercentiles(frameSampleState.samples);
+    }
+
+    if (!frameSampleState.logged) {
+      frameSampleState.rafId = requestAnimationFrame(step);
+    } else {
+      frameSampleState.rafId = null;
+    }
+  };
+
+  frameSampleState.rafId = requestAnimationFrame(step);
+}
+
+if (typeof window !== 'undefined') {
+  if (typeof window.requestAnimationFrame === 'function') {
+    sampleFrameTimes();
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      (window as typeof window & { __dreamdustTunables?: unknown }).__dreamdustTunables = {
+        get: getDreamdustTunables,
+        set: updateDreamdustTunables,
+      };
+    } catch {
+      // Ignore assignment failures (e.g., read-only globals).
+    }
+  }
 }
