@@ -18,8 +18,9 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import { applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
-import { detectVertexTextureSupport } from './dreamdust/capabilities'
+import { getDreamdustCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
+import { logOnce } from './dreamdust/metrics'
 import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
 import { applyDprClamp, pointCap } from './pointcloud/budget'
 
@@ -337,7 +338,7 @@ function PointsMesh({
       const pos = g.getAttribute('position') as THREE.BufferAttribute | undefined
       const count = pos ? pos.count : 0
       if (count > 0) console.log('[PC] instances:', count)
-    } catch {}
+    } catch { /* noop */ }
   }, [])
 
   React.useEffect(() => {
@@ -356,7 +357,7 @@ function PointsMesh({
         // Guard log to surface shader-compile stalls early during bring-up
         try {
           console.warn('[PC] material program not ready yet; waiting…')
-        } catch {}
+        } catch { /* noop */ }
       }
       raf = requestAnimationFrame(check)
     }
@@ -437,7 +438,7 @@ function BloomPass({
     return () => {
       try {
         comp.dispose()
-      } catch {}
+      } catch { /* noop */ }
       composerRef.current = null
     }
   }, [gl, scene, camera, strength, radius, threshold])
@@ -604,7 +605,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           uViewport: vp,
           inkIntensity,
         })
-      } catch {}
+      } catch { /* noop */ }
       loggedInkInfoRef.current = true
     }
   }, [inkIntensity, uniforms])
@@ -670,7 +671,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             const cbuf = await cr.arrayBuffer()
             colors = new Uint8Array(cbuf)
           }
-        } catch {}
+        } catch { /* noop */ }
         if (!cancelled) {
           console.log('[PC] prebaked positions', {
             bytes: buf.byteLength,
@@ -905,7 +906,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (prebakedStatus === 'present') {
       try {
         console.log('[PC] prebaked present; using positions/colors, fallback images not required')
-      } catch {}
+      } catch { /* noop */ }
     }
   }, [prebakedStatus])
 
@@ -948,13 +949,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       if (p && p.get('debug') === '1') setDebugVisible(true)
       const saved = typeof window !== 'undefined' ? window.localStorage.getItem('pcDebug') : null
       if (saved) setUi({ ...ui, ...JSON.parse(saved) })
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch { /* noop */ }
+     
   }, [])
   React.useEffect(() => {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
-    } catch {}
+    } catch { /* noop */ }
   }, [
     ui.thickness,
     ui.pointSizeScale,
@@ -1144,8 +1145,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           console.log('[PC] pointer down', e.clientX, e.clientY)
         }}
         onCreated={({ gl }) => {
-          const clampedDpr = applyDprClamp(gl, 2)
-          console.log('[PC] DPR clamp applied', clampedDpr.toFixed(2))
+          const dprClamp = applyDprClamp(gl, 2)
+          const caps = getDreamdustCaps(gl.domElement)
+          setUniform('uVertexInkOk', caps.vertexInkOk ? 1 : 0)
+          if (dreamdustCtx) {
+            dreamdustCtx.setVertexInkOk(caps.vertexInkOk)
+          }
+          logOnce('caps', {
+            vertexInkOk: caps.vertexInkOk,
+            floatOk: caps.floatOk,
+            aliasedPointSizeRange: Array.from(caps.aliasedPointSizeRange),
+            dpr: caps.dpr,
+            dprClamp,
+          })
           // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -1158,19 +1170,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             if (gl.debug) gl.debug.checkShaderErrors = true
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const ctx = gl.getContext && gl.getContext()
-            if (ctx) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              const range = ctx.getParameter(ctx.ALIASED_POINT_SIZE_RANGE)
-              console.log('[PC] ALIASED_POINT_SIZE_RANGE', range)
-              const vertexInk = detectVertexTextureSupport(ctx)
-              setUniform('uVertexInkOk', vertexInk ? 1 : 0)
-              if (dreamdustCtx) dreamdustCtx.setVertexInkOk(vertexInk)
-            }
-          } catch {}
+          } catch { /* noop */ }
           // ensure browser gesture handling doesn't block wheel/touch
           gl.domElement.style.touchAction = 'none'
           gl.domElement.style.pointerEvents = 'auto'

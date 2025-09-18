@@ -3,14 +3,15 @@
 import * as React from 'react'
 
 import {
-  detectVertexTextureSupport,
+  getDreamdustCaps,
   readCaps,
   type DreamdustCaps,
+  type DreamdustRuntimeCaps,
 } from '../../components/dreamdust/capabilities'
 
 type CapsState = {
   caps: DreamdustCaps | null
-  vertexInkSupported: boolean | null
+  bundle: DreamdustRuntimeCaps | null
   error: string | null
 }
 
@@ -31,12 +32,11 @@ function formatRange(range: Float32Array): string {
 }
 
 export default function Page(): JSX.Element {
-  const [{ caps, vertexInkSupported, error }, setCapsState] =
-    React.useState<CapsState>({
-      caps: null,
-      vertexInkSupported: null,
-      error: null,
-    })
+  const [{ caps, bundle, error }, setCapsState] = React.useState<CapsState>({
+    caps: null,
+    bundle: null,
+    error: null,
+  })
   const [devicePixelRatio, setDevicePixelRatio] = React.useState<number | null>(
     null,
   )
@@ -55,6 +55,7 @@ export default function Page(): JSX.Element {
     window.addEventListener('resize', updateDpr)
 
     const canvas = document.createElement('canvas')
+    const runtimeCaps = getDreamdustCaps(canvas)
     const gl =
       (canvas.getContext('webgl2') as WebGL2RenderingContext | null) ??
       (canvas.getContext('webgl') as WebGLRenderingContext | null)
@@ -62,13 +63,13 @@ export default function Page(): JSX.Element {
     if (!gl) {
       setCapsState({
         caps: null,
-        vertexInkSupported: null,
+        bundle: runtimeCaps,
         error: 'WebGL context unavailable',
       })
     } else {
       setCapsState({
         caps: readCaps(gl),
-        vertexInkSupported: detectVertexTextureSupport(gl),
+        bundle: runtimeCaps,
         error: null,
       })
     }
@@ -104,7 +105,7 @@ export default function Page(): JSX.Element {
   const rows: Array<{ label: string; value: string }> = []
 
   rows.push({
-    label: 'Device Pixel Ratio',
+    label: 'Device Pixel Ratio (current)',
     value:
       devicePixelRatio === null
         ? '—'
@@ -114,22 +115,37 @@ export default function Page(): JSX.Element {
     label: 'FPS',
     value: fps === null ? '—' : fps.toFixed(1),
   })
-  rows.push({
-    label: 'Vertex Ink Supported',
-    value:
-      vertexInkSupported === null
-        ? '—'
-        : vertexInkSupported
-          ? 'Yes'
-          : 'No',
-  })
+
+  if (bundle) {
+    rows.push(
+      {
+        label: 'Device Pixel Ratio (snapshot)',
+        value: bundle.dpr.toFixed(2).replace(/\.00$/, ''),
+      },
+      {
+        label: 'Vertex Ink Supported',
+        value: bundle.vertexInkOk ? 'Yes' : 'No',
+      },
+      {
+        label: 'Float Textures Supported',
+        value: bundle.floatOk ? 'Yes' : 'No',
+      },
+      {
+        label: 'Aliased Point Size Range',
+        value: formatRange(bundle.aliasedPointSizeRange),
+      },
+    )
+  } else {
+    rows.push(
+      { label: 'Device Pixel Ratio (snapshot)', value: '—' },
+      { label: 'Vertex Ink Supported', value: '—' },
+      { label: 'Float Textures Supported', value: '—' },
+      { label: 'Aliased Point Size Range', value: '—' },
+    )
+  }
 
   if (caps) {
     rows.push(
-      {
-        label: 'Aliased Point Size Range',
-        value: formatRange(caps.aliasedPointSizeRange),
-      },
       { label: 'Max Vertex Attribs', value: caps.maxVertexAttribs.toString() },
       { label: 'Max Texture Size', value: caps.maxTextureSize.toString() },
       {
