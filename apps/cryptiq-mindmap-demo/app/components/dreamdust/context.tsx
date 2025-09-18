@@ -11,6 +11,10 @@ type DreamdustContextValue = {
   setInkIntensity: React.Dispatch<React.SetStateAction<number>>
   vertexInkOk: boolean
   setVertexInkOk: React.Dispatch<React.SetStateAction<boolean>>
+  controlsLocked: boolean
+  setControlsLocked: React.Dispatch<React.SetStateAction<boolean>>
+  heatmapVisible: boolean
+  setHeatmapVisible: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const DreamdustContext = React.createContext<DreamdustContextValue | undefined>(
@@ -21,6 +25,8 @@ export function DreamdustProvider({ children }: React.PropsWithChildren) {
   const [inkTex, setInkTex] = React.useState<InkTexture>()
   const [inkIntensity, setInkIntensity] = React.useState<number>(1)
   const [vertexInkOk, setVertexInkOk] = React.useState<boolean>(false)
+  const [controlsLocked, setControlsLocked] = React.useState(false)
+  const [heatmapVisible, setHeatmapVisible] = React.useState(false)
 
   const value = React.useMemo(
     () => ({
@@ -30,8 +36,12 @@ export function DreamdustProvider({ children }: React.PropsWithChildren) {
       setInkIntensity,
       vertexInkOk,
       setVertexInkOk,
+      controlsLocked,
+      setControlsLocked,
+      heatmapVisible,
+      setHeatmapVisible,
     }),
-    [inkTex, inkIntensity, vertexInkOk],
+    [inkTex, inkIntensity, vertexInkOk, controlsLocked, heatmapVisible],
   )
 
   return (

@@ -68,6 +68,7 @@ export function StrokeCaptureCanvas({
   const isDrawingRef = React.useRef(false)
   const lastPointRef = React.useRef<StrokePoint | null>(null)
   const lastSmoothedRef = React.useRef<StrokePoint | null>(null)
+  const enabledRef = React.useRef(enabled)
 
   const startCallbackRef = React.useRef<StrokeCaptureCanvasProps['onStrokeStart']>(
     onStrokeStart,
@@ -90,6 +91,10 @@ export function StrokeCaptureCanvas({
   React.useEffect(() => {
     endCallbackRef.current = onStrokeEnd
   }, [onStrokeEnd])
+
+  React.useEffect(() => {
+    enabledRef.current = enabled
+  }, [enabled])
 
   React.useEffect(() => {
     if (typeof window === 'undefined') {
@@ -205,7 +210,7 @@ export function StrokeCaptureCanvas({
         return
       }
       // Respect gating: ignore pointer when disabled
-      if (!enabled) {
+      if (!enabledRef.current) {
         return
       }
       if (isDrawingRef.current && pointerIdRef.current !== event.pointerId) {
