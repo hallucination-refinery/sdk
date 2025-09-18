@@ -80,10 +80,7 @@ export type PixelRatioController = {
  *
  * @returns The pixel ratio that was applied to the renderer.
  */
-export function applyDprClamp<T extends PixelRatioController>(
-  gl: T,
-  max = ENV_MAX_DPR ?? 2,
-): number {
+export function clampDPR<T extends PixelRatioController>(gl: T, max = ENV_MAX_DPR ?? 2): number {
   const requestedDpr =
     typeof window !== 'undefined' && typeof window.devicePixelRatio === 'number'
       ? window.devicePixelRatio
@@ -95,4 +92,73 @@ export function applyDprClamp<T extends PixelRatioController>(
   const nextDpr = Math.min(Math.max(requestedDpr, 1), safeMax)
   gl.setPixelRatio(nextDpr)
   return nextDpr
+}
+
+export type CapInstancesOptions = {
+  count: number
+  budget: number
+  keep?: number
+}
+
+export type CapInstancesResult = {
+  keep: number
+  step: number
+  count: number
+  capped: boolean
+}
+
+export function capInstances({ count, budget, keep = 1 }: CapInstancesOptions): CapInstancesResult {
+  const total = Math.max(0, Math.floor(count))
+  if (total <= 0) {
+    return { keep: 0, step: 1, count: 0, capped: false }
+  }
+
+  const cap = Math.max(1, Math.floor(budget))
+  const desiredKeep = Math.min(1, Math.max(0, keep))
+  const budgetKeep = Math.min(1, cap / total)
+  const effectiveKeep = Math.min(desiredKeep, budgetKeep)
+
+  if (effectiveKeep >= 0.999) {
+    return { keep: 1, step: 1, count: total, capped: false }
+  }
+
+  const step = Math.max(1, Math.ceil(1 / Math.max(effectiveKeep, 1e-6)))
+  const cappedCount = Math.max(1, Math.floor(total / step))
+
+  return {
+    keep: effectiveKeep,
+    step,
+    count: Math.min(total, cappedCount),
+    capped: cappedCount < total,
+  }
+}
+
+type InterleavedArray = Float32Array | Uint8Array | Uint16Array
+
+export function decimateInterleaved<T extends InterleavedArray>(
+  source: T,
+  components: number,
+  step: number,
+  targetCount?: number,
+): T {
+  const elems = Math.max(1, Math.floor(components))
+  const total = Math.floor(source.length / elems)
+  if (total <= 0 || step <= 1) return source
+
+  const maxCount = Math.max(1, Math.floor(total / Math.max(1, step)))
+  const nextCount = Math.min(total, Math.max(1, targetCount ?? maxCount))
+  if (nextCount >= total) return source
+
+  const Ctor = source.constructor as { new (length: number): T }
+  const out = new Ctor(nextCount * elems)
+
+  for (let i = 0, j = 0; i < total && j < nextCount; i += step, j++) {
+    const srcIndex = i * elems
+    const dstIndex = j * elems
+    for (let c = 0; c < elems; c++) {
+      out[dstIndex + c] = source[srcIndex + c]
+    }
+  }
+
+  return out
 }

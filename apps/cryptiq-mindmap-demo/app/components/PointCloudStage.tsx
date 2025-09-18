@@ -21,7 +21,7 @@ import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { detectVertexTextureSupport } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
 import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
-import { applyDprClamp, pointCap } from './pointcloud/budget'
+import { capInstances, clampDPR, decimateInterleaved, pointCap } from './pointcloud/budget'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -57,27 +57,39 @@ function useOptionalDreamdustCtx() {
   }
 }
 
+type AssetStatus = 'idle' | 'loading' | 'ready' | 'error'
+
 function useImageData(url: string | null): {
   data: ImageData | null
   width: number
   height: number
+  status: AssetStatus
 } {
   const [state, setState] = React.useState<{
     data: ImageData | null
     width: number
     height: number
+    status: AssetStatus
   }>({
     data: null,
     width: 0,
     height: 0,
+    status: 'idle',
   })
 
   React.useEffect(() => {
     let cancelled = false
+    if (!url) {
+      setState({ data: null, width: 0, height: 0, status: 'idle' })
+      return () => {
+        cancelled = true
+      }
+    }
+    setState({ data: null, width: 0, height: 0, status: 'loading' })
     ;(async () => {
-      if (!url) return
       try {
         const res = await fetch(url, { cache: 'force-cache' })
+        if (!res.ok) throw new Error(`failed ${res.status}`)
         const blob = await res.blob()
         const img = await createImageBitmap(blob)
         if (cancelled) return
@@ -85,12 +97,14 @@ function useImageData(url: string | null): {
         canvas.width = img.width
         canvas.height = img.height
         const ctx = canvas.getContext('2d', { willReadFrequently: true })
-        if (!ctx) return
+        if (!ctx) throw new Error('no 2d context')
         ctx.drawImage(img, 0, 0)
         const imageData = ctx.getImageData(0, 0, img.width, img.height)
-        setState({ data: imageData, width: img.width, height: img.height })
+        setState({ data: imageData, width: img.width, height: img.height, status: 'ready' })
       } catch {
-        // noop
+        if (!cancelled) {
+          setState({ data: null, width: 0, height: 0, status: 'error' })
+        }
       }
     })()
     return () => {
@@ -106,19 +120,28 @@ function usePackedDepth(url: string | null): {
   data16: Uint16Array | null
   width: number
   height: number
+  status: AssetStatus
 } {
   const [state, setState] = React.useState<{
     data16: Uint16Array | null
     width: number
     height: number
-  }>({ data16: null, width: 0, height: 0 })
+    status: AssetStatus
+  }>({ data16: null, width: 0, height: 0, status: 'idle' })
 
   React.useEffect(() => {
     let cancelled = false
+    if (!url) {
+      setState({ data16: null, width: 0, height: 0, status: 'idle' })
+      return () => {
+        cancelled = true
+      }
+    }
+    setState({ data16: null, width: 0, height: 0, status: 'loading' })
     ;(async () => {
-      if (!url) return
       try {
         const res = await fetch(url, { cache: 'force-cache' })
+        if (!res.ok) throw new Error(`failed ${res.status}`)
         const blob = await res.blob()
         const img = await createImageBitmap(blob)
         if (cancelled) return
@@ -126,7 +149,7 @@ function usePackedDepth(url: string | null): {
         canvas.width = img.width
         canvas.height = img.height
         const ctx = canvas.getContext('2d', { willReadFrequently: true })
-        if (!ctx) return
+        if (!ctx) throw new Error('no 2d context')
         ctx.drawImage(img, 0, 0)
         const imageData = ctx.getImageData(0, 0, img.width, img.height)
         const src = imageData.data
@@ -136,9 +159,11 @@ function usePackedDepth(url: string | null): {
           const lo = src[i + 1]
           out[p] = (hi << 8) | lo
         }
-        setState({ data16: out, width: img.width, height: img.height })
+        setState({ data16: out, width: img.width, height: img.height, status: 'ready' })
       } catch {
-        // noop
+        if (!cancelled) {
+          setState({ data16: null, width: 0, height: 0, status: 'error' })
+        }
       }
     })()
     return () => {
@@ -267,6 +292,7 @@ function PointsMesh({
   material,
   uniforms,
   onMaterialValid,
+  onInstances,
 }: {
   colorImage: { data: ImageData; width: number; height: number }
   depth16: { data16: Uint16Array; width: number; height: number }
@@ -275,6 +301,7 @@ function PointsMesh({
   material: THREE.ShaderMaterial
   uniforms: DreamdustStageUniforms
   onMaterialValid?: () => void
+  onInstances?: (count: number) => void
 }) {
   const geomRef = React.useRef<THREE.BufferGeometry | null>(null)
   const materialRef = React.useRef<THREE.ShaderMaterial | null>(material)
@@ -329,16 +356,14 @@ function PointsMesh({
     loggedAttrsRef.current = true
   }, [])
 
-  // Log instance count once (fallback path)
+  // Report instance count once (fallback path)
   React.useEffect(() => {
     const g = geomRef.current
-    if (!g) return
-    try {
-      const pos = g.getAttribute('position') as THREE.BufferAttribute | undefined
-      const count = pos ? pos.count : 0
-      if (count > 0) console.log('[PC] instances:', count)
-    } catch {}
-  }, [])
+    if (!g || !onInstances) return
+    const pos = g.getAttribute('position') as THREE.BufferAttribute | undefined
+    const count = pos ? pos.count : 0
+    if (count > 0) onInstances(count)
+  }, [onInstances])
 
   React.useEffect(() => {
     if (!onMaterialValid) return
@@ -354,9 +379,7 @@ function PointsMesh({
       }
       if (!materialValidRef.current) {
         // Guard log to surface shader-compile stalls early during bring-up
-        try {
-          console.warn('[PC] material program not ready yet; waiting…')
-        } catch {}
+        console.warn('[PC] material program not ready yet; waiting…')
       }
       raf = requestAnimationFrame(check)
     }
@@ -414,6 +437,115 @@ function PointsMesh({
   )
 }
 
+function FallbackPointCloud({
+  colorUrl,
+  depthUrl,
+  depthRgUrl,
+  stride,
+  pointBudget,
+  material,
+  uniforms,
+  onMaterialValid,
+  onInstances,
+  onColorDimensions,
+}: {
+  colorUrl: string | null
+  depthUrl: string | null
+  depthRgUrl: string | null
+  stride: number
+  pointBudget: number
+  material: THREE.ShaderMaterial
+  uniforms: DreamdustStageUniforms
+  onMaterialValid?: () => void
+  onInstances?: (count: number) => void
+  onColorDimensions?: (size: { width: number; height: number } | null) => void
+}) {
+  const [mode, setMode] = React.useState<'rg' | 'depth16' | null>(() =>
+    depthRgUrl ? 'rg' : depthUrl ? 'depth16' : null,
+  )
+
+  React.useEffect(() => {
+    const nextMode = depthRgUrl ? 'rg' : depthUrl ? 'depth16' : null
+    setMode((prev) => (prev === nextMode ? prev : nextMode))
+  }, [depthRgUrl, depthUrl])
+
+  const color = useImageData(colorUrl)
+  const packed = usePackedDepth(mode === 'rg' ? depthRgUrl : null)
+  const depth = useImageData(mode === 'depth16' ? depthUrl : null)
+
+  React.useEffect(() => {
+    if (mode === 'rg' && packed.status === 'error') {
+      setMode(depthUrl ? 'depth16' : null)
+    }
+  }, [mode, packed.status, depthUrl])
+
+  React.useEffect(() => {
+    if (!onColorDimensions) return
+    if (color.status === 'ready' && color.data) {
+      onColorDimensions({ width: color.width, height: color.height })
+    } else {
+      onColorDimensions(null)
+    }
+    return () => {
+      if (onColorDimensions) onColorDimensions(null)
+    }
+  }, [color.status, color.data, color.width, color.height, onColorDimensions])
+
+  const depth16From8 = React.useMemo(() => {
+    if (depth.status !== 'ready' || !depth.data) return null
+    const w = depth.width
+    const h = depth.height
+    const src = depth.data.data
+    const out = new Uint16Array(w * h)
+    for (let i = 0, p = 0; p < out.length; i += 4, p++) out[p] = src[i] * 257
+    return { data16: out, width: w, height: h }
+  }, [depth])
+
+  const readyPacked =
+    color.status === 'ready' &&
+    packed.status === 'ready' &&
+    !!color.data &&
+    !!packed.data16 &&
+    packed.width > 0 &&
+    packed.height > 0
+
+  const readyDepth16 = color.status === 'ready' && !!color.data && !!depth16From8
+
+  if (!readyPacked && !readyDepth16) return null
+
+  if (readyPacked) {
+    return (
+      <PointsMesh
+        colorImage={{ data: color.data!, width: color.width, height: color.height }}
+        depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
+        stride={stride}
+        pointBudget={pointBudget}
+        material={material}
+        uniforms={uniforms}
+        onMaterialValid={onMaterialValid}
+        onInstances={onInstances}
+      />
+    )
+  }
+
+  if (readyDepth16) {
+    return (
+      <PointsMesh
+        colorImage={{ data: color.data!, width: color.width, height: color.height }}
+        depth16={depth16From8!}
+        stride={stride}
+        pointBudget={pointBudget}
+        material={material}
+        uniforms={uniforms}
+        onMaterialValid={onMaterialValid}
+        onInstances={onInstances}
+      />
+    )
+  }
+
+  return null
+}
+
 function BloomPass({
   strength = 0.18,
   radius = 0.12,
@@ -435,9 +567,9 @@ function BloomPass({
     ;(bloom as unknown as { renderToScreen?: boolean }).renderToScreen = true
     composerRef.current = comp
     return () => {
-      try {
+      if (typeof comp.dispose === 'function') {
         comp.dispose()
-      } catch {}
+      }
       composerRef.current = null
     }
   }, [gl, scene, camera, strength, radius, threshold])
@@ -523,24 +655,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
   const depthUrl = depthUrlProp ?? (base ? `${base}/depth16.png` : null)
   const depthRg = depthRgUrl ?? (base ? `${base}/depth_rg.png` : null)
-
-  const color = useImageData(colorUrl)
-  const packed = usePackedDepth(depthRg)
-  const depth = useImageData(depthUrl)
-
-  const depth16From8 = React.useMemo(() => {
-    if (!depth.data) return null
-    const w = depth.width
-    const h = depth.height
-    const src = depth.data.data
-    const out = new Uint16Array(w * h)
-    for (let i = 0, p = 0; p < out.length; i += 4, p++) out[p] = src[i] * 257
-    return { data16: out, width: w, height: h }
-  }, [depth.data, depth.width, depth.height])
-
-  const readyPacked = !!color.data && !!packed.data16 && color.width > 0 && packed.width > 0
-  const readyFallback = !!color.data && !!depth16From8
   const pointBudget = React.useMemo(() => pointCap(), [])
+  const [fallbackSize, setFallbackSize] = React.useState<{ width: number; height: number } | null>(null)
 
   const { uniforms: baseUniforms, setUniform, updateInkTexture } = useDreamdustUniforms()
   const uniforms = React.useMemo<DreamdustStageUniforms>(() => {
@@ -596,15 +712,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     if (loggedInkInfoRef.current) return
     if (inkIntensity > 0.0) {
-      try {
-        const vtx = uniforms.uVertexInkOk?.value ?? 0
-        const vp = uniforms.uViewport?.value ?? [0, 0]
-        console.log('[PC] ink debug', {
-          vertexInkOk: vtx > 0.5,
-          uViewport: vp,
-          inkIntensity,
-        })
-      } catch {}
+      const vtx = uniforms.uVertexInkOk?.value ?? 0
+      const vp = uniforms.uViewport?.value ?? [0, 0]
+      console.log('[PC] ink debug', {
+        vertexInkOk: vtx > 0.5,
+        uViewport: vp,
+        inkIntensity,
+      })
       loggedInkInfoRef.current = true
     }
   }, [inkIntensity, uniforms])
@@ -646,31 +760,41 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   } | null>(null)
   React.useEffect(() => {
     let cancelled = false
+    if (!sceneId) {
+      setPrebaked(null)
+      setPrebakedTransform(null)
+      setPrebakedStatus('absent')
+      return () => {
+        cancelled = true
+      }
+    }
+    setPrebaked(null)
+    setPrebakedTransform(null)
+    setPrebakedStatus('loading')
     ;(async () => {
-      if (!sceneId) return
-      setPrebakedStatus('loading')
-      try {
-        const base = `/assets/pointclouds/${sceneId}`
-        const res = await fetch(`${base}/positions.f32`, { cache: 'force-cache' })
-        if (!res.ok) {
-          if (!cancelled) setPrebakedStatus('absent')
-          return
-        }
-        const buf = await res.arrayBuffer()
-        const f32 = new Float32Array(buf)
+      const base = `/assets/pointclouds/${sceneId}`
+      const res = await fetch(`${base}/positions.f32`, { cache: 'force-cache' }).catch(() => null)
+      if (!res || !res.ok) {
+        if (!cancelled) setPrebakedStatus('absent')
+        return
+      }
+      const buf = await res.arrayBuffer().catch(() => null)
+      if (!buf) {
+        if (!cancelled) setPrebakedStatus('absent')
+        return
+      }
+      const f32 = new Float32Array(buf)
         const count = Math.floor(f32.length / 3)
         if (count <= 0) {
           if (!cancelled) setPrebakedStatus('absent')
           return
         }
         let colors: Uint8Array | undefined
-        try {
-          const cr = await fetch(`${base}/colors.u8`, { cache: 'force-cache' })
-          if (cr.ok) {
-            const cbuf = await cr.arrayBuffer()
-            colors = new Uint8Array(cbuf)
-          }
-        } catch {}
+        const colorResponse = await fetch(`${base}/colors.u8`, { cache: 'force-cache' }).catch(() => null)
+        if (colorResponse?.ok) {
+          const cbuf = await colorResponse.arrayBuffer().catch(() => null)
+          if (cbuf) colors = new Uint8Array(cbuf)
+        }
         if (!cancelled) {
           console.log('[PC] prebaked positions', {
             bytes: buf.byteLength,
@@ -891,21 +1015,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           setPrebakedTransform(t)
           setPrebakedStatus('present')
         }
-      } catch {
-        if (!cancelled) setPrebakedStatus('absent')
-      }
     })()
     return () => {
       cancelled = true
     }
   }, [sceneId])
 
+  React.useEffect(() => {
+    if (prebakedStatus !== 'absent') {
+      setFallbackSize(null)
+    }
+  }, [prebakedStatus])
+
   // Reduce console noise when prebaked present
   React.useEffect(() => {
     if (prebakedStatus === 'present') {
-      try {
-        console.log('[PC] prebaked present; using positions/colors, fallback images not required')
-      } catch {}
+      console.log('[PC] prebaked present; using positions/colors, fallback images not required')
     }
   }, [prebakedStatus])
 
@@ -943,18 +1068,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     [thickness],
   )
   React.useEffect(() => {
+    if (typeof window === 'undefined') return
     try {
-      const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-      if (p && p.get('debug') === '1') setDebugVisible(true)
-      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('pcDebug') : null
-      if (saved) setUi({ ...ui, ...JSON.parse(saved) })
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('debug') === '1') setDebugVisible(true)
+      const saved = window.localStorage.getItem('pcDebug')
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<typeof ui>
+        setUi((prev) => ({ ...prev, ...parsed }))
+      }
+    } catch (error) {
+      console.warn('[PC] failed to restore debug prefs', error)
+    }
   }, [])
   React.useEffect(() => {
+    if (typeof window === 'undefined') return
     try {
-      if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
-    } catch {}
+      window.localStorage.setItem('pcDebug', JSON.stringify(ui))
+    } catch (error) {
+      console.warn('[PC] failed to persist debug prefs', error)
+    }
   }, [
     ui.thickness,
     ui.pointSizeScale,
@@ -993,47 +1126,41 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const srcColors =
       prebaked.colors && prebaked.colors.length >= srcCount * 3 ? prebaked.colors : undefined
 
-    const cap = pointBudget
-    const keep = Math.min(ui.keepRatio, cap / Math.max(1, srcCount))
-    const step = Math.max(1, Math.floor(1 / Math.max(1e-6, keep)))
-    const outCount = keep >= 0.999 ? srcCount : Math.max(1, Math.floor(srcCount / step))
+    const { count: cappedCount, step, capped } = capInstances({
+      count: srcCount,
+      budget: pointBudget,
+      keep: ui.keepRatio,
+    })
 
-    // Fast-path: no decimation and colors already match
-    if (outCount === srcCount) {
-      return { positions: srcPos, colors: srcColors, keptCount: srcCount, cap }
+    if (!capped) {
+      return { positions: srcPos, colors: srcColors, keptCount: srcCount, cap: pointBudget, capped: false }
     }
 
-    const outPos = new Float32Array(outCount * 3)
-    const outCol: Uint8Array | undefined = srcColors ? new Uint8Array(outCount * 3) : undefined
+    const positions = decimateInterleaved(srcPos, 3, step, cappedCount)
+    const colors = srcColors ? decimateInterleaved(srcColors, 3, step, cappedCount) : undefined
+    const keptCount = Math.floor(positions.length / 3)
 
-    for (let i = 0, j = 0; i < srcCount && j < outCount; i += step, j++) {
-      outPos[j * 3 + 0] = srcPos[i * 3 + 0]
-      outPos[j * 3 + 1] = srcPos[i * 3 + 1]
-      outPos[j * 3 + 2] = srcPos[i * 3 + 2]
-      if (outCol && srcColors) {
-        outCol[j * 3 + 0] = srcColors[i * 3 + 0]
-        outCol[j * 3 + 1] = srcColors[i * 3 + 1]
-        outCol[j * 3 + 2] = srcColors[i * 3 + 2]
-      }
-    }
-
-    return { positions: outPos, colors: outCol, keptCount: outCount, cap }
+    return { positions, colors, keptCount, cap: pointBudget, capped: true }
   }, [pointBudget, prebaked, ui.keepRatio])
 
   // Log a single instances line after decimation
   const loggedInstancesRef = React.useRef(false)
   React.useEffect(() => {
-    if (loggedInstancesRef.current) return
-    const count = renderBuffers
-      ? Math.floor(renderBuffers.positions.length / 3)
-      : prebaked
-        ? prebaked.count
-        : 0
-    if (count > 0) {
+    loggedInstancesRef.current = false
+  }, [sceneId])
+  const logInstances = React.useCallback(
+    (count: number) => {
+      if (loggedInstancesRef.current || count <= 0) return
       console.log('[PC] instances:', count)
       loggedInstancesRef.current = true
-    }
-  }, [prebaked, renderBuffers])
+    },
+    [],
+  )
+  React.useEffect(() => {
+    if (!renderBuffers && !prebaked) return
+    const count = renderBuffers ? renderBuffers.keptCount : prebaked ? prebaked.count : 0
+    if (count > 0) logInstances(count)
+  }, [logInstances, prebaked, renderBuffers])
 
   // Compose world-space debug flips with the PCA quaternion so toggles work live
   const appliedQuaternion = React.useMemo(() => {
@@ -1058,54 +1185,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return flipWorld.multiply(base.clone())
   }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp, ui.roll180])
 
-  // Recolor fallback: if colors missing or mismatched, synthesize from source image
-  const recolored = React.useMemo(() => {
-    if (!renderBuffers) return null
-    const pos = renderBuffers.positions
-    const count = Math.floor(pos.length / 3)
-    const colors = renderBuffers.colors
-    const needRecolor = !colors || Math.floor(colors.length / 3) !== count
-    if (!needRecolor) return null
-    if (!color.data || color.width <= 0 || color.height <= 0) return null
-
-    // Compute AABB in (optionally) PCA-aligned space for XY mapping
-    const q = appliedQuaternion
-    let minX = Infinity,
-      minY = Infinity,
-      maxX = -Infinity,
-      maxY = -Infinity
-    const tmp = new THREE.Vector3()
-    for (let i = 0; i < count; i++) {
-      tmp.set(pos[i * 3 + 0], pos[i * 3 + 1], pos[i * 3 + 2])
-      if (q) tmp.applyQuaternion(q)
-      const x = tmp.x
-      const y = tmp.y
-      if (x < minX) minX = x
-      if (y < minY) minY = y
-      if (x > maxX) maxX = x
-      if (y > maxY) maxY = y
-    }
-    const dx = Math.max(1e-6, maxX - minX)
-    const dy = Math.max(1e-6, maxY - minY)
-    const w = color.width
-    const h = color.height
-    const src = color.data.data
-    const out = new Uint8Array(count * 3)
-    for (let i = 0; i < count; i++) {
-      tmp.set(pos[i * 3 + 0], pos[i * 3 + 1], pos[i * 3 + 2])
-      if (q) tmp.applyQuaternion(q)
-      const u = (tmp.x - minX) / dx
-      const v = (tmp.y - minY) / dy
-      const px = Math.max(0, Math.min(w - 1, Math.round(u * (w - 1))))
-      const py = Math.max(0, Math.min(h - 1, Math.round((1.0 - v) * (h - 1))))
-      const p = (py * w + px) * 4
-      out[i * 3 + 0] = src[p + 0]
-      out[i * 3 + 1] = src[p + 1]
-      out[i * 3 + 2] = src[p + 2]
-    }
-    return out
-  }, [renderBuffers, color.data, color.width, color.height, appliedQuaternion])
-
   // Mirror scale (local reflection) for left/right and up/down
   const mirrorScale = React.useMemo(() => {
     return [ui.mirrorLR ? -1 : 1, ui.mirrorUD ? -1 : 1, 1] as [number, number, number]
@@ -1114,14 +1193,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const cameraFitTarget = React.useMemo(() => [0, 0, 0] as [number, number, number], [])
   const cameraFitRadius = React.useMemo(() => {
     if (prebakedTransform) return prebakedTransform.radius
-    if (color.width > 0 && color.height > 0) {
+    if (fallbackSize && fallbackSize.width > 0 && fallbackSize.height > 0) {
       const heightUnits = 1000
-      const aspect = color.width / Math.max(1, color.height)
+      const aspect = fallbackSize.width / Math.max(1, fallbackSize.height)
       const widthUnits = heightUnits * aspect
       return 0.5 * Math.hypot(widthUnits, heightUnits)
     }
     return 600
-  }, [prebakedTransform, color.width, color.height])
+  }, [fallbackSize, prebakedTransform])
 
   React.useEffect(() => {
     if (!uniforms.uDepthNormScale) return
@@ -1144,7 +1223,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           console.log('[PC] pointer down', e.clientX, e.clientY)
         }}
         onCreated={({ gl }) => {
-          const clampedDpr = applyDprClamp(gl, 2)
+          const clampedDpr = clampDPR(gl, 2)
           console.log('[PC] DPR clamp applied', clampedDpr.toFixed(2))
           // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -1154,23 +1233,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           // @ts-ignore
           gl.toneMappingExposure = 1.0
           // Surface shader errors and log point-size limits
-          try {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          if (gl.debug) gl.debug.checkShaderErrors = true
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const ctx = typeof gl.getContext === 'function' ? gl.getContext() : null
+          if (ctx) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            if (gl.debug) gl.debug.checkShaderErrors = true
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const ctx = gl.getContext && gl.getContext()
-            if (ctx) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              const range = ctx.getParameter(ctx.ALIASED_POINT_SIZE_RANGE)
-              console.log('[PC] ALIASED_POINT_SIZE_RANGE', range)
-              const vertexInk = detectVertexTextureSupport(ctx)
-              setUniform('uVertexInkOk', vertexInk ? 1 : 0)
-              if (dreamdustCtx) dreamdustCtx.setVertexInkOk(vertexInk)
-            }
-          } catch {}
+            const range = ctx.getParameter(ctx.ALIASED_POINT_SIZE_RANGE)
+            console.log('[PC] ALIASED_POINT_SIZE_RANGE', range)
+            const vertexInk = detectVertexTextureSupport(ctx)
+            setUniform('uVertexInkOk', vertexInk ? 1 : 0)
+            if (dreamdustCtx) dreamdustCtx.setVertexInkOk(vertexInk)
+          }
           // ensure browser gesture handling doesn't block wheel/touch
           gl.domElement.style.touchAction = 'none'
           gl.domElement.style.pointerEvents = 'auto'
@@ -1215,7 +1292,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                       args={[renderBuffers?.positions ?? prebaked.positions, 3]}
                     />
                     {(() => {
-                      const src = renderBuffers?.colors ?? recolored ?? null
+                      const src = renderBuffers?.colors ?? null
                       const posCount = Math.floor(
                         (renderBuffers?.positions ?? prebaked.positions).length / 3
                       )
@@ -1232,28 +1309,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               </group>
             </group>
           </group>
-        ) : prebakedStatus === 'absent' && readyPacked ? (
-          <PointsMesh
-            colorImage={{ data: color.data!, width: color.width, height: color.height }}
-            depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
+        ) : prebakedStatus === 'absent' ? (
+          <FallbackPointCloud
+            colorUrl={colorUrl}
+            depthUrl={depthUrl}
+            depthRgUrl={depthRg}
             stride={stride}
             pointBudget={pointBudget}
             material={fallbackMaterial}
             uniforms={uniforms}
             onMaterialValid={() => setBloomEnabled(true)}
+            onInstances={logInstances}
+            onColorDimensions={setFallbackSize}
           />
-        ) : prebakedStatus === 'absent' ? (
-          readyFallback && (
-            <PointsMesh
-              colorImage={{ data: color.data!, width: color.width, height: color.height }}
-              depth16={depth16From8!}
-              stride={stride}
-              pointBudget={pointBudget}
-              material={fallbackMaterial}
-              uniforms={uniforms}
-              onMaterialValid={() => setBloomEnabled(true)}
-            />
-          )
         ) : null}
         <SceneControls radius={prebakedTransform ? prebakedTransform.radius : undefined} />
         {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
