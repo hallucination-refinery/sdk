@@ -21,6 +21,8 @@ type DreamdustUniformValueMap = {
   uBreath: number
   uCascade: number
   uCascadeColor: Vec3
+  uCascadeSizeBoost: number
+  uVaporGain: number
   uNoiseScale: number
   uNoiseSpeed: number
   uNoiseThreshold: number
@@ -55,6 +57,8 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uBreath: 0.5,
   uCascade: 0,
   uCascadeColor: [1, 1, 1],
+  uCascadeSizeBoost: 0,
+  uVaporGain: 0,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
   uNoiseThreshold: 1,
@@ -95,6 +99,9 @@ const DEFAULT_REVEAL_MS = 2000
 const MIN_REVEAL_SECONDS = 0.2
 const BREATH_PERIOD_SECONDS = 7.5
 const BREATH_SPEED = (Math.PI * 2) / BREATH_PERIOD_SECONDS
+const CASCADE_DURATION_SECONDS = 1.6
+const CASCADE_SIZE_BOOST = 2.4
+const CASCADE_VAPOR_GAIN = 1.35
 
 function clamp01(value: number): number {
   if (value < 0) return 0
@@ -144,6 +151,16 @@ type RevealTimelineState = {
   didLogEnd: boolean
 }
 
+type CascadeTimelineState = {
+  active: boolean
+  elapsed: number
+  duration: number
+  sizeBoost: number
+  vaporGain: number
+  didLogStart: boolean
+  didLogEnd: boolean
+}
+
 export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   const uniformsRef = React.useRef<DreamdustUniforms | null>(null)
 
@@ -157,6 +174,8 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uBreath: { value: DEFAULT_UNIFORM_VALUES.uBreath },
       uCascade: { value: DEFAULT_UNIFORM_VALUES.uCascade },
       uCascadeColor: { value: [...DEFAULT_UNIFORM_VALUES.uCascadeColor] as Vec3 },
+      uCascadeSizeBoost: { value: DEFAULT_UNIFORM_VALUES.uCascadeSizeBoost },
+      uVaporGain: { value: DEFAULT_UNIFORM_VALUES.uVaporGain },
       uNoiseScale: { value: DEFAULT_UNIFORM_VALUES.uNoiseScale },
       uNoiseSpeed: { value: DEFAULT_UNIFORM_VALUES.uNoiseSpeed },
       uNoiseThreshold: { value: DEFAULT_UNIFORM_VALUES.uNoiseThreshold },
@@ -186,6 +205,15 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       MIN_REVEAL_SECONDS,
       (tunablesRef.current.revealMs ?? DEFAULT_REVEAL_MS) / 1000,
     ),
+    didLogEnd: false,
+  })
+  const cascadeTimelineRef = React.useRef<CascadeTimelineState>({
+    active: false,
+    elapsed: 0,
+    duration: CASCADE_DURATION_SECONDS,
+    sizeBoost: CASCADE_SIZE_BOOST,
+    vaporGain: CASCADE_VAPOR_GAIN,
+    didLogStart: false,
     didLogEnd: false,
   })
   const breathStateRef = React.useRef({
@@ -257,6 +285,39 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
             })
           }
         }
+      }
+
+      const cascade = cascadeTimelineRef.current
+      if (cascade.active) {
+        if (!cascade.didLogStart) {
+          cascade.didLogStart = true
+          safeLog('[Dreamdust] cascade start', {
+            duration: Number(cascade.duration.toFixed(3)),
+          })
+        }
+        cascade.elapsed = Math.min(cascade.elapsed + safeDelta, cascade.duration)
+        const progress = cascade.duration > 0 ? cascade.elapsed / cascade.duration : 1
+        const eased = cubicEaseInOut(progress)
+        const mix = clamp01(eased)
+        uniforms.uCascade.value = mix
+        uniforms.uCascadeSizeBoost.value = cascade.sizeBoost
+        uniforms.uVaporGain.value = cascade.vaporGain * mix
+        if (cascade.elapsed >= cascade.duration) {
+          cascade.active = false
+          uniforms.uCascade.value = 1
+          uniforms.uVaporGain.value = 0
+          if (!cascade.didLogEnd) {
+            cascade.didLogEnd = true
+            safeLog('[Dreamdust] cascade end', {
+              duration: Number(cascade.duration.toFixed(3)),
+            })
+          }
+        }
+      } else if (uniforms.uVaporGain.value > 1e-4) {
+        uniforms.uVaporGain.value = Math.max(
+          0,
+          uniforms.uVaporGain.value - safeDelta * cascade.vaporGain,
+        )
       }
     },
     [],
@@ -357,8 +418,18 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
 
   const startCascade = React.useCallback((color: Vec3) => {
     const uniforms = uniformsRef.current
+    const cascade = cascadeTimelineRef.current
+    cascade.active = true
+    cascade.elapsed = 0
+    cascade.duration = CASCADE_DURATION_SECONDS
+    cascade.sizeBoost = CASCADE_SIZE_BOOST
+    cascade.vaporGain = CASCADE_VAPOR_GAIN
+    cascade.didLogStart = false
+    cascade.didLogEnd = false
     if (!uniforms) return
-    uniforms.uCascade.value = 1
+    uniforms.uCascade.value = 0
+    uniforms.uCascadeSizeBoost.value = cascade.sizeBoost
+    uniforms.uVaporGain.value = 0
     const target = uniforms.uCascadeColor.value
     for (let i = 0; i < target.length && i < color.length; i += 1) {
       target[i] = color[i]
@@ -367,8 +438,15 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
 
   const stopCascade = React.useCallback(() => {
     const uniforms = uniformsRef.current
+    const cascade = cascadeTimelineRef.current
+    cascade.active = false
+    cascade.elapsed = 0
+    cascade.didLogStart = false
+    cascade.didLogEnd = false
     if (!uniforms) return
     uniforms.uCascade.value = 0
+    uniforms.uCascadeSizeBoost.value = DEFAULT_UNIFORM_VALUES.uCascadeSizeBoost
+    uniforms.uVaporGain.value = DEFAULT_UNIFORM_VALUES.uVaporGain
     const target = uniforms.uCascadeColor.value
     const defaults = DEFAULT_UNIFORM_VALUES.uCascadeColor
     for (let i = 0; i < target.length && i < defaults.length; i += 1) {
