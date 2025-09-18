@@ -134,12 +134,11 @@ float dreamdustDepthAlpha(float depthNorm, float bias) {
 `
 
 export const DREAMDUST_SOFT_SPRITE_CHUNK = /* glsl */ `
-float dreamdustSoftSprite(vec2 coord) {
-  vec2 delta = coord * 2.0 - 1.0;
-  float r2 = dot(delta, delta);
-  float inner = smoothstep(0.95, 0.0, r2);
-  float fringe = smoothstep(1.3, 0.3, r2);
-  return clamp(inner * fringe, 0.0, 1.0);
+float dreamdustSoftSprite(vec2 uv) {
+  vec2 centered = uv * 2.0 - 1.0;
+  float radius = length(centered);
+  float falloff = 1.0 - smoothstep(0.8, 1.0, radius);
+  return clamp(falloff * falloff, 0.0, 1.0);
 }
 `
 
@@ -293,12 +292,15 @@ float dd_fbm3(vec3 dd_p) {
   float dd_value = 0.0;
   float dd_amplitude = 0.5;
   const int dd_octaves = 4;
+  float dd_total = 0.0;
   for (int dd_index = 0; dd_index < dd_octaves; ++dd_index) {
     dd_value += dd_noise3Value(dd_p) * dd_amplitude;
+    dd_total += dd_amplitude;
     dd_p *= 2.0;
     dd_amplitude *= 0.5;
   }
-  return dd_value;
+  float dd_normalizer = max(dd_total, 1e-4);
+  return clamp(dd_value / dd_normalizer, 0.0, 1.0);
 }
 
 #define DD_FBM3(p) dd_fbm3(p)
@@ -310,31 +312,32 @@ float dd_fbm3(vec3 dd_p) {
  * @glslUniforms None
  */
 export const DD_CURL3 = /* glsl */ `
-vec3 dd_fbm3Vec(vec3 dd_p) {
+vec3 dd_fbm3Field(vec3 dd_p) {
   return vec3(
-    dd_fbm3(dd_p + vec3(37.2, 11.8, 5.4)),
-    dd_fbm3(dd_p + vec3(5.3, 27.1, 19.7)),
-    dd_fbm3(dd_p + vec3(11.1, 41.3, 7.9))
+    dd_fbm3(dd_p),
+    dd_fbm3(dd_p.yzx),
+    dd_fbm3(dd_p.zxy)
   );
 }
 
 vec3 dd_curl3(vec3 dd_p) {
-  const float dd_eps = 0.35;
+  const float dd_eps = 0.1;
   vec3 dd_dx = vec3(dd_eps, 0.0, 0.0);
   vec3 dd_dy = vec3(0.0, dd_eps, 0.0);
   vec3 dd_dz = vec3(0.0, 0.0, dd_eps);
 
-  vec3 dd_ny1 = dd_fbm3Vec(dd_p + dd_dy);
-  vec3 dd_ny2 = dd_fbm3Vec(dd_p - dd_dy);
-  vec3 dd_nz1 = dd_fbm3Vec(dd_p + dd_dz);
-  vec3 dd_nz2 = dd_fbm3Vec(dd_p - dd_dz);
-  vec3 dd_nx1 = dd_fbm3Vec(dd_p + dd_dx);
-  vec3 dd_nx2 = dd_fbm3Vec(dd_p - dd_dx);
+  vec3 dd_fx1 = dd_fbm3Field(dd_p + dd_dx);
+  vec3 dd_fx2 = dd_fbm3Field(dd_p - dd_dx);
+  vec3 dd_fy1 = dd_fbm3Field(dd_p + dd_dy);
+  vec3 dd_fy2 = dd_fbm3Field(dd_p - dd_dy);
+  vec3 dd_fz1 = dd_fbm3Field(dd_p + dd_dz);
+  vec3 dd_fz2 = dd_fbm3Field(dd_p - dd_dz);
 
+  float dd_inv2eps = 0.5 / dd_eps;
   vec3 dd_curl;
-  dd_curl.x = dd_nz1.y - dd_nz2.y - dd_ny1.z + dd_ny2.z;
-  dd_curl.y = dd_nx1.z - dd_nx2.z - dd_nz1.x + dd_nz2.x;
-  dd_curl.z = dd_ny1.x - dd_ny2.x - dd_nx1.y + dd_nx2.y;
+  dd_curl.x = (dd_fz1.y - dd_fz2.y) * dd_inv2eps - (dd_fy1.z - dd_fy2.z) * dd_inv2eps;
+  dd_curl.y = (dd_fx1.z - dd_fx2.z) * dd_inv2eps - (dd_fz1.x - dd_fz2.x) * dd_inv2eps;
+  dd_curl.z = (dd_fy1.x - dd_fy2.x) * dd_inv2eps - (dd_fx1.y - dd_fx2.y) * dd_inv2eps;
 
   float dd_len = max(length(dd_curl), 1e-4);
   return dd_curl / dd_len;
