@@ -5,16 +5,24 @@ import { useFrame, useThree } from '@react-three/fiber'
 import type { RootState } from '@react-three/fiber'
 
 type TextureLike = unknown
+type Vec3 = [number, number, number]
 
 type DreamdustUniformValueMap = {
   uTime: number
   uViewport: [number, number]
   uInkTex: TextureLike | null
   uInkIntensity: number
+  uReveal: number
+  uBreath: number
+  uCascade: number
+  uCascadeColor: Vec3
   uNoiseScale: number
   uNoiseSpeed: number
   uNoiseThreshold: number
   uDriftAmp: number
+  uPointBaseSize: number
+  uDepthMin: number
+  uDepthMax: number
   uDepthBias: number
   uDepthNormScale: number
   uGamma: number
@@ -38,10 +46,17 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uViewport: [1, 1],
   uInkTex: null,
   uInkIntensity: 1,
+  uReveal: 1,
+  uBreath: 0.5,
+  uCascade: 0,
+  uCascadeColor: [1, 1, 1],
   uNoiseScale: 1,
   uNoiseSpeed: 1,
   uNoiseThreshold: 1,
   uDriftAmp: 0,
+  uPointBaseSize: 1,
+  uDepthMin: 0,
+  uDepthMax: 1,
   uDepthBias: 1.8,
   uDepthNormScale: 0.001,
   uGamma: 1,
@@ -71,6 +86,39 @@ function useOptionalThree<T>(selector: (state: RootState) => T): T | null {
   }
 }
 
+const REVEAL_MIN_SECONDS = 1.6
+const REVEAL_MAX_SECONDS = 2.4
+const BREATH_PERIOD_SECONDS = 7.5
+const BREATH_SPEED = (Math.PI * 2) / BREATH_PERIOD_SECONDS
+
+function clamp01(value: number): number {
+  if (value < 0) return 0
+  if (value > 1) return 1
+  return value
+}
+
+function cubicEaseInOut(t: number): number {
+  const clamped = clamp01(t)
+  if (clamped < 0.5) {
+    return 4 * clamped * clamped * clamped
+  }
+  const f = -2 * clamped + 2
+  return 1 - (f * f * f) / 2
+}
+
+function randomInRange(min: number, max: number): number {
+  if (max <= min) return min
+  return min + Math.random() * (max - min)
+}
+
+function safeLog(...args: Parameters<typeof console.log>): void {
+  try {
+    console.log(...args)
+  } catch {
+    // noop
+  }
+}
+
 type DreamdustUniformName = keyof DreamdustUniforms
 
 type DreamdustUniformValue<Name extends DreamdustUniformName> =
@@ -78,11 +126,22 @@ type DreamdustUniformValue<Name extends DreamdustUniformName> =
 
 type UseDreamdustUniformsResult = {
   uniforms: DreamdustUniforms
+  tick: (delta: number) => void
+  startReveal: () => void
+  startCascade: (color: Vec3) => void
+  stopCascade: () => void
   setUniform: <Name extends DreamdustUniformName>(
     name: Name,
     value: DreamdustUniformValue<Name>,
   ) => void
   updateInkTexture: (texture: TextureLike | null) => void
+}
+
+type RevealTimelineState = {
+  active: boolean
+  elapsed: number
+  duration: number
+  didLogEnd: boolean
 }
 
 export function useDreamdustUniforms(): UseDreamdustUniformsResult {
@@ -94,10 +153,17 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uViewport: { value: initialViewport() },
       uInkTex: { value: DEFAULT_UNIFORM_VALUES.uInkTex },
       uInkIntensity: { value: DEFAULT_UNIFORM_VALUES.uInkIntensity },
+      uReveal: { value: DEFAULT_UNIFORM_VALUES.uReveal },
+      uBreath: { value: DEFAULT_UNIFORM_VALUES.uBreath },
+      uCascade: { value: DEFAULT_UNIFORM_VALUES.uCascade },
+      uCascadeColor: { value: [...DEFAULT_UNIFORM_VALUES.uCascadeColor] as Vec3 },
       uNoiseScale: { value: DEFAULT_UNIFORM_VALUES.uNoiseScale },
       uNoiseSpeed: { value: DEFAULT_UNIFORM_VALUES.uNoiseSpeed },
       uNoiseThreshold: { value: DEFAULT_UNIFORM_VALUES.uNoiseThreshold },
       uDriftAmp: { value: DEFAULT_UNIFORM_VALUES.uDriftAmp },
+      uPointBaseSize: { value: DEFAULT_UNIFORM_VALUES.uPointBaseSize },
+      uDepthMin: { value: DEFAULT_UNIFORM_VALUES.uDepthMin },
+      uDepthMax: { value: DEFAULT_UNIFORM_VALUES.uDepthMax },
       uDepthBias: { value: DEFAULT_UNIFORM_VALUES.uDepthBias },
       uDepthNormScale: { value: DEFAULT_UNIFORM_VALUES.uDepthNormScale },
       uGamma: { value: DEFAULT_UNIFORM_VALUES.uGamma },
@@ -110,6 +176,16 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uVertexInkOk: { value: DEFAULT_UNIFORM_VALUES.uVertexInkOk },
     }
   }
+
+  const revealTimelineRef = React.useRef<RevealTimelineState>({
+    active: false,
+    elapsed: 0,
+    duration: REVEAL_MIN_SECONDS,
+    didLogEnd: false,
+  })
+  const breathStateRef = React.useRef({
+    phase: 0,
+  })
 
   const applyViewport = React.useCallback((width: number, height: number) => {
     const uniforms = uniformsRef.current
@@ -131,6 +207,59 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     if (viewportWidth === null || viewportHeight === null) return
     applyViewport(viewportWidth, viewportHeight)
   }, [applyViewport, viewportHeight, viewportWidth])
+
+  const tick = React.useCallback(
+    (delta: number) => {
+      const uniforms = uniformsRef.current
+      if (!uniforms) return
+      const safeDelta = Number.isFinite(delta) ? Math.max(0, delta) : 0
+      uniforms.uTime.value += safeDelta
+
+      const breath = breathStateRef.current
+      breath.phase += safeDelta * BREATH_SPEED
+      if (!Number.isFinite(breath.phase)) {
+        breath.phase = 0
+      } else if (breath.phase > Math.PI * 2 || breath.phase < -Math.PI * 2) {
+        breath.phase %= Math.PI * 2
+      }
+      const breathValue = (Math.sin(breath.phase) + 1) * 0.5
+      uniforms.uBreath.value = clamp01(breathValue)
+
+      const reveal = revealTimelineRef.current
+      if (reveal.active) {
+        reveal.elapsed = Math.min(reveal.elapsed + safeDelta, reveal.duration)
+        const progress = reveal.duration > 0 ? reveal.elapsed / reveal.duration : 1
+        const eased = cubicEaseInOut(progress)
+        uniforms.uReveal.value = eased
+        if (reveal.elapsed >= reveal.duration) {
+          reveal.active = false
+          uniforms.uReveal.value = 1
+          if (!reveal.didLogEnd) {
+            reveal.didLogEnd = true
+            safeLog('[Dreamdust] reveal end', {
+              duration: Number(reveal.duration.toFixed(3)),
+            })
+          }
+        }
+      }
+    },
+    [],
+  )
+
+  const startReveal = React.useCallback(() => {
+    const uniforms = uniformsRef.current
+    const reveal = revealTimelineRef.current
+    reveal.active = true
+    reveal.elapsed = 0
+    reveal.duration = randomInRange(REVEAL_MIN_SECONDS, REVEAL_MAX_SECONDS)
+    reveal.didLogEnd = false
+    if (uniforms) {
+      uniforms.uReveal.value = 0
+    }
+    safeLog('[Dreamdust] reveal start', {
+      duration: Number(reveal.duration.toFixed(3)),
+    })
+  }, [])
 
   React.useEffect(() => {
     if (size) {
@@ -156,10 +285,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       }
       const delta = (now - last) / 1000
       last = now
-      const uniforms = uniformsRef.current
-      if (uniforms) {
-        uniforms.uTime.value += delta
-      }
+      tick(delta)
       updateFromWindow()
       frame = window.requestAnimationFrame(loop)
     }
@@ -177,13 +303,11 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       window.cancelAnimationFrame(frame)
       window.removeEventListener('resize', handleResize)
     }
-  }, [applyViewport, size])
+  }, [applyViewport, size, tick])
 
   try {
     useFrame((state, delta) => {
-      const uniforms = uniformsRef.current
-      if (!uniforms) return
-      uniforms.uTime.value += delta
+      tick(delta)
       const { width, height } = state.viewport
       applyViewport(width, height)
     })
@@ -213,6 +337,27 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     [],
   )
 
+  const startCascade = React.useCallback((color: Vec3) => {
+    const uniforms = uniformsRef.current
+    if (!uniforms) return
+    uniforms.uCascade.value = 1
+    const target = uniforms.uCascadeColor.value
+    for (let i = 0; i < target.length && i < color.length; i += 1) {
+      target[i] = color[i]
+    }
+  }, [])
+
+  const stopCascade = React.useCallback(() => {
+    const uniforms = uniformsRef.current
+    if (!uniforms) return
+    uniforms.uCascade.value = 0
+    const target = uniforms.uCascadeColor.value
+    const defaults = DEFAULT_UNIFORM_VALUES.uCascadeColor
+    for (let i = 0; i < target.length && i < defaults.length; i += 1) {
+      target[i] = defaults[i]
+    }
+  }, [])
+
   const updateInkTexture = React.useCallback(
     (texture: TextureLike | null) => {
       setUniform('uInkTex', texture)
@@ -227,6 +372,10 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
 
   return {
     uniforms,
+    tick,
+    startReveal,
+    startCascade,
+    stopCascade,
     setUniform,
     updateInkTexture,
   }
