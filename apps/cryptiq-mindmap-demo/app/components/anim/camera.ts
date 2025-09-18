@@ -26,12 +26,19 @@ export function easeInOutCubic(t: number) {
  *   To fit a sphere of radius `r`, ensure `r <= d * tan(fov / 2)` → `d >= r / tan(fov / 2)`.
  *   Horizontal fit uses `tan(fov / 2) * aspect`, so take the tighter (max) constraint.
  */
-export function fitPerspective(
+export type FitPerspective = (
   fovDeg: number,
   radius: number,
   aspect: number,
-  margin = 1.1
-): number {
+  margin?: number
+) => number
+
+export const fitPerspective: FitPerspective = (
+  fovDeg,
+  radius,
+  aspect,
+  margin = 1.1,
+) => {
   const safeFovDeg = Math.min(179.999, Math.max(1e-3, fovDeg))
   const safeAspect = Math.max(FIT_EPSILON, aspect)
   const safeMargin = Math.max(0, margin)
@@ -131,17 +138,21 @@ export function applyPerspectiveFit(
  * Values smaller than one retain their proportional scale, while larger radii are
  * clamped to avoid excessively small depth precision values.
  */
-export function depthNormScaleFromRadius(radius: number): number {
+export type DepthNormScaleFromRadius = (radius: number) => number
+
+export const depthNormScaleFromRadius: DepthNormScaleFromRadius = (radius) => {
   return 1 / Math.max(1, radius)
 }
 
-export function tweenCamera({
+export type TweenCamera = (params: TweenCameraParams) => Promise<void>
+
+export const tweenCamera: TweenCamera = ({
   camera,
   to,
   durationMs = 1000,
   easing = easeInOutCubic,
   cancelRef,
-}: TweenCameraParams) {
+}) => {
   const fromPos = camera.position.clone()
   const fromLook = camera
     .position
