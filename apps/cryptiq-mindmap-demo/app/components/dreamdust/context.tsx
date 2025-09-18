@@ -4,7 +4,12 @@ import * as React from 'react'
 
 type InkTexture = import('three').Texture | null
 
+type CascadeColor = [number, number, number]
+
+type StartCascade = (color: CascadeColor) => void
+
 type DreamdustContextValue = {
+  startCascade: StartCascade
   inkTex?: InkTexture
   inkIntensity: number
   setInkTex: React.Dispatch<React.SetStateAction<InkTexture | undefined>>
@@ -22,14 +27,20 @@ const DreamdustContext = React.createContext<DreamdustContextValue | undefined>(
 )
 
 export function DreamdustProvider({ children }: React.PropsWithChildren) {
+  const cascadeStarterRef = React.useRef<StartCascade>(() => {})
   const [inkTex, setInkTex] = React.useState<InkTexture>()
   const [inkIntensity, setInkIntensity] = React.useState<number>(1)
   const [vertexInkOk, setVertexInkOk] = React.useState<boolean>(false)
   const [controlsLocked, setControlsLocked] = React.useState(false)
   const [heatmapVisible, setHeatmapVisible] = React.useState(false)
 
+  const startCascade = React.useCallback<StartCascade>((color) => {
+    cascadeStarterRef.current(color)
+  }, [])
+
   const value = React.useMemo(
     () => ({
+      startCascade,
       inkTex,
       inkIntensity,
       setInkTex,
@@ -41,7 +52,14 @@ export function DreamdustProvider({ children }: React.PropsWithChildren) {
       heatmapVisible,
       setHeatmapVisible,
     }),
-    [inkTex, inkIntensity, vertexInkOk, controlsLocked, heatmapVisible],
+    [
+      startCascade,
+      inkTex,
+      inkIntensity,
+      vertexInkOk,
+      controlsLocked,
+      heatmapVisible,
+    ],
   )
 
   return (
