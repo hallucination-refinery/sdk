@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD013 MD022 MD032 MD041 -->
 ## Context Brief — “Dreamdust Ink” (Reactive Point‑Cloud + Draw Interaction)
 
 ### 1) Current status (what’s running now)
@@ -157,12 +158,50 @@ fov: {Math.round(ui.fovDeg)}°
 - Depth shaping in fragment
   - Fragment currently outputs opaque color; depth‑alpha shaping is future work.
 
+### G) Reveal & breath timeline spec
+
+- Stage mount sequence (t=0):
+  - Pre-roll clamps `uNoiseThreshold` to `0.05` for 120 ms to allow first asset upload.
+  - Reveal ramp: ease-in-out to `0.68` over the next 850 ms; drift remains at the base amplitude (`uDriftAmp=1.0`).
+- Hold phase (t≈1 s → 4 s):
+  - Threshold stays pinned at `0.68` to keep silhouettes readable while ink warms up.
+  - Breath oscillator starts at t=1.6 s: `uDriftAmp` oscillates between `0.86` and `1.32` on a 9 s cycle (cosine easing) while `uNoiseThreshold` shifts ±`0.07` with a 6.5 s sine wave.
+- Idle taper (no ink interaction for ≥12 s):
+  - Damp the breath to ±`0.03` and slide the threshold down to `0.6` over 2.4 s to avoid restless motion when the page is unattended.
+- Teardown/on navigation:
+  - Collapse the threshold back to `0.0` over 420 ms (ease-in) and park the drift amp at `0.75` before disposing materials so that route transitions do not pop.
+
+### H) Ink decay & curl tuning
+
+- Decay curve:
+  - Default decay factor: `0.965` per frame @60 Hz (half-life ≈1.8 s). Clamp to `0.94` on high-refresh (>90 Hz) devices to prevent smear.
+  - Floor intensity: stop decay at `≈0.12` so the canvas can skip uploads once strokes are imperceptible.
+- Upload cadence: throttle `toCanvasTexture` to 48 Hz while the pen is down and 24 Hz otherwise; this yields <1.2 ms CPU on M2-class laptops and <0.7 ms on desktop GPUs.
+- Curl parameters:
+  - Vertex path exposes `uCurlAmp=0.32`, `uCurlScale=0.85`, and `uCurlSpeed=0.17`. Ink pressure modulates curl amplitude up to `0.48` to create swirls without tearing points free from the cloud hull.
+  - Fragment fallback mirrors the same numbers but lerps tint rather than position. When vertex textures are unavailable, keep curl amp capped at `0.28`.
+- Interaction blend: ink-driven size gain peaks at `+38%` when curl is >0.42 to keep broad gestures punchy; decay drives curl back to baseline within ~2.1 s.
+
+### I) Frame & memory budgets
+
+- CPU (main thread): total Dreamdust step ≤4.5 ms @60 Hz; `InkField.decay` + stroke rasterization ≤1.8 ms; uniform updates ≤0.6 ms.
+- GPU (raster):
+  - Desktop budget 5.0 ms for point draw @150k vertices with ink active; 3.5 ms when idle.
+  - Mobile budget 7.5 ms @60k vertices. Drop curl amp by 20% if telemetry shows >8.5 ms sustained.
+- Upload cost: ink texture ≤1.2 MB/frame (128² RGBA) with DPR clamp (≤1.5). Ensure VRAM stays <350 MB for the stage to leave headroom for overlays.
+- Network/assets: prebaked bundles stay <5 MB zipped; ensure `meta.json` + `colors.u8` load in <400 ms on 50 Mbps Wi-Fi before triggering reveal ramp.
+
 ### Manual test script — current vs planned
 
 - Works now
-  - Open `/quiz/archetype-v1?pc=scene-02&debug=1`; adjust FOV; orbit/zoom/pan (including right‑click pan); density/point size controls respond; prebaked scene loads.
-- Planned
-  - "Fit" button; reveal slider/animation; ink strokes affecting size/offset/tint with decay; mobile cap/DPR clamp; fragment depth alpha shaping.
+  - Open `/quiz/archetype-v1?pc=scene-02&debug=1`; adjust FOV; orbit/zoom/pan (including right-click pan); density/point size controls respond; prebaked scene loads.
+- Planned QA (to verify Dreamdust delivery)
+  - Observe reveal ramp completes in ≈1 s, then breath modulation settles to ±`0.07` around the `0.68` threshold while drift oscillates between `0.86`–`1.32`.
+  - Leave the page idle for 15 s and confirm the idle taper drops threshold to ≈`0.6` and reduces breath to ±`0.03`.
+  - Enable ink overlay; draw medium-pressure loops and ensure curl amplitude peaks near `0.48`, size gain hits ≈`1.38×`, and decay clears the stroke within ~2 s even on high-refresh devices.
+  - Watch debug upload metrics stay below 50 Hz when idle and below 48 Hz during active drawing; verify fallback caps curl at `0.28` when vertex textures are unavailable.
+  - Toggle DPR clamp to stress GPU budgets: point draw should remain ≤5.0 ms desktop / ≤7.5 ms mobile with ink active.
+  - Navigate away from the quiz route to validate teardown: reveal threshold should collapse to `0` within 0.5 s and console logs report ink texture disposal.
 
 ### Key file references
 
