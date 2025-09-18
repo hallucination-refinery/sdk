@@ -73,6 +73,60 @@ function ensureUniform(uniforms: UniformRecord, name: DefaultUniformKey) {
   }
 }
 
+function aliasUniform(
+  uniforms: UniformRecord,
+  legacyName: string,
+  canonicalName: DefaultUniformKey,
+) {
+  const canonicalUniform = uniforms[canonicalName] as IUniform | undefined
+  const legacyUniform = uniforms[legacyName] as IUniform | undefined
+
+  if (legacyUniform && !canonicalUniform) {
+    uniforms[canonicalName] = legacyUniform
+    return
+  }
+
+  if (!legacyUniform && canonicalUniform) {
+    uniforms[legacyName] = canonicalUniform
+    return
+  }
+
+  if (legacyUniform && canonicalUniform && legacyUniform !== canonicalUniform) {
+    uniforms[legacyName] = canonicalUniform
+  }
+}
+
+function isTruthyDefine(value: unknown): boolean {
+  if (typeof value === 'number') {
+    return value !== 0
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase()
+    if (trimmed === '' || trimmed === '0' || trimmed === 'false') {
+      return false
+    }
+    return true
+  }
+  return !!value
+}
+
+function syncLegacyVertexInkDefine(
+  defines: ShaderMaterialParameters['defines'] | undefined,
+) {
+  if (!defines) {
+    return
+  }
+  const record = defines as Record<string, unknown>
+  if (!Object.prototype.hasOwnProperty.call(record, 'VERTEX_INK_OK')) {
+    return
+  }
+  if (isTruthyDefine(record.VERTEX_INK_OK)) {
+    record.USE_VERTEX_INK = 1
+  } else {
+    delete record.USE_VERTEX_INK
+  }
+}
+
 const VERTEX_SHADER = /* glsl */ `
 precision highp float;
 
@@ -284,10 +338,12 @@ export function makeDreamdustMaterial(
   uniforms: UniformRecord,
   opts: DreamdustMaterialOptions | DreamdustMaterialOptionsInput,
 ) {
+  aliasUniform(uniforms, 'uBaseSize', 'uPointBaseSize')
   const uniformNames = Object.keys(DEFAULT_UNIFORM_VALUES) as DefaultUniformKey[]
   for (const name of uniformNames) {
     ensureUniform(uniforms, name)
   }
+  aliasUniform(uniforms, 'uBaseSize', 'uPointBaseSize')
 
   const resolved: DreamdustMaterialOptions = {
     unproject: opts.unproject,
@@ -300,7 +356,9 @@ export function makeDreamdustMaterial(
   }
   if (resolved.vertexInkOk) {
     defines.USE_VERTEX_INK = 1
+    defines.VERTEX_INK_OK = 1
   }
+  syncLegacyVertexInkDefine(defines)
 
   const params: ShaderMaterialParameters = {
     uniforms,
@@ -316,6 +374,7 @@ export function makeDreamdustMaterial(
   const material = new ShaderMaterial(params)
   material.uniforms = uniforms
   material.defines = material.defines ?? {}
+  syncLegacyVertexInkDefine(material.defines)
   if (resolved.unproject) {
     material.defines.USE_UNPROJECT = 1
   } else {
@@ -323,12 +382,22 @@ export function makeDreamdustMaterial(
   }
   if (resolved.vertexInkOk) {
     material.defines.USE_VERTEX_INK = 1
+    material.defines.VERTEX_INK_OK = 1
   } else {
     delete material.defines.USE_VERTEX_INK
+    delete material.defines.VERTEX_INK_OK
   }
 
   if (uniforms.uVertexInkOk) {
     uniforms.uVertexInkOk.value = resolved.vertexInkOk ? 1 : 0
+  }
+
+  const originalOnBeforeCompile = material.onBeforeCompile?.bind(material)
+  material.onBeforeCompile = function onBeforeCompile(shader, renderer) {
+    syncLegacyVertexInkDefine(material.defines)
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile(shader, renderer)
+    }
   }
 
   return material
