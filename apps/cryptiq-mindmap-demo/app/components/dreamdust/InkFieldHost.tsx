@@ -10,6 +10,7 @@ import { useDreamdustCtx } from './context'
 
 type RendererLike = {
   getContext: () => WebGLRenderingContext | WebGL2RenderingContext
+  domElement?: HTMLCanvasElement
 }
 
 type CanvasTextureLike = {
@@ -41,7 +42,14 @@ function decayRateFromDelta(deltaMs: number): number {
 }
 
 export function InkFieldHost(): React.JSX.Element {
-  const { setInkTex, setInkIntensity, setVertexInkOk } = useDreamdustCtx()
+  const {
+    setInkTex,
+    setInkIntensity,
+    setVertexInkOk,
+    setControlsLocked,
+    heatmapVisible,
+    setHeatmapVisible,
+  } = useDreamdustCtx()
   type InkTexState = Parameters<typeof setInkTex>[0]
 
   const inkFieldRef = React.useRef<InkField | null>(null)
@@ -51,12 +59,46 @@ export function InkFieldHost(): React.JSX.Element {
   const intensityRef = React.useRef(0)
   const vertexInkOkRef = React.useRef<boolean | null>(null)
   const [drawEnabled, setDrawEnabled] = React.useState(true)
-  const [showHeatmap, setShowHeatmap] = React.useState(false)
   const heatmapRef = React.useRef<HTMLCanvasElement | null>(null)
+  const lockedControlsRef = React.useRef<{ controls: { enabled?: boolean }; prevEnabled: boolean } | null>(
+    null,
+  )
   const loggedInkOnceRef = React.useRef(false)
+
+  const lockControls = React.useCallback(() => {
+    try {
+      const state = getR3FStateOrNull()
+      const controls = state?.controls as { enabled?: boolean } | undefined
+      if (controls && typeof controls === 'object') {
+        const prev = typeof controls.enabled === 'boolean' ? controls.enabled : true
+        ;(controls as { enabled: boolean }).enabled = false
+        lockedControlsRef.current = { controls, prevEnabled: prev }
+        return
+      }
+    } catch {
+      // ignore
+    }
+    lockedControlsRef.current = null
+  }, [])
+
+  const unlockControls = React.useCallback(() => {
+    const locked = lockedControlsRef.current
+    lockedControlsRef.current = null
+    if (!locked) {
+      return
+    }
+    try {
+      ;(locked.controls as { enabled: boolean }).enabled = locked.prevEnabled
+    } catch {
+      // ignore restore failures
+    }
+  }, [])
 
   const handleStrokeStart = React.useCallback(
     (_point: StrokePoint) => {
+      void _point
+      lockControls()
+      setControlsLocked(true)
       const now = nowMs()
       lastStrokeRef.current = now
       if (intensityRef.current !== 1) {
@@ -65,20 +107,24 @@ export function InkFieldHost(): React.JSX.Element {
       }
       // One-time debug of caps/viewport/intensity on first stroke
       if (!loggedInkOnceRef.current) {
-        try {
-          const state = getR3FStateOrNull()
-          const vpW = state?.viewport.width ?? 0
-          const vpH = state?.viewport.height ?? 0
-          console.log('[PC] ink debug (host)', {
-            vertexInkOk: !!vertexInkOkRef.current,
-            uViewport: [vpW, vpH],
-            inkIntensity: 1,
-          })
-        } catch {}
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            const state = getR3FStateOrNull()
+            const vpW = state?.viewport.width ?? 0
+            const vpH = state?.viewport.height ?? 0
+            console.warn('[PC] ink debug (host)', {
+              vertexInkOk: !!vertexInkOkRef.current,
+              uViewport: [vpW, vpH],
+              inkIntensity: 1,
+            })
+          } catch (error) {
+            console.warn('[PC] ink debug (host) failed', error)
+          }
+        }
         loggedInkOnceRef.current = true
       }
     },
-    [setInkIntensity],
+    [lockControls, setControlsLocked, setInkIntensity],
   )
 
   const handleStrokeSegment = React.useCallback(
@@ -119,18 +165,37 @@ export function InkFieldHost(): React.JSX.Element {
     [setInkIntensity, setInkTex],
   )
 
+  const handleStrokeEnd = React.useCallback(() => {
+    unlockControls()
+    setControlsLocked(false)
+  }, [setControlsLocked, unlockControls])
+
   React.useEffect(() => {
     setInkIntensity(0)
     return () => {
       setInkTex(() => undefined)
       setInkIntensity(0)
       setVertexInkOk(false)
+      setControlsLocked(false)
+      unlockControls()
       inkFieldRef.current?.dispose()
       inkFieldRef.current = null
       rendererRef.current = null
       textureRef.current = null
     }
-  }, [setInkIntensity, setInkTex, setVertexInkOk])
+  }, [setControlsLocked, setInkIntensity, setInkTex, setVertexInkOk, unlockControls])
+
+  React.useEffect(() => {
+    return () => {
+      setHeatmapVisible(false)
+    }
+  }, [setHeatmapVisible])
+
+  React.useEffect(() => {
+    if (!drawEnabled) {
+      handleStrokeEnd()
+    }
+  }, [drawEnabled, handleStrokeEnd])
 
   React.useEffect(() => {
     if (typeof window === 'undefined') {
@@ -271,9 +336,9 @@ export function InkFieldHost(): React.JSX.Element {
     }
   }, [setInkIntensity, setInkTex])
 
-  // Heatmap preview of the ink texture (scaled up for visibility)
+  // Heatmap overlay of the ink texture (viewport-aligned)
   React.useEffect(() => {
-    if (!showHeatmap) return
+    if (!heatmapVisible) return
     if (typeof window === 'undefined') return
     let raf = 0
     const draw = () => {
@@ -282,47 +347,73 @@ export function InkFieldHost(): React.JSX.Element {
       if (canvas && tex?.image) {
         const ctx = canvas.getContext('2d')
         if (ctx) {
-          const src = tex.image as HTMLCanvasElement
-          const scale = 2
-          canvas.width = 128 * scale
-          canvas.height = 128 * scale
-          ;(ctx as any).imageSmoothingEnabled = false
+          const src = tex.image as HTMLCanvasElement | OffscreenCanvas
+          const renderer = rendererRef.current
+          const glCanvas = renderer?.domElement ?? null
+          const viewportWidth = glCanvas?.width ?? 0
+          const viewportHeight = glCanvas?.height ?? 0
+          if (viewportWidth > 0 && canvas.width !== viewportWidth) {
+            canvas.width = viewportWidth
+          }
+          if (viewportHeight > 0 && canvas.height !== viewportHeight) {
+            canvas.height = viewportHeight
+          }
+          if (canvas.width === 0 || canvas.height === 0) {
+            const fallbackWidth = 256
+            const fallbackHeight = 256
+            canvas.width = fallbackWidth
+            canvas.height = fallbackHeight
+          }
+          ctx.imageSmoothingEnabled = false
           ctx.clearRect(0, 0, canvas.width, canvas.height)
-          ctx.drawImage(src, 0, 0, 128, 128, 0, 0, 128 * scale, 128 * scale)
+          const srcWidth = src.width || 128
+          const srcHeight = src.height || 128
+          ctx.drawImage(
+            src as CanvasImageSource,
+            0,
+            0,
+            srcWidth,
+            srcHeight,
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+          )
         }
       }
       raf = window.requestAnimationFrame(draw)
     }
     raf = window.requestAnimationFrame(draw)
     return () => window.cancelAnimationFrame(raf)
-  }, [showHeatmap])
+  }, [heatmapVisible])
 
   return (
     <div
-      aria-hidden
+      inert={drawEnabled ? undefined : true}
       style={{
         position: 'absolute',
         inset: 0,
-        zIndex: 2,
+        zIndex: 3,
         // Default to capturing input for drawing
-        pointerEvents: 'auto',
+        pointerEvents: drawEnabled ? 'auto' : 'none',
       }}
     >
       <StrokeCaptureCanvas
-        enabled={true}
+        enabled={drawEnabled}
         onStrokeStart={handleStrokeStart}
         onStrokeSegment={handleStrokeSegment}
+        onStrokeEnd={handleStrokeEnd}
       />
-      {showHeatmap && (
+      {heatmapVisible && (
         <canvas
           ref={heatmapRef}
           style={{
             position: 'absolute',
-            left: 12,
-            bottom: 12,
+            inset: 0,
             zIndex: 3,
-            border: '1px solid rgba(255,255,255,0.2)',
-            background: 'rgba(0,0,0,0.3)',
+            pointerEvents: 'none',
+            width: '100%',
+            height: '100%',
           }}
         />
       )}
@@ -332,9 +423,9 @@ export function InkFieldHost(): React.JSX.Element {
           position: 'absolute',
           right: 12,
           bottom: 12,
-          zIndex: 3,
+          zIndex: 4,
           pointerEvents: 'auto',
-          }}
+        }}
       >
         <button
           type="button"
@@ -354,7 +445,7 @@ export function InkFieldHost(): React.JSX.Element {
         </button>
         <button
           type="button"
-          onClick={() => setShowHeatmap((v) => !v)}
+          onClick={() => setHeatmapVisible((v) => !v)}
           style={{
             marginLeft: 8,
             fontFamily: 'var(--font-mono, monospace)',
@@ -362,12 +453,12 @@ export function InkFieldHost(): React.JSX.Element {
             padding: '6px 10px',
             borderRadius: 8,
             border: '1px solid rgba(255,255,255,0.25)',
-            background: showHeatmap ? 'rgba(32,96,192,0.85)' : 'rgba(0,0,0,0.55)',
+            background: heatmapVisible ? 'rgba(32,96,192,0.85)' : 'rgba(0,0,0,0.55)',
             color: '#fff',
             cursor: 'pointer',
           }}
         >
-          {showHeatmap ? 'Heatmap: On' : 'Heatmap: Off'}
+          {heatmapVisible ? 'Heatmap: On' : 'Heatmap: Off'}
         </button>
       </div>
     </div>
