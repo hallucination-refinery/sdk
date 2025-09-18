@@ -5,6 +5,12 @@ import * as React from 'react'
 import { getR3FStateOrNull } from '../anim/r3fSafe'
 import { detectVertexTextureSupport } from './capabilities'
 import { createInkField, type InkField } from './InkField'
+import {
+  getDreamdustTunables,
+  markInkFrameCandidate,
+  markInkPenDown,
+  subscribeDreamdustTunables,
+} from './metrics'
 import { StrokeCaptureCanvas, type StrokePoint, type StrokeSegment } from './StrokeCaptureCanvas'
 import { useDreamdustCtx } from './context'
 
@@ -21,14 +27,15 @@ type CanvasTextureLike = {
 const FIELD_SIZE = 128
 const MAX_DPR = 1.5
 const UPLOAD_HZ = 60
-const DECAY_BASE = 0.98
 const INTENSITY_EPSILON = 0.01
-const INTENSITY_IDLE_ZERO_MS = 2400
 const DEFAULT_PRESSURE = 0.5
 const SHORT_TAP_MS = 120
 const LONG_STROKE_MS = 250
 const SHORT_TRAVEL_PX = 20
 const LONG_TRAVEL_PX = 120
+const DEFAULT_DECAY_BASE = 0.98
+const DEFAULT_TAP_TAU = 900
+const IDLE_ZERO_RATIO = 2400 / 900
 
 const clamp = (value: number, min: number, max: number) => {
   if (value < min) return min
@@ -68,12 +75,14 @@ function nowMs(): number {
   return Date.now()
 }
 
-function decayRateFromDelta(deltaMs: number): number {
+function decayRateFromDelta(deltaMs: number, base: number): number {
+  const clampedBase = Number.isFinite(base) ? Math.min(Math.max(base, 0), 0.999999) : DEFAULT_DECAY_BASE
+  const decayBase = clampedBase > 0 ? clampedBase : DEFAULT_DECAY_BASE
   if (deltaMs <= 0) {
-    return DECAY_BASE
+    return decayBase
   }
   const steps = Math.max(1, (deltaMs / 1000) * 60)
-  return Math.pow(DECAY_BASE, steps)
+  return Math.pow(decayBase, steps)
 }
 
 export function InkFieldHost(): React.JSX.Element {
@@ -100,6 +109,7 @@ export function InkFieldHost(): React.JSX.Element {
     null,
   )
   const loggedInkOnceRef = React.useRef(false)
+  const tunablesRef = React.useRef(getDreamdustTunables())
   type StrokeStats = {
     startTime: number
     lastTime: number
@@ -166,12 +176,15 @@ export function InkFieldHost(): React.JSX.Element {
 
   const handleStrokeStart = React.useCallback(
     (point: StrokePoint) => {
+      markInkPenDown()
       lockControls()
       setControlsLocked(true)
       const now = nowMs()
       lastStrokeRef.current = now
+      const { tapGain } = tunablesRef.current
+      const gain = Number.isFinite(tapGain) ? Math.max(0, tapGain) : 1
       const pressure = clamp(point.pressure > 0 ? point.pressure : DEFAULT_PRESSURE, 0, 1)
-      const baseImpulse = clamp(0.55 + pressure * 0.4, 0, 1)
+      const baseImpulse = clamp((0.55 + pressure * 0.4) * gain, 0, 1)
       if (Math.abs(baseImpulse - intensityRef.current) > INTENSITY_EPSILON) {
         intensityRef.current = baseImpulse
         setInkIntensity(baseImpulse)
@@ -200,6 +213,7 @@ export function InkFieldHost(): React.JSX.Element {
           pressure,
         )
         pushTextureUpdate(field)
+        markInkFrameCandidate()
       }
       // One-time debug of caps/viewport/intensity on first stroke
       if (!loggedInkOnceRef.current) {
@@ -280,13 +294,16 @@ export function InkFieldHost(): React.JSX.Element {
       const now = nowMs()
       lastStrokeRef.current = now
       const velocityBoost = Math.min(0.35, Math.max(0, pxPerFrame) * 0.02)
-      const dynamicIntensity = clamp(0.65 + pressure * 0.35 + velocityBoost, 0, 1)
+      const { tapGain } = tunablesRef.current
+      const gain = Number.isFinite(tapGain) ? Math.max(0, tapGain) : 1
+      const dynamicIntensity = clamp((0.65 + pressure * 0.35 + velocityBoost) * gain, 0, 1)
       if (dynamicIntensity - intensityRef.current > INTENSITY_EPSILON) {
         intensityRef.current = dynamicIntensity
         setInkIntensity(dynamicIntensity)
       }
 
       pushTextureUpdate(field)
+      markInkFrameCandidate()
     },
     [pushTextureUpdate, setInkIntensity],
   )
@@ -309,9 +326,15 @@ export function InkFieldHost(): React.JSX.Element {
     const durationMs = Math.max(0, endTime - stats.startTime)
     const travelPx = Number.isFinite(stats.totalTravelPx) ? stats.totalTravelPx : 0
     const averagePressure = clamp(stats.sumPressure / Math.max(1, stats.sampleCount), 0, 1)
+    const { tapGain } = tunablesRef.current
+    const gain = Number.isFinite(tapGain) ? Math.max(0, tapGain) : 1
 
     if (durationMs < SHORT_TAP_MS || travelPx < SHORT_TRAVEL_PX) {
-      const impulse = clamp(Math.max(intensityRef.current, 0.45 + averagePressure * 0.4), 0, 1)
+      const impulse = clamp(
+        Math.max(intensityRef.current, (0.45 + averagePressure * 0.4) * gain),
+        0,
+        1,
+      )
       if (Math.abs(impulse - intensityRef.current) > INTENSITY_EPSILON) {
         intensityRef.current = impulse
         setInkIntensity(impulse)
@@ -362,6 +385,12 @@ export function InkFieldHost(): React.JSX.Element {
       handleStrokeEnd()
     }
   }, [drawEnabled, handleStrokeEnd])
+
+  React.useEffect(() => {
+    return subscribeDreamdustTunables((next) => {
+      tunablesRef.current = next
+    })
+  }, [])
 
   React.useEffect(() => {
     if (typeof window === 'undefined') {
@@ -450,7 +479,8 @@ export function InkFieldHost(): React.JSX.Element {
 
       const field = inkFieldRef.current
       if (field) {
-        const decayRate = decayRateFromDelta(delta)
+        const { decay } = tunablesRef.current
+        const decayRate = decayRateFromDelta(delta, decay ?? DEFAULT_DECAY_BASE)
         field.decay(decayRate)
         const renderer = rendererRef.current
         if (renderer) {
@@ -469,10 +499,13 @@ export function InkFieldHost(): React.JSX.Element {
       let targetIntensity = 0
       if (lastStroke > 0) {
         const idle = timestamp - lastStroke
+        const { tapTau } = tunablesRef.current
+        const tau = Math.max(16, Number.isFinite(tapTau) ? tapTau : DEFAULT_TAP_TAU)
+        const idleZero = Math.max(32, tau * IDLE_ZERO_RATIO)
         if (idle <= 16) {
           targetIntensity = 1
-        } else if (idle < INTENSITY_IDLE_ZERO_MS) {
-          targetIntensity = Math.exp(-idle / 900)
+        } else if (idle < idleZero) {
+          targetIntensity = Math.exp(-idle / tau)
         }
       }
 

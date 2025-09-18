@@ -20,7 +20,12 @@ import { applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { getDreamdustCaps, type DreamdustRuntimeCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
-import { logOnce } from './dreamdust/metrics'
+import {
+  getDreamdustTunables,
+  logOnce,
+  subscribeDreamdustTunables,
+  type DreamdustTunables,
+} from './dreamdust/metrics'
 import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
 import { capInstances, clampDPR, decimateInterleaved, pointCap } from './pointcloud/budget'
 
@@ -654,19 +659,30 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return u
   }, [baseUniforms, pointSize])
 
+  const tunablesRef = React.useRef<DreamdustTunables>(getDreamdustTunables())
+
   React.useEffect(() => {
+    const { curlFreq, curlAmp } = tunablesRef.current
     setUniform('uGamma', 0.82)
     setUniform('uFocal', 1600)
     setUniform('uMinSize', 0.75)
     setUniform('uMaxSize', 9.5)
     setUniform('uDepthBias', 0.14)
-    setUniform('uNoiseScale', 0.0025)
+    setUniform('uNoiseScale', curlFreq)
     setUniform('uNoiseSpeed', 0.24)
     // Stronger contrast on first draw: halve base drift, boost ink gains
-    setUniform('uDriftAmp', 8)
+    setUniform('uDriftAmp', curlAmp)
     setUniform('uSizeGain', 1.0)
     setUniform('uOffsetGain', 5.0)
     setUniform('uTintGain', 0.2)
+  }, [setUniform])
+
+  React.useEffect(() => {
+    return subscribeDreamdustTunables((next) => {
+      tunablesRef.current = next
+      setUniform('uNoiseScale', next.curlFreq)
+      setUniform('uDriftAmp', next.curlAmp)
+    })
   }, [setUniform])
 
   React.useEffect(() => {

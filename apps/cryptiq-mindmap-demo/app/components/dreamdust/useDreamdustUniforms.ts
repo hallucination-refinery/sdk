@@ -4,6 +4,11 @@ import * as React from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { RootState } from '@react-three/fiber'
 
+import {
+  getDreamdustTunables,
+  subscribeDreamdustTunables,
+} from './metrics'
+
 type TextureLike = unknown
 type Vec3 = [number, number, number]
 
@@ -86,8 +91,8 @@ function useOptionalThree<T>(selector: (state: RootState) => T): T | null {
   }
 }
 
-const REVEAL_MIN_SECONDS = 1.6
-const REVEAL_MAX_SECONDS = 2.4
+const DEFAULT_REVEAL_MS = 2000
+const MIN_REVEAL_SECONDS = 0.2
 const BREATH_PERIOD_SECONDS = 7.5
 const BREATH_SPEED = (Math.PI * 2) / BREATH_PERIOD_SECONDS
 
@@ -104,11 +109,6 @@ function cubicEaseInOut(t: number): number {
   }
   const f = -2 * clamped + 2
   return 1 - (f * f * f) / 2
-}
-
-function randomInRange(min: number, max: number): number {
-  if (max <= min) return min
-  return min + Math.random() * (max - min)
 }
 
 function safeLog(...args: Parameters<typeof console.log>): void {
@@ -177,15 +177,31 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     }
   }
 
+  const tunablesRef = React.useRef(getDreamdustTunables())
+
   const revealTimelineRef = React.useRef<RevealTimelineState>({
     active: false,
     elapsed: 0,
-    duration: REVEAL_MIN_SECONDS,
+    duration: Math.max(
+      MIN_REVEAL_SECONDS,
+      (tunablesRef.current.revealMs ?? DEFAULT_REVEAL_MS) / 1000,
+    ),
     didLogEnd: false,
   })
   const breathStateRef = React.useRef({
     phase: 0,
   })
+
+  React.useEffect(() => {
+    return subscribeDreamdustTunables((next) => {
+      tunablesRef.current = next
+      const reveal = revealTimelineRef.current
+      if (!reveal.active) {
+        const ms = Number.isFinite(next.revealMs) ? Math.max(100, next.revealMs) : DEFAULT_REVEAL_MS
+        reveal.duration = Math.max(MIN_REVEAL_SECONDS, ms / 1000)
+      }
+    })
+  }, [])
 
   const applyViewport = React.useCallback((width: number, height: number) => {
     const uniforms = uniformsRef.current
@@ -251,7 +267,9 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const reveal = revealTimelineRef.current
     reveal.active = true
     reveal.elapsed = 0
-    reveal.duration = randomInRange(REVEAL_MIN_SECONDS, REVEAL_MAX_SECONDS)
+    const { revealMs } = tunablesRef.current
+    const ms = Number.isFinite(revealMs) ? Math.max(100, revealMs) : DEFAULT_REVEAL_MS
+    reveal.duration = Math.max(MIN_REVEAL_SECONDS, ms / 1000)
     reveal.didLogEnd = false
     if (uniforms) {
       uniforms.uReveal.value = 0
