@@ -14,6 +14,21 @@ import {
   updateDreamdustTunables,
   type DreamdustTunables,
 } from '../../components/dreamdust/metrics'
+import {
+  CASCADE_SIZE_MAX,
+  CASCADE_SIZE_MIN,
+  CASCADE_SIZE_STEP,
+  applyDreamdustPreset,
+  applySerializedDreamdustState,
+  getCascadeSizeBoost,
+  listDreamdustPresets,
+  matchDreamdustPreset,
+  serializeDreamdustState,
+  setCascadeSizeBoost as commitCascadeSizeBoost,
+  snapshotDreamdustState,
+  subscribeCascadeSizeBoost,
+  type DreamdustPresetId,
+} from '../../components/dreamdust/presets'
 
 type CapsState = {
   caps: DreamdustCaps | null
@@ -48,6 +63,17 @@ export default function Page(): JSX.Element {
   )
   const [fps, setFps] = React.useState<number | null>(null)
   const [tunables, setTunables] = React.useState<DreamdustTunables>(() => getDreamdustTunables())
+  const [cascadeSizeBoost, setCascadeSizeBoostState] = React.useState<number>(() =>
+    getCascadeSizeBoost(),
+  )
+  const [selectedPreset, setSelectedPreset] = React.useState<DreamdustPresetId | 'custom'>(() => {
+    const match = matchDreamdustPreset(getDreamdustTunables(), getCascadeSizeBoost())
+    return match ?? 'custom'
+  })
+  const [presetJson, setPresetJson] = React.useState('')
+  const [presetError, setPresetError] = React.useState<string | null>(null)
+
+  const presetOptions = React.useMemo(() => listDreamdustPresets(), [])
 
   React.useEffect(() => {
     if (typeof window === 'undefined') {
@@ -114,6 +140,46 @@ export default function Page(): JSX.Element {
       setTunables(next)
     })
   }, [])
+
+  React.useEffect(() => {
+    return subscribeCascadeSizeBoost((next) => {
+      setCascadeSizeBoostState(next)
+    })
+  }, [])
+
+  React.useEffect(() => {
+    const match = matchDreamdustPreset(tunables, cascadeSizeBoost)
+    setSelectedPreset(match ?? 'custom')
+  }, [cascadeSizeBoost, tunables])
+
+  const handlePresetChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = event.target.value as DreamdustPresetId | 'custom'
+      if (value === 'custom') {
+        setSelectedPreset('custom')
+        return
+      }
+      applyDreamdustPreset(value)
+      setPresetError(null)
+    },
+    [],
+  )
+
+  const handleExport = React.useCallback(() => {
+    const snapshot = snapshotDreamdustState()
+    setPresetJson(serializeDreamdustState(snapshot))
+    setPresetError(null)
+  }, [])
+
+  const handleImport = React.useCallback(() => {
+    const result = applySerializedDreamdustState(presetJson)
+    if (result) {
+      setPresetError(null)
+      setPresetJson(serializeDreamdustState(result))
+    } else {
+      setPresetError('Invalid Dreamdust preset JSON')
+    }
+  }, [presetJson])
 
   const rows: Array<{ label: string; value: string }> = []
 
@@ -297,6 +363,131 @@ export default function Page(): JSX.Element {
               </React.Fragment>
             )
           })}
+          <React.Fragment key="cascade-size-boost">
+            <label htmlFor="dreamdust-cascade-size" style={labelStyle}>
+              Cascade Size Boost
+            </label>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+              }}
+            >
+              <input
+                id="dreamdust-cascade-size"
+                type="range"
+                min={CASCADE_SIZE_MIN}
+                max={CASCADE_SIZE_MAX}
+                step={CASCADE_SIZE_STEP}
+                value={cascadeSizeBoost}
+                onChange={(event) => {
+                  const nextValue = Number(event.target.value)
+                  if (!Number.isFinite(nextValue)) return
+                  commitCascadeSizeBoost(nextValue)
+                }}
+                style={{ flex: 1 }}
+              />
+              <span
+                style={{
+                  minWidth: '4.5rem',
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontSize: '0.85rem',
+                  textAlign: 'right',
+                }}
+              >
+                {cascadeSizeBoost.toFixed(2)}
+              </span>
+            </div>
+          </React.Fragment>
+        </div>
+      </section>
+      <section style={{ marginTop: '2rem', maxWidth: '520px' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Presets &amp; JSON</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label htmlFor="dreamdust-preset" style={labelStyle}>
+            Preset
+          </label>
+          <select
+            id="dreamdust-preset"
+            value={selectedPreset}
+            onChange={handlePresetChange}
+            style={{
+              padding: '0.35rem 0.5rem',
+              fontSize: '0.95rem',
+              fontFamily: 'inherit',
+            }}
+          >
+            <option value="custom">Custom</option>
+            {presetOptions.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.label}
+              </option>
+            ))}
+          </select>
+          <p style={{ fontSize: '0.85rem', color: '#678', margin: 0 }}>
+            Selecting a preset updates the reveal, curl, tap, decay, and cascade size tunables.
+          </p>
+        </div>
+        <div
+          style={{
+            marginTop: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+          }}
+        >
+          <label htmlFor="dreamdust-json" style={labelStyle}>
+            Preset JSON
+          </label>
+          <textarea
+            id="dreamdust-json"
+            value={presetJson}
+            onChange={(event) => {
+              setPresetJson(event.target.value)
+            }}
+            rows={6}
+            style={{
+              width: '100%',
+              fontFamily: 'var(--font-mono, monospace)',
+              fontSize: '0.85rem',
+              padding: '0.5rem',
+              borderRadius: '0.25rem',
+              border: '1px solid #ccd4da',
+              resize: 'vertical',
+            }}
+          />
+          {presetError ? (
+            <div style={{ color: '#b33', fontSize: '0.85rem' }}>{presetError}</div>
+          ) : null}
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              type="button"
+              onClick={handleExport}
+              style={{
+                padding: '0.4rem 0.9rem',
+                borderRadius: '0.25rem',
+                border: '1px solid #ccd4da',
+                background: '#f7f9fb',
+                cursor: 'pointer',
+              }}
+            >
+              Export
+            </button>
+            <button
+              type="button"
+              onClick={handleImport}
+              style={{
+                padding: '0.4rem 0.9rem',
+                borderRadius: '0.25rem',
+                border: '1px solid #ccd4da',
+                background: '#f7f9fb',
+                cursor: 'pointer',
+              }}
+            >
+              Import
+            </button>
+          </div>
         </div>
       </section>
     </main>
