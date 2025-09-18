@@ -77,6 +77,7 @@ varying vec3 vColor;
 varying float vRevealMix;
 varying vec3 vInkTint;
 varying float vInkMix;
+varying vec2 vInkUv;
 varying vec3 vPosMV;
 
 ${DREAMDUST_NOISE_CHUNK}
@@ -132,6 +133,7 @@ void main() {
 
   vColor = color;
   vRevealMix = revealMix;
+  vInkUv = aUv;
   vPosMV = viewPos.xyz;
 
 #ifdef USE_VERTEX_INK
@@ -154,15 +156,20 @@ uniform float uGamma;
 uniform float uTintGain;
 uniform float uDepthBias;
 uniform float uDepthNormScale;
+uniform float uInkIntensity;
+
+uniform sampler2D uInkTex;
 
 varying vec3 vColor;
 varying float vRevealMix;
 varying vec3 vInkTint;
 varying float vInkMix;
+varying vec2 vInkUv;
 varying vec3 vPosMV;
 
 ${DREAMDUST_SOFT_SPRITE_CHUNK}
 ${DREAMDUST_DEPTH_FADE_CHUNK}
+${DREAMDUST_INK_SAMPLE_CHUNK}
 
 void main() {
   float sprite = dreamdustSoftSprite(gl_PointCoord);
@@ -185,6 +192,21 @@ void main() {
   if (tintMix > 1e-5) {
     color = mix(color, vInkTint, tintMix);
   }
+
+#ifndef USE_VERTEX_INK
+  if (tintMix <= 1e-5 && uInkIntensity > 1e-5) {
+    DreamdustInkSample fragInk = dreamdustSampleInk(uInkTex, vInkUv);
+    float fragIntensity = fragInk.intensity * uInkIntensity;
+    float fragTintMix = clamp(fragIntensity * uTintGain, 0.0, 1.0);
+    if (fragTintMix > 1e-5) {
+      color = mix(color, fragInk.tint, fragTintMix);
+      tintMix = fragTintMix;
+    }
+    if (fragIntensity > 1e-5) {
+      alpha *= clamp(fragIntensity, 0.0, 1.0);
+    }
+  }
+#endif
 
   gl_FragColor = vec4(color, alpha);
 }
