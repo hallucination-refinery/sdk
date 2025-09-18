@@ -20,6 +20,17 @@ const ENV_MOBILE_POINT_CAP = parseBudgetOverride(process.env.NEXT_PUBLIC_POINTCL
 const ENV_DESKTOP_POINT_CAP = parseBudgetOverride(process.env.NEXT_PUBLIC_POINTCLOUD_BUDGET_DESKTOP)
 const ENV_MAX_DPR = parsePositiveNumber(process.env.NEXT_PUBLIC_POINTCLOUD_MAX_DPR)
 
+type TypedArray =
+  | Float32Array
+  | Float64Array
+  | Int32Array
+  | Int16Array
+  | Int8Array
+  | Uint32Array
+  | Uint16Array
+  | Uint8Array
+  | Uint8ClampedArray
+
 /**
  * Detect whether the provided user-agent string represents a mobile device.
  *
@@ -80,10 +91,7 @@ export type PixelRatioController = {
  *
  * @returns The pixel ratio that was applied to the renderer.
  */
-export function applyDprClamp<T extends PixelRatioController>(
-  gl: T,
-  max = ENV_MAX_DPR ?? 2,
-): number {
+export function clampDPR<T extends PixelRatioController>(gl: T, max = ENV_MAX_DPR ?? 2): number {
   const requestedDpr =
     typeof window !== 'undefined' && typeof window.devicePixelRatio === 'number'
       ? window.devicePixelRatio
@@ -95,4 +103,102 @@ export function applyDprClamp<T extends PixelRatioController>(
   const nextDpr = Math.min(Math.max(requestedDpr, 1), safeMax)
   gl.setPixelRatio(nextDpr)
   return nextDpr
+}
+
+export type CapInstancesOptions = {
+  cap: number
+  keepRatio?: number
+  minCount?: number
+}
+
+export type CapInstancesResult = {
+  source: number
+  cap: number
+  requestedKeep: number
+  appliedKeep: number
+  count: number
+  step: number
+}
+
+export function capInstances(
+  sourceCount: number,
+  { cap, keepRatio = 1, minCount = 1 }: CapInstancesOptions,
+): CapInstancesResult {
+  const source = Math.max(0, Math.floor(sourceCount))
+  const safeCap = Math.max(0, Math.floor(cap))
+  const clampKeep = Math.min(Math.max(keepRatio, 0), 1)
+
+  if (source === 0 || safeCap === 0) {
+    return {
+      source,
+      cap: safeCap,
+      requestedKeep: clampKeep,
+      appliedKeep: 0,
+      count: 0,
+      step: 1,
+    }
+  }
+
+  const capKeep = Math.min(1, safeCap / source)
+  const requestedKeep = Math.min(clampKeep, capKeep)
+
+  if (requestedKeep >= 0.999) {
+    const count = Math.min(source, safeCap)
+    return {
+      source,
+      cap: safeCap,
+      requestedKeep,
+      appliedKeep: count / source,
+      count,
+      step: 1,
+    }
+  }
+
+  const safeKeep = Math.max(requestedKeep, 1e-6)
+  const step = Math.max(1, Math.ceil(1 / safeKeep))
+  let count = Math.floor(source / step)
+  const minSafe = Math.max(0, Math.floor(minCount))
+  if (minSafe > 0) count = Math.max(count, minSafe)
+  count = Math.min(count, safeCap, source)
+  const appliedKeep = source > 0 ? count / source : 0
+
+  return {
+    source,
+    cap: safeCap,
+    requestedKeep,
+    appliedKeep,
+    count,
+    step,
+  }
+}
+
+export function decimateInterleaved<T extends TypedArray>(
+  source: T,
+  itemSize: number,
+  step: number,
+  targetCount: number,
+): T {
+  const safeItemSize = Math.max(1, Math.floor(itemSize))
+  const sourceCount = Math.floor(source.length / safeItemSize)
+  const count = Math.max(0, Math.min(targetCount, sourceCount))
+  if (count === 0) {
+    const Ctor = source.constructor as { new (length: number): T }
+    return new Ctor(0)
+  }
+  if (step <= 1 || count >= sourceCount) {
+    return source
+  }
+
+  const Ctor = source.constructor as { new (length: number): T }
+  const out = new Ctor(count * safeItemSize)
+
+  for (let srcIndex = 0, dstIndex = 0; dstIndex < count && srcIndex < sourceCount; srcIndex += step, dstIndex++) {
+    const srcOffset = srcIndex * safeItemSize
+    const dstOffset = dstIndex * safeItemSize
+    for (let k = 0; k < safeItemSize; k++) {
+      out[dstOffset + k] = source[srcOffset + k]
+    }
+  }
+
+  return out
 }
