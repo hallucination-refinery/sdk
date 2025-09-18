@@ -50,6 +50,7 @@ export function InkFieldHost(): React.JSX.Element {
   const lastStrokeRef = React.useRef(0)
   const intensityRef = React.useRef(0)
   const vertexInkOkRef = React.useRef<boolean | null>(null)
+  const [drawEnabled, setDrawEnabled] = React.useState(false)
 
   const handleStrokeStart = React.useCallback(
     (_point: StrokePoint) => {
@@ -260,13 +261,42 @@ export function InkFieldHost(): React.JSX.Element {
         position: 'absolute',
         inset: 0,
         zIndex: 2,
+        // By default, allow events only on the explicit controls below
         pointerEvents: 'none',
       }}
     >
       <StrokeCaptureCanvas
+        enabled={drawEnabled}
         onStrokeStart={handleStrokeStart}
         onStrokeSegment={handleStrokeSegment}
       />
+      {/* Simple Draw toggle; lives above canvas and canvas overlay */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 12,
+          bottom: 12,
+          zIndex: 3,
+          pointerEvents: 'auto',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setDrawEnabled((v) => !v)}
+          style={{
+            fontFamily: 'var(--font-mono, monospace)',
+            fontSize: 12,
+            padding: '6px 10px',
+            borderRadius: 8,
+            border: '1px solid rgba(255,255,255,0.25)',
+            background: drawEnabled ? 'rgba(16,160,32,0.85)' : 'rgba(0,0,0,0.55)',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          {drawEnabled ? 'Draw: On' : 'Draw: Off'}
+        </button>
+      </div>
     </div>
   )
 }
