@@ -352,8 +352,8 @@ export function InkFieldHost(): React.JSX.Element {
           avgHue = ((Math.atan2(avgSin, avgCos) / (Math.PI * 2)) % 1 + 1) % 1
         }
       }
-      const cascadeColor = hueToRgb(avgHue ?? averagePressure)
-      startCascade(cascadeColor)
+      const avgHueColor = hueToRgb(avgHue ?? averagePressure)
+      startCascade(avgHueColor)
     }
   }, [setControlsLocked, setInkIntensity, startCascade, unlockControls])
 

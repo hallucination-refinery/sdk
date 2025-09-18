@@ -57,6 +57,8 @@ const DEFAULT_UNIFORM_VALUES = {
   uInkTex: null,
   uCascade: 0,
   uCascadeColor: [1, 1, 1] as [number, number, number],
+  uCascadeSizeBoost: 0,
+  uVaporGain: 0,
   uVertexInkOk: 0,
   uViewport: [1, 1] as [number, number],
 } as const
@@ -161,6 +163,9 @@ uniform float uDepthMax;
 uniform float uGamma;
 uniform float uDepthNormScale;
 uniform float uVertexInkOk;
+uniform float uCascade;
+uniform float uCascadeSizeBoost;
+uniform float uVaporGain;
 
 uniform float uHasCapture;
 uniform float uZNearNdc;
@@ -254,14 +259,28 @@ void main() {
 #endif
 
   vec3 curlSample = revealPos * uCurlFreq + vec3(uTime * uDriftSpeed);
+  float cascadeMix = clamp(uCascade, 0.0, 1.0);
+  float vaporGain = max(uVaporGain, 0.0);
   float curlMix = (uDriftAmp + tapImpulse) * uCurlAmp;
-  revealPos += dd_curl3(curlSample) * curlMix;
+  float curlBoost = mix(1.0, 4.0, cascadeMix);
+  float vaporBoost = 1.0 + vaporGain * cascadeMix;
+  curlMix *= curlBoost * vaporBoost;
+  vec3 curlOffset = dd_curl3(curlSample) * curlMix;
+  revealPos += curlOffset;
+
+  if (cascadeMix > 1e-5) {
+    vec3 vaporSample = curlSample * 0.75 + vec3(uTime * 0.21, uTime * 0.13, uTime * 0.07);
+    vec3 vaporFlow = dd_fbm3Vec(vaporSample) - vec3(0.5);
+    float vaporStrength = cascadeMix * (0.35 + vaporGain * 0.85);
+    revealPos += vaporFlow * vaporStrength;
+  }
 
   vec4 viewPos = viewMatrix * vec4(revealPos, 1.0);
   float viewDist = max(1e-3, -viewPos.z);
   float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
   float breathScale = 1.0 + breathPhase * 0.12;
-  float pointSize = uPointBaseSize * attenuation * breathScale;
+  float cascadeSize = mix(0.0, max(uCascadeSizeBoost, 0.0), cascadeMix);
+  float pointSize = uPointBaseSize * attenuation * breathScale * (1.0 + cascadeSize);
 
   vec3 inkTint = vec3(0.0);
   float inkMix = 0.0;
@@ -366,8 +385,11 @@ void main() {
   }
 #endif
 
+  vec3 baseRgb = color;
   if (uCascade > 0.0) {
-    color = mix(color, uCascadeColor, clamp(uCascade, 0.0, 1.0));
+    float cascadeMix = clamp(uCascade, 0.0, 1.0);
+    float cascadeStrength = smoothstep(0.0, 1.0, pow(cascadeMix, 0.7));
+    color = mix(baseRgb, uCascadeColor, cascadeStrength);
   }
 
   float pointShape = clamp(1.0 - sprite, 0.0, 1.0);
