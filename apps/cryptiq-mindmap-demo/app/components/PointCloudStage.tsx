@@ -1216,6 +1216,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             padding: '10px 12px',
             borderRadius: 8,
             pointerEvents: 'auto',
+            // Ensure debug UI renders above InkField overlay and page overlays
+            zIndex: 4,
             width: 220,
           }}
         >
