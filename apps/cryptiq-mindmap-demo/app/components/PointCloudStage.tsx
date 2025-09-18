@@ -18,7 +18,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import { applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
-import { getDreamdustCaps } from './dreamdust/capabilities'
+import { getDreamdustCaps, type DreamdustRuntimeCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
 import { logOnce } from './dreamdust/metrics'
 import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
@@ -48,6 +48,10 @@ type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'
   uInkOffsetGain: { value: number }
   uInkSizeGain: { value: number }
   uInkTintGain: { value: number }
+}
+
+type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
+  uReveal?: { value: number }
 }
 
 function useOptionalDreamdustCtx() {
@@ -463,6 +467,26 @@ function BloomPass({
   return null
 }
 
+function DreamdustTicker({
+  tick,
+}: {
+  tick?: (state: unknown, delta: number) => void
+}) {
+  const tickRef = React.useRef<typeof tick>()
+  React.useEffect(() => {
+    tickRef.current = tick
+  }, [tick])
+
+  useFrame((state, delta) => {
+    const fn = tickRef.current
+    if (typeof fn === 'function') {
+      fn(state, delta)
+    }
+  })
+
+  return null
+}
+
 function SceneControls({ radius }: { radius?: number }) {
   const controlsRef = React.useRef(null)
   const { gl } = useThree()
@@ -604,8 +628,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     packed.height > 0
   const readyFallback = fallbackGate && colorReady && !!depth16From8
   const pointBudget = React.useMemo(() => pointCap(), [])
+  const [runtimeCaps, setRuntimeCaps] = React.useState<DreamdustRuntimeCaps | null>(null)
 
-  const { uniforms: baseUniforms, setUniform, updateInkTexture } = useDreamdustUniforms()
+  const dreamdustUniformApi = useDreamdustUniforms()
+  const { uniforms: baseUniforms, setUniform, updateInkTexture } = dreamdustUniformApi
+  const tick = (dreamdustUniformApi as {
+    tick?: (state: unknown, delta: number) => void
+  }).tick
+  const startReveal = (dreamdustUniformApi as { startReveal?: () => void }).startReveal
   const uniforms = React.useMemo<DreamdustStageUniforms>(() => {
     const u = baseUniforms as DreamdustStageUniforms
     if (!u.uBaseSize) u.uBaseSize = { value: pointSize }
@@ -648,7 +678,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const dreamdustCtx = useOptionalDreamdustCtx()
   const inkTex = dreamdustCtx?.inkTex ?? null
   const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
-  const vertexInkOk = dreamdustCtx?.vertexInkOk ?? false
+  const vertexInkOk = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
+  const uniformsWithReveal = uniforms as DreamdustStageUniformsWithReveal
+  const hasRevealUniform = !!uniformsWithReveal.uReveal
+  const timelineSupported = hasRevealUniform && typeof startReveal === 'function'
 
   React.useEffect(() => {
     updateInkTexture(inkTex)
@@ -680,17 +713,37 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     setUniform('uVertexInkOk', vertexInkOk ? 1 : 0)
   }, [setUniform, vertexInkOk])
 
-  const fallbackMaterial = React.useMemo(
-    () => createDreamdustMaterial(uniforms, { unproject: true }),
-    [uniforms]
-  )
-  const prebakedMaterial = React.useMemo(
-    () => createDreamdustMaterial(uniforms, { unproject: false }),
-    [uniforms]
-  )
+  const fallbackMaterial = React.useMemo(() => {
+    if (!runtimeCaps) return null
+    const material = createDreamdustMaterial(uniforms, { unproject: true })
+    material.defines = {
+      ...(material.defines ?? {}),
+      VERTEX_INK_OK: runtimeCaps.vertexInkOk ? 1 : 0,
+    }
+    material.needsUpdate = true
+    return material
+  }, [runtimeCaps, uniforms])
+  const prebakedMaterial = React.useMemo(() => {
+    if (!runtimeCaps) return null
+    const material = createDreamdustMaterial(uniforms, { unproject: false })
+    material.defines = {
+      ...(material.defines ?? {}),
+      VERTEX_INK_OK: runtimeCaps.vertexInkOk ? 1 : 0,
+    }
+    material.needsUpdate = true
+    return material
+  }, [runtimeCaps, uniforms])
 
-  React.useEffect(() => () => fallbackMaterial.dispose(), [fallbackMaterial])
-  React.useEffect(() => () => prebakedMaterial.dispose(), [prebakedMaterial])
+  React.useEffect(() => {
+    return () => {
+      fallbackMaterial?.dispose()
+    }
+  }, [fallbackMaterial])
+  React.useEffect(() => {
+    return () => {
+      prebakedMaterial?.dispose()
+    }
+  }, [prebakedMaterial])
 
   // Prebaked positions path (VGGT exporter). If positions.f32 exists for the scene, prefer it.
   React.useEffect(() => {
@@ -1035,11 +1088,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [pointSize, pointSizeScale, uniforms, ui])
 
   React.useEffect(() => {
+    if (timelineSupported) return
     const clamped = Math.min(1, Math.max(0, reveal))
+    if (hasRevealUniform && uniformsWithReveal.uReveal) {
+      uniformsWithReveal.uReveal.value = clamped
+      return
+    }
     const threshold = 1 - clamped
-    if (uniforms.uNoiseThreshold) uniforms.uNoiseThreshold.value = threshold
-    else setUniform('uNoiseThreshold', threshold)
-  }, [reveal, setUniform, uniforms])
+    if (uniforms.uNoiseThreshold) {
+      uniforms.uNoiseThreshold.value = threshold
+    } else {
+      setUniform('uNoiseThreshold', threshold)
+    }
+  }, [
+    hasRevealUniform,
+    reveal,
+    setUniform,
+    timelineSupported,
+    uniforms,
+    uniformsWithReveal,
+  ])
 
   // Derive reduced, matched buffers for prebaked positions/colors
   const renderBuffers = React.useMemo(() => {
@@ -1070,6 +1138,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [pointBudget, prebaked, ui.keepRatio])
 
   const loggedInstancesRef = React.useRef(false)
+  const revealStartedRef = React.useRef(false)
   const logInstances = React.useCallback(
     (count: number) => {
       if (!Number.isFinite(count) || count <= 0) return
@@ -1084,17 +1153,20 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   React.useEffect(() => {
     loggedInstancesRef.current = false
+    revealStartedRef.current = false
   }, [sceneId])
 
   React.useEffect(() => {
     if (prebakedStatus === 'loading' || prebakedStatus === 'idle') {
       loggedInstancesRef.current = false
+      revealStartedRef.current = false
     }
   }, [prebakedStatus])
 
   React.useEffect(() => {
     if (!sceneId) {
       loggedInstancesRef.current = false
+      revealStartedRef.current = false
     }
   }, [sceneId, colorUrl, depthUrl, depthRg])
 
@@ -1105,6 +1177,32 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       logInstances(prebaked.count)
     }
   }, [logInstances, prebaked, prebakedStatus, renderBuffers])
+
+  const prebakedRenderable =
+    prebakedStatus === 'present' && !!prebaked && !!prebakedMaterial
+  const fallbackRenderable =
+    prebakedStatus === 'absent' && !!fallbackMaterial && (readyPacked || readyFallback)
+  const geometryReady = prebakedRenderable || fallbackRenderable
+
+  React.useEffect(() => {
+    if (!geometryReady) {
+      revealStartedRef.current = false
+    }
+  }, [geometryReady])
+
+  React.useEffect(() => {
+    if (!geometryReady) return
+    if (revealStartedRef.current) return
+    if (hasRevealUniform && typeof startReveal === 'function') {
+      try {
+        startReveal()
+      } catch {
+        // Ignore reveal start failures for backward compatibility.
+      }
+    }
+    setFitRequest((v) => v + 1)
+    revealStartedRef.current = true
+  }, [geometryReady, hasRevealUniform, startReveal])
 
   // Compose world-space debug flips with the PCA quaternion so toggles work live
   const appliedQuaternion = React.useMemo(() => {
@@ -1217,6 +1315,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         onCreated={({ gl }) => {
           const dprClamp = clampDPR(gl, 2)
           const caps = getDreamdustCaps(gl.domElement)
+          setRuntimeCaps(caps)
           setUniform('uVertexInkOk', caps.vertexInkOk ? 1 : 0)
           if (dreamdustCtx) {
             dreamdustCtx.setVertexInkOk(caps.vertexInkOk)
@@ -1254,10 +1353,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           fitRadius={cameraFitRadius}
           fitTarget={cameraFitTarget}
         />
+        <DreamdustTicker tick={tick} />
         <ambientLight intensity={1} />
         <directionalLight position={[2, 3, 4]} intensity={0.6} />
         {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
-        {prebaked ? (
+        {prebaked && prebakedMaterial ? (
           <group
             position={
               prebakedTransform
@@ -1302,7 +1402,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               </group>
             </group>
           </group>
-        ) : prebakedStatus === 'absent' && readyPacked ? (
+        ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
           <PointsMesh
             colorImage={{ data: color.data!, width: color.width, height: color.height }}
             depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
@@ -1313,7 +1413,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             onMaterialValid={() => setBloomEnabled(true)}
             onInstancesReady={logInstances}
           />
-        ) : prebakedStatus === 'absent' ? (
+        ) : prebakedStatus === 'absent' && fallbackMaterial ? (
           readyFallback && (
             <PointsMesh
               colorImage={{ data: color.data!, width: color.width, height: color.height }}
