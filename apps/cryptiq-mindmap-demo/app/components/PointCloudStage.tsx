@@ -259,7 +259,6 @@ function buildAttributes(
   }
 }
 
-
 function PointsMesh({
   colorImage,
   depth16,
@@ -342,6 +341,12 @@ function PointsMesh({
         }
         return
       }
+      if (!materialValidRef.current) {
+        // Guard log to surface shader-compile stalls early during bring-up
+        try {
+          console.warn('[PC] material program not ready yet; waiting…')
+        } catch {}
+      }
       raf = requestAnimationFrame(check)
     }
     raf = requestAnimationFrame(check)
@@ -384,12 +389,12 @@ function PointsMesh({
         <bufferAttribute attach="attributes-position" args={[planePositions, 3]} />
         {/* uv and depth attributes for shader unprojection */}
         {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={["attributes", "aUv"]} args={[uvs, 2]} />
+        <bufferAttribute attachObject={['attributes', 'aUv']} args={[uvs, 2]} />
         {/* also bind built-in uv for isolation tests */}
         <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
         {/* custom float attribute for normalized depth */}
         {/** @ts-expect-error attachObject is supported at runtime */}
-        <bufferAttribute attachObject={["attributes", "aDepth"]} args={[depths, 1]} />
+        <bufferAttribute attachObject={['attributes', 'aDepth']} args={[depths, 1]} />
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
@@ -584,11 +589,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const fallbackMaterial = React.useMemo(
     () => createDreamdustMaterial(uniforms, { unproject: true }),
-    [uniforms],
+    [uniforms]
   )
   const prebakedMaterial = React.useMemo(
     () => createDreamdustMaterial(uniforms, { unproject: false }),
-    [uniforms],
+    [uniforms]
   )
 
   React.useEffect(() => () => fallbackMaterial.dispose(), [fallbackMaterial])
