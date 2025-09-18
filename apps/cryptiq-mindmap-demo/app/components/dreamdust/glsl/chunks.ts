@@ -261,6 +261,109 @@ float dd_noise2Fbm(vec2 dd_p, float dd_lacunarity, float dd_gain, int dd_octaves
 `;
 
 /**
+ * 3D fractal brownian motion helper built on top of {@link dd_hash33}.
+ *
+ * @glslUniforms None
+ */
+export const DD_FBM3 = /* glsl */ `
+float dd_noise3Value(vec3 dd_p) {
+  vec3 dd_i = floor(dd_p);
+  vec3 dd_f = fract(dd_p);
+  vec3 dd_u = dd_f * dd_f * (3.0 - 2.0 * dd_f);
+
+  float dd_n000 = dd_hash13(dd_i);
+  float dd_n100 = dd_hash13(dd_i + vec3(1.0, 0.0, 0.0));
+  float dd_n010 = dd_hash13(dd_i + vec3(0.0, 1.0, 0.0));
+  float dd_n110 = dd_hash13(dd_i + vec3(1.0, 1.0, 0.0));
+  float dd_n001 = dd_hash13(dd_i + vec3(0.0, 0.0, 1.0));
+  float dd_n101 = dd_hash13(dd_i + vec3(1.0, 0.0, 1.0));
+  float dd_n011 = dd_hash13(dd_i + vec3(0.0, 1.0, 1.0));
+  float dd_n111 = dd_hash13(dd_i + vec3(1.0, 1.0, 1.0));
+
+  float dd_nx00 = mix(dd_n000, dd_n100, dd_u.x);
+  float dd_nx10 = mix(dd_n010, dd_n110, dd_u.x);
+  float dd_nx01 = mix(dd_n001, dd_n101, dd_u.x);
+  float dd_nx11 = mix(dd_n011, dd_n111, dd_u.x);
+  float dd_nxy0 = mix(dd_nx00, dd_nx10, dd_u.y);
+  float dd_nxy1 = mix(dd_nx01, dd_nx11, dd_u.y);
+  return mix(dd_nxy0, dd_nxy1, dd_u.z);
+}
+
+float dd_fbm3(vec3 dd_p, float dd_lacunarity, float dd_gain, int dd_octaves) {
+  const int dd_maxOctaves = 8;
+  int dd_capped = min(dd_octaves, dd_maxOctaves);
+  float dd_amplitude = 0.5;
+  float dd_frequency = 1.0;
+  float dd_sum = 0.0;
+
+  for (int dd_index = 0; dd_index < dd_maxOctaves; ++dd_index) {
+    if (dd_index >= dd_capped) {
+      break;
+    }
+
+    dd_sum += dd_amplitude * dd_noise3Value(dd_p * dd_frequency);
+    dd_frequency *= dd_lacunarity;
+    dd_amplitude *= dd_gain;
+  }
+
+  return dd_sum;
+}
+
+#define DD_FBM3(p, lacunarity, gain, octaves) dd_fbm3(p, lacunarity, gain, octaves)
+`;
+
+/**
+ * Curl noise derived from {@link dd_fbm3} for divergence-free advection.
+ *
+ * @glslUniforms None
+ */
+export const DD_CURL3 = /* glsl */ `
+vec3 dd_fbm3Vec(vec3 dd_p) {
+  return vec3(
+    dd_fbm3(dd_p + vec3(37.1, 17.3, 91.7), 2.0, 0.5, 5) - 0.5,
+    dd_fbm3(dd_p + vec3(11.7, 41.3, 27.9), 2.0, 0.5, 5) - 0.5,
+    dd_fbm3(dd_p + vec3(23.9, 7.1, 61.3), 2.0, 0.5, 5) - 0.5
+  );
+}
+
+vec3 dd_curl3(vec3 dd_p) {
+  const float dd_eps = 0.1;
+  const float dd_inv2eps = 0.5 / dd_eps;
+  vec3 dd_dx = vec3(dd_eps, 0.0, 0.0);
+  vec3 dd_dy = vec3(0.0, dd_eps, 0.0);
+  vec3 dd_dz = vec3(0.0, 0.0, dd_eps);
+
+  vec3 dd_flowXPos = dd_fbm3Vec(dd_p + dd_dx);
+  vec3 dd_flowXNeg = dd_fbm3Vec(dd_p - dd_dx);
+  vec3 dd_flowYPos = dd_fbm3Vec(dd_p + dd_dy);
+  vec3 dd_flowYNeg = dd_fbm3Vec(dd_p - dd_dy);
+  vec3 dd_flowZPos = dd_fbm3Vec(dd_p + dd_dz);
+  vec3 dd_flowZNeg = dd_fbm3Vec(dd_p - dd_dz);
+
+  float dd_dFz_dy = (dd_flowYPos.z - dd_flowYNeg.z) * dd_inv2eps;
+  float dd_dFy_dz = (dd_flowZPos.y - dd_flowZNeg.y) * dd_inv2eps;
+  float dd_dFx_dz = (dd_flowZPos.x - dd_flowZNeg.x) * dd_inv2eps;
+  float dd_dFz_dx = (dd_flowXPos.z - dd_flowXNeg.z) * dd_inv2eps;
+  float dd_dFy_dx = (dd_flowXPos.y - dd_flowXNeg.y) * dd_inv2eps;
+  float dd_dFx_dy = (dd_flowYPos.x - dd_flowYNeg.x) * dd_inv2eps;
+
+  vec3 dd_curl = vec3(
+    dd_dFz_dy - dd_dFy_dz,
+    dd_dFx_dz - dd_dFz_dx,
+    dd_dFy_dx - dd_dFx_dy
+  );
+
+  float dd_len = length(dd_curl);
+  if (dd_len < 1e-5) {
+    return vec3(0.0);
+  }
+  return dd_curl / dd_len;
+}
+
+#define DD_CURL3(p) dd_curl3(p)
+`;
+
+/**
  * Converts absolute screen-space pixels into clip-space coordinates.
  *
  * @glslUniforms uViewport (vec2) viewport resolution in pixels
@@ -298,6 +401,8 @@ export const glslChunks = {
   remap: DD_REMAP,
   hash3: DD_HASH3,
   fbm2: DD_NOISE2_FBM,
+  fbm3: DD_FBM3,
+  curl3: DD_CURL3,
   screenPxToClip: DD_SCREEN_PX_TO_CLIP,
   depthAlpha: DD_DEPTH_ALPHA,
 } as const;
