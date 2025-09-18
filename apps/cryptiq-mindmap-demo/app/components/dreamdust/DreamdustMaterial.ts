@@ -82,27 +82,34 @@ void main() {
   }
 
   vec4 worldPos = dreamdustUnproject(aUv, depthNorm);
-  worldPos.xyz += dreamdustDrift(worldPos.xyz, uTime, uNoiseScale, uNoiseSpeed, uDriftAmp);
+
+  // Ink sampling comes first to modulate drift near strokes
+  vec3 inkTint = vec3(0.0);
+  float inkMix = 0.0;
+  float inkSizeBoost = 0.0;
+  float localIntensity = 0.0;
+  bool vertexInkSupported = uVertexInkOk > 0.5;
+  bool applyVertexInk = vertexInkSupported && uInkIntensity > 0.0;
+  DreamdustInkSample inkS;
+  if (applyVertexInk) {
+    inkS = dreamdustSampleInk(uInkTex, aUv);
+    localIntensity = inkS.intensity * uInkIntensity;
+  }
+
+  // Modulate drift amplitude by local ink intensity for a smokey swirl
+  float driftAmp = uDriftAmp * (1.0 + localIntensity * 0.4);
+  worldPos.xyz += dreamdustDrift(worldPos.xyz, uTime, uNoiseScale, uNoiseSpeed, driftAmp);
 
   vec4 viewPos = viewMatrix * worldPos;
   float viewDist = max(1e-3, -viewPos.z);
 
-  vec3 inkTint = vec3(0.0);
-  float inkMix = 0.0;
-  float inkSizeBoost = 0.0;
-  bool vertexInkSupported = uVertexInkOk > 0.5;
-  bool applyVertexInk = vertexInkSupported && uInkIntensity > 0.0;
-  if (applyVertexInk) {
-    DreamdustInkSample inkSample = dreamdustSampleInk(uInkTex, aUv);
-    float localIntensity = inkSample.intensity * uInkIntensity;
-    if (localIntensity > 1e-5) {
-      float pxScale = viewDist / max(1e-3, uFocal);
-      vec2 offsetView = inkSample.offset * (uInkOffsetGain * localIntensity * pxScale);
-      viewPos.xy += offsetView;
-      inkSizeBoost = inkSample.swell * localIntensity * uInkSizeGain;
-      inkTint = inkSample.tint;
-      inkMix = localIntensity * uInkTintGain;
-    }
+  if (applyVertexInk && localIntensity > 1e-5) {
+    float pxScale = viewDist / max(1e-3, uFocal);
+    vec2 offsetView = inkS.offset * (uInkOffsetGain * localIntensity * pxScale);
+    viewPos.xy += offsetView;
+    inkSizeBoost = inkS.swell * localIntensity * uInkSizeGain;
+    inkTint = inkS.tint;
+    inkMix = localIntensity * uInkTintGain;
   }
 
   float atten = clamp(uFocal / viewDist, uMinSize, uMaxSize);

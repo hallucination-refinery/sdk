@@ -557,9 +557,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     setUniform('uNoiseScale', 0.0025)
     setUniform('uNoiseSpeed', 0.24)
     setUniform('uDriftAmp', 16)
-    setUniform('uSizeGain', 1)
+    // Ink gains tuned for quick, readable reactions
+    setUniform('uSizeGain', 0.35)
     setUniform('uOffsetGain', 1)
-    setUniform('uTintGain', 1)
+    setUniform('uTintGain', 0.08)
   }, [setUniform])
 
   React.useEffect(() => {

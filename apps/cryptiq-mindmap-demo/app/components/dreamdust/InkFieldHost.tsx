@@ -20,7 +20,7 @@ type CanvasTextureLike = {
 const FIELD_SIZE = 128
 const MAX_DPR = 1.5
 const UPLOAD_HZ = 60
-const DECAY_BASE = 0.96
+const DECAY_BASE = 0.98
 const INTENSITY_EPSILON = 0.01
 const INTENSITY_IDLE_ZERO_MS = 2400
 const DEFAULT_PRESSURE = 0.5
@@ -50,7 +50,7 @@ export function InkFieldHost(): React.JSX.Element {
   const lastStrokeRef = React.useRef(0)
   const intensityRef = React.useRef(0)
   const vertexInkOkRef = React.useRef<boolean | null>(null)
-  const [drawEnabled, setDrawEnabled] = React.useState(false)
+  const [drawEnabled, setDrawEnabled] = React.useState(true)
 
   const handleStrokeStart = React.useCallback(
     (_point: StrokePoint) => {
@@ -261,12 +261,12 @@ export function InkFieldHost(): React.JSX.Element {
         position: 'absolute',
         inset: 0,
         zIndex: 2,
-        // By default, allow events only on the explicit controls below
-        pointerEvents: 'none',
+        // Default to capturing input for drawing
+        pointerEvents: 'auto',
       }}
     >
       <StrokeCaptureCanvas
-        enabled={drawEnabled}
+        enabled={true}
         onStrokeStart={handleStrokeStart}
         onStrokeSegment={handleStrokeSegment}
       />
