@@ -329,6 +329,17 @@ function PointsMesh({
     loggedAttrsRef.current = true
   }, [])
 
+  // Log instance count once (fallback path)
+  React.useEffect(() => {
+    const g = geomRef.current
+    if (!g) return
+    try {
+      const pos = g.getAttribute('position') as THREE.BufferAttribute | undefined
+      const count = pos ? pos.count : 0
+      if (count > 0) console.log('[PC] instances:', count)
+    } catch {}
+  }, [])
+
   React.useEffect(() => {
     if (!onMaterialValid) return
     let raf = 0
@@ -556,11 +567,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     setUniform('uDepthBias', 0.14)
     setUniform('uNoiseScale', 0.0025)
     setUniform('uNoiseSpeed', 0.24)
-    setUniform('uDriftAmp', 16)
-    // Ink gains tuned for quick, readable reactions
-    setUniform('uSizeGain', 0.35)
-    setUniform('uOffsetGain', 1)
-    setUniform('uTintGain', 0.08)
+    // Stronger contrast on first draw: halve base drift, boost ink gains
+    setUniform('uDriftAmp', 8)
+    setUniform('uSizeGain', 1.0)
+    setUniform('uOffsetGain', 5.0)
+    setUniform('uTintGain', 0.2)
   }, [setUniform])
 
   React.useEffect(() => {
@@ -579,6 +590,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     updateInkTexture(inkTex)
   }, [inkTex, updateInkTexture])
+
+  // One-time debug of ink mapping and caps at first stroke
+  const loggedInkInfoRef = React.useRef(false)
+  React.useEffect(() => {
+    if (loggedInkInfoRef.current) return
+    if (inkIntensity > 0.0) {
+      try {
+        const vtx = uniforms.uVertexInkOk?.value ?? 0
+        const vp = uniforms.uViewport?.value ?? [0, 0]
+        console.log('[PC] ink debug', {
+          vertexInkOk: vtx > 0.5,
+          uViewport: vp,
+          inkIntensity,
+        })
+      } catch {}
+      loggedInkInfoRef.current = true
+    }
+  }, [inkIntensity, uniforms])
 
   React.useEffect(() => {
     setUniform('uInkIntensity', inkIntensity)
@@ -871,6 +900,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
   }, [sceneId])
 
+  // Reduce console noise when prebaked present
+  React.useEffect(() => {
+    if (prebakedStatus === 'present') {
+      try {
+        console.log('[PC] prebaked present; using positions/colors, fallback images not required')
+      } catch {}
+    }
+  }, [prebakedStatus])
+
   // Debug panel state (optional via ?debug=1)
   const [debugVisible, setDebugVisible] = React.useState(false)
   const [ui, setUi] = React.useState<{
@@ -981,6 +1019,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
     return { positions: outPos, colors: outCol, keptCount: outCount, cap }
   }, [pointBudget, prebaked, ui.keepRatio])
+
+  // Log a single instances line after decimation
+  const loggedInstancesRef = React.useRef(false)
+  React.useEffect(() => {
+    if (loggedInstancesRef.current) return
+    const count = renderBuffers
+      ? Math.floor(renderBuffers.positions.length / 3)
+      : prebaked
+        ? prebaked.count
+        : 0
+    if (count > 0) {
+      console.log('[PC] instances:', count)
+      loggedInstancesRef.current = true
+    }
+  }, [prebaked, renderBuffers])
 
   // Compose world-space debug flips with the PCA quaternion so toggles work live
   const appliedQuaternion = React.useMemo(() => {
