@@ -20,7 +20,7 @@ type CanvasTextureLike = {
 const FIELD_SIZE = 128
 const MAX_DPR = 1.5
 const UPLOAD_HZ = 60
-const DECAY_BASE = 0.96
+const DECAY_BASE = 0.98
 const INTENSITY_EPSILON = 0.01
 const INTENSITY_IDLE_ZERO_MS = 2400
 const DEFAULT_PRESSURE = 0.5
@@ -50,6 +50,10 @@ export function InkFieldHost(): React.JSX.Element {
   const lastStrokeRef = React.useRef(0)
   const intensityRef = React.useRef(0)
   const vertexInkOkRef = React.useRef<boolean | null>(null)
+  const [drawEnabled, setDrawEnabled] = React.useState(true)
+  const [showHeatmap, setShowHeatmap] = React.useState(false)
+  const heatmapRef = React.useRef<HTMLCanvasElement | null>(null)
+  const loggedInkOnceRef = React.useRef(false)
 
   const handleStrokeStart = React.useCallback(
     (_point: StrokePoint) => {
@@ -58,6 +62,20 @@ export function InkFieldHost(): React.JSX.Element {
       if (intensityRef.current !== 1) {
         intensityRef.current = 1
         setInkIntensity(1)
+      }
+      // One-time debug of caps/viewport/intensity on first stroke
+      if (!loggedInkOnceRef.current) {
+        try {
+          const state = getR3FStateOrNull()
+          const vpW = state?.viewport.width ?? 0
+          const vpH = state?.viewport.height ?? 0
+          console.log('[PC] ink debug (host)', {
+            vertexInkOk: !!vertexInkOkRef.current,
+            uViewport: [vpW, vpH],
+            inkIntensity: 1,
+          })
+        } catch {}
+        loggedInkOnceRef.current = true
       }
     },
     [setInkIntensity],
@@ -253,6 +271,32 @@ export function InkFieldHost(): React.JSX.Element {
     }
   }, [setInkIntensity, setInkTex])
 
+  // Heatmap preview of the ink texture (scaled up for visibility)
+  React.useEffect(() => {
+    if (!showHeatmap) return
+    if (typeof window === 'undefined') return
+    let raf = 0
+    const draw = () => {
+      const canvas = heatmapRef.current
+      const tex = textureRef.current as unknown as { image?: HTMLCanvasElement | OffscreenCanvas }
+      if (canvas && tex?.image) {
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          const src = tex.image as HTMLCanvasElement
+          const scale = 2
+          canvas.width = 128 * scale
+          canvas.height = 128 * scale
+          ;(ctx as any).imageSmoothingEnabled = false
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+          ctx.drawImage(src, 0, 0, 128, 128, 0, 0, 128 * scale, 128 * scale)
+        }
+      }
+      raf = window.requestAnimationFrame(draw)
+    }
+    raf = window.requestAnimationFrame(draw)
+    return () => window.cancelAnimationFrame(raf)
+  }, [showHeatmap])
+
   return (
     <div
       aria-hidden
@@ -260,13 +304,72 @@ export function InkFieldHost(): React.JSX.Element {
         position: 'absolute',
         inset: 0,
         zIndex: 2,
-        pointerEvents: 'none',
+        // Default to capturing input for drawing
+        pointerEvents: 'auto',
       }}
     >
       <StrokeCaptureCanvas
+        enabled={true}
         onStrokeStart={handleStrokeStart}
         onStrokeSegment={handleStrokeSegment}
       />
+      {showHeatmap && (
+        <canvas
+          ref={heatmapRef}
+          style={{
+            position: 'absolute',
+            left: 12,
+            bottom: 12,
+            zIndex: 3,
+            border: '1px solid rgba(255,255,255,0.2)',
+            background: 'rgba(0,0,0,0.3)',
+          }}
+        />
+      )}
+      {/* Simple Draw toggle; lives above canvas and canvas overlay */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 12,
+          bottom: 12,
+          zIndex: 3,
+          pointerEvents: 'auto',
+          }}
+      >
+        <button
+          type="button"
+          onClick={() => setDrawEnabled((v) => !v)}
+          style={{
+            fontFamily: 'var(--font-mono, monospace)',
+            fontSize: 12,
+            padding: '6px 10px',
+            borderRadius: 8,
+            border: '1px solid rgba(255,255,255,0.25)',
+            background: drawEnabled ? 'rgba(16,160,32,0.85)' : 'rgba(0,0,0,0.55)',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          {drawEnabled ? 'Draw: On' : 'Draw: Off'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowHeatmap((v) => !v)}
+          style={{
+            marginLeft: 8,
+            fontFamily: 'var(--font-mono, monospace)',
+            fontSize: 12,
+            padding: '6px 10px',
+            borderRadius: 8,
+            border: '1px solid rgba(255,255,255,0.25)',
+            background: showHeatmap ? 'rgba(32,96,192,0.85)' : 'rgba(0,0,0,0.55)',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          {showHeatmap ? 'Heatmap: On' : 'Heatmap: Off'}
+        </button>
+      </div>
     </div>
   )
 }

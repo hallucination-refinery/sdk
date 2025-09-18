@@ -136,17 +136,7 @@ vec3 dreamdustApplyInkTint(vec3 baseColor, vec3 tintColor, float amount) {
 }
 `
 
-// Optional map for consumers expecting a chunk registry
-export const glslChunks = {
-  noise: DREAMDUST_NOISE_CHUNK,
-  drift: DREAMDUST_DRIFT_CHUNK,
-  inkSample: DREAMDUST_INK_SAMPLE_CHUNK,
-  depthFade: DREAMDUST_DEPTH_FADE_CHUNK,
-  pointShape: DREAMDUST_POINT_SHAPE_CHUNK,
-  color: DREAMDUST_COLOR_CHUNK,
-} as const
-
-export type GlslChunkKey = keyof typeof glslChunks
+// (registry removed; DREAMDUST_* chunks are imported directly by consumers)
 /**
  * Shared Dreamdust GLSL chunks for shader composition.
  *
@@ -246,31 +236,8 @@ float dd_noise2Fbm(vec2 dd_p, float dd_lacunarity, float dd_gain, int dd_octaves
   return dd_sum;
 }
 
-<<<<<<< Updated upstream
 #define DD_NOISE2_FBM(p, lacunarity, gain, octaves) dd_noise2Fbm(p, lacunarity, gain, octaves)
 `;
-=======
-float dd_noise2(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-
-  float n00 = dreamdustHash(vec3(i, 0.0));
-  float n10 = dreamdustHash(vec3(i + vec2(1.0, 0.0), 0.0));
-  float n01 = dreamdustHash(vec3(i + vec2(0.0, 1.0), 0.0));
-  float n11 = dreamdustHash(vec3(i + vec2(1.0), 0.0));
-
-  float nx0 = mix(n00, n10, f.x);
-  float nx1 = mix(n01, n11, f.x);
-
-  return mix(nx0, nx1, f.y);
-}
-
-float dd_noise2(vec3 p) {
-  return dd_noise2(p.xy + vec2(p.z));
-}
-`
->>>>>>> Stashed changes
 
 /**
  * Converts absolute screen-space pixels into clip-space coordinates.
@@ -284,7 +251,6 @@ vec2 dd_screenPxToClip(vec2 dd_screenPx) {
   dd_clip.y = -dd_clip.y;
   return dd_clip;
 }
-<<<<<<< Updated upstream
 
 #define DD_SCREEN_PX_TO_CLIP(px) dd_screenPxToClip(px)
 `;
@@ -305,28 +271,6 @@ float dd_depthAlpha(float dd_distNorm, float dd_k) {
 
 #define DD_DEPTH_ALPHA(distNorm, k) dd_depthAlpha(distNorm, k)
 `;
-=======
-`
-
-export const DREAMDUST_INK_SAMPLE_CHUNK = /* glsl */ `
-struct DreamdustInkSample {
-  vec2 offset;
-  float swell;
-  float intensity;
-  vec3 tint;
-};
-
-DreamdustInkSample dreamdustSampleInk(sampler2D tex, vec2 uv) {
-  vec4 ink = texture2D(tex, uv);
-  DreamdustInkSample inkS;
-  inkS.offset = ink.rg * 2.0 - 1.0;
-  inkS.swell = ink.b;
-  inkS.intensity = ink.a;
-  inkS.tint = ink.rgb;
-  return inkS;
-}
-`
->>>>>>> Stashed changes
 
 export const glslChunks = {
   sat: DD_SAT,
@@ -337,34 +281,4 @@ export const glslChunks = {
   depthAlpha: DD_DEPTH_ALPHA,
 } as const;
 
-<<<<<<< Updated upstream
 export type GlslChunkKey = keyof typeof glslChunks;
-=======
-float dd_depthAlpha(float depthNorm, float bias) {
-  if (bias <= 0.0) {
-    return 1.0;
-  }
-  return clamp(exp(-depthNorm * bias), 0.0, 1.0);
-}
-
-#define DD_DEPTH_ALPHA(depthNorm, bias) dd_depthAlpha(depthNorm, bias)
-`
-
-export const DREAMDUST_POINT_SHAPE_CHUNK = /* glsl */ `
-float dreamdustPointShape(vec2 coord) {
-  vec2 delta = coord * 2.0 - 1.0;
-  float r2 = dot(delta, delta);
-  float core = smoothstep(1.0, 0.0, r2);
-  float feather = smoothstep(1.0, 0.6, r2);
-  return core * feather;
-}
-`
-
-export const DREAMDUST_COLOR_CHUNK = /* glsl */ `
-vec3 dreamdustApplyInkTint(vec3 baseColor, vec3 tintColor, float amount) {
-  float mixAmt = clamp(amount, 0.0, 1.0);
-  vec3 tinted = baseColor + tintColor * mixAmt;
-  return mix(baseColor, tinted, mixAmt);
-}
-`
->>>>>>> Stashed changes

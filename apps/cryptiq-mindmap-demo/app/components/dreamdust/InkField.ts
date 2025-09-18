@@ -127,7 +127,7 @@ export const createInkField = (size = 128, dpr = 1): InkField => {
 
     const resolvedPoints = points.map(resolvePoint);
     const mode = determineCoordinateMode(resolvedPoints);
-    const baseRadius = Math.max(resolvedSize * 0.08, 1);
+    const baseRadius = Math.max(resolvedSize * 0.10, 1);
     const radius = Math.max(baseRadius * normalizedPressure, 0.5);
     const step = Math.max(radius * 0.5, 1);
 

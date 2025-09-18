@@ -19,6 +19,11 @@ export type StrokeSegment = {
 export type StrokeCaptureCanvasProps = {
   className?: string
   style?: React.CSSProperties
+  /**
+   * When false, the canvas ignores pointer input (pointer-events: none).
+   * When true, it accepts input and switches pointer capture while drawing.
+   */
+  enabled?: boolean
   onStrokeStart?(point: StrokePoint): void
   onStrokeSegment?(segment: StrokeSegment): void
   onStrokeEnd?(): void
@@ -53,6 +58,7 @@ const resolvePressure = (event: PointerEvent): number => {
 export function StrokeCaptureCanvas({
   className,
   style,
+  enabled = false,
   onStrokeStart,
   onStrokeSegment,
   onStrokeEnd,
@@ -198,6 +204,10 @@ export function StrokeCaptureCanvas({
       if (event.pointerType === 'mouse' && event.button !== 0) {
         return
       }
+      // Respect gating: ignore pointer when disabled
+      if (!enabled) {
+        return
+      }
       if (isDrawingRef.current && pointerIdRef.current !== event.pointerId) {
         return
       }
@@ -215,6 +225,7 @@ export function StrokeCaptureCanvas({
       lastSmoothedRef.current = point
 
       try {
+        // Capture only after explicit start (left button / enabled)
         canvas.setPointerCapture(event.pointerId)
       } catch {
         // ignore pointer capture failures (e.g., Safari)
@@ -310,7 +321,8 @@ export function StrokeCaptureCanvas({
         height: '100%',
         display: 'block',
         touchAction: 'none',
-        pointerEvents: 'auto',
+        // Gate pointer interactions: default none; enable only when armed/drawing
+        pointerEvents: isDrawingRef.current || enabled ? 'auto' : 'none',
         background: 'transparent',
         ...style,
       }}
