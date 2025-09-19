@@ -52,12 +52,20 @@ function isDebugEnabled(): boolean {
  * ```
  */
 export function logOnce<T>(key: string, payload: T): void {
+  if (typeof key !== 'string' || key.trim().length === 0) {
+    return;
+  }
+
   if (!isDebugEnabled() || emittedLogs.has(key)) {
     return;
   }
 
   emittedLogs.add(key);
   console.info(`[dreamdust] ${key}`, payload);
+}
+
+export function logOnceKeyExists(key: string): boolean {
+  return emittedLogs.has(key);
 }
 
 /**
