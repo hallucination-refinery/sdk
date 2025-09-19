@@ -344,7 +344,7 @@ ${DREAMDUST_INK_SAMPLE_CHUNK}
 ${DREAMDUST_DEPTH_FADE_CHUNK}
 
 void main() {
-  float sprite = dreamdustSoftSprite(gl_PointCoord);
+  float sprite = dreamdustSoftSpriteRim(gl_PointCoord, uRimGamma);
   if (sprite <= 0.0) {
     discard;
   }
@@ -391,10 +391,9 @@ void main() {
     color = mix(baseRgb, uCascadeColor, cascadeStrength);
   }
 
-  float pointShape = clamp(1.0 - sprite, 0.0, 1.0);
-  float rim = pow(pointShape, max(uRimGamma, 1e-3));
-  color = mix(color, vec3(1.0), rim * 0.2);
-  alpha *= mix(1.0, 0.9, rim);
+  float rim = dreamdustRimStrength(sprite);
+  color = dreamdustApplyRimLight(color, rim);
+  alpha = dreamdustApplyRimAlpha(alpha, rim);
 
   color = dreamdustApplyGamma(color, uGamma);
 
