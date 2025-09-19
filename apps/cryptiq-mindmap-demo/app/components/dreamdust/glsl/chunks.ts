@@ -320,6 +320,9 @@ vec3 dd_fbm3Field(vec3 dd_p) {
   );
 }
 
+/* glsl */
+vec3 dd_fbm3Vec(vec3 dd_p) { return dd_fbm3Field(dd_p); }
+
 vec3 dd_curl3(vec3 dd_p) {
   const float dd_eps = 0.1;
   vec3 dd_dx = vec3(dd_eps, 0.0, 0.0);
