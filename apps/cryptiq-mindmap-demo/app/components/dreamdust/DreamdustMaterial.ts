@@ -174,7 +174,6 @@ uniform mat4 uPVInvCapture;
 
 uniform sampler2D uInkTex;
 
-attribute vec3 position;
 attribute vec2 aUv;
 attribute float aDepth;
 attribute vec3 color;
