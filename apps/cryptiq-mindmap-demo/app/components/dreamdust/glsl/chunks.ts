@@ -324,6 +324,18 @@ float dd_fbm3(vec3 dd_p) {
   return clamp(dd_value / dd_normalizer, 0.0, 1.0);
 }
 
+vec3 dd_fbm3Field(vec3 dd_p) {
+  return vec3(
+    dd_fbm3(dd_p),
+    dd_fbm3(dd_p.yzx),
+    dd_fbm3(dd_p.zxy)
+  );
+}
+
+vec3 dd_fbm3Vec(vec3 dd_p) {
+  return dd_fbm3Field(dd_p);
+}
+
 #define DD_FBM3(p) dd_fbm3(p)
 `;
 
@@ -333,17 +345,6 @@ float dd_fbm3(vec3 dd_p) {
  * @glslUniforms None
  */
 export const DD_CURL3 = /* glsl */ `
-vec3 dd_fbm3Field(vec3 dd_p) {
-  return vec3(
-    dd_fbm3(dd_p),
-    dd_fbm3(dd_p.yzx),
-    dd_fbm3(dd_p.zxy)
-  );
-}
-
-/* glsl */
-vec3 dd_fbm3Vec(vec3 dd_p) { return dd_fbm3Field(dd_p); }
-
 vec3 dd_curl3(vec3 dd_p) {
   const float dd_eps = 0.1;
   vec3 dd_dx = vec3(dd_eps, 0.0, 0.0);

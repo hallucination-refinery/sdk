@@ -309,6 +309,7 @@ function PointsMesh({
   const geomRef = React.useRef<THREE.BufferGeometry | null>(null)
   const materialRef = React.useRef<THREE.ShaderMaterial | null>(material)
   const materialValidRef = React.useRef(false)
+  const programWaitLoggedRef = React.useRef(false)
   const fallbackPoints = React.useMemo(
     () =>
       new THREE.PointsMaterial({
@@ -316,6 +317,7 @@ function PointsMesh({
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
+        depthWrite: false,
       }),
     []
   )
@@ -357,6 +359,7 @@ function PointsMesh({
   React.useEffect(() => {
     materialRef.current = material
     materialValidRef.current = false
+    programWaitLoggedRef.current = false
     setUseFallback(false)
     return () => {
       materialValidRef.current = false
@@ -398,11 +401,12 @@ function PointsMesh({
         }
         return
       }
-      if (!materialValidRef.current) {
+      if (!materialValidRef.current && !programWaitLoggedRef.current) {
         // Guard log to surface shader-compile stalls early during bring-up
         try {
           console.warn('[PC] material program not ready yet; waiting…')
         } catch { /* noop */ }
+        programWaitLoggedRef.current = true
       }
       raf = requestAnimationFrame(check)
     }

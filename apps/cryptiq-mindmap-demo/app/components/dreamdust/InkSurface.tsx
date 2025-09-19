@@ -228,6 +228,11 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
       if (!ctxRef.current) {
         return
       }
+      try {
+        domElement.setPointerCapture(event.pointerId)
+      } catch {
+        // Ignore pointer-capture failures (e.g., unsupported elements)
+      }
       pointerStateRef.current = {
         pointerId: event.pointerId,
         startTime: typeof performance !== 'undefined' ? performance.now() : event.timeStamp,
@@ -237,7 +242,7 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
       lastClientRef.current = null
       lastCanvasRef.current = null
       distanceRef.current = 0
-      ctxRef.current.clearRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE)
+      ctxRef.current.clearRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE) // single-stroke heatmap
       drawAtClient({ x: event.clientX, y: event.clientY })
       scheduleFlush()
       try {
@@ -265,6 +270,15 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
       }
       if (event) {
         drawAtClient({ x: event.clientX, y: event.clientY })
+      }
+      const domElement = gl?.domElement
+      const pointerId = event?.pointerId ?? state?.pointerId
+      if (domElement && typeof pointerId === 'number') {
+        try {
+          domElement.releasePointerCapture(pointerId)
+        } catch {
+          // Ignore release failures when capture was never established
+        }
       }
       drawingRef.current = false
       const startTime = state?.startTime ?? (typeof performance !== 'undefined' ? performance.now() : 0)
