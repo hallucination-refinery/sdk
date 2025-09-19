@@ -26,6 +26,7 @@ import {
   subscribeDreamdustTunables,
   type DreamdustTunables,
 } from './dreamdust/metrics'
+import InkSurface from './dreamdust/InkSurface'
 import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
 import { capInstances, clampDPR, decimateInterleaved, pointCap } from './pointcloud/budget'
 
@@ -544,7 +545,13 @@ function DreamdustTicker({
   return null
 }
 
-function SceneControls({ radius }: { radius?: number }) {
+function SceneControls({
+  radius,
+  drawing = false,
+}: {
+  radius?: number
+  drawing?: boolean
+}) {
   const controlsRef = React.useRef(null)
   const { gl } = useThree()
   React.useEffect(() => {
@@ -554,9 +561,9 @@ function SceneControls({ radius }: { radius?: number }) {
     <OrbitControls
       ref={controlsRef}
       makeDefault
-      enableRotate
-      enableZoom
-      enablePan={true}
+      enableRotate={!drawing}
+      enableZoom={!drawing}
+      enablePan={!drawing}
       enableDamping
       dampingFactor={0.1}
       minDistance={Math.max(0.1, radius ? radius * 0.02 : 100)}
@@ -613,6 +620,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     // omit perspective in baseline
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
+  const [drawing, setDrawing] = React.useState(false)
+  const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
   const depthUrl = depthUrlProp ?? (base ? `${base}/depth16.png` : null)
@@ -746,6 +755,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [uniforms])
 
   const dreamdustCtx = useOptionalDreamdustCtx()
+  const startCascade = dreamdustCtx?.startCascade
   const inkTex = dreamdustCtx?.inkTex ?? null
   const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
   const vertexInkOk = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
@@ -1432,6 +1442,34 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }}
       >
         {/* no FitOrtho in perspective baseline */}
+        <InkSurface
+          onStart={() => {
+            inkUpdateLoggedRef.current = false
+            setDrawing(true)
+          }}
+          onTexture={(tex) => {
+            try {
+              updateInkTexture(tex)
+              if (drawing && !inkUpdateLoggedRef.current) {
+                console.log('[PC] ink tex updated')
+                inkUpdateLoggedRef.current = true
+              }
+            } catch {
+              // Ignore uniform update failures to keep drawing resilient
+            }
+          }}
+          onEnd={(info) => {
+            setDrawing(false)
+            inkUpdateLoggedRef.current = false
+            if (info.type === 'stroke') {
+              try {
+                startCascade?.([1, 1, 1])
+              } catch {
+                // Ignore cascade trigger failures
+              }
+            }
+          }}
+        />
         <CameraSync
           fovDeg={ui.fovDeg}
           distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined}
@@ -1513,7 +1551,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             />
           )
         ) : null}
-        <SceneControls radius={prebakedTransform ? prebakedTransform.radius : undefined} />
+        <SceneControls
+          radius={prebakedTransform ? prebakedTransform.radius : undefined}
+          drawing={drawing}
+        />
         {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
       </Canvas>
       {debugVisible && (
