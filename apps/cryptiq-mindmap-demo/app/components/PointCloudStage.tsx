@@ -308,6 +308,27 @@ function PointsMesh({
   const geomRef = React.useRef<THREE.BufferGeometry | null>(null)
   const materialRef = React.useRef<THREE.ShaderMaterial | null>(material)
   const materialValidRef = React.useRef(false)
+  const fallbackPoints = React.useMemo(
+    () =>
+      new THREE.PointsMaterial({
+        size: 2.0,
+        sizeAttenuation: true,
+        vertexColors: true,
+        transparent: true,
+      }),
+    []
+  )
+  const [useFallback, setUseFallback] = React.useState(false)
+
+  React.useEffect(() => {
+    return () => {
+      try {
+        fallbackPoints.dispose()
+      } catch {
+        /* noop */
+      }
+    }
+  }, [fallbackPoints])
 
   const { positions, uvs, depths, colors, gridW, gridH, kept } = React.useMemo(() => {
     return buildAttributes(colorImage, depth16, stride, pointBudget)
@@ -334,6 +355,8 @@ function PointsMesh({
 
   React.useEffect(() => {
     materialRef.current = material
+    materialValidRef.current = false
+    setUseFallback(false)
     return () => {
       materialValidRef.current = false
     }
@@ -363,7 +386,7 @@ function PointsMesh({
   }, [])
 
   React.useEffect(() => {
-    if (!onMaterialValid) return
+    if (!onMaterialValid || useFallback) return
     let raf = 0
     const check = () => {
       const m = materialRef.current as unknown as { program?: { glProgram?: unknown } }
@@ -384,7 +407,36 @@ function PointsMesh({
     }
     raf = requestAnimationFrame(check)
     return () => cancelAnimationFrame(raf)
-  }, [onMaterialValid])
+  }, [onMaterialValid, useFallback])
+
+  React.useEffect(() => {
+    let raf = 0
+    let frames = 0
+    const MAX_FRAMES = 180
+    const step = () => {
+      const m = materialRef.current as unknown as { program?: { glProgram?: unknown } }
+      if (m && m.program && m.program.glProgram) {
+        return
+      }
+      frames += 1
+      if (frames >= MAX_FRAMES) {
+        try {
+          console.log('[Dreamdust] compile timeout — falling back to PointsMaterial')
+        } catch {
+          /* noop */
+        }
+        setUseFallback(true)
+        return
+      }
+      raf = requestAnimationFrame(step)
+    }
+    if (!useFallback) {
+      raf = requestAnimationFrame(step)
+    }
+    return () => {
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [useFallback])
 
   const capturedRef = React.useRef(false)
   const captureDelayRef = React.useRef(2)
@@ -431,7 +483,7 @@ function PointsMesh({
         {/* color attribute */}
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      <primitive object={material} attach="material" />
+      <primitive object={useFallback ? fallbackPoints : material} attach="material" />
     </points>
   )
 }
