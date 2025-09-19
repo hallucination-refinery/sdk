@@ -140,6 +140,14 @@ float dreamdustSoftSprite(vec2 uv) {
   float falloff = 1.0 - smoothstep(0.8, 1.0, radius);
   return clamp(falloff * falloff, 0.0, 1.0);
 }
+
+float dreamdustSoftSpriteRim(vec2 uv, float rimGamma) {
+  vec2 centered = uv * 2.0 - 1.0;
+  float radius = length(centered);
+  float falloff = 1.0 - smoothstep(0.8, 1.0, radius);
+  float base = clamp(falloff * falloff, 0.0, 1.0);
+  return pow(base, max(0.1, rimGamma));
+}
 `
 
 export const DREAMDUST_COLOR_CHUNK = /* glsl */ `
@@ -153,6 +161,19 @@ vec3 dreamdustApplyGamma(vec3 color, float gamma) {
   float g = max(gamma, 1e-3);
   vec3 safe = max(color, vec3(0.0));
   return pow(safe, vec3(1.0 / g));
+}
+
+float dreamdustRimStrength(float sprite) {
+  float pointShape = clamp(1.0 - sprite, 0.0, 1.0);
+  return pow(pointShape, max(uRimGamma, 1e-3));
+}
+
+vec3 dreamdustApplyRimLight(vec3 color, float rimStrength) {
+  return mix(color, vec3(1.0), rimStrength * 0.2);
+}
+
+float dreamdustApplyRimAlpha(float alpha, float rimStrength) {
+  return alpha * mix(1.0, 0.9, rimStrength);
 }
 `
 
