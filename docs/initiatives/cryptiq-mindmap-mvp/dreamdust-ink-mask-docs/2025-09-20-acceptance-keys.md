@@ -11,6 +11,10 @@
 | `[dreamdust] frame-percentiles` | `^\\[dreamdust\\] frame-percentiles\\s` | Yes — single sample once ≥240 frames collected | `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: 8.300, p90Ms: 9.100 }` |
 | `[dreamdust] ink-latency` | `^\\[dreamdust\\] ink-latency\\s` | Yes — first successful ink latency capture | `[dreamdust] ink-latency { ms: 16.667, frames: 1.00 }` |
 | `[Dreamdust] compile timeout — falling back to PointsMaterial` | `^\\[Dreamdust\\] compile timeout — falling back to PointsMaterial$` | No — only when shader watchdog triggers fallback | `[Dreamdust] compile timeout — falling back to PointsMaterial` |
+| `[Dreamdust] ink-tex bind` | `^\\[Dreamdust\\] ink-tex bind\\s` | Yes — once on first non-null ink texture | `[Dreamdust] ink-tex bind { width: 256, height: 256, needsUpdate: true }` |
+| `[PC] ink-uv guard ok` | `^\\[PC\\] ink-uv guard ok\\s` | Yes — once per session when first stroke normalizes | `[PC] ink-uv guard ok { raw: [0.52, 0.49], clamped: [0.52, 0.49], mirror: { lr: false, ud: true } }` |
+| `[PC] ink-uv guard violation` | `^\\[PC\\] ink-uv guard violation\\s` | No — indicates out-of-range or mirror mismatch | `[PC] ink-uv guard violation { raw: [1.02, -0.01], clamped: [1.00, 0.00], mirror: { lr: false, ud: false } }` |
+| `[dreamdust] caps-fanout` | `^\\[dreamdust\\] caps-fanout\\s` | Yes — once after caps hydrate | `[dreamdust] caps-fanout { stage: true, provider: true, hud: true, metrics: true }` |
 
 ## Source of truth objects
 
