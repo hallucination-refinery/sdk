@@ -1,0 +1,28 @@
+# Dreamdust Ink Mask Docs — Conventions
+
+- One brief per iteration; aesthetic-first; do not rewrite past briefs.
+- Use the templates below to standardize documentation and planning.
+
+## Templates
+
+- Brief: `_template.dreamdust-ink-mask-brief.md`
+- Current Architecture: `_template.architecture-current.md`
+- Target Architecture: `_template.architecture-target.md`
+- External Repos Survey: `_template.external-repos-survey.md`
+
+## Filenames
+
+- Briefs: `{YYYY-MM-DD}-dreamdust-ink-mask-brief.md`
+- Architecture snapshots: `{YYYY-MM-DD}-architecture-current.md` and `{YYYY-MM-DD}-architecture-target.md`
+- External survey: `{YYYY-MM-DD}-external-repos-survey.md`
+
+## Assets
+
+- Put screenshots/logs under `./assets/` and link via relative paths.
+
+## Process
+
+1. Fill “Current Architecture” from codebase.
+2. Draft “External Repos Survey” with concrete adaptation notes.
+3. Define “Target Architecture” and presets.
+4. Publish a dated “Brief” with acceptance criteria and test protocol.
