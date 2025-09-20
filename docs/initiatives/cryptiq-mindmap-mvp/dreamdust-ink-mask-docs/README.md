@@ -28,3 +28,9 @@
 2. Draft “External Repos Survey” with concrete adaptation notes.
 3. Define “Target Architecture” and presets.
 4. Publish a dated “Brief” with acceptance criteria and test protocol.
+
+## Index
+- [2025-09-20 — Acceptance Keys](./2025-09-20-acceptance-keys.md)
+- [2025-09-20 — Architecture (Current)](./2025-09-20-architecture-current.md)
+- [2025-09-20 — External Repos Survey](./2025-09-20-external-repos-survey.md)
+- [2025-09-20 — Test Protocol](./2025-09-20-test-protocol.md)
