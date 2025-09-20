@@ -34,3 +34,6 @@
 - [2025-09-20 — Architecture (Current)](./2025-09-20-architecture-current.md)
 - [2025-09-20 — External Repos Survey](./2025-09-20-external-repos-survey.md)
 - [2025-09-20 — Test Protocol](./2025-09-20-test-protocol.md)
+- [2025-09-20 — Architecture (Target)](./2025-09-20-architecture-target.md)
+- [2025-09-20 — Diagnostic Guards](./2025-09-20-diagnostic-guards.md)
+- [2025-09-20 — Presets](./2025-09-20-presets.md)
