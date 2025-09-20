@@ -2,6 +2,8 @@
 
 - Scope: End-to-end smoke of “Dreamdust Ink” in `apps/cryptiq-mindmap-demo` only; no cross‑workspace edits.
 
+> Canonical dated snapshot: [`2025-09-20-dreamdust-ink-mask-brief.md`](./2025-09-20-dreamdust-ink-mask-brief.md)
+
 ### END EXPERIENCE
 
 **NOTE:** This is, by far, the _most_ important thing; I **do not** care about anything but the beauty of the end experience.
