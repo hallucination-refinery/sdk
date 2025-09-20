@@ -4,6 +4,8 @@
 - Use the templates below to standardize documentation and planning.
 
 ## Templates
+- Acceptance Keys Registry: `_template.acceptance-keys.md`
+- Deterministic Test Protocol: `_template.test-protocol.md`
 
 - Brief: `_template.dreamdust-ink-mask-brief.md`
 - Current Architecture: `_template.architecture-current.md`
