@@ -1,8 +1,10 @@
-### Cryptiq Mindmap MVP — Dreamdust Ink: Single Source Brief
+# Dreamdust Ink — Mask Round Brief (v1)
+
+## Metadata
 
 - Scope: End-to-end smoke of “Dreamdust Ink” in `apps/cryptiq-mindmap-demo` only; no cross‑workspace edits.
 
-### END EXPERIENCE
+## End Experience (aesthetic-only)
 
 **NOTE:** This is, by far, the _most_ important thing; I **do not** care about anything but the beauty of the end experience.
 
@@ -17,12 +19,12 @@
 - Payoff moment: after the cascade completes, a centered label surfaces “what you drew,” pairing the dreamy reveal with a crisp interpretation beat.
 - Pacing and stability: smooth 60‑FPS feel, single elegant reveal per round, and visuals that remain legible and calm throughout the hold.
 
-### Test Route (canonical)
+## Test Route (canonical)
 
 - Local: `http://localhost:3000/quiz/archetype-v1?pc=scene-02&debug=1`
 - Scene: `pc=scene-02` (prebaked “cat” positions/colors)
 
-### END EXPERIENCE
+### End Experience (verbatim duplicate, preserved)
 
 **NOTE:** This is, by far, the _most_ important thing; I **do not** care about anything but the beauty of the end experience.
 
@@ -37,13 +39,17 @@
 - Payoff moment: after the cascade completes, a centered label surfaces “what you drew,” pairing the dreamy reveal with a crisp interpretation beat.
 - Pacing and stability: smooth 60‑FPS feel, single elegant reveal per round, and visuals that remain legible and calm throughout the hold.
 
-### Guardrails (performance and resilience)
+## Guardrails (performance and resilience)
 
 - DPR clamp ≤ 1.8 desktop; persistent Canvas; ≤ 150,000 points on desktop; ≥ 60 FPS proxy via frame‑percentiles.
 - Graceful fallback: if vertex path not viable, fragment‑only tint or `PointsMaterial` fallback; single‑shot logs only (no spam).
 - App‑only scope; smallest reversible diffs; unified caps snapshot (single source of truth at Canvas creation).
 
-### Implementation Touchpoints (exact file paths)
+## Architecture Choices (locked)
+
+<!-- reserved section to be filled from architecture docs; content intentionally not altered here -->
+
+## Implementation Touchpoints (exact file paths)
 
 - Shader assembly and uniforms: `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts`
 - GLSL chunks (FBM/curl/soft‑sprite): `apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts`
@@ -53,7 +59,7 @@
 - Metrics (one‑shot caps, frame‑percentiles): `apps/cryptiq-mindmap-demo/app/components/dreamdust/metrics.ts`
 - Quiz entry route: `apps/cryptiq-mindmap-demo/app/quiz/[slug]/page.tsx`
 
-### Current Evidence (last smoke test)
+## Current Evidence (last smoke test)
 
 - Caps (single): `[dreamdust] caps { vertexInkOk: true, dprClamp: 1.8, ... }`
 - Instances (single): `[PC] instances: 134162`
@@ -62,7 +68,7 @@
 - Input plumbing: `[PC] draw start/end ...`, `[dreamdust] ink-latency { ms: ~16.7, frames: 1 }`
 - Visual note: cloud legibility low (“vibrating haze”); no visible ink reaction despite events/heatmap ON.
 
-### Non‑Visual Acceptance Criteria (pass/fail, next smoke)
+## Non‑Visual Acceptance Criteria (pass/fail, next smoke)
 
 - Rendering/reveal
   - No `THREE.WebGLProgram` errors; no compile watchdog timeout.
@@ -77,8 +83,20 @@
 - Caps coherence
   - A single frozen caps object is emitted once at Canvas creation and consumed by stage/host consistently; no conflicting `vertexInkOk` readings.
 
-### Test Protocol (deterministic)
+## Test Protocol (deterministic)
 
 - Prep: `rm -rf apps/cryptiq-mindmap-demo/.next`; start dev; load the canonical route; empty cache + hard reload.
 - Observe only the single expected logs; take a screenshot at reveal end; draw a short tap and a long stroke to validate local reaction vs cascade.
 - Record: caps payload, instances count, reveal timings, frame‑percentiles, ink‑latency, and any fallback log.
+
+## Tiny PR Batches (planning stub)
+
+<!-- reserved; planning occurs in dated architecture/PR docs -->
+
+## Iterate → Freeze
+
+<!-- reserved; presets and screenshots captured per iteration -->
+
+## Open Questions
+
+<!-- reserved; decisions tracked here in future updates -->
