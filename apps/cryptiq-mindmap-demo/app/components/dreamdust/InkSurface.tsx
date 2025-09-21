@@ -37,6 +37,8 @@ export type InkSurfaceProps = {
     distancePx: number
   }) => void
   onTexture?: (texture: AnyDataTexture) => void
+  mirrorLR?: boolean
+  mirrorUD?: boolean
 }
 
 const TEXTURE_SIZE = 256
@@ -58,7 +60,13 @@ type PointerState = {
   startClient: Vec2
 }
 
-export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
+export function InkSurface({
+  onStart,
+  onEnd,
+  onTexture,
+  mirrorLR = false,
+  mirrorUD = false,
+}: InkSurfaceProps) {
   const { gl } = useThree()
   const pointerStateRef = React.useRef<PointerState | null>(null)
   const drawingRef = React.useRef(false)
@@ -72,6 +80,10 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
   const onStartRef = React.useRef(onStart)
   const onEndRef = React.useRef(onEnd)
   const onTextureRef = React.useRef(onTexture)
+  const mirrorRef = React.useRef({ lr: !!mirrorLR, ud: !!mirrorUD })
+  const guardLoggedRef = React.useRef(true)
+  const guardWatchdogRef = React.useRef<number | null>(null)
+  const guardDeadlineRef = React.useRef(0)
 
   React.useEffect(() => {
     onStartRef.current = onStart
@@ -84,6 +96,10 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
   React.useEffect(() => {
     onTextureRef.current = onTexture
   }, [onTexture])
+
+  React.useEffect(() => {
+    mirrorRef.current = { lr: !!mirrorLR, ud: !!mirrorUD }
+  }, [mirrorLR, mirrorUD])
 
   React.useEffect(() => {
     if (typeof window === 'undefined') {
@@ -147,12 +163,66 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
       })
     }
 
+    const stopGuardWatchdog = () => {
+      if (guardWatchdogRef.current !== null) {
+        window.cancelAnimationFrame(guardWatchdogRef.current)
+        guardWatchdogRef.current = null
+      }
+      guardDeadlineRef.current = 0
+    }
+
+    const startGuardWatchdog = () => {
+      stopGuardWatchdog()
+      guardLoggedRef.current = false
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
+      guardDeadlineRef.current = now + 3000
+      const tick = () => {
+        if (guardLoggedRef.current) {
+          stopGuardWatchdog()
+          return
+        }
+        const current = typeof performance !== 'undefined' ? performance.now() : Date.now()
+        if (current >= guardDeadlineRef.current) {
+          stopGuardWatchdog()
+          return
+        }
+        guardWatchdogRef.current = window.requestAnimationFrame(tick)
+      }
+      guardWatchdogRef.current = window.requestAnimationFrame(tick)
+    }
+
+    const logInkGuard = (rawU: number, rawV: number, clampedU: number, clampedV: number) => {
+      if (guardLoggedRef.current) {
+        return
+      }
+      guardLoggedRef.current = true
+      stopGuardWatchdog()
+      const within =
+        Number.isFinite(rawU) &&
+        Number.isFinite(rawV) &&
+        rawU >= 0 &&
+        rawU <= 1 &&
+        rawV >= 0 &&
+        rawV <= 1
+      const formatValue = (value: number) => (Number.isFinite(value) ? value.toFixed(3) : 'NaN')
+      const mirror = mirrorRef.current
+      try {
+        console.log(
+          `[PC] ink-uv guard ${within ? 'ok' : 'violation'} { raw: [${formatValue(rawU)}, ${formatValue(rawV)}], clamped: [${formatValue(clampedU)}, ${formatValue(clampedV)}], mirror: { lr: ${mirror.lr}, ud: ${mirror.ud} } }`,
+        )
+      } catch {
+        // noop
+      }
+    }
+
     const resetDrawingState = () => {
       drawingRef.current = false
       pointerStateRef.current = null
       lastClientRef.current = null
       lastCanvasRef.current = null
       distanceRef.current = 0
+      guardLoggedRef.current = true
+      stopGuardWatchdog()
     }
 
     const paintDisc = (point: Vec2) => {
@@ -194,11 +264,16 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
       const rect = domElement.getBoundingClientRect()
       const width = rect.width || 0
       const height = rect.height || 0
+      const offsetX = client.x - rect.left
+      const offsetY = client.y - rect.top
+      const rawU = width > 0 ? offsetX / width : Number.NaN
+      const rawV = height > 0 ? offsetY / height : Number.NaN
+      const u = clamp01(rawU)
+      const v = clamp01(rawV)
+      logInkGuard(rawU, rawV, u, v)
       if (width <= 0 || height <= 0) {
         return
       }
-      const u = clamp01((client.x - rect.left) / width)
-      const v = clamp01((client.y - rect.top) / height)
       const canvasX = u * TEXTURE_SIZE
       const canvasY = v * TEXTURE_SIZE
       const lastClient = lastClientRef.current
@@ -243,6 +318,7 @@ export function InkSurface({ onStart, onEnd, onTexture }: InkSurfaceProps) {
       lastCanvasRef.current = null
       distanceRef.current = 0
       ctxRef.current.clearRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE) // single-stroke heatmap
+      startGuardWatchdog()
       drawAtClient({ x: event.clientX, y: event.clientY })
       scheduleFlush()
       try {
