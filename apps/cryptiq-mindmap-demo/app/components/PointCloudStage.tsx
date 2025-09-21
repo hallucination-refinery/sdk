@@ -21,6 +21,7 @@ import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { getDreamdustCaps, type DreamdustRuntimeCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
 import {
+  ackDreamdustCapsFanout,
   getDreamdustTunables,
   logOnce,
   subscribeDreamdustTunables,
@@ -310,6 +311,7 @@ function PointsMesh({
   const materialRef = React.useRef<THREE.ShaderMaterial | null>(material)
   const materialValidRef = React.useRef(false)
   const programWaitLoggedRef = React.useRef(false)
+  const compileWatchdogLoggedRef = React.useRef(false)
   const fallbackPoints = React.useMemo(
     () =>
       new THREE.PointsMaterial({
@@ -360,6 +362,7 @@ function PointsMesh({
     materialRef.current = material
     materialValidRef.current = false
     programWaitLoggedRef.current = false
+    compileWatchdogLoggedRef.current = false
     setUseFallback(false)
     return () => {
       materialValidRef.current = false
@@ -415,31 +418,61 @@ function PointsMesh({
   }, [onMaterialValid, useFallback])
 
   React.useEffect(() => {
+    if (useFallback) {
+      return
+    }
+
     let raf = 0
     let frames = 0
+    let active = true
     const MAX_FRAMES = 180
+
+    const stop = () => {
+      if (!active) return
+      active = false
+      if (raf) {
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
+    }
+
     const step = () => {
+      if (!active) {
+        return
+      }
+
       const m = materialRef.current as unknown as { program?: { glProgram?: unknown } }
       if (m && m.program && m.program.glProgram) {
+        stop()
         return
       }
+
       frames += 1
       if (frames >= MAX_FRAMES) {
-        try {
-          console.log('[Dreamdust] compile timeout — falling back to PointsMaterial')
-        } catch {
-          /* noop */
+        if (!compileWatchdogLoggedRef.current) {
+          compileWatchdogLoggedRef.current = true
+          try {
+            console.log('[Dreamdust] compile timeout — falling back to PointsMaterial')
+          } catch {
+            /* noop */
+          }
         }
         setUseFallback(true)
+        stop()
         return
       }
+
       raf = requestAnimationFrame(step)
     }
-    if (!useFallback) {
-      raf = requestAnimationFrame(step)
-    }
+
+    raf = requestAnimationFrame(step)
+
     return () => {
-      if (raf) cancelAnimationFrame(raf)
+      active = false
+      if (raf) {
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
     }
   }, [useFallback])
 
@@ -698,7 +731,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     packed.height > 0
   const readyFallback = fallbackGate && colorReady && !!depth16From8
   const pointBudget = React.useMemo(() => pointCap(), [])
-  const [runtimeCaps, setRuntimeCaps] = React.useState<DreamdustRuntimeCaps | null>(null)
+  const [runtimeCaps, setRuntimeCaps] = React.useState<Readonly<DreamdustRuntimeCaps> | null>(null)
 
   const dreamdustUniformApi = useDreamdustUniforms()
   const { uniforms: baseUniforms, setUniform, updateInkTexture } = dreamdustUniformApi
@@ -1380,6 +1413,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return [ui.mirrorLR ? -1 : 1, ui.mirrorUD ? -1 : 1, 1] as [number, number, number]
   }, [ui.mirrorLR, ui.mirrorUD])
 
+  React.useEffect(() => {
+    if (!dreamdustCtx) return
+    dreamdustCtx.setMirrorFlags(!!ui.mirrorLR, !!ui.mirrorUD)
+  }, [dreamdustCtx, ui.mirrorLR, ui.mirrorUD])
+
   const cameraFitTarget = React.useMemo(() => [0, 0, 0] as [number, number, number], [])
   const cameraFitRadius = React.useMemo(() => {
     if (prebakedTransform) return prebakedTransform.radius
@@ -1415,16 +1453,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         onCreated={({ gl }) => {
           const dprClamp = clampDPR(gl, 2)
           const caps = getDreamdustCaps(gl.domElement)
-          setRuntimeCaps(caps)
-          setUniform('uVertexInkOk', caps.vertexInkOk ? 1 : 0)
+          if (caps.aliasedPointSizeRange && !Object.isFrozen(caps.aliasedPointSizeRange)) {
+            Object.freeze(caps.aliasedPointSizeRange)
+          }
+          const frozenCaps = Object.freeze(caps) as Readonly<DreamdustRuntimeCaps>
+          setRuntimeCaps(frozenCaps)
           if (dreamdustCtx) {
-            dreamdustCtx.setVertexInkOk(caps.vertexInkOk)
+            dreamdustCtx.setCaps(frozenCaps)
+          }
+          ackDreamdustCapsFanout('stage')
+          setUniform('uVertexInkOk', frozenCaps.vertexInkOk ? 1 : 0)
+          if (dreamdustCtx) {
+            dreamdustCtx.setVertexInkOk(frozenCaps.vertexInkOk)
           }
           logOnce('caps', {
-            vertexInkOk: caps.vertexInkOk,
-            floatOk: caps.floatOk,
-            aliasedPointSizeRange: Array.from(caps.aliasedPointSizeRange),
-            dpr: caps.dpr,
+            vertexInkOk: frozenCaps.vertexInkOk,
+            floatOk: frozenCaps.floatOk,
+            aliasedPointSizeRange: Array.from(frozenCaps.aliasedPointSizeRange),
+            dpr: frozenCaps.dpr,
             dprClamp,
           })
           // ACES tone mapping for nicer highlights

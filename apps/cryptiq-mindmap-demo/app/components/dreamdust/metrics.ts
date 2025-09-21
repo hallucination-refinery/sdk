@@ -4,6 +4,72 @@
  */
 const emittedLogs = new Set<string>();
 
+export type DreamdustCapsFanoutSource = 'stage' | 'context' | 'host' | 'metrics';
+
+type CapsFanoutState = Record<DreamdustCapsFanoutSource, boolean>;
+
+const capsFanoutState: CapsFanoutState = {
+  stage: false,
+  context: false,
+  host: false,
+  metrics: false,
+};
+
+let capsFanoutLogged = false;
+let capsFanoutTimer: number | null = null;
+
+const CAPS_FANOUT_TIMEOUT_MS = 2000;
+
+function logCapsFanout(): void {
+  if (capsFanoutLogged) {
+    return;
+  }
+
+  capsFanoutLogged = true;
+
+  if (capsFanoutTimer !== null && typeof window !== 'undefined') {
+    window.clearTimeout(capsFanoutTimer);
+    capsFanoutTimer = null;
+  }
+
+  try {
+    console.info(
+      `[dreamdust] caps-fanout { stage: ${capsFanoutState.stage}, context: ${capsFanoutState.context}, host: ${capsFanoutState.host}, metrics: ${capsFanoutState.metrics} }`,
+    );
+  } catch {
+    // Swallow logging failures to avoid interrupting runtime flow.
+  }
+}
+
+function scheduleCapsFanoutTimeout(): void {
+  if (capsFanoutLogged || capsFanoutTimer !== null || typeof window === 'undefined') {
+    return;
+  }
+
+  capsFanoutTimer = window.setTimeout(() => {
+    capsFanoutTimer = null;
+    logCapsFanout();
+  }, CAPS_FANOUT_TIMEOUT_MS);
+}
+
+export function ackDreamdustCapsFanout(source: DreamdustCapsFanoutSource): void {
+  if (capsFanoutLogged) {
+    return;
+  }
+
+  if (!capsFanoutState[source]) {
+    capsFanoutState[source] = true;
+  }
+
+  if (capsFanoutState.stage) {
+    scheduleCapsFanoutTimeout();
+  }
+
+  if (capsFanoutState.stage && capsFanoutState.context && capsFanoutState.host && capsFanoutState.metrics) {
+    logCapsFanout();
+  }
+}
+
 /**
  * Cached query string that was last evaluated for debug logging.
  */
@@ -62,6 +128,10 @@ export function logOnce<T>(key: string, payload: T): void {
 
   emittedLogs.add(key);
   console.info(`[dreamdust] ${key}`, payload);
+}
+
+if (typeof window !== 'undefined') {
+  ackDreamdustCapsFanout('metrics');
 }
 
 export function logOnceKeyExists(key: string): boolean {
