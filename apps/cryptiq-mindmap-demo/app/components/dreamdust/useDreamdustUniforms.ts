@@ -9,6 +9,7 @@ import {
   logOnce,
   subscribeDreamdustTunables,
 } from './metrics'
+import { PresetC } from './presets'
 
 type TextureLike = unknown
 type Vec3 = [number, number, number]
@@ -20,26 +21,33 @@ type DreamdustUniformValueMap = {
   uInkIntensity: number
   uReveal: number
   uBreath: number
+  uBreathAmp: number
   uCascade: number
   uCascadeColor: Vec3
   uCascadeSizeBoost: number
   uVaporGain: number
   uNoiseScale: number
   uNoiseSpeed: number
+  uEvolution: number
   uNoiseThreshold: number
   uDriftAmp: number
+  uCurlAmp: number
   uPointBaseSize: number
   uDepthMin: number
   uDepthMax: number
   uDepthBias: number
   uDepthNormScale: number
   uGamma: number
+  uRimGamma: number
   uFocal: number
   uMinSize: number
   uMaxSize: number
   uSizeGain: number
   uOffsetGain: number
+  uInkOffsetBoost: number
+  uInkSizeBoost: number
   uTintGain: number
+  uInkTintBoost: number
   uVertexInkOk: number
 }
 
@@ -56,26 +64,33 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uInkIntensity: 1,
   uReveal: 1,
   uBreath: 0.5,
+  uBreathAmp: 0.08,
   uCascade: 0,
   uCascadeColor: [1, 1, 1],
   uCascadeSizeBoost: 0,
   uVaporGain: 0,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
+  uEvolution: 1,
   uNoiseThreshold: 1,
   uDriftAmp: 0,
+  uCurlAmp: 1,
   uPointBaseSize: 1,
   uDepthMin: 0,
   uDepthMax: 1,
   uDepthBias: 1.8,
   uDepthNormScale: 0.001,
   uGamma: 1,
+  uRimGamma: 2,
   uFocal: 1,
   uMinSize: 1,
   uMaxSize: 1,
   uSizeGain: 1,
   uOffsetGain: 0,
+  uInkOffsetBoost: 1,
+  uInkSizeBoost: 1,
   uTintGain: 1,
+  uInkTintBoost: 1,
   uVertexInkOk: 0,
 }
 
@@ -220,6 +235,58 @@ function extractInkTextureMetrics(texture: TextureLike): TextureMetrics | null {
   return null
 }
 
+const PRESET_QUERY_KEY = 'preset'
+const PRESET_QUERY_VALUE = 'vapor'
+const PRESET_ENV_KEY = 'DD_PRESET'
+const INK_BUMP_QUERY_KEY = 'inkBump'
+const INK_BUMP_ENV_KEY = 'DD_INK_BUMP'
+const INK_BUMP_SIZE_MULTIPLIER = 1.2
+const INK_BUMP_OFFSET_MULTIPLIER = 1.15
+const INK_BUMP_TINT_MULTIPLIER = 1.18
+const TRUTHY_BUMP_VALUES = new Set(['1', 'true'])
+
+function normalizeGateValue(value: string | null | undefined): string {
+  return typeof value === 'string' ? value.trim().toLowerCase() : ''
+}
+
+function readEnvValue(key: string): string | undefined {
+  if (typeof process === 'undefined') {
+    return undefined
+  }
+  const env = process.env as Record<string, string | undefined> | undefined
+  return env?.[key]
+}
+
+function readSearchParam(name: string): string | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+  try {
+    const params = new URLSearchParams(window.location.search)
+    return params.get(name)
+  } catch {
+    return null
+  }
+}
+
+function detectVaporPreset(): boolean {
+  const envValue = normalizeGateValue(readEnvValue(PRESET_ENV_KEY))
+  if (envValue === PRESET_QUERY_VALUE) {
+    return true
+  }
+  const queryValue = normalizeGateValue(readSearchParam(PRESET_QUERY_KEY))
+  return queryValue === PRESET_QUERY_VALUE
+}
+
+function detectInkBump(): boolean {
+  const envValue = normalizeGateValue(readEnvValue(INK_BUMP_ENV_KEY))
+  if (TRUTHY_BUMP_VALUES.has(envValue)) {
+    return true
+  }
+  const queryValue = normalizeGateValue(readSearchParam(INK_BUMP_QUERY_KEY))
+  return TRUTHY_BUMP_VALUES.has(queryValue)
+}
+
 type DreamdustUniformName = keyof DreamdustUniforms
 
 type DreamdustUniformValue<Name extends DreamdustUniformName> =
@@ -256,9 +323,31 @@ type CascadeTimelineState = {
 }
 
 export function useDreamdustUniforms(): UseDreamdustUniformsResult {
+  const presetVaporEnabled = React.useMemo(detectVaporPreset, [])
+  const inkBumpEnabled = React.useMemo(detectInkBump, [])
   const uniformsRef = React.useRef<DreamdustUniforms | null>(null)
 
   if (!uniformsRef.current) {
+    const breathAmpValue = presetVaporEnabled
+      ? PresetC.breathAmp
+      : DEFAULT_UNIFORM_VALUES.uBreathAmp
+    const evolutionValue = presetVaporEnabled
+      ? PresetC.evolution
+      : DEFAULT_UNIFORM_VALUES.uEvolution
+    const curlAmpValue = presetVaporEnabled
+      ? PresetC.curlFactor
+      : DEFAULT_UNIFORM_VALUES.uCurlAmp
+    const rimGammaValue = presetVaporEnabled
+      ? PresetC.rimGamma
+      : DEFAULT_UNIFORM_VALUES.uRimGamma
+    const baseInkGain = presetVaporEnabled ? PresetC.inkGain : 1
+    const inkOffsetBoostValue =
+      baseInkGain * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
+    const inkSizeBoostValue =
+      baseInkGain * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
+    const inkTintBoostValue =
+      baseInkGain * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
+
     uniformsRef.current = {
       uTime: { value: DEFAULT_UNIFORM_VALUES.uTime },
       uViewport: { value: initialViewport() },
@@ -266,39 +355,56 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uInkIntensity: { value: DEFAULT_UNIFORM_VALUES.uInkIntensity },
       uReveal: { value: DEFAULT_UNIFORM_VALUES.uReveal },
       uBreath: { value: DEFAULT_UNIFORM_VALUES.uBreath },
+      uBreathAmp: { value: breathAmpValue },
       uCascade: { value: DEFAULT_UNIFORM_VALUES.uCascade },
       uCascadeColor: { value: [...DEFAULT_UNIFORM_VALUES.uCascadeColor] as Vec3 },
       uCascadeSizeBoost: { value: DEFAULT_UNIFORM_VALUES.uCascadeSizeBoost },
       uVaporGain: { value: DEFAULT_UNIFORM_VALUES.uVaporGain },
       uNoiseScale: { value: DEFAULT_UNIFORM_VALUES.uNoiseScale },
       uNoiseSpeed: { value: DEFAULT_UNIFORM_VALUES.uNoiseSpeed },
+      uEvolution: { value: evolutionValue },
       uNoiseThreshold: { value: DEFAULT_UNIFORM_VALUES.uNoiseThreshold },
       uDriftAmp: { value: DEFAULT_UNIFORM_VALUES.uDriftAmp },
+      uCurlAmp: { value: curlAmpValue },
       uPointBaseSize: { value: DEFAULT_UNIFORM_VALUES.uPointBaseSize },
       uDepthMin: { value: DEFAULT_UNIFORM_VALUES.uDepthMin },
       uDepthMax: { value: DEFAULT_UNIFORM_VALUES.uDepthMax },
       uDepthBias: { value: DEFAULT_UNIFORM_VALUES.uDepthBias },
       uDepthNormScale: { value: DEFAULT_UNIFORM_VALUES.uDepthNormScale },
       uGamma: { value: DEFAULT_UNIFORM_VALUES.uGamma },
+      uRimGamma: { value: rimGammaValue },
       uFocal: { value: DEFAULT_UNIFORM_VALUES.uFocal },
       uMinSize: { value: DEFAULT_UNIFORM_VALUES.uMinSize },
       uMaxSize: { value: DEFAULT_UNIFORM_VALUES.uMaxSize },
       uSizeGain: { value: DEFAULT_UNIFORM_VALUES.uSizeGain },
       uOffsetGain: { value: DEFAULT_UNIFORM_VALUES.uOffsetGain },
+      uInkOffsetBoost: { value: inkOffsetBoostValue },
+      uInkSizeBoost: { value: inkSizeBoostValue },
       uTintGain: { value: DEFAULT_UNIFORM_VALUES.uTintGain },
+      uInkTintBoost: { value: inkTintBoostValue },
       uVertexInkOk: { value: DEFAULT_UNIFORM_VALUES.uVertexInkOk },
     }
   }
 
   const tunablesRef = React.useRef(getDreamdustTunables())
 
+  const resolveRevealDurationSeconds = React.useCallback(() => {
+    if (presetVaporEnabled) {
+      return Math.max(MIN_REVEAL_SECONDS, PresetC.revealDuration)
+    }
+    const { revealMs } = tunablesRef.current
+    const ms = Number.isFinite(revealMs) ? Math.max(100, revealMs) : DEFAULT_REVEAL_MS
+    return Math.max(MIN_REVEAL_SECONDS, ms / 1000)
+  }, [presetVaporEnabled])
+
+  const cascadeVaporGain = presetVaporEnabled
+    ? PresetC.cascadeRate
+    : CASCADE_VAPOR_GAIN
+
   const revealTimelineRef = React.useRef<RevealTimelineState>({
     active: false,
     elapsed: 0,
-    duration: Math.max(
-      MIN_REVEAL_SECONDS,
-      (tunablesRef.current.revealMs ?? DEFAULT_REVEAL_MS) / 1000,
-    ),
+    duration: resolveRevealDurationSeconds(),
     didLogEnd: false,
   })
   const cascadeTimelineRef = React.useRef<CascadeTimelineState>({
@@ -306,7 +412,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     elapsed: 0,
     duration: CASCADE_DURATION_SECONDS,
     sizeBoost: CASCADE_SIZE_BOOST,
-    vaporGain: CASCADE_VAPOR_GAIN,
+    vaporGain: cascadeVaporGain,
     didLogStart: false,
     didLogEnd: false,
   })
@@ -320,11 +426,10 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       tunablesRef.current = next
       const reveal = revealTimelineRef.current
       if (!reveal.active) {
-        const ms = Number.isFinite(next.revealMs) ? Math.max(100, next.revealMs) : DEFAULT_REVEAL_MS
-        reveal.duration = Math.max(MIN_REVEAL_SECONDS, ms / 1000)
+        reveal.duration = resolveRevealDurationSeconds()
       }
     })
-  }, [])
+  }, [resolveRevealDurationSeconds])
 
   const applyViewport = React.useCallback((width: number, height: number) => {
     const uniforms = uniformsRef.current
@@ -423,9 +528,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const reveal = revealTimelineRef.current
     reveal.active = true
     reveal.elapsed = 0
-    const { revealMs } = tunablesRef.current
-    const ms = Number.isFinite(revealMs) ? Math.max(100, revealMs) : DEFAULT_REVEAL_MS
-    reveal.duration = Math.max(MIN_REVEAL_SECONDS, ms / 1000)
+    reveal.duration = resolveRevealDurationSeconds()
     reveal.didLogEnd = false
     if (uniforms) {
       uniforms.uReveal.value = 0
@@ -433,7 +536,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     safeLog('[Dreamdust] reveal start', {
       duration: Number(reveal.duration.toFixed(3)),
     })
-  }, [])
+  }, [resolveRevealDurationSeconds])
 
   React.useEffect(() => {
     if (size) {
@@ -518,7 +621,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     cascade.elapsed = 0
     cascade.duration = CASCADE_DURATION_SECONDS
     cascade.sizeBoost = CASCADE_SIZE_BOOST
-    cascade.vaporGain = CASCADE_VAPOR_GAIN
+    cascade.vaporGain = cascadeVaporGain
     cascade.didLogStart = false
     cascade.didLogEnd = false
     if (!uniforms) return
@@ -529,7 +632,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     for (let i = 0; i < target.length && i < color.length; i += 1) {
       target[i] = color[i]
     }
-  }, [])
+  }, [cascadeVaporGain])
 
   const stopCascade = React.useCallback(() => {
     const uniforms = uniformsRef.current
