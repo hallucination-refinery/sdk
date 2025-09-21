@@ -6,6 +6,7 @@ import type { RootState } from '@react-three/fiber'
 
 import {
   getDreamdustTunables,
+  logOnce,
   subscribeDreamdustTunables,
 } from './metrics'
 
@@ -126,6 +127,99 @@ function safeLog(...args: Parameters<typeof console.log>): void {
   }
 }
 
+type TextureMetrics = {
+  width: number
+  height: number
+  needsUpdate: boolean
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return null
+  }
+  return value
+}
+
+function readTextureDimensions(candidate: unknown):
+  | Pick<TextureMetrics, 'width' | 'height'>
+  | null {
+  if (Array.isArray(candidate)) {
+    for (const entry of candidate) {
+      const dimensions = readTextureDimensions(entry)
+      if (dimensions) {
+        return dimensions
+      }
+    }
+    return null
+  }
+
+  if (!isRecord(candidate)) {
+    return null
+  }
+
+  const potential = candidate as { width?: unknown; height?: unknown }
+  const width = toFiniteNumber(potential.width)
+  const height = toFiniteNumber(potential.height)
+
+  if (width === null || height === null) {
+    return null
+  }
+
+  return { width, height }
+}
+
+function extractInkTextureMetrics(texture: TextureLike): TextureMetrics | null {
+  if (!isRecord(texture)) {
+    return null
+  }
+
+  const record = texture as {
+    needsUpdate?: unknown
+    image?: unknown
+    source?: unknown
+    width?: unknown
+    height?: unknown
+  }
+
+  const needsUpdateValue = record.needsUpdate
+  const needsUpdate =
+    typeof needsUpdateValue === 'boolean'
+      ? needsUpdateValue
+      : Boolean(needsUpdateValue)
+
+  const candidates: unknown[] = []
+
+  if ('image' in record) {
+    candidates.push(record.image)
+  }
+
+  if ('source' in record && isRecord(record.source)) {
+    const source = record.source as { data?: unknown }
+    if ('data' in source) {
+      candidates.push(source.data)
+    }
+  }
+
+  candidates.push(record)
+
+  for (const candidate of candidates) {
+    const dimensions = readTextureDimensions(candidate)
+    if (dimensions) {
+      return {
+        width: dimensions.width,
+        height: dimensions.height,
+        needsUpdate,
+      }
+    }
+  }
+
+  return null
+}
+
 type DreamdustUniformName = keyof DreamdustUniforms
 
 type DreamdustUniformValue<Name extends DreamdustUniformName> =
@@ -219,6 +313,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   const breathStateRef = React.useRef({
     phase: 0,
   })
+  const lastInkTextureRef = React.useRef<TextureLike | null>(null)
 
   React.useEffect(() => {
     return subscribeDreamdustTunables((next) => {
@@ -457,6 +552,24 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   const updateInkTexture = React.useCallback(
     (texture: TextureLike | null) => {
       setUniform('uInkTex', texture)
+
+      if (texture === null) {
+        lastInkTextureRef.current = null
+        return
+      }
+
+      if (lastInkTextureRef.current === texture) {
+        return
+      }
+
+      const metrics = extractInkTextureMetrics(texture)
+      if (!metrics) {
+        return
+      }
+
+      lastInkTextureRef.current = texture
+      logOnce('ink-tex bind', metrics)
+      safeLog('[Dreamdust] ink-tex bind', metrics)
     },
     [setUniform],
   )
