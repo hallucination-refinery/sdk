@@ -9,7 +9,7 @@ import {
   logOnce,
   subscribeDreamdustTunables,
 } from './metrics'
-import { PresetC } from './presets'
+import { PresetAiry, PresetC } from './presets'
 
 type TextureLike = unknown
 type Vec3 = [number, number, number]
@@ -236,7 +236,8 @@ function extractInkTextureMetrics(texture: TextureLike): TextureMetrics | null {
 }
 
 const PRESET_QUERY_KEY = 'preset'
-const PRESET_QUERY_VALUE = 'vapor'
+const PRESET_VAPOR_VALUE = 'vapor'
+const PRESET_AIRY_VALUE = 'airy'
 const PRESET_ENV_KEY = 'DD_PRESET'
 const INK_BUMP_QUERY_KEY = 'inkBump'
 const INK_BUMP_ENV_KEY = 'DD_INK_BUMP'
@@ -269,13 +270,24 @@ function readSearchParam(name: string): string | null {
   }
 }
 
-function detectVaporPreset(): boolean {
+function detectPresetGate(target: string): boolean {
+  if (!target) {
+    return false
+  }
   const envValue = normalizeGateValue(readEnvValue(PRESET_ENV_KEY))
-  if (envValue === PRESET_QUERY_VALUE) {
+  if (envValue === target) {
     return true
   }
   const queryValue = normalizeGateValue(readSearchParam(PRESET_QUERY_KEY))
-  return queryValue === PRESET_QUERY_VALUE
+  return queryValue === target
+}
+
+function detectVaporPreset(): boolean {
+  return detectPresetGate(PRESET_VAPOR_VALUE)
+}
+
+function detectAiryPreset(): boolean {
+  return detectPresetGate(PRESET_AIRY_VALUE)
 }
 
 function detectInkBump(): boolean {
@@ -323,24 +335,40 @@ type CascadeTimelineState = {
 }
 
 export function useDreamdustUniforms(): UseDreamdustUniformsResult {
+  const presetAiryEnabled = React.useMemo(detectAiryPreset, [])
   const presetVaporEnabled = React.useMemo(detectVaporPreset, [])
-  const inkBumpEnabled = React.useMemo(detectInkBump, [])
+  const inkBumpEnabled = React.useMemo(
+    () => (presetAiryEnabled ? false : detectInkBump()),
+    [presetAiryEnabled],
+  )
   const uniformsRef = React.useRef<DreamdustUniforms | null>(null)
 
   if (!uniformsRef.current) {
-    const breathAmpValue = presetVaporEnabled
-      ? PresetC.breathAmp
-      : DEFAULT_UNIFORM_VALUES.uBreathAmp
-    const evolutionValue = presetVaporEnabled
-      ? PresetC.evolution
-      : DEFAULT_UNIFORM_VALUES.uEvolution
-    const curlAmpValue = presetVaporEnabled
-      ? PresetC.curlFactor
-      : DEFAULT_UNIFORM_VALUES.uCurlAmp
-    const rimGammaValue = presetVaporEnabled
-      ? PresetC.rimGamma
-      : DEFAULT_UNIFORM_VALUES.uRimGamma
-    const baseInkGain = presetVaporEnabled ? PresetC.inkGain : 1
+    const breathAmpValue = presetAiryEnabled
+      ? PresetAiry.breathAmp
+      : presetVaporEnabled
+        ? PresetC.breathAmp
+        : DEFAULT_UNIFORM_VALUES.uBreathAmp
+    const evolutionValue = presetAiryEnabled
+      ? PresetAiry.evolution
+      : presetVaporEnabled
+        ? PresetC.evolution
+        : DEFAULT_UNIFORM_VALUES.uEvolution
+    const curlAmpValue = presetAiryEnabled
+      ? PresetAiry.curlFactor
+      : presetVaporEnabled
+        ? PresetC.curlFactor
+        : DEFAULT_UNIFORM_VALUES.uCurlAmp
+    const rimGammaValue = presetAiryEnabled
+      ? PresetAiry.rimGamma
+      : presetVaporEnabled
+        ? PresetC.rimGamma
+        : DEFAULT_UNIFORM_VALUES.uRimGamma
+    const baseInkGain = presetAiryEnabled
+      ? PresetAiry.inkGain
+      : presetVaporEnabled
+        ? PresetC.inkGain
+        : 1
     const inkOffsetBoostValue =
       baseInkGain * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
     const inkSizeBoostValue =
@@ -389,17 +417,22 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   const tunablesRef = React.useRef(getDreamdustTunables())
 
   const resolveRevealDurationSeconds = React.useCallback(() => {
+    if (presetAiryEnabled) {
+      return Math.max(MIN_REVEAL_SECONDS, PresetAiry.revealDuration)
+    }
     if (presetVaporEnabled) {
       return Math.max(MIN_REVEAL_SECONDS, PresetC.revealDuration)
     }
     const { revealMs } = tunablesRef.current
     const ms = Number.isFinite(revealMs) ? Math.max(100, revealMs) : DEFAULT_REVEAL_MS
     return Math.max(MIN_REVEAL_SECONDS, ms / 1000)
-  }, [presetVaporEnabled])
+  }, [presetAiryEnabled, presetVaporEnabled])
 
-  const cascadeVaporGain = presetVaporEnabled
-    ? PresetC.cascadeRate
-    : CASCADE_VAPOR_GAIN
+  const cascadeVaporGain = presetAiryEnabled
+    ? PresetAiry.cascadeRate
+    : presetVaporEnabled
+      ? PresetC.cascadeRate
+      : CASCADE_VAPOR_GAIN
 
   const revealTimelineRef = React.useRef<RevealTimelineState>({
     active: false,
