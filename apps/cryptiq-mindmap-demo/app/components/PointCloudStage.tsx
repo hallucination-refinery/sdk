@@ -29,7 +29,13 @@ import {
 } from './dreamdust/metrics'
 import InkSurface from './dreamdust/InkSurface'
 import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
-import { capInstances, clampDPR, decimateInterleaved, pointCap } from './pointcloud/budget'
+import {
+  capInstances,
+  clampDPR,
+  decimateInterleaved,
+  detectMobile,
+  pointCap,
+} from './pointcloud/budget'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -59,6 +65,71 @@ type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'
 
 type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
   uReveal?: { value: number }
+}
+
+const BLOOM_SETTINGS = {
+  strength: 0.12,
+  radius: 0.1,
+  threshold: 0.7,
+} as const
+
+type NavigatorWithPowerHints = Navigator & {
+  deviceMemory?: number
+  connection?: {
+    saveData?: boolean
+    effectiveType?: string
+  }
+}
+
+function isLowPowerDevice(): boolean {
+  if (typeof navigator === 'undefined') {
+    return false
+  }
+
+  const nav = navigator as NavigatorWithPowerHints
+
+  try {
+    const connection = nav.connection
+    if (connection) {
+      if (connection.saveData) {
+        return true
+      }
+      const effectiveType = connection.effectiveType
+      if (typeof effectiveType === 'string' && /(slow-2g|2g|3g)/i.test(effectiveType)) {
+        return true
+      }
+    }
+  } catch {
+    // Ignore connection feature detection errors.
+  }
+
+  if (
+    typeof nav.hardwareConcurrency === 'number' &&
+    Number.isFinite(nav.hardwareConcurrency) &&
+    nav.hardwareConcurrency > 0 &&
+    nav.hardwareConcurrency <= 4
+  ) {
+    return true
+  }
+
+  const deviceMemory = nav.deviceMemory
+  if (typeof deviceMemory === 'number' && Number.isFinite(deviceMemory) && deviceMemory > 0 && deviceMemory <= 4) {
+    return true
+  }
+
+  return detectMobile()
+}
+
+function readNoBloomOverride(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+  try {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('noBloom') === '1'
+  } catch {
+    return false
+  }
 }
 
 function useOptionalDreamdustCtx() {
@@ -657,6 +728,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     // omit perspective in baseline
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
+  const [noBloomOverride] = React.useState(readNoBloomOverride)
+  const [bloomEligible, setBloomEligible] = React.useState(false)
+  const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [drawing, setDrawing] = React.useState(false)
   const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
@@ -1165,11 +1239,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     mirrorLR?: boolean
     mirrorUD?: boolean
     roll180?: boolean
-  }>({
+  }>(() => ({
     thickness: 0.4,
     pointSizeScale: 1.1,
     keepRatio: 1,
-    bloom: false,
+    bloom: !noBloomOverride,
     fovDeg: 20,
     reveal: 1,
     flipUp: false,
@@ -1177,7 +1251,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     mirrorLR: false,
     mirrorUD: true,
     roll180: false,
-  })
+  }))
   const [fitRequest, setFitRequest] = React.useState(0)
   const { bloom, pointSizeScale, reveal, thickness } = ui
   const thicknessScale = React.useMemo(
@@ -1189,10 +1263,20 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
       if (p && p.get('debug') === '1') setDebugVisible(true)
       const saved = typeof window !== 'undefined' ? window.localStorage.getItem('pcDebug') : null
-      if (saved) setUi({ ...ui, ...JSON.parse(saved) })
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<typeof ui>
+        setUi((prev) => {
+          const next = { ...prev, ...parsed }
+          if (noBloomOverride) {
+            next.bloom = false
+          }
+          return next
+        })
+      } else if (noBloomOverride) {
+        setUi((prev) => ({ ...prev, bloom: false }))
+      }
     } catch { /* noop */ }
-     
-  }, [])
+  }, [noBloomOverride])
   React.useEffect(() => {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
@@ -1213,8 +1297,20 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
-    setBloomEnabled(bloom)
-  }, [bloom])
+    setBloomEnabled(bloom && bloomEligible && !noBloomOverride)
+  }, [bloom, bloomEligible, noBloomOverride])
+
+  const bloomLogRef = React.useRef(false)
+  React.useEffect(() => {
+    if (!bloomGuardReady || bloomLogRef.current) return
+    const enabled = bloom && bloomEligible && !noBloomOverride
+    try {
+      console.info(
+        `[dreamdust] bloom { enabled: ${enabled}, strength: ${BLOOM_SETTINGS.strength}, radius: ${BLOOM_SETTINGS.radius}, threshold: ${BLOOM_SETTINGS.threshold} }`,
+      )
+    } catch { /* noop */ }
+    bloomLogRef.current = true
+  }, [bloom, bloomEligible, bloomGuardReady, noBloomOverride])
 
   React.useEffect(() => {
     uniforms.uBaseSize.value = pointSize * pointSizeScale
@@ -1452,6 +1548,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }}
         onCreated={({ gl }) => {
           const dprClamp = clampDPR(gl, 2)
+          const bloomAllowed = Number.isFinite(dprClamp) && dprClamp <= 1.8 && !isLowPowerDevice()
+          setBloomEligible(bloomAllowed)
+          setBloomGuardReady(true)
           const caps = getDreamdustCaps(gl.domElement)
           if (caps.aliasedPointSizeRange && !Object.isFrozen(caps.aliasedPointSizeRange)) {
             Object.freeze(caps.aliasedPointSizeRange)
@@ -1586,7 +1685,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             pointBudget={pointBudget}
             material={fallbackMaterial}
             uniforms={uniforms}
-            onMaterialValid={() => setBloomEnabled(true)}
+            onMaterialValid={() => setBloomEnabled(bloom && bloomEligible && !noBloomOverride)}
             onInstancesReady={logInstances}
           />
         ) : prebakedStatus === 'absent' && fallbackMaterial ? (
@@ -1598,7 +1697,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               pointBudget={pointBudget}
               material={fallbackMaterial}
               uniforms={uniforms}
-              onMaterialValid={() => setBloomEnabled(true)}
+              onMaterialValid={() => setBloomEnabled(bloom && bloomEligible && !noBloomOverride)}
               onInstancesReady={logInstances}
             />
           )
@@ -1607,7 +1706,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           drawing={drawing}
         />
-        {bloomEnabled && <BloomPass strength={0.12} radius={0.1} threshold={0.7} />}
+        {bloomEnabled && (
+          <BloomPass
+            strength={BLOOM_SETTINGS.strength}
+            radius={BLOOM_SETTINGS.radius}
+            threshold={BLOOM_SETTINGS.threshold}
+          />
+        )}
       </Canvas>
       {debugVisible && (
         <div
