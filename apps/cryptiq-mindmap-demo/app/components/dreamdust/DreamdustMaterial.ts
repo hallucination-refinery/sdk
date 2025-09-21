@@ -1,5 +1,6 @@
-import { Matrix4, ShaderMaterial } from 'three'
-import type { IUniform, ShaderMaterialParameters } from 'three'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore three types are optional in this workspace
+import * as THREE from 'three'
 
 import {
   DD_CURL3,
@@ -11,7 +12,7 @@ import {
   DREAMDUST_SOFT_SPRITE_CHUNK,
 } from './glsl/chunks'
 
-type UniformRecord = Record<string, IUniform>
+type UniformRecord = Record<string, { value: unknown }>
 
 type DreamdustMaterialOptions = {
   unproject: boolean
@@ -53,7 +54,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uHasCapture: 0,
   uZNearNdc: -0.85,
   uZFarNdc: 0.85,
-  uPVInvCapture: new Matrix4(),
+  uPVInvCapture: new (THREE as any).Matrix4(),
   uInkTex: null,
   uCascade: 0,
   uCascadeColor: [1, 1, 1] as [number, number, number],
@@ -74,8 +75,13 @@ function cloneUniformValue(value: unknown): unknown {
   if (Array.isArray(value)) {
     return [...value]
   }
-  if (value instanceof Matrix4) {
-    return value.clone()
+  const m = value as { clone?: () => unknown; isMatrix4?: boolean } | undefined
+  if (m && typeof m.clone === 'function') {
+    try {
+      return m.clone()
+    } catch {
+      // fallthrough
+    }
   }
   return value
 }
@@ -83,17 +89,17 @@ function cloneUniformValue(value: unknown): unknown {
 function ensureUniform(uniforms: UniformRecord, name: DefaultUniformKey) {
   if (uniforms[name] === undefined) {
     const defaultValue = DEFAULT_UNIFORM_VALUES[name]
-    uniforms[name] = { value: cloneUniformValue(defaultValue) } as IUniform
+    uniforms[name] = { value: cloneUniformValue(defaultValue) }
   }
 }
 
 function aliasUniform(
   uniforms: UniformRecord,
   legacyName: string,
-  canonicalName: DefaultUniformKey,
+  canonicalName: DefaultUniformKey
 ) {
-  const canonicalUniform = uniforms[canonicalName] as IUniform | undefined
-  const legacyUniform = uniforms[legacyName] as IUniform | undefined
+  const canonicalUniform = uniforms[canonicalName]
+  const legacyUniform = uniforms[legacyName]
 
   if (legacyUniform && !canonicalUniform) {
     uniforms[canonicalName] = legacyUniform
@@ -124,9 +130,7 @@ function isTruthyDefine(value: unknown): boolean {
   return !!value
 }
 
-function syncLegacyVertexInkDefine(
-  defines: ShaderMaterialParameters['defines'] | undefined,
-) {
+function syncLegacyVertexInkDefine(defines: Record<string, unknown> | undefined) {
   if (!defines) {
     return
   }
@@ -195,6 +199,7 @@ varying vec2 vInkUv;
 varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
+varying float vDepthView;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
@@ -286,7 +291,8 @@ void main() {
     revealPos += vaporFlow * vaporStrength;
   }
 
-  vec4 viewPos = viewMatrix * vec4(revealPos, 1.0);
+  vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0);
+  vec3 viewPos = viewPos4.xyz;
   float viewDist = max(1e-3, -viewPos.z);
   float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
   float breathScale = 1.0 + breathPhase * 0.12;
@@ -315,12 +321,17 @@ void main() {
   vColor = color;
   vInkTint = inkTint;
   vInkMix = inkMix;
-  vInkUv = aUv;
+  // Screen-space UV from post-projection position
+  vec4 clipPos = projectionMatrix * viewPos4;
+  float invW = 1.0 / max(1e-6, clipPos.w);
+  vec2 ndc = clipPos.xy * invW; // [-1,1]
+  vInkUv = ndc * 0.5 + 0.5;     // [0,1]
   vRevealMix = mistLift;
   vRevealCoord = aUv * (3.0 + uNoiseScale) + jitterSeed.xy;
-  vPosMV = viewPos.xyz;
+  vPosMV = viewPos;
+  vDepthView = viewDist;
 
-  gl_Position = projectionMatrix * viewPos;
+  gl_Position = projectionMatrix * viewPos4;
 }
 `
 
@@ -350,6 +361,7 @@ varying vec2 vInkUv;
 varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
+varying float vDepthView;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_SOFT_SPRITE_CHUNK}
@@ -358,15 +370,14 @@ ${DREAMDUST_INK_SAMPLE_CHUNK}
 ${DREAMDUST_DEPTH_FADE_CHUNK}
 
 void main() {
-  float sprite = dreamdustSoftSpriteRim(gl_PointCoord, uRimGamma);
-  if (sprite <= 0.0) {
-    discard;
-  }
+  // Softer disc sprite for vapor look
+  vec2 pc = gl_PointCoord * 2.0 - 1.0;
+  float r = clamp(length(pc), 0.0, 1.0);
+  float sprite = smoothstep(1.0, 0.0, r);
 
   float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
-  vec2 revealSample =
-      vRevealCoord + vec2(uTime * 0.18 * uNoiseSpeed * uEvolution, uTime * 0.05 * uEvolution);
-  float revealNoise = dd_noise2(revealSample);
+  // Static reveal mask (no time animation) to avoid brightness pulsing
+  float revealNoise = dd_noise2(vRevealCoord);
   float revealStrength = clamp(vRevealMix, 0.0, 1.0);
   float flow = revealNoise + revealStrength * (1.0 - threshold * 0.5);
   float baseReveal = smoothstep(threshold - 0.2, 1.0, flow);
@@ -412,13 +423,14 @@ void main() {
 
   color = dreamdustApplyGamma(color, uGamma);
 
-  gl_FragColor = vec4(color, alpha);
+  // Premultiplied alpha output
+  gl_FragColor = vec4(color * alpha, alpha);
 }
 `
 
 export function makeDreamdustMaterial(
   uniforms: UniformRecord,
-  opts: DreamdustMaterialOptions | DreamdustMaterialOptionsInput,
+  opts: DreamdustMaterialOptions | DreamdustMaterialOptionsInput
 ) {
   aliasUniform(uniforms, 'uBaseSize', 'uPointBaseSize')
   const uniformNames = Object.keys(DEFAULT_UNIFORM_VALUES) as DefaultUniformKey[]
@@ -432,7 +444,7 @@ export function makeDreamdustMaterial(
     vertexInkOk: opts.vertexInkOk ?? false,
   }
 
-  const defines: ShaderMaterialParameters['defines'] = {}
+  const defines: Record<string, unknown> = {}
   if (resolved.unproject) {
     defines.USE_UNPROJECT = 1
   }
@@ -442,41 +454,42 @@ export function makeDreamdustMaterial(
   }
   syncLegacyVertexInkDefine(defines)
 
-  const params: ShaderMaterialParameters = {
+  const params: any = {
     uniforms,
     vertexShader: VERTEX_SHADER,
     fragmentShader: FRAGMENT_SHADER,
     transparent: true,
     depthWrite: false,
     depthTest: true,
-    toneMapped: false,
+    toneMapped: true,
+    premultipliedAlpha: true,
     defines,
   }
 
-  const material = new ShaderMaterial(params)
-  material.uniforms = uniforms
-  material.defines = material.defines ?? {}
-  syncLegacyVertexInkDefine(material.defines)
+  const material = new (THREE as any).ShaderMaterial(params)
+  ;(material as any).uniforms = uniforms
+  ;(material as any).defines = (material as any).defines ?? {}
+  syncLegacyVertexInkDefine((material as any).defines)
   if (resolved.unproject) {
-    material.defines.USE_UNPROJECT = 1
+    ;(material as any).defines.USE_UNPROJECT = 1
   } else {
-    delete material.defines.USE_UNPROJECT
+    delete (material as any).defines.USE_UNPROJECT
   }
   if (resolved.vertexInkOk) {
-    material.defines.USE_VERTEX_INK = 1
-    material.defines.VERTEX_INK_OK = 1
+    ;(material as any).defines.USE_VERTEX_INK = 1
+    ;(material as any).defines.VERTEX_INK_OK = 1
   } else {
-    delete material.defines.USE_VERTEX_INK
-    delete material.defines.VERTEX_INK_OK
+    delete (material as any).defines.USE_VERTEX_INK
+    delete (material as any).defines.VERTEX_INK_OK
   }
 
   if (uniforms.uVertexInkOk) {
     uniforms.uVertexInkOk.value = resolved.vertexInkOk ? 1 : 0
   }
 
-  const originalOnBeforeCompile = material.onBeforeCompile?.bind(material)
-  material.onBeforeCompile = function onBeforeCompile(shader, renderer) {
-    syncLegacyVertexInkDefine(material.defines)
+  const originalOnBeforeCompile = (material as any).onBeforeCompile?.bind(material)
+  ;(material as any).onBeforeCompile = function onBeforeCompile(shader: any, renderer: any) {
+    syncLegacyVertexInkDefine((material as any).defines)
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)
     }

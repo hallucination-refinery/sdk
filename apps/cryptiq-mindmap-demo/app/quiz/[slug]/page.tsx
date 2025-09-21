@@ -110,8 +110,8 @@ export default function QuizPage() {
       ref={mainRef}
       style={{
         position: 'relative',
-        width: '100%',
-        height: '100%',
+        width: '100vw',
+        height: '100vh',
         background: '#00041A',
         overflow: 'hidden',
       }}

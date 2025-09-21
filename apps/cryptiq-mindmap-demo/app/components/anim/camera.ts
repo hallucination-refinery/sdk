@@ -77,6 +77,44 @@ export const fitPerspective: FitPerspective = (
 }
 
 /**
+ * Like {@link fitPerspective} but uses a "cover" strategy: it chooses the smaller of
+ * the vertical/horizontal distances so the content covers the viewport (may crop).
+ */
+export const fitPerspectiveCover: FitPerspective = (
+  fovDeg,
+  radius,
+  aspect,
+  margin = 1.0,
+) => {
+  const safeFovDeg = Math.min(179.999, Math.max(1e-3, fovDeg))
+  const safeAspect = Math.max(FIT_EPSILON, aspect)
+  const safeMargin = Math.max(0, margin)
+  const paddedRadius = Math.max(0, radius) * safeMargin
+  if (paddedRadius === 0) return 0
+
+  const halfFovRad = THREE.MathUtils.degToRad(safeFovDeg) * 0.5
+  const tanHalfVertical = Math.tan(halfFovRad)
+  const tanHalfHorizontal = tanHalfVertical * safeAspect
+  const verticalDistance = tanHalfVertical > FIT_EPSILON ? paddedRadius / tanHalfVertical : Infinity
+  const horizontalDistance = tanHalfHorizontal > FIT_EPSILON ? paddedRadius / tanHalfHorizontal : Infinity
+  const distance = Math.min(verticalDistance, horizontalDistance)
+
+  if (process.env.NODE_ENV !== 'production') {
+    if (!Number.isFinite(distance)) {
+      console.warn('[camera] fitPerspectiveCover produced invalid distance', {
+        fovDeg,
+        radius,
+        aspect,
+        margin,
+        distance,
+      })
+    }
+  }
+
+  return distance
+}
+
+/**
  * Applies {@link fitPerspective} to a Three.js perspective camera, moving it along its
  * current view ray so the given bounding radius fits inside the frustum.
  */
@@ -116,6 +154,55 @@ export function applyPerspectiveFit(
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[camera] applyPerspectiveFit using fallback target at look direction')
     }
+  } else {
+    direction.normalize()
+  }
+
+  const offset = direction.clone().multiplyScalar(distance)
+  const newPosition = target.clone().sub(offset)
+  camera.position.copy(newPosition)
+  camera.lookAt(target)
+  camera.updateProjectionMatrix()
+
+  data.fitTarget = target.clone()
+  data.fitDistance = distance
+
+  return distance
+}
+
+export function applyPerspectiveCover(
+  camera: THREE.PerspectiveCamera,
+  radius: number,
+  margin = 1.0,
+) {
+  const distance = fitPerspectiveCover(camera.fov, radius, camera.aspect, margin)
+  if (distance <= 0) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[camera] applyPerspectiveCover skipped due to non-positive distance', {
+        distance,
+        radius,
+        margin,
+      })
+    }
+    return distance
+  }
+
+  const data = camera.userData as {
+    fitTarget?: THREE.Vector3
+    target?: THREE.Vector3
+    fitDistance?: number
+  }
+
+  let target: THREE.Vector3
+  if (isVector3(data?.fitTarget)) target = data.fitTarget.clone()
+  else if (isVector3(data?.target)) target = data.target.clone()
+  else target = new THREE.Vector3()
+
+  const direction = target.clone().sub(camera.position)
+  if (direction.lengthSq() < FIT_EPSILON) {
+    camera.getWorldDirection(direction)
+    if (direction.lengthSq() < FIT_EPSILON) direction.set(0, 0, -1)
+    target = camera.position.clone().add(direction)
   } else {
     direction.normalize()
   }

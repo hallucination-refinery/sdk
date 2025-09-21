@@ -113,7 +113,12 @@ function isLowPowerDevice(): boolean {
   }
 
   const deviceMemory = nav.deviceMemory
-  if (typeof deviceMemory === 'number' && Number.isFinite(deviceMemory) && deviceMemory > 0 && deviceMemory <= 4) {
+  if (
+    typeof deviceMemory === 'number' &&
+    Number.isFinite(deviceMemory) &&
+    deviceMemory > 0 &&
+    deviceMemory <= 4
+  ) {
     return true
   }
 
@@ -479,7 +484,9 @@ function PointsMesh({
         // Guard log to surface shader-compile stalls early during bring-up
         try {
           console.warn('[PC] material program not ready yet; waiting…')
-        } catch { /* noop */ }
+        } catch {
+          /* noop */
+        }
         programWaitLoggedRef.current = true
       }
       raf = requestAnimationFrame(check)
@@ -620,7 +627,9 @@ function BloomPass({
     return () => {
       try {
         comp.dispose()
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
       composerRef.current = null
     }
   }, [gl, scene, camera, strength, radius, threshold])
@@ -633,11 +642,7 @@ function BloomPass({
   return null
 }
 
-function DreamdustTicker({
-  tick,
-}: {
-  tick?: (state: unknown, delta: number) => void
-}) {
+function DreamdustTicker({ tick }: { tick?: (state: unknown, delta: number) => void }) {
   const tickRef = React.useRef<typeof tick>()
   React.useEffect(() => {
     tickRef.current = tick
@@ -653,13 +658,7 @@ function DreamdustTicker({
   return null
 }
 
-function SceneControls({
-  radius,
-  drawing = false,
-}: {
-  radius?: number
-  drawing?: boolean
-}) {
+function SceneControls({ radius, drawing = false }: { radius?: number; drawing?: boolean }) {
   const controlsRef = React.useRef(null)
   const { gl } = useThree()
   React.useEffect(() => {
@@ -780,9 +779,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
   }, [fallbackGate, shouldFetchDepthRg, packed.status, depthUrl])
 
-  const depthImage = useImageData(
-    fallbackGate && allowDepth16 && depthUrl ? depthUrl : null,
-  )
+  const depthImage = useImageData(fallbackGate && allowDepth16 && depthUrl ? depthUrl : null)
 
   const depth16From8 = React.useMemo(() => {
     if (depthImage.status !== 'ready' || !depthImage.data) return null
@@ -794,8 +791,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return { data16: out, width: w, height: h }
   }, [depthImage.data, depthImage.height, depthImage.status, depthImage.width])
 
-  const colorReady =
-    color.status === 'ready' && !!color.data && color.width > 0 && color.height > 0
+  const colorReady = color.status === 'ready' && !!color.data && color.width > 0 && color.height > 0
   const readyPacked =
     fallbackGate &&
     colorReady &&
@@ -809,9 +805,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const dreamdustUniformApi = useDreamdustUniforms()
   const { uniforms: baseUniforms, setUniform, updateInkTexture } = dreamdustUniformApi
-  const tick = (dreamdustUniformApi as {
-    tick?: (state: unknown, delta: number) => void
-  }).tick
+  const tick = (
+    dreamdustUniformApi as {
+      tick?: (state: unknown, delta: number) => void
+    }
+  ).tick
   const startReveal = (dreamdustUniformApi as { startReveal?: () => void }).startReveal
   const uniforms = React.useMemo<DreamdustStageUniforms>(() => {
     const u = baseUniforms as DreamdustStageUniforms
@@ -891,7 +889,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           uViewport: vp,
           inkIntensity,
         })
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
       loggedInkInfoRef.current = true
     }
   }, [inkIntensity, uniforms])
@@ -986,7 +986,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             const cbuf = await cr.arrayBuffer()
             colors = new Uint8Array(cbuf)
           }
-        } catch { /* noop */ }
+        } catch {
+          /* noop */
+        }
         if (!cancelled) {
           console.log('[PC] prebaked positions', {
             bytes: buf.byteLength,
@@ -1221,7 +1223,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (prebakedStatus === 'present') {
       try {
         console.log('[PC] prebaked present; using positions/colors, fallback images not required')
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
     }
   }, [prebakedStatus])
 
@@ -1249,15 +1253,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     flipUp: false,
     flipNormal: false,
     mirrorLR: false,
-    mirrorUD: true,
+    mirrorUD: false,
     roll180: false,
   }))
   const [fitRequest, setFitRequest] = React.useState(0)
   const { bloom, pointSizeScale, reveal, thickness } = ui
-  const thicknessScale = React.useMemo(
-    () => Math.max(0.05, Math.min(1.0, thickness)),
-    [thickness],
-  )
+  const thicknessScale = React.useMemo(() => Math.max(0.05, Math.min(1.0, thickness)), [thickness])
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -1275,12 +1276,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       } else if (noBloomOverride) {
         setUi((prev) => ({ ...prev, bloom: false }))
       }
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, [noBloomOverride])
   React.useEffect(() => {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, [
     ui.thickness,
     ui.pointSizeScale,
@@ -1306,9 +1311,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const enabled = bloom && bloomEligible && !noBloomOverride
     try {
       console.info(
-        `[dreamdust] bloom { enabled: ${enabled}, strength: ${BLOOM_SETTINGS.strength}, radius: ${BLOOM_SETTINGS.radius}, threshold: ${BLOOM_SETTINGS.threshold} }`,
+        `[dreamdust] bloom { enabled: ${enabled}, strength: ${BLOOM_SETTINGS.strength}, radius: ${BLOOM_SETTINGS.radius}, threshold: ${BLOOM_SETTINGS.threshold} }`
       )
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     bloomLogRef.current = true
   }, [bloom, bloomEligible, bloomGuardReady, noBloomOverride])
 
@@ -1329,14 +1336,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     } else {
       setUniform('uNoiseThreshold', threshold)
     }
-  }, [
-    hasRevealUniform,
-    reveal,
-    setUniform,
-    timelineSupported,
-    uniforms,
-    uniformsWithReveal,
-  ])
+  }, [hasRevealUniform, reveal, setUniform, timelineSupported, uniforms, uniformsWithReveal])
 
   // Derive reduced, matched buffers for prebaked positions/colors
   const renderBuffers = React.useMemo(() => {
@@ -1368,17 +1368,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const loggedInstancesRef = React.useRef(false)
   const revealStartedRef = React.useRef(false)
-  const logInstances = React.useCallback(
-    (count: number) => {
-      if (!Number.isFinite(count) || count <= 0) return
-      if (loggedInstancesRef.current) return
-      try {
-        console.log('[PC] instances:', Math.floor(count))
-      } catch { /* noop */ }
-      loggedInstancesRef.current = true
-    },
-    [],
-  )
+  const logInstances = React.useCallback((count: number) => {
+    if (!Number.isFinite(count) || count <= 0) return
+    if (loggedInstancesRef.current) return
+    try {
+      console.log('[PC] instances:', Math.floor(count))
+    } catch {
+      /* noop */
+    }
+    loggedInstancesRef.current = true
+  }, [])
 
   React.useEffect(() => {
     loggedInstancesRef.current = false
@@ -1407,8 +1406,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
   }, [logInstances, prebaked, prebakedStatus, renderBuffers])
 
-  const prebakedRenderable =
-    prebakedStatus === 'present' && !!prebaked && !!prebakedMaterial
+  const prebakedRenderable = prebakedStatus === 'present' && !!prebaked && !!prebakedMaterial
   const fallbackRenderable =
     prebakedStatus === 'absent' && !!fallbackMaterial && (readyPacked || readyFallback)
   const geometryReady = prebakedRenderable || fallbackRenderable
@@ -1504,6 +1502,53 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return out
   }, [renderBuffers, color.data, color.width, color.height, appliedQuaternion])
 
+  // (cameraCoverRadius moved below cameraFitRadius)
+
+  // Prebaked UV/depth for shader responsiveness (aUv/aDepth)
+  const prebakedUvDepth = React.useMemo(() => {
+    if (!prebaked) return null
+    const srcPos = (renderBuffers?.positions ?? prebaked.positions) as Float32Array
+    const count = Math.floor(srcPos.length / 3)
+    if (count <= 0) return null
+
+    const q = appliedQuaternion
+    let minX = Infinity,
+      minY = Infinity,
+      minZ = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity,
+      maxZ = -Infinity
+    const tmp = new THREE.Vector3()
+    for (let i = 0; i < count; i++) {
+      tmp.set(srcPos[i * 3 + 0], srcPos[i * 3 + 1], srcPos[i * 3 + 2])
+      if (q) tmp.applyQuaternion(q)
+      if (tmp.x < minX) minX = tmp.x
+      if (tmp.y < minY) minY = tmp.y
+      if (tmp.z < minZ) minZ = tmp.z
+      if (tmp.x > maxX) maxX = tmp.x
+      if (tmp.y > maxY) maxY = tmp.y
+      if (tmp.z > maxZ) maxZ = tmp.z
+    }
+    const dx = Math.max(1e-6, maxX - minX)
+    const dy = Math.max(1e-6, maxY - minY)
+    const dz = Math.max(1e-6, maxZ - minZ)
+
+    const uvs = new Float32Array(count * 2)
+    const depths01 = new Float32Array(count)
+    for (let i = 0; i < count; i++) {
+      tmp.set(srcPos[i * 3 + 0], srcPos[i * 3 + 1], srcPos[i * 3 + 2])
+      if (q) tmp.applyQuaternion(q)
+      const u = (tmp.x - minX) / dx
+      const v = (tmp.y - minY) / dy
+      const d01 = (tmp.z - minZ) / dz
+      uvs[i * 2 + 0] = u
+      uvs[i * 2 + 1] = v
+      depths01[i] = d01
+    }
+
+    return { uvs, depths01 }
+  }, [appliedQuaternion, prebaked, renderBuffers])
+
   // Mirror scale (local reflection) for left/right and up/down
   const mirrorScale = React.useMemo(() => {
     return [ui.mirrorLR ? -1 : 1, ui.mirrorUD ? -1 : 1, 1] as [number, number, number]
@@ -1525,6 +1570,31 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     return 600
   }, [prebakedTransform, color.width, color.height])
+
+  // Compute a cover radius from XY extents so the point cloud fills the viewport
+  const cameraCoverRadius = React.useMemo(() => {
+    const srcPos = renderBuffers?.positions ?? prebaked?.positions ?? null
+    if (!srcPos) return cameraFitRadius
+    const count = Math.floor(srcPos.length / 3)
+    if (count <= 0) return cameraFitRadius
+    const q = appliedQuaternion
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity
+    const tmp = new THREE.Vector3()
+    for (let i = 0; i < count; i++) {
+      tmp.set(srcPos[i * 3 + 0], srcPos[i * 3 + 1], srcPos[i * 3 + 2])
+      if (q) tmp.applyQuaternion(q)
+      if (tmp.x < minX) minX = tmp.x
+      if (tmp.y < minY) minY = tmp.y
+      if (tmp.x > maxX) maxX = tmp.x
+      if (tmp.y > maxY) maxY = tmp.y
+    }
+    const dx = Math.max(1e-6, maxX - minX)
+    const dy = Math.max(1e-6, maxY - minY)
+    return 0.5 * Math.hypot(dx, dy)
+  }, [appliedQuaternion, cameraFitRadius, prebaked?.positions, renderBuffers])
 
   React.useEffect(() => {
     if (!uniforms.uDepthNormScale) return
@@ -1552,10 +1622,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           setBloomEligible(bloomAllowed)
           setBloomGuardReady(true)
           const caps = getDreamdustCaps(gl.domElement)
-          if (caps.aliasedPointSizeRange && !Object.isFrozen(caps.aliasedPointSizeRange)) {
-            Object.freeze(caps.aliasedPointSizeRange)
-          }
-          const frozenCaps = Object.freeze(caps) as Readonly<DreamdustRuntimeCaps>
+          // Do not freeze typed arrays directly (V8 throws on freezing array buffer views with elements).
+          // Instead, clone the range and freeze the container object to maintain immutability semantics.
+          const rawCaps = caps
+          const frozenCaps = Object.freeze({
+            ...rawCaps,
+            aliasedPointSizeRange: new Float32Array(rawCaps.aliasedPointSizeRange),
+          }) as Readonly<DreamdustRuntimeCaps>
           setRuntimeCaps(frozenCaps)
           if (dreamdustCtx) {
             dreamdustCtx.setCaps(frozenCaps)
@@ -1584,7 +1657,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             if (gl.debug) gl.debug.checkShaderErrors = true
-          } catch { /* noop */ }
+          } catch {
+            /* noop */
+          }
           // ensure browser gesture handling doesn't block wheel/touch
           gl.domElement.style.touchAction = 'none'
           gl.domElement.style.pointerEvents = 'auto'
@@ -1623,9 +1698,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         />
         <CameraSync
           fovDeg={ui.fovDeg}
-          distance={prebakedTransform ? 2 * prebakedTransform.radius : undefined}
           fitRequest={fitRequest}
-          fitRadius={cameraFitRadius}
+          fitRadius={cameraCoverRadius}
+          fitMargin={0.6}
           fitTarget={cameraFitTarget}
         />
         <DreamdustTicker tick={tick} />
@@ -1659,6 +1734,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                       attach="attributes-position"
                       args={[renderBuffers?.positions ?? prebaked.positions, 3]}
                     />
+                    {prebakedUvDepth && (
+                      <>
+                        {/* custom uv for ink/reveal */}
+                        {/** @ts-expect-error attachObject is supported at runtime */}
+                        <bufferAttribute
+                          attachObject={['attributes', 'aUv']}
+                          args={[prebakedUvDepth.uvs, 2]}
+                        />
+                        {/* also bind built-in uv for fragment-only path parity */}
+                        <bufferAttribute attach="attributes-uv" args={[prebakedUvDepth.uvs, 2]} />
+                        {/* normalized depth across AABB */}
+                        {/** @ts-expect-error attachObject is supported at runtime */}
+                        <bufferAttribute
+                          attachObject={['attributes', 'aDepth']}
+                          args={[prebakedUvDepth.depths01, 1]}
+                        />
+                      </>
+                    )}
                     {(() => {
                       const src = renderBuffers?.colors ?? recolored ?? null
                       const posCount = Math.floor(
@@ -1891,12 +1984,12 @@ function CameraSync({
     }
   }, [camera, fovDeg])
   React.useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera
     if (distance && isFinite(distance)) {
-      const cam = camera as THREE.PerspectiveCamera
       cam.position.set(0, 0, distance)
       cam.updateProjectionMatrix()
     }
-  }, [camera, distance])
+  }, [camera, distance, fitMargin, fitRadius])
   React.useEffect(() => {
     if (!fitTarget) return
     const cam = camera as THREE.PerspectiveCamera
