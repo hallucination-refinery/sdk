@@ -68,10 +68,12 @@ type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
 }
 
 const BLOOM_SETTINGS = {
-  strength: 0.12,
-  radius: 0.1,
-  threshold: 0.7,
+  strength: 0.2,
+  radius: 0.4,
+  threshold: 0.8,
 } as const
+
+const BLOOM_INSTANCE_LIMIT = 110_000
 
 type NavigatorWithPowerHints = Navigator & {
   deviceMemory?: number
@@ -615,9 +617,9 @@ function PointsMesh({
 }
 
 function BloomPass({
-  strength = 0.18,
-  radius = 0.12,
-  threshold = 0.65,
+  strength = 0.2,
+  radius = 0.4,
+  threshold = 0.8,
 }: {
   strength?: number
   radius?: number
@@ -739,8 +741,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const [bloomOverrides] = React.useState(readBloomOverrides)
   const { forceBloom, noBloom } = bloomOverrides
-  const [bloomEligible, setBloomEligible] = React.useState(false)
-  const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
+  const [bloomHardwareOk, setBloomHardwareOk] = React.useState(false)
+  const [bloomHardwareReady, setBloomHardwareReady] = React.useState(false)
+  const [bloomInstanceOk, setBloomInstanceOk] = React.useState(false)
+  const [bloomInstanceReady, setBloomInstanceReady] = React.useState(false)
+  const bloomEligible = bloomHardwareOk && bloomInstanceOk
+  const bloomGuardsReady = bloomHardwareReady && bloomInstanceReady
   const [drawing, setDrawing] = React.useState(false)
   const isMobileDevice = React.useMemo(() => detectMobile(), [])
   const inkUpdateLoggedRef = React.useRef(false)
@@ -1343,12 +1349,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
+    if (!bloomGuardsReady) {
+      setBloomEnabled(false)
+      return
+    }
     setBloomEnabled(wantsBloom && bloomEligible)
-  }, [bloomEligible, wantsBloom])
+  }, [bloomEligible, bloomGuardsReady, wantsBloom])
 
   const bloomLogRef = React.useRef(false)
   React.useEffect(() => {
-    if (!bloomGuardReady || bloomLogRef.current) return
+    if (!bloomGuardsReady || bloomLogRef.current) return
     const enabled = wantsBloom && bloomEligible
     try {
       console.info(
@@ -1358,7 +1368,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       /* noop */
     }
     bloomLogRef.current = true
-  }, [bloomEligible, bloomGuardReady, wantsBloom])
+  }, [bloomEligible, bloomGuardsReady, wantsBloom])
 
   React.useEffect(() => {
     uniforms.uBaseSize.value = pointSize * pointSizeScale
@@ -1420,32 +1430,58 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     loggedInstancesRef.current = true
   }, [])
 
+  const resetBloomInstanceGuard = React.useCallback(() => {
+    setBloomInstanceOk(false)
+    setBloomInstanceReady(false)
+  }, [])
+
+  const updateBloomInstanceGuard = React.useCallback((count: number) => {
+    if (!Number.isFinite(count)) return
+    setBloomInstanceOk(count <= BLOOM_INSTANCE_LIMIT)
+    setBloomInstanceReady(true)
+  }, [])
+
+  const handleInstancesReady = React.useCallback(
+    (count: number) => {
+      logInstances(count)
+      updateBloomInstanceGuard(count)
+    },
+    [logInstances, updateBloomInstanceGuard],
+  )
+
   React.useEffect(() => {
     loggedInstancesRef.current = false
     revealStartedRef.current = false
-  }, [sceneId])
+    resetBloomInstanceGuard()
+  }, [resetBloomInstanceGuard, sceneId])
 
   React.useEffect(() => {
-    if (prebakedStatus === 'loading' || prebakedStatus === 'idle') {
+    if (prebakedStatus !== 'present') {
       loggedInstancesRef.current = false
       revealStartedRef.current = false
+      resetBloomInstanceGuard()
     }
-  }, [prebakedStatus])
+  }, [prebakedStatus, resetBloomInstanceGuard])
 
   React.useEffect(() => {
     if (!sceneId) {
       loggedInstancesRef.current = false
       revealStartedRef.current = false
+      resetBloomInstanceGuard()
     }
-  }, [sceneId, colorUrl, depthUrl, depthRg])
+  }, [colorUrl, depthRg, depthUrl, resetBloomInstanceGuard, sceneId])
 
   React.useEffect(() => {
     if (renderBuffers) {
-      logInstances(renderBuffers.keptCount)
+      const count = renderBuffers.keptCount
+      logInstances(count)
+      updateBloomInstanceGuard(count)
     } else if (prebaked && prebakedStatus === 'present') {
-      logInstances(prebaked.count)
+      const count = prebaked.count
+      logInstances(count)
+      updateBloomInstanceGuard(count)
     }
-  }, [logInstances, prebaked, prebakedStatus, renderBuffers])
+  }, [logInstances, prebaked, prebakedStatus, renderBuffers, updateBloomInstanceGuard])
 
   const prebakedRenderable = prebakedStatus === 'present' && !!prebaked && !!prebakedMaterial
   const fallbackRenderable =
@@ -1660,10 +1696,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         onCreated={({ gl }) => {
           const maxDpr = isMobileDevice ? 1.6 : 1.8
           const dprClamp = clampDPR(gl, maxDpr)
-          const bloomAllowed =
+          const bloomHardwareAllowed =
             !isMobileDevice && Number.isFinite(dprClamp) && dprClamp <= 1.8 && !isLowPowerDevice()
-          setBloomEligible(bloomAllowed)
-          setBloomGuardReady(true)
+          setBloomHardwareOk(bloomHardwareAllowed)
+          setBloomHardwareReady(true)
           const caps = getDreamdustCaps(gl.domElement)
           // Do not freeze typed arrays directly (V8 throws on freezing array buffer views with elements).
           // Instead, clone the range and freeze the container object to maintain immutability semantics.
@@ -1822,8 +1858,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             keepRatio={keepRatioApplied}
             material={fallbackMaterial}
             uniforms={uniforms}
-            onMaterialValid={() => setBloomEnabled(wantsBloom && bloomEligible)}
-            onInstancesReady={logInstances}
+            onMaterialValid={() => setBloomEnabled(bloomGuardsReady && wantsBloom && bloomEligible)}
+            onInstancesReady={handleInstancesReady}
           />
         ) : prebakedStatus === 'absent' && fallbackMaterial ? (
           readyFallback && (
@@ -1835,8 +1871,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               keepRatio={keepRatioApplied}
               material={fallbackMaterial}
               uniforms={uniforms}
-              onMaterialValid={() => setBloomEnabled(wantsBloom && bloomEligible)}
-              onInstancesReady={logInstances}
+              onMaterialValid={() => setBloomEnabled(bloomGuardsReady && wantsBloom && bloomEligible)}
+              onInstancesReady={handleInstancesReady}
             />
           )
         ) : null}
