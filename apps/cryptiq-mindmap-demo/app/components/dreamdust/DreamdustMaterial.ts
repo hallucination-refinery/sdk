@@ -28,16 +28,16 @@ const DEFAULT_UNIFORM_VALUES = {
   uTime: 0,
   uReveal: 1,
   uBreath: 0.5,
-  uNoiseScale: 0.9,
-  uNoiseSpeed: 0.08,
+  uNoiseScale: 1,
+  uNoiseSpeed: 1,
   uNoiseThreshold: 1,
-  uDriftAmp: 0.6,
+  uDriftAmp: 0,
   uCurlFreq: 1,
-  uCurlAmp: 0.25,
+  uCurlAmp: 1,
   uDriftSpeed: 1,
   uTapGain: 0.5,
   uTapTau: 2,
-  uPointBaseSize: 2.2,
+  uPointBaseSize: 1,
   uFocal: 1,
   uMinSize: 1,
   uMaxSize: 1,
@@ -48,7 +48,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uDepthMin: 0,
   uDepthMax: 1,
   uGamma: 1,
-  uRimGamma: 2.2,
+  uRimGamma: 2,
   uDepthBias: 1.8,
   uDepthNormScale: 0.001,
   uHasCapture: 0,
@@ -61,7 +61,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uCascadeSizeBoost: 0,
   uVaporGain: 0,
   uBreathAmp: 0.08,
-  uEvolution: 0.4,
+  uEvolution: 1,
   uInkOffsetBoost: 1,
   uInkSizeBoost: 1,
   uInkTintBoost: 1,
@@ -200,7 +200,6 @@ varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
 varying float vDepthView;
-varying float vViewBias;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
@@ -295,18 +294,10 @@ void main() {
   vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0);
   vec3 viewPos = viewPos4.xyz;
   float viewDist = max(1e-3, -viewPos.z);
-  float distanceScale = uFocal / viewDist;
-  float attenuation = clamp(distanceScale, uMinSize, uMaxSize);
+  float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
   float breathScale = 1.0 + breathPhase * 0.12;
   float cascadeSize = mix(0.0, max(uCascadeSizeBoost, 0.0), cascadeMix);
-  float viewBias = clamp(distanceScale, 0.0, 1.0);
   float pointSize = uPointBaseSize * attenuation * breathScale * (1.0 + cascadeSize);
-  pointSize *= mix(1.0, 1.6, pow(viewBias, 0.9));
-
-  float instanceSeed = float(gl_InstanceID);
-  float jitterHash = dd_hash13(vec3(instanceSeed * 0.3183099, instanceSeed * 0.123, instanceSeed * 0.777));
-  float sizeJitter = mix(0.5, 0.8, jitterHash);
-  pointSize += sizeJitter;
 
   vec3 inkTint = vec3(0.0);
   float inkMix = 0.0;
@@ -339,7 +330,6 @@ void main() {
   vRevealCoord = aUv * (3.0 + uNoiseScale) + jitterSeed.xy;
   vPosMV = viewPos;
   vDepthView = viewDist;
-  vViewBias = viewBias;
 
   gl_Position = projectionMatrix * viewPos4;
 }
@@ -372,7 +362,6 @@ varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
 varying float vDepthView;
-varying float vViewBias;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_SOFT_SPRITE_CHUNK}
@@ -382,9 +371,9 @@ ${DREAMDUST_DEPTH_FADE_CHUNK}
 
 void main() {
   // Softer disc sprite for vapor look
-  float r = length(gl_PointCoord * 2.0 - 1.0);
+  vec2 pc = gl_PointCoord * 2.0 - 1.0;
+  float r = clamp(length(pc), 0.0, 1.0);
   float sprite = smoothstep(1.0, 0.0, r);
-  sprite *= sprite;
 
   float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
   // Static reveal mask (no time animation) to avoid brightness pulsing
@@ -394,11 +383,9 @@ void main() {
   float baseReveal = smoothstep(threshold - 0.2, 1.0, flow);
   float revealAlpha = max(baseReveal, revealStrength * 0.35);
 
-  float alpha = revealAlpha * revealStrength;
-  alpha *= pow(sprite, 1.35);
+  float alpha = sprite * revealAlpha * revealStrength;
   float depthNorm = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
   alpha *= dreamdustDepthAlpha(depthNorm, uDepthBias);
-  alpha *= mix(0.65, 1.0, clamp(vViewBias, 0.0, 1.0));
   if (alpha <= 0.001) {
     discard;
   }
@@ -432,7 +419,7 @@ void main() {
 
   float rim = dreamdustRimStrength(sprite);
   color = dreamdustApplyRimLight(color, rim);
-  alpha = dreamdustApplyRimAlpha(alpha, rim * 0.7);
+  alpha = dreamdustApplyRimAlpha(alpha, rim);
 
   color = dreamdustApplyGamma(color, uGamma);
 

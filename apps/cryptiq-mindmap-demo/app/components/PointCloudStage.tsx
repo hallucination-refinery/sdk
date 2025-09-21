@@ -68,12 +68,10 @@ type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
 }
 
 const BLOOM_SETTINGS = {
-  strength: 0.2,
-  radius: 0.4,
-  threshold: 0.8,
+  strength: 0.12,
+  radius: 0.1,
+  threshold: 0.7,
 } as const
-
-const BLOOM_INSTANCE_LIMIT = 110_000
 
 type NavigatorWithPowerHints = Navigator & {
   deviceMemory?: number
@@ -127,17 +125,15 @@ function isLowPowerDevice(): boolean {
   return detectMobile()
 }
 
-function readBloomOverrides(): { forceBloom: boolean; noBloom: boolean } {
+function readNoBloomOverride(): boolean {
   if (typeof window === 'undefined') {
-    return { forceBloom: false, noBloom: false }
+    return false
   }
   try {
     const params = new URLSearchParams(window.location.search)
-    const noBloom = params.get('noBloom') === '1'
-    const forceBloom = params.get('forceBloom') === '1'
-    return { forceBloom, noBloom }
+    return params.get('noBloom') === '1'
   } catch {
-    return { forceBloom: false, noBloom: false }
+    return false
   }
 }
 
@@ -263,8 +259,7 @@ function buildAttributes(
   colorImage: { data: ImageData; width: number; height: number },
   depth16: { data16: Uint16Array; width: number; height: number },
   stride: number,
-  cap: number,
-  keepRatioHint = 1,
+  cap: number
 ) {
   const cw = colorImage.width
   const ch = colorImage.height
@@ -289,63 +284,40 @@ function buildAttributes(
 
   const totalCandidates = Math.ceil((w / stride) * (h / stride))
   const maxPoints = cap
-  const keepHint = Number.isFinite(keepRatioHint) ? keepRatioHint : 1
-  const keepHintClamped = Math.min(Math.max(keepHint, 0), 1)
-  const keepRatio = Math.min(keepHintClamped, maxPoints / Math.max(1, totalCandidates))
-
-  const widthClamp = Math.max(0, w - 1)
-  const heightClamp = Math.max(0, h - 1)
-  const widthNormDenom = Math.max(1, w - 1)
-  const heightNormDenom = Math.max(1, h - 1)
-  const colorWidthClamp = Math.max(0, cw - 1)
-  const colorHeightClamp = Math.max(0, ch - 1)
-  const depthWidthClamp = Math.max(0, dw - 1)
-  const depthHeightClamp = Math.max(0, dh - 1)
-  const jitterScale = stride > 1 ? Math.min(stride, 1.5) : 0
+  const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
 
   let kept = 0
-  const sampleGrid = (forceKeep: boolean) => {
-    for (let y = 0; y < h; y += stride) {
-      const rowSeed = hash(y + 0.5, stride + 0.5)
-      const jitter = jitterScale > 0 ? (rowSeed - 0.5) * jitterScale : 0
-      const sampleY = heightClamp > 0 ? Math.min(y, heightClamp) : 0
-      const vNorm = heightClamp > 0 ? sampleY / heightClamp : y / heightNormDenom
-      for (let x = 0; x < w; x += stride) {
-        const jitteredX = x + jitter
-        const sampleX = Math.min(Math.max(jitteredX, 0), widthClamp)
-        const uNorm = widthClamp > 0 ? sampleX / widthClamp : sampleX / widthNormDenom
+  for (let y = 0; y < h; y += stride) {
+    for (let x = 0; x < w; x += stride) {
+      // map sample to each source's native grid to avoid misindexing
+      const xC = Math.round((x / Math.max(1, w - 1)) * Math.max(0, cw - 1))
+      const yC = Math.round((y / Math.max(1, h - 1)) * Math.max(0, ch - 1))
+      const pColor = yC * cw + xC
 
-        const xC = Math.round(uNorm * colorWidthClamp)
-        const yC = Math.round(vNorm * colorHeightClamp)
-        const pColor = yC * cw + xC
+      const xD = Math.round((x / Math.max(1, w - 1)) * Math.max(0, dw - 1))
+      const yD = Math.round((y / Math.max(1, h - 1)) * Math.max(0, dh - 1))
+      const pDepth = yD * dw + xD
 
-        const xD = Math.round(uNorm * depthWidthClamp)
-        const yD = Math.round(vNorm * depthHeightClamp)
-        const pDepth = yD * dw + xD
+      const d01 = dep16[pDepth] / 65535.0
+      if (d01 < minDepth01) minDepth01 = d01
+      if (d01 > maxDepth01) maxDepth01 = d01
 
-        const d01 = dep16[pDepth] / 65535.0
-        if (d01 < minDepth01) minDepth01 = d01
-        if (d01 > maxDepth01) maxDepth01 = d01
+      const r = col[pColor * 4] / 255.0
+      const g = col[pColor * 4 + 1] / 255.0
+      const b = col[pColor * 4 + 2] / 255.0
+      const luma = 0.299 * r + 0.587 * g + 0.114 * b
 
-        const r = col[pColor * 4] / 255.0
-        const g = col[pColor * 4 + 1] / 255.0
-        const b = col[pColor * 4 + 2] / 255.0
-        const luma = 0.299 * r + 0.587 * g + 0.114 * b
+      const near = 1.0 - d01
+      const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
+      if (hash(x, y) > keep) continue
 
-        const near = 1.0 - d01
-        const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
-        if (!forceKeep && hash(jitteredX, sampleY) > keep) continue
-
-        us.push(uNorm, vNorm)
-        ds.push(d01)
-        xs.push(0, 0, 0)
-        cs.push(r, g, b)
-        kept++
-      }
+      us.push(x / Math.max(1, w - 1), y / Math.max(1, h - 1))
+      ds.push(d01)
+      xs.push(0, 0, 0)
+      cs.push(r, g, b)
+      kept++
     }
   }
-
-  sampleGrid(false)
 
   if (kept < 100 && keepRatio < 1) {
     // rerun with keep forced to 1 (no stochastic drop) to avoid "dot" during bring-up
@@ -354,13 +326,31 @@ function buildAttributes(
     ds.length = 0
     cs.length = 0
     kept = 0
-    minDepth01 = 1.0
-    maxDepth01 = 0.0
-    sampleGrid(true)
+    for (let y = 0; y < h; y += stride) {
+      for (let x = 0; x < w; x += stride) {
+        const xC = Math.round((x / Math.max(1, w - 1)) * Math.max(0, cw - 1))
+        const yC = Math.round((y / Math.max(1, h - 1)) * Math.max(0, ch - 1))
+        const pColor = yC * cw + xC
+        const xD = Math.round((x / Math.max(1, w - 1)) * Math.max(0, dw - 1))
+        const yD = Math.round((y / Math.max(1, h - 1)) * Math.max(0, dh - 1))
+        const pDepth = yD * dw + xD
+        const d01 = dep16[pDepth] / 65535.0
+        if (d01 < minDepth01) minDepth01 = d01
+        if (d01 > maxDepth01) maxDepth01 = d01
+        const r = col[pColor * 4] / 255.0
+        const g = col[pColor * 4 + 1] / 255.0
+        const b = col[pColor * 4 + 2] / 255.0
+        us.push(x / Math.max(1, w - 1), y / Math.max(1, h - 1))
+        ds.push(d01)
+        xs.push(0, 0, 0)
+        cs.push(r, g, b)
+        kept++
+      }
+    }
   }
 
   console.log(
-    `[PC] build: color ${cw}x${ch} depth ${dw}x${dh} → grid ${w}x${h} stride=${stride} candidates=${totalCandidates} kept=${kept} keepRatio=${keepRatio.toFixed(3)} hint=${keepHintClamped.toFixed(3)} | uvs=${us.length / 2} depths=${ds.length} colors=${cs.length / 3} | depth01[min,max]=[${minDepth01.toFixed(4)},${maxDepth01.toFixed(4)}]`
+    `[PC] build: color ${cw}x${ch} depth ${dw}x${dh} → grid ${w}x${h} stride=${stride} candidates=${totalCandidates} kept=${kept} | uvs=${us.length / 2} depths=${ds.length} colors=${cs.length / 3} | depth01[min,max]=[${minDepth01.toFixed(4)},${maxDepth01.toFixed(4)}]`
   )
 
   return {
@@ -379,7 +369,6 @@ function PointsMesh({
   depth16,
   stride = 2,
   pointBudget,
-  keepRatio = 1,
   material,
   uniforms,
   onMaterialValid,
@@ -389,7 +378,6 @@ function PointsMesh({
   depth16: { data16: Uint16Array; width: number; height: number }
   stride?: number
   pointBudget: number
-  keepRatio?: number
   material: THREE.ShaderMaterial
   uniforms: DreamdustStageUniforms
   onMaterialValid?: () => void
@@ -424,8 +412,8 @@ function PointsMesh({
   }, [fallbackPoints])
 
   const { positions, uvs, depths, colors, gridW, gridH, kept } = React.useMemo(() => {
-    return buildAttributes(colorImage, depth16, stride, pointBudget, keepRatio)
-  }, [colorImage, depth16, stride, pointBudget, keepRatio])
+    return buildAttributes(colorImage, depth16, stride, pointBudget)
+  }, [colorImage, depth16, stride, pointBudget])
 
   React.useEffect(() => {
     if (onInstancesReady) onInstancesReady(kept)
@@ -617,9 +605,9 @@ function PointsMesh({
 }
 
 function BloomPass({
-  strength = 0.2,
-  radius = 0.4,
-  threshold = 0.8,
+  strength = 0.18,
+  radius = 0.12,
+  threshold = 0.65,
 }: {
   strength?: number
   radius?: number
@@ -734,21 +722,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     colorUrl: colorUrlProp,
     depthUrl: depthUrlProp,
     depthRgUrl,
-    pointSize = 2.2,
+    pointSize = 2.0,
     stride = 1,
     // omit perspective in baseline
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
-  const [bloomOverrides] = React.useState(readBloomOverrides)
-  const { forceBloom, noBloom } = bloomOverrides
-  const [bloomHardwareOk, setBloomHardwareOk] = React.useState(false)
-  const [bloomHardwareReady, setBloomHardwareReady] = React.useState(false)
-  const [bloomInstanceOk, setBloomInstanceOk] = React.useState(false)
-  const [bloomInstanceReady, setBloomInstanceReady] = React.useState(false)
-  const bloomEligible = bloomHardwareOk && bloomInstanceOk
-  const bloomGuardsReady = bloomHardwareReady && bloomInstanceReady
+  const [noBloomOverride] = React.useState(readNoBloomOverride)
+  const [bloomEligible, setBloomEligible] = React.useState(false)
+  const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [drawing, setDrawing] = React.useState(false)
-  const isMobileDevice = React.useMemo(() => detectMobile(), [])
   const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
@@ -818,11 +800,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     packed.width > 0 &&
     packed.height > 0
   const readyFallback = fallbackGate && colorReady && !!depth16From8
-  const rawPointCap = React.useMemo(() => pointCap(), [])
-  const pointBudget = React.useMemo(() => {
-    const limit = isMobileDevice ? 100_000 : 110_000
-    return Math.min(rawPointCap, limit)
-  }, [isMobileDevice, rawPointCap])
+  const pointBudget = React.useMemo(() => pointCap(), [])
   const [runtimeCaps, setRuntimeCaps] = React.useState<Readonly<DreamdustRuntimeCaps> | null>(null)
 
   const dreamdustUniformApi = useDreamdustUniforms()
@@ -941,9 +919,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       delete defines.USE_VERTEX_INK
     }
     material.defines = defines
-    material.toneMapped = true
-    material.premultipliedAlpha = true
-    material.depthWrite = false
     material.needsUpdate = true
     return material
   }, [runtimeCaps, uniforms])
@@ -962,9 +937,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       delete defines.USE_VERTEX_INK
     }
     material.defines = defines
-    material.toneMapped = true
-    material.premultipliedAlpha = true
-    material.depthWrite = false
     material.needsUpdate = true
     return material
   }, [runtimeCaps, uniforms])
@@ -1273,12 +1245,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     roll180?: boolean
   }>(() => ({
     thickness: 0.7,
-    pointSizeScale: 1.0,
+    pointSizeScale: 2.2,
     keepRatio: 0.8,
-    bloom: forceBloom && !noBloom,
+    bloom: false,
     fovDeg: 27,
     reveal: 1,
-    flipUp: false,
+    flipUp: true,
     flipNormal: false,
     mirrorLR: false,
     mirrorUD: false,
@@ -1287,16 +1259,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [fitRequest, setFitRequest] = React.useState(0)
   const { bloom, pointSizeScale, reveal, thickness } = ui
   const thicknessScale = React.useMemo(() => Math.max(0.05, Math.min(1.0, thickness)), [thickness])
-  const wantsBloom = React.useMemo(
-    () => !noBloom && (forceBloom || bloom),
-    [bloom, forceBloom, noBloom],
-  )
-  const keepRatioApplied = React.useMemo(() => {
-    if (!isMobileDevice && rawPointCap > 110_000) {
-      return Math.min(ui.keepRatio, 0.8)
-    }
-    return ui.keepRatio
-  }, [isMobileDevice, rawPointCap, ui.keepRatio])
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -1306,60 +1268,47 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         const parsed = JSON.parse(saved) as Partial<typeof ui>
         setUi((prev) => {
           const next = { ...prev, ...parsed }
-          if (noBloom) {
+          if (noBloomOverride) {
             next.bloom = false
-          } else if (forceBloom) {
-            next.bloom = true
           }
           return next
         })
-      } else {
-        setUi((prev) => {
-          if (noBloom && prev.bloom) {
-            return { ...prev, bloom: false }
-          }
-          if (!noBloom && forceBloom && !prev.bloom) {
-            return { ...prev, bloom: true }
-          }
-          return prev
-        })
+      } else if (noBloomOverride) {
+        setUi((prev) => ({ ...prev, bloom: false }))
       }
     } catch {
       /* noop */
     }
-  }, [forceBloom, noBloom])
-  React.useEffect(() => {
-    setUi((prev) => {
-      if (noBloom && prev.bloom) {
-        return { ...prev, bloom: false }
-      }
-      if (!noBloom && forceBloom && !prev.bloom) {
-        return { ...prev, bloom: true }
-      }
-      return prev
-    })
-  }, [forceBloom, noBloom, ui.bloom])
+  }, [noBloomOverride])
   React.useEffect(() => {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
     } catch {
       /* noop */
     }
-  }, [ui])
+  }, [
+    ui.thickness,
+    ui.pointSizeScale,
+    ui.keepRatio,
+    ui.bloom,
+    ui.fovDeg,
+    ui.reveal,
+    ui.flipUp,
+    ui.flipNormal,
+    ui.mirrorLR,
+    ui.mirrorUD,
+    ui.roll180,
+  ])
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
-    if (!bloomGuardsReady) {
-      setBloomEnabled(false)
-      return
-    }
-    setBloomEnabled(wantsBloom && bloomEligible)
-  }, [bloomEligible, bloomGuardsReady, wantsBloom])
+    setBloomEnabled(bloom && bloomEligible && !noBloomOverride)
+  }, [bloom, bloomEligible, noBloomOverride])
 
   const bloomLogRef = React.useRef(false)
   React.useEffect(() => {
-    if (!bloomGuardsReady || bloomLogRef.current) return
-    const enabled = wantsBloom && bloomEligible
+    if (!bloomGuardReady || bloomLogRef.current) return
+    const enabled = bloom && bloomEligible && !noBloomOverride
     try {
       console.info(
         `[dreamdust] bloom { enabled: ${enabled}, strength: ${BLOOM_SETTINGS.strength}, radius: ${BLOOM_SETTINGS.radius}, threshold: ${BLOOM_SETTINGS.threshold} }`
@@ -1368,7 +1317,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       /* noop */
     }
     bloomLogRef.current = true
-  }, [bloomEligible, bloomGuardsReady, wantsBloom])
+  }, [bloom, bloomEligible, bloomGuardReady, noBloomOverride])
 
   React.useEffect(() => {
     uniforms.uBaseSize.value = pointSize * pointSizeScale
@@ -1399,7 +1348,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
     const plan = capInstances(srcCount, {
       cap: pointBudget,
-      keepRatio: keepRatioApplied,
+      keepRatio: ui.keepRatio,
       minCount: srcCount > 0 ? 1 : 0,
     })
 
@@ -1415,7 +1364,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const colors = srcColors ? decimateInterleaved(srcColors, 3, plan.step, plan.count) : undefined
 
     return { positions, colors, keptCount: plan.count, cap: pointBudget }
-  }, [keepRatioApplied, pointBudget, prebaked])
+  }, [pointBudget, prebaked, ui.keepRatio])
 
   const loggedInstancesRef = React.useRef(false)
   const revealStartedRef = React.useRef(false)
@@ -1430,58 +1379,32 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     loggedInstancesRef.current = true
   }, [])
 
-  const resetBloomInstanceGuard = React.useCallback(() => {
-    setBloomInstanceOk(false)
-    setBloomInstanceReady(false)
-  }, [])
-
-  const updateBloomInstanceGuard = React.useCallback((count: number) => {
-    if (!Number.isFinite(count)) return
-    setBloomInstanceOk(count <= BLOOM_INSTANCE_LIMIT)
-    setBloomInstanceReady(true)
-  }, [])
-
-  const handleInstancesReady = React.useCallback(
-    (count: number) => {
-      logInstances(count)
-      updateBloomInstanceGuard(count)
-    },
-    [logInstances, updateBloomInstanceGuard],
-  )
-
   React.useEffect(() => {
     loggedInstancesRef.current = false
     revealStartedRef.current = false
-    resetBloomInstanceGuard()
-  }, [resetBloomInstanceGuard, sceneId])
+  }, [sceneId])
 
   React.useEffect(() => {
-    if (prebakedStatus !== 'present') {
+    if (prebakedStatus === 'loading' || prebakedStatus === 'idle') {
       loggedInstancesRef.current = false
       revealStartedRef.current = false
-      resetBloomInstanceGuard()
     }
-  }, [prebakedStatus, resetBloomInstanceGuard])
+  }, [prebakedStatus])
 
   React.useEffect(() => {
     if (!sceneId) {
       loggedInstancesRef.current = false
       revealStartedRef.current = false
-      resetBloomInstanceGuard()
     }
-  }, [colorUrl, depthRg, depthUrl, resetBloomInstanceGuard, sceneId])
+  }, [sceneId, colorUrl, depthUrl, depthRg])
 
   React.useEffect(() => {
     if (renderBuffers) {
-      const count = renderBuffers.keptCount
-      logInstances(count)
-      updateBloomInstanceGuard(count)
+      logInstances(renderBuffers.keptCount)
     } else if (prebaked && prebakedStatus === 'present') {
-      const count = prebaked.count
-      logInstances(count)
-      updateBloomInstanceGuard(count)
+      logInstances(prebaked.count)
     }
-  }, [logInstances, prebaked, prebakedStatus, renderBuffers, updateBloomInstanceGuard])
+  }, [logInstances, prebaked, prebakedStatus, renderBuffers])
 
   const prebakedRenderable = prebakedStatus === 'present' && !!prebaked && !!prebakedMaterial
   const fallbackRenderable =
@@ -1694,12 +1617,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           console.log('[PC] pointer down', e.clientX, e.clientY)
         }}
         onCreated={({ gl }) => {
-          const maxDpr = isMobileDevice ? 1.6 : 1.8
-          const dprClamp = clampDPR(gl, maxDpr)
-          const bloomHardwareAllowed =
-            !isMobileDevice && Number.isFinite(dprClamp) && dprClamp <= 1.8 && !isLowPowerDevice()
-          setBloomHardwareOk(bloomHardwareAllowed)
-          setBloomHardwareReady(true)
+          const dprClamp = clampDPR(gl, 2)
+          const bloomAllowed = Number.isFinite(dprClamp) && dprClamp <= 1.8 && !isLowPowerDevice()
+          setBloomEligible(bloomAllowed)
+          setBloomGuardReady(true)
           const caps = getDreamdustCaps(gl.domElement)
           // Do not freeze typed arrays directly (V8 throws on freezing array buffer views with elements).
           // Instead, clone the range and freeze the container object to maintain immutability semantics.
@@ -1855,11 +1776,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
             stride={stride}
             pointBudget={pointBudget}
-            keepRatio={keepRatioApplied}
             material={fallbackMaterial}
             uniforms={uniforms}
-            onMaterialValid={() => setBloomEnabled(bloomGuardsReady && wantsBloom && bloomEligible)}
-            onInstancesReady={handleInstancesReady}
+            onMaterialValid={() => setBloomEnabled(bloom && bloomEligible && !noBloomOverride)}
+            onInstancesReady={logInstances}
           />
         ) : prebakedStatus === 'absent' && fallbackMaterial ? (
           readyFallback && (
@@ -1868,11 +1788,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               depth16={depth16From8!}
               stride={stride}
               pointBudget={pointBudget}
-              keepRatio={keepRatioApplied}
               material={fallbackMaterial}
               uniforms={uniforms}
-              onMaterialValid={() => setBloomEnabled(bloomGuardsReady && wantsBloom && bloomEligible)}
-              onInstancesReady={handleInstancesReady}
+              onMaterialValid={() => setBloomEnabled(bloom && bloomEligible && !noBloomOverride)}
+              onInstancesReady={logInstances}
             />
           )
         ) : null}
@@ -1931,7 +1850,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               <input
                 type="range"
                 min={0.8}
-                max={2}
+                max={3}
                 step={0.01}
                 value={ui.pointSizeScale}
                 onChange={(e) => setUi((s) => ({ ...s, pointSizeScale: Number(e.target.value) }))}
@@ -2046,7 +1965,7 @@ function CameraSync({
   distance,
   fitRequest,
   fitRadius,
-  fitMargin = 1.1,
+  fitMargin = 0.95,
   fitTarget,
 }: {
   fovDeg: number
