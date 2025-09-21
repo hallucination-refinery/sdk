@@ -59,6 +59,11 @@ const DEFAULT_UNIFORM_VALUES = {
   uCascadeColor: [1, 1, 1] as [number, number, number],
   uCascadeSizeBoost: 0,
   uVaporGain: 0,
+  uBreathAmp: 0.08,
+  uEvolution: 1,
+  uInkOffsetBoost: 1,
+  uInkSizeBoost: 1,
+  uInkTintBoost: 1,
   uVertexInkOk: 0,
   uViewport: [1, 1] as [number, number],
 } as const
@@ -142,8 +147,10 @@ precision highp float;
 uniform float uTime;
 uniform float uReveal;
 uniform float uBreath;
+uniform float uBreathAmp;
 uniform float uNoiseScale;
 uniform float uNoiseSpeed;
+uniform float uEvolution;
 uniform float uDriftAmp;
 uniform float uCurlFreq;
 uniform float uCurlAmp;
@@ -156,8 +163,11 @@ uniform float uMinSize;
 uniform float uMaxSize;
 uniform float uSizeGain;
 uniform float uOffsetGain;
+uniform float uInkOffsetBoost;
+uniform float uInkSizeBoost;
 uniform float uInkIntensity;
 uniform float uTintGain;
+uniform float uInkTintBoost;
 uniform float uDepthMin;
 uniform float uDepthMax;
 uniform float uGamma;
@@ -224,7 +234,8 @@ void main() {
   vec3 mistPos = basePos + mistDir * mistAmount;
 
   float breathPhase = (uBreath - 0.5) * 2.0;
-  mistPos += mistDir * (breathPhase * 0.08);
+  float breathAmp = max(uBreathAmp, 0.0);
+  mistPos += mistDir * (breathPhase * breathAmp);
 
   vec3 revealPos = mix(mistPos, basePos, revealGate);
 
@@ -268,7 +279,8 @@ void main() {
   revealPos += curlOffset;
 
   if (cascadeMix > 1e-5) {
-    vec3 vaporSample = curlSample * 0.75 + vec3(uTime * 0.21, uTime * 0.13, uTime * 0.07);
+    vec3 vaporSample = curlSample * 0.75
+      + vec3(uTime * 0.21 * uEvolution, uTime * 0.13 * uEvolution, uTime * 0.07 * uEvolution);
     vec3 vaporFlow = dd_fbm3Vec(vaporSample) - vec3(0.5);
     float vaporStrength = cascadeMix * (0.35 + vaporGain * 0.85);
     revealPos += vaporFlow * vaporStrength;
@@ -287,11 +299,11 @@ void main() {
 #ifdef USE_VERTEX_INK
   if (inkSampleIntensity > 1e-5) {
     float pxScale = viewDist / max(1e-3, uFocal);
-    vec2 inkOffset = inkSampleOffset * (inkSampleIntensity * uOffsetGain * pxScale);
+    vec2 inkOffset = inkSampleOffset * (inkSampleIntensity * uOffsetGain * uInkOffsetBoost * pxScale);
     viewPos.xy += inkOffset;
-    pointSize += inkSampleSwell * inkSampleIntensity * uSizeGain;
+    pointSize += inkSampleSwell * inkSampleIntensity * uSizeGain * uInkSizeBoost;
     inkTint = inkSampleTint;
-    inkMix = inkSampleIntensity * uTintGain;
+    inkMix = inkSampleIntensity * uTintGain * uInkTintBoost;
   }
 #endif
 
@@ -317,9 +329,11 @@ precision highp float;
 
 uniform float uTime;
 uniform float uNoiseSpeed;
+uniform float uEvolution;
 uniform float uNoiseThreshold;
 uniform float uInkIntensity;
 uniform float uTintGain;
+uniform float uInkTintBoost;
 uniform float uDepthBias;
 uniform float uDepthNormScale;
 uniform float uGamma;
@@ -350,7 +364,8 @@ void main() {
   }
 
   float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
-  vec2 revealSample = vRevealCoord + vec2(uTime * 0.18 * uNoiseSpeed, uTime * 0.05);
+  vec2 revealSample =
+      vRevealCoord + vec2(uTime * 0.18 * uNoiseSpeed * uEvolution, uTime * 0.05 * uEvolution);
   float revealNoise = dd_noise2(revealSample);
   float revealStrength = clamp(vRevealMix, 0.0, 1.0);
   float flow = revealNoise + revealStrength * (1.0 - threshold * 0.5);
@@ -375,7 +390,7 @@ void main() {
     DreamdustInkSample fragInk = dreamdustSampleInk(uInkTex, vInkUv);
     float localIntensity = fragInk.intensity * uInkIntensity;
     if (localIntensity > 1e-5) {
-      float tintMix = localIntensity * uTintGain;
+      float tintMix = localIntensity * uTintGain * uInkTintBoost;
       if (tintMix > 1e-5) {
         color = dreamdustApplyInkTint(color, fragInk.tint, tintMix);
       }

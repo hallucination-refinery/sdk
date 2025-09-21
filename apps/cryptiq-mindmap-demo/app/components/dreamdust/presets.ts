@@ -1,5 +1,25 @@
 import { getDreamdustTunables, updateDreamdustTunables, type DreamdustTunables } from './metrics'
 
+export type DreamdustMaterialPreset = {
+  revealDuration: number
+  breathAmp: number
+  curlFactor: number
+  evolution: number
+  inkGain: number
+  rimGamma: number
+  cascadeRate: number
+}
+
+export const PresetC: DreamdustMaterialPreset = {
+  revealDuration: 1.8,
+  breathAmp: 0.05,
+  curlFactor: 0.35,
+  evolution: 0.5,
+  inkGain: 1.4,
+  rimGamma: 1.6,
+  cascadeRate: 0.85,
+} as const
+
 export type DreamdustPresetId = 'calm' | 'breathy' | 'vaporizeFast'
 
 export type DreamdustPreset = {
