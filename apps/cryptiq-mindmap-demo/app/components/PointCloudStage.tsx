@@ -1253,7 +1253,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     flipUp: true,
     flipNormal: false,
     mirrorLR: false,
-    mirrorUD: false,
+    mirrorUD: true,
     roll180: false,
   }))
   const [fitRequest, setFitRequest] = React.useState(0)
