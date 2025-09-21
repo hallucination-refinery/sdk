@@ -1447,6 +1447,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       >
         {/* no FitOrtho in perspective baseline */}
         <InkSurface
+          mirrorLR={!!ui.mirrorLR}
+          mirrorUD={!!ui.mirrorUD}
           onStart={() => {
             inkUpdateLoggedRef.current = false
             setDrawing(true)
