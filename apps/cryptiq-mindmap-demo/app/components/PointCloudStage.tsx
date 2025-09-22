@@ -72,13 +72,14 @@ type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
 }
 
 type StageSimState = {
+  key: string
   count: number
   texSize: [number, number]
   simUvs: Float32Array
   stageUvs: Float32Array
   stageDepths: Float32Array
   positions: Float32Array
-  bounds: { center: [number, number, number]; radius: number }
+  bounds: { center: THREE.Vector3; radius: number }
 }
 
 const BLOOM_SETTINGS = {
@@ -875,16 +876,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [rendererReadyTick, setRendererReadyTick] = React.useState(0)
   const simRef = React.useRef<ParticleSim | null>(null)
   const [simState, setSimState] = React.useState<StageSimState | null>(null)
-  const simFitRequestedRef = React.useRef(false)
-  const simFitLoggedRef = React.useRef(false)
+  const simFitRequestKeyRef = React.useRef<string | null>(null)
+  const simFitLoggedKeyRef = React.useRef<string | null>(null)
   const simInitKeyRef = React.useRef<string | null>(null)
   const debugDepth = React.useMemo(() => readSearchParamSafe('debugDepth') === '1', [])
   React.useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer) {
+      return undefined
+    }
+    if (!simRef.current) {
+      simRef.current = new ParticleSim(renderer)
+    }
     return () => {
       simRef.current?.dispose()
       simRef.current = null
+      simInitKeyRef.current = null
     }
-  }, [])
+  }, [rendererReadyTick])
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
@@ -1819,21 +1828,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [prebakedUvDepth, simActive, simState])
 
   React.useEffect(() => {
-    if (!simEnabled || !simSource || !rendererRef.current) {
-      setSimState(null)
-      if (simRef.current) {
-        simRef.current.dispose()
-        simRef.current = null
-      }
-      simInitKeyRef.current = null
+    const instance = simRef.current
+    if (!instance || !rendererRef.current) {
       return
     }
-    const renderer = rendererRef.current
-    let instance = simRef.current
-    if (!instance) {
-      instance = new ParticleSim(renderer)
-      simRef.current = instance
+    if (!simEnabled) {
+      return
+    }
+    if (!simSource || simSource.count <= 0) {
+      if (simState) {
+        setSimState(null)
+      }
+      instance.dispose()
       simInitKeyRef.current = null
+      simFitRequestKeyRef.current = null
+      simFitLoggedKeyRef.current = null
+      return
     }
     const gravityY = typeof simUniforms?.gravityY === 'number' ? simUniforms.gravityY : -0.05
     const damping =
@@ -1841,7 +1851,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const gravityVec: [number, number, number] = [0, gravityY, 0]
     instance.setDynamics({ gravity: gravityVec, damping })
     const simKey = `${sceneId ?? 'none'}:${simSource.count}:${debugDepth ? 1 : 0}:${hashArraySample(simSource.positions)}:${hashArraySample(simSource.depths)}:${hashArraySample(simSource.colors as any)}`
-    const needsInit = simInitKeyRef.current !== simKey || !simState
+    const needsInit = simInitKeyRef.current !== simKey
     if (needsInit) {
       instance.createSim(
         {
@@ -1857,21 +1867,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }
       )
       simInitKeyRef.current = simKey
+      simFitRequestKeyRef.current = null
+      simFitLoggedKeyRef.current = null
+    }
+    if (needsInit || !simState || simState.key !== simKey) {
       const bounds = instance.getBounds()
       const texSize = instance.getTexSize()
       const simUvs = instance.getSimUvs()
       setSimState({
+        key: simKey,
         count: simSource.count,
         texSize,
         simUvs,
         stageUvs: simSource.stageUvs,
         stageDepths: simSource.depths as Float32Array,
-        positions: new Float32Array(simSource.count > 0 ? simSource.count * 3 : 0),
-        bounds: { center: bounds.center, radius: bounds.radius },
+        positions: simSource.positions as Float32Array,
+        bounds: { center: bounds.center.clone(), radius: bounds.radius },
       })
     }
-    simFitRequestedRef.current = false
-    simFitLoggedRef.current = false
   }, [
     rendererReadyTick,
     simEnabled,
@@ -1880,10 +1893,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     simUniforms?.velocityDamping,
     sceneId,
     debugDepth,
-    renderBuffers,
-    recolored,
-    prebaked,
-    prebakedUvDepth,
+    hashArraySample,
     simState,
   ])
 
@@ -1935,11 +1945,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const cameraFitTarget = React.useMemo<[number, number, number]>(() => {
     if (simActive && simBounds) {
-      const center = new THREE.Vector3(
-        simBounds.center[0],
-        simBounds.center[1],
-        simBounds.center[2]
-      )
+      const center = simBounds.center.clone()
       center.multiply(new THREE.Vector3(1, 1, thicknessScale))
       center.multiply(new THREE.Vector3(mirrorScale[0], mirrorScale[1], mirrorScale[2]))
       const scale = prebakedTransform?.scale ?? 1
@@ -2012,21 +2018,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   React.useEffect(() => {
     if (!simActive || !simState || !simBounds) {
-      simFitRequestedRef.current = false
-      simFitLoggedRef.current = false
       return
     }
-    if (!simFitRequestedRef.current) {
+    if (simFitRequestKeyRef.current !== simState.key) {
       setFitRequest((v) => v + 1)
-      simFitRequestedRef.current = true
+      simFitRequestKeyRef.current = simState.key
     }
-    if (!simFitLoggedRef.current) {
-      const centerLog = cameraFitTarget.map((v) => Number(v).toFixed(2)).join(',')
-      const radiusLog = Number(cameraFitRadius).toFixed(3)
+    if (simFitLoggedKeyRef.current !== simState.key) {
+      const centerVec = simBounds.center
+      const centerLog = [centerVec.x, centerVec.y, centerVec.z]
+        .map((v) => Number(v).toFixed(2))
+        .join(',')
+      const radiusLog = Number(simBounds.radius).toFixed(3)
       console.log(`[engine] sim fit { radius:${radiusLog}, center:[${centerLog}] }`)
-      simFitLoggedRef.current = true
+      simFitLoggedKeyRef.current = simState.key
     }
-  }, [cameraFitRadius, cameraFitTarget, simActive, simBounds, simState, setFitRequest])
+  }, [simActive, simBounds, simState, setFitRequest])
 
   React.useEffect(() => {
     if (!uniforms.uDepthNormScale) return

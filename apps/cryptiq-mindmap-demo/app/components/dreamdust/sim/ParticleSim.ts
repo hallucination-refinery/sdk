@@ -164,6 +164,9 @@ export class ParticleSim {
   private time = 0
   private ready = false
   private uvs: Float32Array = new Float32Array(0)
+  private boundsCenter = new THREE.Vector3(0, 0, 0)
+  private boundsRadius = 1
+  private simOnLogged = false
 
   constructor(renderer: WebGLRenderer) {
     this.renderer = renderer
@@ -215,6 +218,8 @@ export class ParticleSim {
     this.initFbo = null
     this.ready = false
     this.uvs = new Float32Array(0)
+    this.boundsCenter.set(0, 0, 0)
+    this.boundsRadius = 1
   }
 
   createSim(opts: SimOptions, spawn?: SpawnPayload) {
@@ -331,6 +336,15 @@ export class ParticleSim {
       this.boundsMax = [maxXp, maxYp, maxZp]
     }
 
+    const min = this.boundsMin
+    const max = this.boundsMax
+    this.boundsCenter.set((min[0] + max[0]) * 0.5, (min[1] + max[1]) * 0.5, (min[2] + max[2]) * 0.5)
+    const extentX = max[0] - min[0]
+    const extentY = max[1] - min[1]
+    const extentZ = max[2] - min[2]
+    const maxExtent = Math.max(extentX, extentY, extentZ)
+    this.boundsRadius = maxExtent > 0 ? maxExtent * 0.5 : 1
+
     this.width = w
     this.height = h
     this.count = spawnCount
@@ -360,7 +374,10 @@ export class ParticleSim {
     spawnPosTex.texture.dispose()
     spawnColorTex?.texture.dispose()
     this.ready = true
-    console.log(`[engine] sim on { count:${spawnCount}, texSize:[${w},${h}] }`)
+    if (!this.simOnLogged) {
+      console.log(`[engine] sim on { count:${spawnCount}, texSize:[${w},${h}] }`)
+      this.simOnLogged = true
+    }
   }
 
   private runInit(
@@ -405,6 +422,8 @@ export class ParticleSim {
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, null)
     gl.bindVertexArray(null)
+    gl.useProgram(null)
+    this.renderer.state.reset()
   }
 
   update(dt: number) {
@@ -444,6 +463,8 @@ export class ParticleSim {
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, null)
     gl.bindVertexArray(null)
+    gl.useProgram(null)
+    this.renderer.state.reset()
     this.current = dst
   }
 
@@ -463,20 +484,8 @@ export class ParticleSim {
     return [this.width, this.height]
   }
 
-  getBounds(): { center: Vec3; radius: number } {
-    const min = this.boundsMin
-    const max = this.boundsMax
-    const center: Vec3 = [
-      (min[0] + max[0]) * 0.5,
-      (min[1] + max[1]) * 0.5,
-      (min[2] + max[2]) * 0.5,
-    ]
-    const extentX = max[0] - min[0]
-    const extentY = max[1] - min[1]
-    const extentZ = max[2] - min[2]
-    const maxExtent = Math.max(extentX, extentY, extentZ)
-    const radius = maxExtent > 0 ? maxExtent * 0.5 : 1
-    return { center, radius }
+  getBounds(): { center: THREE.Vector3; radius: number } {
+    return { center: this.boundsCenter.clone(), radius: this.boundsRadius }
   }
 
   setDynamics(opts: { gravity: Vec3; damping: number; floorY?: number }) {
