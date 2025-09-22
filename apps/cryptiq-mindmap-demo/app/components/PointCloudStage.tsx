@@ -37,6 +37,7 @@ import {
   detectMobile,
   pointCap,
 } from './pointcloud/budget'
+import { ParticleSim } from './dreamdust/sim/ParticleSim'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -68,6 +69,16 @@ type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'
 
 type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
   uReveal?: { value: number }
+}
+
+type StageSimState = {
+  count: number
+  texSize: [number, number]
+  simUvs: Float32Array
+  stageUvs: Float32Array
+  stageDepths: Float32Array
+  positions: Float32Array
+  bounds: { center: [number, number, number]; radius: number }
 }
 
 const BLOOM_SETTINGS = {
@@ -275,76 +286,6 @@ function useImageData(url: string | null): {
   }, [url])
 
   return state
-}
-
-class ParticleSim {
-  readonly count: number
-  readonly positionTexture: THREE.DataTexture
-  readonly colorTexture: THREE.DataTexture | null
-  readonly uvs: Float32Array
-  readonly texSize: [number, number]
-  private disposed = false
-
-  constructor(source: {
-    positions: Float32Array
-    colors?: ArrayLike<number> | null
-    depth01?: ArrayLike<number> | null
-    cap: number
-  }) {
-    const baseCount = Math.max(0, Math.floor(source.positions.length / 3))
-    const depthCount = source.depth01 ? Math.floor(source.depth01.length) : baseCount
-    const capped = Math.max(0, Math.min(baseCount, depthCount, Math.floor(source.cap)))
-    this.count = capped
-    const texWidth = Math.max(1, Math.ceil(Math.sqrt(capped || 1)))
-    const texHeight = Math.max(1, Math.ceil((capped || 1) / texWidth))
-    this.texSize = [texWidth, texHeight]
-    const pos = new Float32Array(texWidth * texHeight * 4)
-    for (let i = 0, j = 0; i < capped; i++, j += 4) {
-      const k = i * 3
-      pos[j + 0] = source.positions[k + 0] ?? 0
-      pos[j + 1] = source.positions[k + 1] ?? 0
-      pos[j + 2] = source.positions[k + 2] ?? 0
-      pos[j + 3] = source.depth01 ? source.depth01[i] ?? 0.5 : 0.5
-    }
-    const posTex = new (THREE as any).DataTexture(pos, texWidth, texHeight, (THREE as any).RGBAFormat, (THREE as any).FloatType)
-    posTex.needsUpdate = true; posTex.minFilter = posTex.magFilter = (THREE as any).NearestFilter
-    this.positionTexture = posTex
-    let colorTex: THREE.DataTexture | null = null
-    const src = source.colors
-    if (src && capped > 0) {
-      const data = new Uint8Array(texWidth * texHeight * 4)
-      const asByte = src instanceof Uint8Array
-      for (let i = 0, j = 0; i < capped; i++, j += 4) {
-        const k = i * 3
-        const r = src[k + 0] ?? 0
-        const g = src[k + 1] ?? 0
-        const b = src[k + 2] ?? 0
-        data[j + 0] = asByte ? r : Math.max(0, Math.min(255, Math.round(r * 255)))
-        data[j + 1] = asByte ? g : Math.max(0, Math.min(255, Math.round(g * 255)))
-        data[j + 2] = asByte ? b : Math.max(0, Math.min(255, Math.round(b * 255)))
-        data[j + 3] = 255
-      }
-      const tex = new (THREE as any).DataTexture(data, texWidth, texHeight, (THREE as any).RGBAFormat, (THREE as any).UnsignedByteType)
-      tex.needsUpdate = true; tex.minFilter = tex.magFilter = (THREE as any).NearestFilter
-      colorTex = tex
-    }
-    this.colorTexture = colorTex
-    const simUvs = new Float32Array(capped > 0 ? capped * 2 : 0)
-    for (let i = 0, j = 0; i < capped; i++, j += 2) {
-      const x = i % texWidth
-      const y = Math.floor(i / texWidth)
-      simUvs[j + 0] = (x + 0.5) / texWidth
-      simUvs[j + 1] = (y + 0.5) / texHeight
-    }
-    this.uvs = simUvs
-  }
-
-  dispose() {
-    if (this.disposed) return
-    this.positionTexture.dispose()
-    this.colorTexture?.dispose()
-    this.disposed = true
-  }
 }
 
 // Load RG-packed depth (R=hi, G=lo) and reconstruct to Uint16Array
@@ -826,6 +767,42 @@ function DreamdustTicker({ tick }: { tick?: (state: unknown, delta: number) => v
   return null
 }
 
+function SimDriver({
+  simRef,
+  active,
+  uniforms,
+  material,
+}: {
+  simRef: React.MutableRefObject<ParticleSim | null>
+  active: boolean
+  uniforms: DreamdustStageUniforms
+  material: THREE.ShaderMaterial | null
+}) {
+  useFrame((_, delta) => {
+    const sim = simRef.current
+    if (!active || !sim) return
+    sim.update(delta)
+    const posTex = sim.getPositionTexture()
+    const colorTex = sim.getColorTexture()
+    if (uniforms.uSimPositionTex && uniforms.uSimPositionTex.value !== posTex) {
+      uniforms.uSimPositionTex.value = posTex
+    }
+    if (uniforms.uSimColorTex && uniforms.uSimColorTex.value !== colorTex) {
+      uniforms.uSimColorTex.value = colorTex
+    }
+    if (material) {
+      const matUniforms = material.uniforms as Record<string, { value: unknown }>
+      if (matUniforms.uSimPositionTex && matUniforms.uSimPositionTex.value !== posTex) {
+        matUniforms.uSimPositionTex.value = posTex
+      }
+      if (matUniforms.uSimColorTex && matUniforms.uSimColorTex.value !== colorTex) {
+        matUniforms.uSimColorTex.value = colorTex
+      }
+    }
+  })
+  return null
+}
+
 function SceneControls({ radius, drawing = false }: { radius?: number; drawing?: boolean }) {
   const controlsRef = React.useRef(null)
   const { gl } = useThree()
@@ -890,7 +867,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     colorUrl: colorUrlProp,
     depthUrl: depthUrlProp,
     depthRgUrl,
-    pointSize = 2.0,
+    pointSize = 2.2,
     stride = 1,
     // omit perspective in baseline
   } = props
@@ -898,6 +875,20 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [noBloomOverride] = React.useState(readNoBloomOverride)
   const [forceBloomOverride] = React.useState(readForceBloomOverride)
   const [bloomEligible, setBloomEligible] = React.useState(false)
+  const rendererRef = React.useRef<THREE.WebGLRenderer | null>(null)
+  const [rendererReadyTick, setRendererReadyTick] = React.useState(0)
+  const simRef = React.useRef<ParticleSim | null>(null)
+  const [simState, setSimState] = React.useState<StageSimState | null>(null)
+  const simFitRequestedRef = React.useRef(false)
+  const simFitLoggedRef = React.useRef(false)
+  const simInitKeyRef = React.useRef<string | null>(null)
+  const debugDepth = React.useMemo(() => readSearchParamSafe('debugDepth') === '1', [])
+  React.useEffect(() => {
+    return () => {
+      simRef.current?.dispose()
+      simRef.current = null
+    }
+  }, [])
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
@@ -972,10 +963,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     packed.width > 0 &&
     packed.height > 0
   const readyFallback = fallbackGate && colorReady && !!depth16From8
-  const pointBudget = React.useMemo(
-    () => pointCap({ mobile: 100_000, desktop: 110_000 }),
-    [],
-  )
+  const pointBudget = React.useMemo(() => pointCap({ mobile: 100_000, desktop: 100_000 }), [])
   const [runtimeCaps, setRuntimeCaps] = React.useState<Readonly<DreamdustRuntimeCaps> | null>(null)
 
   const dreamdustUniformApi = useDreamdustUniforms()
@@ -1438,7 +1426,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     bloom: false,
     fovDeg: initialFovDeg,
     reveal: 1,
-    flipUp: true,
+    flipUp: false,
     flipNormal: false,
     mirrorLR: false,
     mirrorUD: true,
@@ -1480,19 +1468,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     } catch {
       /* noop */
     }
-  }, [
-    ui.thickness,
-    ui.pointSizeScale,
-    ui.keepRatio,
-    ui.bloom,
-    ui.fovDeg,
-    ui.reveal,
-    ui.flipUp,
-    ui.flipNormal,
-    ui.mirrorLR,
-    ui.mirrorUD,
-    ui.roll180,
-  ])
+  }, [ui])
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
@@ -1772,37 +1748,133 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return { uvs, depths01 }
   }, [appliedQuaternion, prebaked, renderBuffers])
 
-  const simPayload = React.useMemo(() => {
+  const simSource = React.useMemo(() => {
     if (!simEnabled || !prebaked || !prebakedUvDepth) return null
     const positions = renderBuffers?.positions ?? prebaked.positions
-    const depth01 = prebakedUvDepth.depths01
-    const count = Math.floor(positions.length / 3)
-    if (depth01.length < count) return null
+    const depths = prebakedUvDepth.depths01
+    const available = Math.min(Math.floor(positions.length / 3), depths.length)
+    if (available <= 0) return null
     const requested = simUniforms?.numParticles ?? 0
-    const cappedCount =
+    const limit =
       requested > 0 && Number.isFinite(requested)
         ? Math.max(0, Math.min(pointBudget, Math.floor(requested)))
         : pointBudget
-    const instance = new ParticleSim({
-      positions,
-      colors: renderBuffers?.colors ?? recolored ?? null,
-      depth01,
-      cap: cappedCount,
-    })
-    return { sim: instance, positions: new Float32Array(instance.count * 3) }
-  }, [pointBudget, prebaked, prebakedUvDepth, renderBuffers, recolored, simEnabled, simUniforms])
+    const count = Math.min(available, limit)
+    if (count <= 0) return null
+    const trimmedPositions = positions.slice(0, count * 3) as Float32Array
+    const trimmedDepths = depths.slice(0, count) as Float32Array
+    const trimmedUvs = prebakedUvDepth.uvs.slice(0, count * 2) as Float32Array
+    let colorSource: ArrayLike<number> | null = null
+    if (debugDepth) {
+      const depthColors = new Float32Array(count * 3)
+      for (let i = 0; i < count; i += 1) {
+        const d = trimmedDepths[i] ?? 0
+        depthColors[i * 3 + 0] = d
+        depthColors[i * 3 + 1] = d
+        depthColors[i * 3 + 2] = d
+      }
+      colorSource = depthColors
+    } else {
+      const baseColors = renderBuffers?.colors ?? recolored ?? null
+      if (baseColors && baseColors.length >= count * 3) {
+        colorSource = baseColors.slice(0, count * 3)
+      }
+    }
+    return {
+      positions: trimmedPositions,
+      depths: trimmedDepths,
+      colors: colorSource,
+      count,
+      stageUvs: trimmedUvs,
+    }
+  }, [
+    debugDepth,
+    pointBudget,
+    prebaked,
+    prebakedUvDepth,
+    recolored,
+    renderBuffers,
+    simEnabled,
+    simUniforms?.numParticles,
+  ])
+
+  const simActive = simEnabled && !!simState
+  const simBounds = simState?.bounds ?? null
+  const stageUvDepth = React.useMemo(() => {
+    if (simActive && simState) {
+      return { uvs: simState.stageUvs, depths01: simState.stageDepths }
+    }
+    return prebakedUvDepth
+  }, [prebakedUvDepth, simActive, simState])
 
   React.useEffect(() => {
-    if (!simPayload) return
-    if (simEnabled)
-      console.log('[engine] sim on', {
-        count: simPayload.sim.count,
-        texSize: simPayload.sim.texSize,
+    if (!simEnabled || !simSource || !rendererRef.current) {
+      setSimState(null)
+      if (simRef.current) {
+        simRef.current.dispose()
+        simRef.current = null
+      }
+      simInitKeyRef.current = null
+      return
+    }
+    const renderer = rendererRef.current
+    let instance = simRef.current
+    if (!instance) {
+      instance = new ParticleSim(renderer)
+      simRef.current = instance
+      simInitKeyRef.current = null
+    }
+    const gravityY = typeof simUniforms?.gravityY === 'number' ? simUniforms.gravityY : -0.05
+    const damping = typeof simUniforms?.velocityDamping === 'number' ? simUniforms.velocityDamping : 0.04
+    const gravityVec: [number, number, number] = [0, gravityY, 0]
+    instance.setDynamics({ gravity: gravityVec, damping })
+    const simKey = `${sceneId ?? 'none'}:${simSource.count}:${debugDepth ? 1 : 0}:${renderBuffers?.positions?.byteLength ?? prebaked?.positions?.byteLength ?? 0}:${(renderBuffers?.colors ?? recolored)?.length ?? 0}:${prebakedUvDepth?.depths01.length ?? 0}`
+    const needsInit = simInitKeyRef.current !== simKey || !simState
+    if (needsInit) {
+      instance.createSim(
+        {
+          count: simSource.count,
+          seed: 1,
+          gravity: gravityVec,
+          damping,
+        },
+        {
+          positions: simSource.positions as Float32Array,
+          depths: simSource.depths as Float32Array,
+          colors: simSource.colors,
+        },
+      )
+      simInitKeyRef.current = simKey
+      const bounds = instance.getBounds()
+      const texSize = instance.getTexSize()
+      const simUvs = instance.getSimUvs()
+      setSimState({
+        count: simSource.count,
+        texSize,
+        simUvs,
+        stageUvs: simSource.stageUvs,
+        stageDepths: simSource.depths as Float32Array,
+        positions: new Float32Array(simSource.count > 0 ? simSource.count * 3 : 0),
+        bounds: { center: bounds.center, radius: bounds.radius },
       })
-    return () => simPayload.sim.dispose()
-  }, [simEnabled, simPayload])
+    }
+    simFitRequestedRef.current = false
+    simFitLoggedRef.current = false
+  }, [
+    rendererReadyTick,
+    simEnabled,
+    simSource,
+    simUniforms?.gravityY,
+    simUniforms?.velocityDamping,
+    sceneId,
+    debugDepth,
+    renderBuffers,
+    recolored,
+    prebaked,
+    prebakedUvDepth,
+    simState,
+  ])
 
-  const simActive = simEnabled && !!simPayload && !!prebakedUvDepth
   React.useEffect(() => {
     const material = prebakedMaterial
     if (!material) {
@@ -1811,31 +1883,33 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       return
     }
     const defines = material.defines ?? {}
-    const payload = simPayload
-    const materialUniforms = material.uniforms as Record<string, { value: unknown }>
-    if (simEnabled && payload && prebakedUvDepth) {
+    const matUniforms = material.uniforms as Record<string, { value: unknown }>
+    const instance = simRef.current
+    if (simActive && instance && simState) {
       defines.USE_SIM_POS = 1
-      if (payload.sim.colorTexture) {
+      const colorTex = instance.getColorTexture()
+      if (colorTex) {
         defines.USE_SIM_COLOR = 1
       } else {
         delete defines.USE_SIM_COLOR
       }
-      if (materialUniforms.uSimPositionTex) materialUniforms.uSimPositionTex.value = payload.sim.positionTexture
-      if (materialUniforms.uSimColorTex) materialUniforms.uSimColorTex.value = payload.sim.colorTexture
-      if (uniforms.uSimPositionTex) uniforms.uSimPositionTex.value = payload.sim.positionTexture
-      if (uniforms.uSimColorTex) uniforms.uSimColorTex.value = payload.sim.colorTexture
+      const posTex = instance.getPositionTexture()
+      if (matUniforms.uSimPositionTex) matUniforms.uSimPositionTex.value = posTex
+      if (matUniforms.uSimColorTex) matUniforms.uSimColorTex.value = colorTex
+      if (uniforms.uSimPositionTex) uniforms.uSimPositionTex.value = posTex
+      if (uniforms.uSimColorTex) uniforms.uSimColorTex.value = colorTex
     } else {
       delete defines.USE_SIM_POS
       delete defines.USE_SIM_COLOR
-      if (materialUniforms.uSimPositionTex) materialUniforms.uSimPositionTex.value = null
-      if (materialUniforms.uSimColorTex) materialUniforms.uSimColorTex.value = null
+      if (matUniforms.uSimPositionTex) matUniforms.uSimPositionTex.value = null
+      if (matUniforms.uSimColorTex) matUniforms.uSimColorTex.value = null
       if (uniforms.uSimPositionTex) uniforms.uSimPositionTex.value = null
       if (uniforms.uSimColorTex) uniforms.uSimColorTex.value = null
     }
     material.defines = defines
-    ;(material as any).uniformsNeedUpdate = true
+    ;(material as THREE.ShaderMaterial & { uniformsNeedUpdate?: boolean }).uniformsNeedUpdate = true
     material.needsUpdate = true
-  }, [prebakedMaterial, simEnabled, simPayload, prebakedUvDepth, uniforms])
+  }, [prebakedMaterial, simActive, simState, uniforms])
 
   // Mirror scale (local reflection) for left/right and up/down
   const mirrorScale = React.useMemo(() => {
@@ -1847,8 +1921,39 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     dreamdustCtx.setMirrorFlags(!!ui.mirrorLR, !!ui.mirrorUD)
   }, [dreamdustCtx, ui.mirrorLR, ui.mirrorUD])
 
-  const cameraFitTarget = React.useMemo(() => [0, 0, 0] as [number, number, number], [])
+  const cameraFitTarget = React.useMemo<[number, number, number]>(() => {
+    if (simActive && simBounds) {
+      const center = new THREE.Vector3(simBounds.center[0], simBounds.center[1], simBounds.center[2])
+      center.multiply(new THREE.Vector3(1, 1, thicknessScale))
+      center.multiply(new THREE.Vector3(mirrorScale[0], mirrorScale[1], mirrorScale[2]))
+      const scale = prebakedTransform?.scale ?? 1
+      center.multiplyScalar(scale)
+      if (appliedQuaternion) center.applyQuaternion(appliedQuaternion)
+      if (prebakedTransform) {
+        center.add(
+          new THREE.Vector3(
+            -prebakedTransform.center[0] * scale,
+            -prebakedTransform.center[1] * scale,
+            -prebakedTransform.center[2] * scale,
+          ),
+        )
+      }
+      return [center.x, center.y, center.z]
+    }
+    return [0, 0, 0]
+  }, [
+    appliedQuaternion,
+    mirrorScale,
+    prebakedTransform,
+    simActive,
+    simBounds,
+    thicknessScale,
+  ])
   const cameraFitRadius = React.useMemo(() => {
+    if (simActive && simBounds) {
+      const scale = prebakedTransform?.scale ?? 1
+      return Math.max(1e-3, simBounds.radius * scale)
+    }
     if (prebakedTransform) return prebakedTransform.radius
     if (color.width > 0 && color.height > 0) {
       const heightUnits = 1000
@@ -1857,10 +1962,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       return 0.5 * Math.hypot(widthUnits, heightUnits)
     }
     return 600
-  }, [prebakedTransform, color.width, color.height])
+  }, [color.height, color.width, prebakedTransform, simActive, simBounds])
 
   // Compute a cover radius from XY extents so the point cloud fills the viewport
   const cameraCoverRadius = React.useMemo(() => {
+    if (simActive && simBounds) {
+      const scale = prebakedTransform?.scale ?? 1
+      return Math.max(1e-3, simBounds.radius * scale)
+    }
     const srcPos = renderBuffers?.positions ?? prebaked?.positions ?? null
     if (!srcPos) return cameraFitRadius
     const count = Math.floor(srcPos.length / 3)
@@ -1882,7 +1991,33 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const dx = Math.max(1e-6, maxX - minX)
     const dy = Math.max(1e-6, maxY - minY)
     return 0.5 * Math.hypot(dx, dy)
-  }, [appliedQuaternion, cameraFitRadius, prebaked?.positions, renderBuffers])
+  }, [
+    appliedQuaternion,
+    cameraFitRadius,
+    prebaked?.positions,
+    prebakedTransform,
+    renderBuffers,
+    simActive,
+    simBounds,
+  ])
+
+  React.useEffect(() => {
+    if (!simActive || !simState || !simBounds) {
+      simFitRequestedRef.current = false
+      simFitLoggedRef.current = false
+      return
+    }
+    if (!simFitRequestedRef.current) {
+      setFitRequest((v) => v + 1)
+      simFitRequestedRef.current = true
+    }
+    if (!simFitLoggedRef.current) {
+      const centerLog = cameraFitTarget.map((v) => Number(v).toFixed(2)).join(',')
+      const radiusLog = Number(cameraFitRadius).toFixed(3)
+      console.log(`[engine] sim fit { radius:${radiusLog}, center:[${centerLog}] }`)
+      simFitLoggedRef.current = true
+    }
+  }, [cameraFitRadius, cameraFitTarget, simActive, simBounds, simState, setFitRequest])
 
   React.useEffect(() => {
     if (!uniforms.uDepthNormScale) return
@@ -1905,6 +2040,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           console.log('[PC] pointer down', e.clientX, e.clientY)
         }}
         onCreated={({ gl }) => {
+          rendererRef.current = gl
+          setRendererReadyTick((v) => v + 1)
           const mobile = detectMobile()
           const dprLimit = mobile ? 1.6 : 1.8
           const dprClamp = clampDPR(gl, dprLimit)
@@ -1991,10 +2128,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           fovDeg={ui.fovDeg}
           fitRequest={fitRequest}
           fitRadius={cameraCoverRadius}
-          fitMargin={0.6}
+          fitMargin={simActive ? 0.95 : 0.6}
           fitTarget={cameraFitTarget}
         />
         <DreamdustTicker tick={tick} />
+        <SimDriver simRef={simRef} active={simActive} uniforms={uniforms} material={prebakedMaterial} />
         <ambientLight intensity={1} />
         <directionalLight position={[2, 3, 4]} intensity={0.6} />
         {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
@@ -2021,32 +2159,32 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               <group scale={[1, 1, thicknessScale]}>
                 <points frustumCulled={false} renderOrder={1}>
                   <bufferGeometry>
-                    <bufferAttribute attach="attributes-position" args={[simActive && simPayload ? simPayload.positions : renderBuffers?.positions ?? prebaked?.positions ?? new Float32Array(0), 3]} />
-                    {prebakedUvDepth && (
+                    <bufferAttribute attach="attributes-position" args={[simActive && simState ? simState.positions : renderBuffers?.positions ?? prebaked?.positions ?? new Float32Array(0), 3]} />
+                    {stageUvDepth && (
                       <>
                         {/* custom uv for ink/reveal */}
                         {/** @ts-expect-error attachObject is supported at runtime */}
                         <bufferAttribute
                           attachObject={['attributes', 'aUv']}
-                          args={[prebakedUvDepth.uvs, 2]}
+                          args={[stageUvDepth.uvs, 2]}
                         />
                         {/* also bind built-in uv for fragment-only path parity */}
-                        <bufferAttribute attach="attributes-uv" args={[prebakedUvDepth.uvs, 2]} />
+                        <bufferAttribute attach="attributes-uv" args={[stageUvDepth.uvs, 2]} />
                         {/* normalized depth across AABB */}
                         {/** @ts-expect-error attachObject is supported at runtime */}
                         <bufferAttribute
                           attachObject={['attributes', 'aDepth']}
-                          args={[prebakedUvDepth.depths01, 1]}
+                          args={[stageUvDepth.depths01, 1]}
                         />
-                        {simActive && simPayload?.sim && (
+                        {simActive && simState && (
                           // @ts-expect-error aSimUv attribute binding
-                          <bufferAttribute attachObject={['attributes', 'aSimUv']} args={[simPayload.sim.uvs, 2]} />
+                          <bufferAttribute attachObject={['attributes', 'aSimUv']} args={[simState.simUvs, 2]} />
                         )}
                       </>
                     )}
                     {(() => {
-                      if (simActive && simPayload) {
-                        return <bufferAttribute attach="attributes-color" args={[simPayload.positions, 3]} />
+                      if (simActive && simState) {
+                        return <bufferAttribute attach="attributes-color" args={[simState.positions, 3]} />
                       }
                       const src = renderBuffers?.colors ?? recolored ?? null
                       const posCount = Math.floor(
