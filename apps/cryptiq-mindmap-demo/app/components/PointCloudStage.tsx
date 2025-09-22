@@ -29,6 +29,7 @@ import {
 } from './dreamdust/metrics'
 import InkSurface from './dreamdust/InkSurface'
 import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
+import { PresetAiry } from './dreamdust/presets'
 import {
   capInstances,
   clampDPR,
@@ -137,6 +138,69 @@ function readNoBloomOverride(): boolean {
   } catch {
     return false
   }
+}
+
+function readEnvValue(key: string): string | undefined {
+  if (typeof process === 'undefined') {
+    return undefined
+  }
+  const env = process.env as Record<string, string | undefined> | undefined
+  return env?.[key]
+}
+
+function readSearchParamSafe(name: string): string | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+  try {
+    const params = new URLSearchParams(window.location.search)
+    return params.get(name)
+  } catch {
+    return null
+  }
+}
+
+function readNumberOverride(
+  queryKey: string,
+  envKey?: string,
+): number | null {
+  const queryValue = readSearchParamSafe(queryKey)
+  if (queryValue !== null) {
+    const parsed = Number(queryValue)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+  if (envKey) {
+    const envValue = readEnvValue(envKey)
+    if (typeof envValue === 'string') {
+      const parsed = Number(envValue)
+      if (Number.isFinite(parsed)) {
+        return parsed
+      }
+    }
+  }
+  return null
+}
+
+const FOV_QUERY_KEY = 'fov'
+const FOV_ENV_KEY = 'DD_FOV'
+
+function readFovOverride(): number | null {
+  return readNumberOverride(FOV_QUERY_KEY, FOV_ENV_KEY)
+}
+
+function clampFovDeg(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 27
+  }
+  if (value < 10) {
+    return 10
+  }
+  if (value > 100) {
+    return 100
+  }
+  return value
 }
 
 function useOptionalDreamdustCtx() {
@@ -798,8 +862,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stride = 1,
     // omit perspective in baseline
   } = props
-  const simEnabled =
-    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('engine') === 'sim'
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const [noBloomOverride] = React.useState(readNoBloomOverride)
   const [bloomEligible, setBloomEligible] = React.useState(false)
@@ -878,7 +940,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [runtimeCaps, setRuntimeCaps] = React.useState<Readonly<DreamdustRuntimeCaps> | null>(null)
 
   const dreamdustUniformApi = useDreamdustUniforms()
-  const { uniforms: baseUniforms, setUniform, updateInkTexture } = dreamdustUniformApi
+  const {
+    uniforms: baseUniforms,
+    setUniform,
+    updateInkTexture,
+    simUniforms,
+    presetAiryActive,
+    simEngineActive,
+  } = dreamdustUniformApi
+  const simEnabled = simEngineActive
+  const fovOverride = React.useMemo(readFovOverride, [])
   const tick = (
     dreamdustUniformApi as {
       tick?: (state: unknown, delta: number) => void
@@ -1304,6 +1375,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [prebakedStatus])
 
   // Debug panel state (optional via ?debug=1)
+  const presetFov = presetAiryActive && typeof PresetAiry.fov === 'number' ? PresetAiry.fov : null
+  const initialFovDeg = clampFovDeg(
+    typeof fovOverride === 'number' ? fovOverride : presetFov ?? 27,
+  )
   const [debugVisible, setDebugVisible] = React.useState(false)
   const [ui, setUi] = React.useState<{
     thickness: number
@@ -1322,7 +1397,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     pointSizeScale: 2.2,
     keepRatio: 0.8,
     bloom: false,
-    fovDeg: 27,
+    fovDeg: initialFovDeg,
     reveal: 1,
     flipUp: true,
     flipNormal: false,
@@ -1351,10 +1426,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       } else if (noBloomOverride) {
         setUi((prev) => ({ ...prev, bloom: false }))
       }
+      if (typeof fovOverride === 'number') {
+        const clamped = clampFovDeg(fovOverride)
+        setUi((prev) => (prev.fovDeg === clamped ? prev : { ...prev, fovDeg: clamped }))
+      }
     } catch {
       /* noop */
     }
-  }, [noBloomOverride])
+  }, [fovOverride, noBloomOverride])
   React.useEffect(() => {
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem('pcDebug', JSON.stringify(ui))
@@ -1630,14 +1709,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const depth01 = prebakedUvDepth.depths01
     const count = Math.floor(positions.length / 3)
     if (depth01.length < count) return null
+    const requested = simUniforms?.numParticles ?? 0
+    const cappedCount =
+      requested > 0 && Number.isFinite(requested)
+        ? Math.max(0, Math.min(pointBudget, Math.floor(requested)))
+        : pointBudget
     const instance = new ParticleSim({
       positions,
       colors: renderBuffers?.colors ?? recolored ?? null,
       depth01,
-      cap: pointBudget,
+      cap: cappedCount,
     })
     return { sim: instance, positions: new Float32Array(instance.count * 3) }
-  }, [pointBudget, prebaked, prebakedUvDepth, renderBuffers, recolored, simEnabled])
+  }, [pointBudget, prebaked, prebakedUvDepth, renderBuffers, recolored, simEnabled, simUniforms])
 
   React.useEffect(() => {
     if (!simPayload) return

@@ -57,6 +57,34 @@ export type DreamdustUniforms = {
   }
 }
 
+type DreamdustSimCurveUniforms = {
+  fadeIn: number
+  fadeOut: number
+  opacity: number
+  size: number
+  glowSpread: number
+  solidRatio: number
+  solidAlpha: number
+}
+
+export type DreamdustSimUniforms = {
+  numParticles: number
+  velocityDamping: number
+  gravityY: number
+  turbulenceStrength: number
+  turbulenceTime: number
+  turbulencePositionFrequency: number
+  emitterRadius: number
+  emitterVelocityStrength: number
+  initialRandomVelocity: number
+  sparklingIntensity: number
+  sparklingProbability: number
+  sparklingFrequency: number
+  sprite: DreamdustSimCurveUniforms
+  rim: DreamdustSimCurveUniforms
+  lifetime: DreamdustSimCurveUniforms
+}
+
 const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uTime: 0,
   uViewport: [1, 1],
@@ -92,6 +120,57 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uTintGain: 1,
   uInkTintBoost: 1,
   uVertexInkOk: 0,
+}
+
+const ENGINE_QUERY_KEY = 'engine'
+const ENGINE_ENV_KEY = 'DD_ENGINE'
+const ENGINE_SIM_VALUE = 'sim'
+
+const SIM_PARAM_ENV_PREFIX = 'DD_SIM_'
+const SIM_PARAM_QUERY_PREFIX = 'sim'
+
+const DEFAULT_SIM_CURVE: DreamdustSimCurveUniforms = Object.freeze({
+  fadeIn: 0.12,
+  fadeOut: 0.4,
+  opacity: 1,
+  size: 1,
+  glowSpread: 0.2,
+  solidRatio: 0.35,
+  solidAlpha: 0.6,
+})
+
+function cloneSimCurve(curve: DreamdustSimCurveUniforms): DreamdustSimCurveUniforms {
+  return {
+    fadeIn: curve.fadeIn,
+    fadeOut: curve.fadeOut,
+    opacity: curve.opacity,
+    size: curve.size,
+    glowSpread: curve.glowSpread,
+    solidRatio: curve.solidRatio,
+    solidAlpha: curve.solidAlpha,
+  }
+}
+
+const DEFAULT_SIM_UNIFORMS = Object.freeze({
+  numParticles: 0,
+  velocityDamping: 0.04,
+  gravityY: -0.05,
+  turbulenceStrength: 0.4,
+  turbulenceTime: 1.2,
+  turbulencePositionFrequency: 0.6,
+  emitterRadius: 0.45,
+  emitterVelocityStrength: 0.35,
+  initialRandomVelocity: 0.05,
+  sparklingIntensity: 0,
+  sparklingProbability: 0,
+  sparklingFrequency: 0,
+  sprite: cloneSimCurve(DEFAULT_SIM_CURVE),
+  rim: cloneSimCurve(DEFAULT_SIM_CURVE),
+  lifetime: cloneSimCurve(DEFAULT_SIM_CURVE),
+}) as Readonly<Omit<DreamdustSimUniforms, 'sprite' | 'rim' | 'lifetime'>> & {
+  sprite: Readonly<DreamdustSimCurveUniforms>
+  rim: Readonly<DreamdustSimCurveUniforms>
+  lifetime: Readonly<DreamdustSimCurveUniforms>
 }
 
 function initialViewport(): [number, number] {
@@ -139,6 +218,26 @@ function safeLog(...args: Parameters<typeof console.log>): void {
     console.log(...args)
   } catch {
     // noop
+  }
+}
+
+function createDefaultSimUniforms(): DreamdustSimUniforms {
+  return {
+    numParticles: DEFAULT_SIM_UNIFORMS.numParticles,
+    velocityDamping: DEFAULT_SIM_UNIFORMS.velocityDamping,
+    gravityY: DEFAULT_SIM_UNIFORMS.gravityY,
+    turbulenceStrength: DEFAULT_SIM_UNIFORMS.turbulenceStrength,
+    turbulenceTime: DEFAULT_SIM_UNIFORMS.turbulenceTime,
+    turbulencePositionFrequency: DEFAULT_SIM_UNIFORMS.turbulencePositionFrequency,
+    emitterRadius: DEFAULT_SIM_UNIFORMS.emitterRadius,
+    emitterVelocityStrength: DEFAULT_SIM_UNIFORMS.emitterVelocityStrength,
+    initialRandomVelocity: DEFAULT_SIM_UNIFORMS.initialRandomVelocity,
+    sparklingIntensity: DEFAULT_SIM_UNIFORMS.sparklingIntensity,
+    sparklingProbability: DEFAULT_SIM_UNIFORMS.sparklingProbability,
+    sparklingFrequency: DEFAULT_SIM_UNIFORMS.sparklingFrequency,
+    sprite: cloneSimCurve(DEFAULT_SIM_UNIFORMS.sprite),
+    rim: cloneSimCurve(DEFAULT_SIM_UNIFORMS.rim),
+    lifetime: cloneSimCurve(DEFAULT_SIM_UNIFORMS.lifetime),
   }
 }
 
@@ -270,6 +369,15 @@ function readSearchParam(name: string): string | null {
   }
 }
 
+function detectSimEngine(): boolean {
+  const queryValue = normalizeGateValue(readSearchParam(ENGINE_QUERY_KEY))
+  if (queryValue === ENGINE_SIM_VALUE) {
+    return true
+  }
+  const envValue = normalizeGateValue(readEnvValue(ENGINE_ENV_KEY))
+  return envValue === ENGINE_SIM_VALUE
+}
+
 function detectPresetGate(target: string): boolean {
   if (!target) {
     return false
@@ -286,7 +394,10 @@ function detectVaporPreset(): boolean {
   return detectPresetGate(PRESET_VAPOR_VALUE)
 }
 
-function detectAiryPreset(): boolean {
+function detectAiryPreset(simActive: boolean): boolean {
+  if (!simActive) {
+    return false
+  }
   return detectPresetGate(PRESET_AIRY_VALUE)
 }
 
@@ -297,6 +408,133 @@ function detectInkBump(): boolean {
   }
   const queryValue = normalizeGateValue(readSearchParam(INK_BUMP_QUERY_KEY))
   return TRUTHY_BUMP_VALUES.has(queryValue)
+}
+
+function toEnvParamKey(name: string): string {
+  return name.replace(/([A-Z])/g, '_$1').toUpperCase()
+}
+
+function toQueryParamKey(name: string): string {
+  if (!name) {
+    return SIM_PARAM_QUERY_PREFIX
+  }
+  const [first, ...rest] = name
+  return `${SIM_PARAM_QUERY_PREFIX}${first.toUpperCase()}${rest.join('')}`
+}
+
+function readSimOverride(name: string): number | null {
+  const queryKey = toQueryParamKey(name)
+  const queryValue = readSearchParam(queryKey)
+  if (queryValue !== null) {
+    const parsed = Number(queryValue)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+  const envKey = `${SIM_PARAM_ENV_PREFIX}${toEnvParamKey(name)}`
+  const envValue = readEnvValue(envKey)
+  if (typeof envValue === 'string') {
+    const parsed = Number(envValue)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+  return null
+}
+
+function resolveSimNumber(name: string, fallback: number): number {
+  const override = readSimOverride(name)
+  if (override === null) {
+    return fallback
+  }
+  return override
+}
+
+function sanitizeParticleCount(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0
+  }
+  return Math.floor(value)
+}
+
+function createSimUniforms(): DreamdustSimUniforms {
+  const uniforms = createDefaultSimUniforms()
+  uniforms.numParticles = sanitizeParticleCount(
+    resolveSimNumber('numParticles', uniforms.numParticles),
+  )
+  const damping = resolveSimNumber('velocityDamping', uniforms.velocityDamping)
+  uniforms.velocityDamping = Number.isFinite(damping) ? damping : uniforms.velocityDamping
+  const gravity = resolveSimNumber('gravityY', uniforms.gravityY)
+  uniforms.gravityY = Number.isFinite(gravity) ? gravity : uniforms.gravityY
+  const turbulenceStrength = resolveSimNumber(
+    'turbulenceStrength',
+    uniforms.turbulenceStrength,
+  )
+  uniforms.turbulenceStrength = Number.isFinite(turbulenceStrength)
+    ? turbulenceStrength
+    : uniforms.turbulenceStrength
+  const turbulenceTime = resolveSimNumber('turbulenceTime', uniforms.turbulenceTime)
+  uniforms.turbulenceTime = Number.isFinite(turbulenceTime)
+    ? turbulenceTime
+    : uniforms.turbulenceTime
+  const turbulencePosFreq = resolveSimNumber(
+    'turbulencePositionFrequency',
+    uniforms.turbulencePositionFrequency,
+  )
+  uniforms.turbulencePositionFrequency = Number.isFinite(turbulencePosFreq)
+    ? turbulencePosFreq
+    : uniforms.turbulencePositionFrequency
+  const emitterRadius = resolveSimNumber('emitterRadius', uniforms.emitterRadius)
+  uniforms.emitterRadius = Number.isFinite(emitterRadius)
+    ? emitterRadius
+    : uniforms.emitterRadius
+  const emitterVelocity = resolveSimNumber(
+    'emitterVelocityStrength',
+    uniforms.emitterVelocityStrength,
+  )
+  uniforms.emitterVelocityStrength = Number.isFinite(emitterVelocity)
+    ? emitterVelocity
+    : uniforms.emitterVelocityStrength
+  const randomVelocity = resolveSimNumber(
+    'initialRandomVelocity',
+    uniforms.initialRandomVelocity,
+  )
+  uniforms.initialRandomVelocity = Number.isFinite(randomVelocity)
+    ? randomVelocity
+    : uniforms.initialRandomVelocity
+
+  const sprite = uniforms.sprite
+  sprite.fadeIn = resolveSimNumber('spriteFadeIn', sprite.fadeIn)
+  sprite.fadeOut = resolveSimNumber('spriteFadeOut', sprite.fadeOut)
+  sprite.opacity = resolveSimNumber('spriteOpacity', sprite.opacity)
+  sprite.size = resolveSimNumber('spriteSize', sprite.size)
+  sprite.glowSpread = resolveSimNumber('spriteGlowSpread', sprite.glowSpread)
+  sprite.solidRatio = resolveSimNumber('spriteSolidRatio', sprite.solidRatio)
+  sprite.solidAlpha = resolveSimNumber('spriteSolidAlpha', sprite.solidAlpha)
+
+  const rim = uniforms.rim
+  rim.fadeIn = resolveSimNumber('rimFadeIn', rim.fadeIn)
+  rim.fadeOut = resolveSimNumber('rimFadeOut', rim.fadeOut)
+  rim.opacity = resolveSimNumber('rimOpacity', rim.opacity)
+  rim.size = resolveSimNumber('rimSize', rim.size)
+  rim.glowSpread = resolveSimNumber('rimGlowSpread', rim.glowSpread)
+  rim.solidRatio = resolveSimNumber('rimSolidRatio', rim.solidRatio)
+  rim.solidAlpha = resolveSimNumber('rimSolidAlpha', rim.solidAlpha)
+
+  const lifetime = uniforms.lifetime
+  lifetime.fadeIn = resolveSimNumber('lifetimeFadeIn', lifetime.fadeIn)
+  lifetime.fadeOut = resolveSimNumber('lifetimeFadeOut', lifetime.fadeOut)
+  lifetime.opacity = resolveSimNumber('lifetimeOpacity', lifetime.opacity)
+  lifetime.size = resolveSimNumber('lifetimeSize', lifetime.size)
+  lifetime.glowSpread = resolveSimNumber('lifetimeGlowSpread', lifetime.glowSpread)
+  lifetime.solidRatio = resolveSimNumber('lifetimeSolidRatio', lifetime.solidRatio)
+  lifetime.solidAlpha = resolveSimNumber('lifetimeSolidAlpha', lifetime.solidAlpha)
+
+  uniforms.sparklingIntensity = 0
+  uniforms.sparklingProbability = 0
+  uniforms.sparklingFrequency = 0
+
+  return uniforms
 }
 
 type DreamdustUniformName = keyof DreamdustUniforms
@@ -315,6 +553,9 @@ type UseDreamdustUniformsResult = {
     value: DreamdustUniformValue<Name>,
   ) => void
   updateInkTexture: (texture: TextureLike | null) => void
+  simUniforms: DreamdustSimUniforms
+  presetAiryActive: boolean
+  simEngineActive: boolean
 }
 
 type RevealTimelineState = {
@@ -335,13 +576,22 @@ type CascadeTimelineState = {
 }
 
 export function useDreamdustUniforms(): UseDreamdustUniformsResult {
-  const presetAiryEnabled = React.useMemo(detectAiryPreset, [])
+  const simEngineActive = React.useMemo(detectSimEngine, [])
+  const presetAiryEnabled = React.useMemo(
+    () => detectAiryPreset(simEngineActive),
+    [simEngineActive],
+  )
   const presetVaporEnabled = React.useMemo(detectVaporPreset, [])
   const inkBumpEnabled = React.useMemo(
     () => (presetAiryEnabled ? false : detectInkBump()),
     [presetAiryEnabled],
   )
   const uniformsRef = React.useRef<DreamdustUniforms | null>(null)
+  const simUniformsRef = React.useRef<DreamdustSimUniforms | null>(null)
+
+  if (!simUniformsRef.current) {
+    simUniformsRef.current = createSimUniforms()
+  }
 
   if (!uniformsRef.current) {
     const breathAmpValue = presetAiryEnabled
@@ -710,6 +960,11 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     [setUniform],
   )
 
+  const simUniforms = simUniformsRef.current
+  if (!simUniforms) {
+    throw new Error('Dreamdust sim uniforms unavailable')
+  }
+
   const uniforms = uniformsRef.current
   if (!uniforms) {
     throw new Error('Dreamdust uniforms unavailable')
@@ -723,5 +978,8 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     stopCascade,
     setUniform,
     updateInkTexture,
+    simUniforms,
+    presetAiryActive: presetAiryEnabled,
+    simEngineActive,
   }
 }
