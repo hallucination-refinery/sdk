@@ -1407,6 +1407,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     typeof fovOverride === 'number' ? fovOverride : presetFov ?? 27,
   )
   const [debugVisible, setDebugVisible] = React.useState(false)
+  // Lightweight array sampler hash (content-aware) to detect data changes even when lengths are identical
+  const hashArraySample = React.useCallback((arr: ArrayLike<number> | null | undefined): string => {
+    if (!arr) return 'h:0'
+    const len = (arr as { length: number }).length || 0
+    if (len === 0) return 'h:0'
+    let h = 2166136261 >>> 0 // FNV-1a base
+    const samples = Math.min(256, len)
+    const step = Math.max(1, Math.floor(len / samples))
+    for (let i = 0; i < len; i += step) {
+      const v = Number((arr as any)[i] ?? 0)
+      const q = Math.round(v * 100000) // 1e-5 precision
+      h ^= q >>> 0
+      h = Math.imul(h, 16777619) >>> 0
+    }
+    return `h:${h.toString(16)}`
+  }, [])
   const [ui, setUi] = React.useState<{
     thickness: number
     pointSizeScale: number
@@ -1470,10 +1486,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
   }, [ui])
 
-  // Apply bloom flag from debug panel (pure React)
+  // Apply bloom flag; force OFF while sim engine is active for stable tuning
   React.useEffect(() => {
-    setBloomEnabled(bloomActive)
-  }, [bloomActive])
+    setBloomEnabled(bloomActive && !simEnabled)
+  }, [bloomActive, simEnabled])
 
   React.useEffect(() => {
     const guardOk =
@@ -1828,7 +1844,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const damping = typeof simUniforms?.velocityDamping === 'number' ? simUniforms.velocityDamping : 0.04
     const gravityVec: [number, number, number] = [0, gravityY, 0]
     instance.setDynamics({ gravity: gravityVec, damping })
-    const simKey = `${sceneId ?? 'none'}:${simSource.count}:${debugDepth ? 1 : 0}:${renderBuffers?.positions?.byteLength ?? prebaked?.positions?.byteLength ?? 0}:${(renderBuffers?.colors ?? recolored)?.length ?? 0}:${prebakedUvDepth?.depths01.length ?? 0}`
+    const simKey = `${sceneId ?? 'none'}:${simSource.count}:${debugDepth ? 1 : 0}:${hashArraySample(simSource.positions)}:${hashArraySample(simSource.depths)}:${hashArraySample(simSource.colors as any)}`
     const needsInit = simInitKeyRef.current !== simKey || !simState
     if (needsInit) {
       instance.createSim(
