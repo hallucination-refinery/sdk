@@ -71,9 +71,9 @@ type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
 }
 
 const BLOOM_SETTINGS = {
-  strength: 0.12,
-  radius: 0.1,
-  threshold: 0.7,
+  strength: 0.2,
+  radius: 0.4,
+  threshold: 0.8,
 } as const
 
 type NavigatorWithPowerHints = Navigator & {
@@ -135,6 +135,18 @@ function readNoBloomOverride(): boolean {
   try {
     const params = new URLSearchParams(window.location.search)
     return params.get('noBloom') === '1'
+  } catch {
+    return false
+  }
+}
+
+function readForceBloomOverride(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+  try {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('forceBloom') === '1'
   } catch {
     return false
   }
@@ -418,65 +430,70 @@ function buildAttributes(
     return s - Math.floor(s)
   }
 
-  const totalCandidates = Math.ceil((w / stride) * (h / stride))
-  const maxPoints = cap
+  const safeStride = Math.max(1, Math.floor(stride))
+  const cellsX = Math.max(1, Math.ceil(w / safeStride))
+  const cellsY = Math.max(1, Math.ceil(h / safeStride))
+  const totalCandidates = cellsX * cellsY
+  const maxPoints = Math.max(0, Math.floor(cap))
   const keepRatio = Math.min(1, maxPoints / Math.max(1, totalCandidates))
+  const [denomX, denomY] = [Math.max(1, w - 1), Math.max(1, h - 1)]
+  const [maxColorX, maxColorY] = [Math.max(0, cw - 1), Math.max(0, ch - 1)]
+  const [maxDepthX, maxDepthY] = [Math.max(0, dw - 1), Math.max(0, dh - 1)]
 
   let kept = 0
-  for (let y = 0; y < h; y += stride) {
-    for (let x = 0; x < w; x += stride) {
-      // map sample to each source's native grid to avoid misindexing
-      const xC = Math.round((x / Math.max(1, w - 1)) * Math.max(0, cw - 1))
-      const yC = Math.round((y / Math.max(1, h - 1)) * Math.max(0, ch - 1))
-      const pColor = yC * cw + xC
 
-      const xD = Math.round((x / Math.max(1, w - 1)) * Math.max(0, dw - 1))
-      const yD = Math.round((y / Math.max(1, h - 1)) * Math.max(0, dh - 1))
-      const pDepth = yD * dw + xD
+  const rowPhase =
+    cellsY > 0 ? Math.floor(hash(cellsX + 0.5, cellsY + 0.25) * cellsY) % cellsY : 0
 
-      const d01 = dep16[pDepth] / 65535.0
-      if (d01 < minDepth01) minDepth01 = d01
-      if (d01 > maxDepth01) maxDepth01 = d01
+  const sampleCells = (forceKeep: boolean) => {
+    for (let rowIter = 0; rowIter < cellsY; rowIter++) {
+      const cellY = (rowIter + rowPhase) % cellsY
+      const baseY = cellY * safeStride
+      const cellHeight = Math.min(safeStride, h - baseY)
+      if (cellHeight <= 0) continue
 
-      const r = col[pColor * 4] / 255.0
-      const g = col[pColor * 4 + 1] / 255.0
-      const b = col[pColor * 4 + 2] / 255.0
-      const luma = 0.299 * r + 0.587 * g + 0.114 * b
+      const rowSeed = hash(cellY + 0.5, (cellY + 1) * 1.41421356237)
+      const yOffset = Math.min(cellHeight - 1, Math.floor(rowSeed * cellHeight))
+      const sampleY = baseY + yOffset
+      const yNorm = sampleY / denomY
+      const colorY = Math.round(yNorm * maxColorY)
+      const depthY = Math.round(yNorm * maxDepthY)
+      const phaseX = cellsX > 0 ? Math.floor(rowSeed * cellsX) % cellsX : 0
 
-      const near = 1.0 - d01
-      const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
-      if (hash(x, y) > keep) continue
+      for (let colIter = 0; colIter < cellsX; colIter++) {
+        const cellX = (colIter + phaseX) % cellsX
+        const baseX = cellX * safeStride
+        const cellWidth = Math.min(safeStride, w - baseX)
+        if (cellWidth <= 0) continue
 
-      us.push(x / Math.max(1, w - 1), y / Math.max(1, h - 1))
-      ds.push(d01)
-      xs.push(0, 0, 0)
-      cs.push(r, g, b)
-      kept++
-    }
-  }
+        const jitterSeed = hash(cellX + 0.5 + rowSeed * 3.1, cellY + 0.5 + rowSeed * 1.7)
+        const xOffset = Math.min(cellWidth - 1, Math.floor(jitterSeed * cellWidth))
+        const sampleX = baseX + xOffset
+        const xNorm = sampleX / denomX
+        const colorX = Math.round(xNorm * maxColorX)
+        const depthX = Math.round(xNorm * maxDepthX)
 
-  if (kept < 100 && keepRatio < 1) {
-    // rerun with keep forced to 1 (no stochastic drop) to avoid "dot" during bring-up
-    xs.length = 0
-    us.length = 0
-    ds.length = 0
-    cs.length = 0
-    kept = 0
-    for (let y = 0; y < h; y += stride) {
-      for (let x = 0; x < w; x += stride) {
-        const xC = Math.round((x / Math.max(1, w - 1)) * Math.max(0, cw - 1))
-        const yC = Math.round((y / Math.max(1, h - 1)) * Math.max(0, ch - 1))
-        const pColor = yC * cw + xC
-        const xD = Math.round((x / Math.max(1, w - 1)) * Math.max(0, dw - 1))
-        const yD = Math.round((y / Math.max(1, h - 1)) * Math.max(0, dh - 1))
-        const pDepth = yD * dw + xD
+        const pColor = colorY * cw + colorX
+        const pDepth = depthY * dw + depthX
         const d01 = dep16[pDepth] / 65535.0
         if (d01 < minDepth01) minDepth01 = d01
         if (d01 > maxDepth01) maxDepth01 = d01
+
         const r = col[pColor * 4] / 255.0
         const g = col[pColor * 4 + 1] / 255.0
         const b = col[pColor * 4 + 2] / 255.0
-        us.push(x / Math.max(1, w - 1), y / Math.max(1, h - 1))
+        const luma = 0.299 * r + 0.587 * g + 0.114 * b
+
+        if (!forceKeep) {
+          const near = 1.0 - d01
+          const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
+          const dropSeed = hash(
+            sampleX + rowSeed * 17.0 + cellX * 0.13,
+            sampleY + rowSeed * 13.0 + cellY * 0.17,
+          )
+          if (dropSeed > keep) continue
+        }
+        us.push(xNorm, yNorm)
         ds.push(d01)
         xs.push(0, 0, 0)
         cs.push(r, g, b)
@@ -485,8 +502,23 @@ function buildAttributes(
     }
   }
 
+  if (maxPoints > 0) {
+    sampleCells(false)
+
+    if (kept < 100 && keepRatio < 1) {
+      xs.length = 0
+      us.length = 0
+      ds.length = 0
+      cs.length = 0
+      kept = 0
+      minDepth01 = 1.0
+      maxDepth01 = 0.0
+      sampleCells(true)
+    }
+  }
+
   console.log(
-    `[PC] build: color ${cw}x${ch} depth ${dw}x${dh} → grid ${w}x${h} stride=${stride} candidates=${totalCandidates} kept=${kept} | uvs=${us.length / 2} depths=${ds.length} colors=${cs.length / 3} | depth01[min,max]=[${minDepth01.toFixed(4)},${maxDepth01.toFixed(4)}]`
+    `[PC] build: color ${cw}x${ch} depth ${dw}x${dh} → grid ${w}x${h} stride=${safeStride} cap=${maxPoints} cells=${cellsX}x${cellsY} candidates=${totalCandidates} kept=${kept} | uvs=${us.length / 2} depths=${ds.length} colors=${cs.length / 3} | depth01[min,max]=[${minDepth01.toFixed(4)},${maxDepth01.toFixed(4)}]`
   )
 
   return {
@@ -864,8 +896,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const [noBloomOverride] = React.useState(readNoBloomOverride)
+  const [forceBloomOverride] = React.useState(readForceBloomOverride)
   const [bloomEligible, setBloomEligible] = React.useState(false)
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
+  const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
+  const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
+  const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [drawing, setDrawing] = React.useState(false)
   const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
@@ -936,7 +972,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     packed.width > 0 &&
     packed.height > 0
   const readyFallback = fallbackGate && colorReady && !!depth16From8
-  const pointBudget = React.useMemo(() => pointCap(), [])
+  const pointBudget = React.useMemo(
+    () => pointCap({ mobile: 100_000, desktop: 110_000 }),
+    [],
+  )
   const [runtimeCaps, setRuntimeCaps] = React.useState<Readonly<DreamdustRuntimeCaps> | null>(null)
 
   const dreamdustUniformApi = useDreamdustUniforms()
@@ -1407,7 +1446,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }))
   const [fitRequest, setFitRequest] = React.useState(0)
   const { bloom, pointSizeScale, reveal, thickness } = ui
-  const bloomActive = !simEnabled && bloom && bloomEligible && !noBloomOverride
+  const bloomActive =
+    !simEnabled && bloom && !noBloomOverride && (forceBloomOverride || bloomEligible)
   const thicknessScale = React.useMemo(() => Math.max(0.05, Math.min(1.0, thickness)), [thickness])
   React.useEffect(() => {
     try {
@@ -1458,6 +1498,27 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     setBloomEnabled(bloomActive)
   }, [bloomActive])
+
+  React.useEffect(() => {
+    const guardOk =
+      !simEnabled &&
+      !lowPowerGuard &&
+      typeof dprClampValue === 'number' &&
+      dprClampValue <= 1.8 &&
+      typeof instanceCount === 'number' &&
+      instanceCount > 0 &&
+      instanceCount <= Math.min(pointBudget, 110_000)
+    setBloomEligible(guardOk)
+  }, [simEnabled, lowPowerGuard, dprClampValue, instanceCount, pointBudget])
+
+  React.useEffect(() => {
+    const ready =
+      typeof dprClampValue === 'number' &&
+      (typeof instanceCount === 'number' || forceBloomOverride)
+    if (ready !== bloomGuardReady) {
+      setBloomGuardReady(ready)
+    }
+  }, [bloomGuardReady, dprClampValue, forceBloomOverride, instanceCount])
 
   const bloomLogRef = React.useRef(false)
   React.useEffect(() => {
@@ -1523,10 +1584,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const loggedInstancesRef = React.useRef(false)
   const revealStartedRef = React.useRef(false)
   const logInstances = React.useCallback((count: number) => {
-    if (!Number.isFinite(count) || count <= 0) return
+    if (!Number.isFinite(count) || count <= 0) {
+      setInstanceCount(null)
+      return
+    }
+    const floored = Math.floor(count)
+    setInstanceCount(floored)
     if (loggedInstancesRef.current) return
     try {
-      console.log('[PC] instances:', Math.floor(count))
+      console.log('[PC] instances:', floored)
     } catch {
       /* noop */
     }
@@ -1536,12 +1602,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     loggedInstancesRef.current = false
     revealStartedRef.current = false
+    setInstanceCount(null)
   }, [sceneId])
 
   React.useEffect(() => {
     if (prebakedStatus === 'loading' || prebakedStatus === 'idle') {
       loggedInstancesRef.current = false
       revealStartedRef.current = false
+      setInstanceCount(null)
     }
   }, [prebakedStatus])
 
@@ -1549,6 +1617,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!sceneId) {
       loggedInstancesRef.current = false
       revealStartedRef.current = false
+      setInstanceCount(null)
     }
   }, [sceneId, colorUrl, depthUrl, depthRg])
 
@@ -1836,10 +1905,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           console.log('[PC] pointer down', e.clientX, e.clientY)
         }}
         onCreated={({ gl }) => {
-          const dprClamp = clampDPR(gl, 2)
-          const bloomAllowed = !simEnabled && Number.isFinite(dprClamp) && dprClamp <= 1.8 && !isLowPowerDevice()
-          setBloomEligible(bloomAllowed)
-          setBloomGuardReady(true)
+          const mobile = detectMobile()
+          const dprLimit = mobile ? 1.6 : 1.8
+          const dprClamp = clampDPR(gl, dprLimit)
+          setDprClampValue(Number.isFinite(dprClamp) ? dprClamp : null)
+          const lowPower = isLowPowerDevice()
+          setLowPowerGuard(lowPower)
           const caps = getDreamdustCaps(gl.domElement)
           // Do not freeze typed arrays directly (V8 throws on freezing array buffer views with elements).
           // Instead, clone the range and freeze the container object to maintain immutability semantics.
@@ -1863,6 +1934,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             aliasedPointSizeRange: Array.from(frozenCaps.aliasedPointSizeRange),
             dpr: frozenCaps.dpr,
             dprClamp,
+            dprLimit,
           })
           // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
