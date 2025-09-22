@@ -67,6 +67,8 @@ const DEFAULT_UNIFORM_VALUES = {
   uInkTintBoost: 1,
   uVertexInkOk: 0,
   uViewport: [1, 1] as [number, number],
+  uSimPositionTex: null,
+  uSimColorTex: null,
 } as const
 
 type DefaultUniformKey = keyof typeof DEFAULT_UNIFORM_VALUES
@@ -188,6 +190,15 @@ uniform mat4 uPVInvCapture;
 
 uniform sampler2D uInkTex;
 
+#ifdef USE_SIM_POS
+uniform sampler2D uSimPositionTex;
+attribute vec2 aSimUv;
+#endif
+
+#ifdef USE_SIM_COLOR
+uniform sampler2D uSimColorTex;
+#endif
+
 attribute vec2 aUv;
 attribute float aDepth;
 attribute vec3 color;
@@ -221,12 +232,24 @@ vec4 dreamdustUnproject(vec3 localPos, vec2 captureUv, float depth01) {
 }
 
 void main() {
+  float depth01;
+  vec4 worldPos;
+  vec3 basePos;
+
+#ifdef USE_SIM_POS
+  vec4 simSample = texture2D(uSimPositionTex, aSimUv);
+  depth01 = clamp(simSample.w, 0.0, 1.0);
+  depth01 = pow(depth01, max(uGamma, 1e-5));
+  worldPos = dreamdustUnproject(simSample.xyz, aUv, depth01);
+  basePos = worldPos.xyz;
+#else
   float depthSpan = max(1e-5, uDepthMax - uDepthMin);
-  float depth01 = clamp((aDepth - uDepthMin) / depthSpan, 0.0, 1.0);
+  depth01 = clamp((aDepth - uDepthMin) / depthSpan, 0.0, 1.0);
   depth01 = pow(depth01, max(uGamma, 1e-5));
 
-  vec4 worldPos = dreamdustUnproject(position, aUv, depth01);
-  vec3 basePos = worldPos.xyz;
+  worldPos = dreamdustUnproject(position, aUv, depth01);
+  basePos = worldPos.xyz;
+#endif
 
   float revealProgress = clamp(uReveal, 0.0, 1.0);
   float revealSeed = dd_hash13(vec3(aUv * 37.0, aDepth * 19.0));
@@ -318,7 +341,12 @@ void main() {
   float mistLift = mix(0.35, 1.0, revealGate);
   mistLift = clamp(max(mistLift, revealProgress * 0.9), 0.0, 1.0);
 
-  vColor = color;
+  vec3 baseColor = color;
+#ifdef USE_SIM_COLOR
+  baseColor = texture2D(uSimColorTex, aSimUv).rgb;
+#endif
+
+  vColor = baseColor;
   vInkTint = inkTint;
   vInkMix = inkMix;
   // Screen-space UV from post-projection position

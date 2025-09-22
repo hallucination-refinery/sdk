@@ -61,6 +61,8 @@ type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'
   uInkOffsetGain: { value: number }
   uInkSizeGain: { value: number }
   uInkTintGain: { value: number }
+  uSimPositionTex?: { value: THREE.DataTexture | null }
+  uSimColorTex?: { value: THREE.DataTexture | null }
 }
 
 type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
@@ -197,6 +199,76 @@ function useImageData(url: string | null): {
   }, [url])
 
   return state
+}
+
+class ParticleSim {
+  readonly count: number
+  readonly positionTexture: THREE.DataTexture
+  readonly colorTexture: THREE.DataTexture | null
+  readonly uvs: Float32Array
+  readonly texSize: [number, number]
+  private disposed = false
+
+  constructor(source: {
+    positions: Float32Array
+    colors?: ArrayLike<number> | null
+    depth01?: ArrayLike<number> | null
+    cap: number
+  }) {
+    const baseCount = Math.max(0, Math.floor(source.positions.length / 3))
+    const depthCount = source.depth01 ? Math.floor(source.depth01.length) : baseCount
+    const capped = Math.max(0, Math.min(baseCount, depthCount, Math.floor(source.cap)))
+    this.count = capped
+    const texWidth = Math.max(1, Math.ceil(Math.sqrt(capped || 1)))
+    const texHeight = Math.max(1, Math.ceil((capped || 1) / texWidth))
+    this.texSize = [texWidth, texHeight]
+    const pos = new Float32Array(texWidth * texHeight * 4)
+    for (let i = 0, j = 0; i < capped; i++, j += 4) {
+      const k = i * 3
+      pos[j + 0] = source.positions[k + 0] ?? 0
+      pos[j + 1] = source.positions[k + 1] ?? 0
+      pos[j + 2] = source.positions[k + 2] ?? 0
+      pos[j + 3] = source.depth01 ? source.depth01[i] ?? 0.5 : 0.5
+    }
+    const posTex = new (THREE as any).DataTexture(pos, texWidth, texHeight, (THREE as any).RGBAFormat, (THREE as any).FloatType)
+    posTex.needsUpdate = true; posTex.minFilter = posTex.magFilter = (THREE as any).NearestFilter
+    this.positionTexture = posTex
+    let colorTex: THREE.DataTexture | null = null
+    const src = source.colors
+    if (src && capped > 0) {
+      const data = new Uint8Array(texWidth * texHeight * 4)
+      const asByte = src instanceof Uint8Array
+      for (let i = 0, j = 0; i < capped; i++, j += 4) {
+        const k = i * 3
+        const r = src[k + 0] ?? 0
+        const g = src[k + 1] ?? 0
+        const b = src[k + 2] ?? 0
+        data[j + 0] = asByte ? r : Math.max(0, Math.min(255, Math.round(r * 255)))
+        data[j + 1] = asByte ? g : Math.max(0, Math.min(255, Math.round(g * 255)))
+        data[j + 2] = asByte ? b : Math.max(0, Math.min(255, Math.round(b * 255)))
+        data[j + 3] = 255
+      }
+      const tex = new (THREE as any).DataTexture(data, texWidth, texHeight, (THREE as any).RGBAFormat, (THREE as any).UnsignedByteType)
+      tex.needsUpdate = true; tex.minFilter = tex.magFilter = (THREE as any).NearestFilter
+      colorTex = tex
+    }
+    this.colorTexture = colorTex
+    const simUvs = new Float32Array(capped > 0 ? capped * 2 : 0)
+    for (let i = 0, j = 0; i < capped; i++, j += 2) {
+      const x = i % texWidth
+      const y = Math.floor(i / texWidth)
+      simUvs[j + 0] = (x + 0.5) / texWidth
+      simUvs[j + 1] = (y + 0.5) / texHeight
+    }
+    this.uvs = simUvs
+  }
+
+  dispose() {
+    if (this.disposed) return
+    this.positionTexture.dispose()
+    this.colorTexture?.dispose()
+    this.disposed = true
+  }
 }
 
 // Load RG-packed depth (R=hi, G=lo) and reconstruct to Uint16Array
@@ -726,6 +798,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stride = 1,
     // omit perspective in baseline
   } = props
+  const simEnabled =
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('engine') === 'sim'
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const [noBloomOverride] = React.useState(readNoBloomOverride)
   const [bloomEligible, setBloomEligible] = React.useState(false)
@@ -1258,6 +1332,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }))
   const [fitRequest, setFitRequest] = React.useState(0)
   const { bloom, pointSizeScale, reveal, thickness } = ui
+  const bloomActive = !simEnabled && bloom && bloomEligible && !noBloomOverride
   const thicknessScale = React.useMemo(() => Math.max(0.05, Math.min(1.0, thickness)), [thickness])
   React.useEffect(() => {
     try {
@@ -1302,13 +1377,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   // Apply bloom flag from debug panel (pure React)
   React.useEffect(() => {
-    setBloomEnabled(bloom && bloomEligible && !noBloomOverride)
-  }, [bloom, bloomEligible, noBloomOverride])
+    setBloomEnabled(bloomActive)
+  }, [bloomActive])
 
   const bloomLogRef = React.useRef(false)
   React.useEffect(() => {
     if (!bloomGuardReady || bloomLogRef.current) return
-    const enabled = bloom && bloomEligible && !noBloomOverride
+    const enabled = bloomActive
     try {
       console.info(
         `[dreamdust] bloom { enabled: ${enabled}, strength: ${BLOOM_SETTINGS.strength}, radius: ${BLOOM_SETTINGS.radius}, threshold: ${BLOOM_SETTINGS.threshold} }`
@@ -1317,7 +1392,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       /* noop */
     }
     bloomLogRef.current = true
-  }, [bloom, bloomEligible, bloomGuardReady, noBloomOverride])
+  }, [bloomActive, bloomGuardReady])
 
   React.useEffect(() => {
     uniforms.uBaseSize.value = pointSize * pointSizeScale
@@ -1549,6 +1624,66 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return { uvs, depths01 }
   }, [appliedQuaternion, prebaked, renderBuffers])
 
+  const simPayload = React.useMemo(() => {
+    if (!simEnabled || !prebaked || !prebakedUvDepth) return null
+    const positions = renderBuffers?.positions ?? prebaked.positions
+    const depth01 = prebakedUvDepth.depths01
+    const count = Math.floor(positions.length / 3)
+    if (depth01.length < count) return null
+    const instance = new ParticleSim({
+      positions,
+      colors: renderBuffers?.colors ?? recolored ?? null,
+      depth01,
+      cap: pointBudget,
+    })
+    return { sim: instance, positions: new Float32Array(instance.count * 3) }
+  }, [pointBudget, prebaked, prebakedUvDepth, renderBuffers, recolored, simEnabled])
+
+  React.useEffect(() => {
+    if (!simPayload) return
+    if (simEnabled)
+      console.log('[engine] sim on', {
+        count: simPayload.sim.count,
+        texSize: simPayload.sim.texSize,
+      })
+    return () => simPayload.sim.dispose()
+  }, [simEnabled, simPayload])
+
+  const simActive = simEnabled && !!simPayload && !!prebakedUvDepth
+  React.useEffect(() => {
+    const material = prebakedMaterial
+    if (!material) {
+      if (uniforms.uSimPositionTex) uniforms.uSimPositionTex.value = null
+      if (uniforms.uSimColorTex) uniforms.uSimColorTex.value = null
+      return
+    }
+    const defines = material.defines ?? {}
+    const payload = simPayload
+    const materialUniforms = material.uniforms as Record<string, { value: unknown }>
+    if (simEnabled && payload && prebakedUvDepth) {
+      defines.USE_SIM_POS = 1
+      if (payload.sim.colorTexture) {
+        defines.USE_SIM_COLOR = 1
+      } else {
+        delete defines.USE_SIM_COLOR
+      }
+      if (materialUniforms.uSimPositionTex) materialUniforms.uSimPositionTex.value = payload.sim.positionTexture
+      if (materialUniforms.uSimColorTex) materialUniforms.uSimColorTex.value = payload.sim.colorTexture
+      if (uniforms.uSimPositionTex) uniforms.uSimPositionTex.value = payload.sim.positionTexture
+      if (uniforms.uSimColorTex) uniforms.uSimColorTex.value = payload.sim.colorTexture
+    } else {
+      delete defines.USE_SIM_POS
+      delete defines.USE_SIM_COLOR
+      if (materialUniforms.uSimPositionTex) materialUniforms.uSimPositionTex.value = null
+      if (materialUniforms.uSimColorTex) materialUniforms.uSimColorTex.value = null
+      if (uniforms.uSimPositionTex) uniforms.uSimPositionTex.value = null
+      if (uniforms.uSimColorTex) uniforms.uSimColorTex.value = null
+    }
+    material.defines = defines
+    ;(material as any).uniformsNeedUpdate = true
+    material.needsUpdate = true
+  }, [prebakedMaterial, simEnabled, simPayload, prebakedUvDepth, uniforms])
+
   // Mirror scale (local reflection) for left/right and up/down
   const mirrorScale = React.useMemo(() => {
     return [ui.mirrorLR ? -1 : 1, ui.mirrorUD ? -1 : 1, 1] as [number, number, number]
@@ -1618,7 +1753,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }}
         onCreated={({ gl }) => {
           const dprClamp = clampDPR(gl, 2)
-          const bloomAllowed = Number.isFinite(dprClamp) && dprClamp <= 1.8 && !isLowPowerDevice()
+          const bloomAllowed = !simEnabled && Number.isFinite(dprClamp) && dprClamp <= 1.8 && !isLowPowerDevice()
           setBloomEligible(bloomAllowed)
           setBloomGuardReady(true)
           const caps = getDreamdustCaps(gl.domElement)
@@ -1730,10 +1865,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               <group scale={[1, 1, thicknessScale]}>
                 <points frustumCulled={false} renderOrder={1}>
                   <bufferGeometry>
-                    <bufferAttribute
-                      attach="attributes-position"
-                      args={[renderBuffers?.positions ?? prebaked.positions, 3]}
-                    />
+                    <bufferAttribute attach="attributes-position" args={[simActive && simPayload ? simPayload.positions : renderBuffers?.positions ?? prebaked?.positions ?? new Float32Array(0), 3]} />
                     {prebakedUvDepth && (
                       <>
                         {/* custom uv for ink/reveal */}
@@ -1750,9 +1882,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                           attachObject={['attributes', 'aDepth']}
                           args={[prebakedUvDepth.depths01, 1]}
                         />
+                        {simActive && simPayload?.sim && (
+                          // @ts-expect-error aSimUv attribute binding
+                          <bufferAttribute attachObject={['attributes', 'aSimUv']} args={[simPayload.sim.uvs, 2]} />
+                        )}
                       </>
                     )}
                     {(() => {
+                      if (simActive && simPayload) {
+                        return <bufferAttribute attach="attributes-color" args={[simPayload.positions, 3]} />
+                      }
                       const src = renderBuffers?.colors ?? recolored ?? null
                       const posCount = Math.floor(
                         (renderBuffers?.positions ?? prebaked.positions).length / 3
@@ -1778,7 +1917,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             pointBudget={pointBudget}
             material={fallbackMaterial}
             uniforms={uniforms}
-            onMaterialValid={() => setBloomEnabled(bloom && bloomEligible && !noBloomOverride)}
+            onMaterialValid={() => setBloomEnabled(bloomActive)}
             onInstancesReady={logInstances}
           />
         ) : prebakedStatus === 'absent' && fallbackMaterial ? (
@@ -1790,7 +1929,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               pointBudget={pointBudget}
               material={fallbackMaterial}
               uniforms={uniforms}
-              onMaterialValid={() => setBloomEnabled(bloom && bloomEligible && !noBloomOverride)}
+              onMaterialValid={() => setBloomEnabled(bloomActive)}
               onInstancesReady={logInstances}
             />
           )
@@ -1799,7 +1938,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           drawing={drawing}
         />
-        {bloomEnabled && (
+        {bloomEnabled && !simEnabled && (
           <BloomPass
             strength={BLOOM_SETTINGS.strength}
             radius={BLOOM_SETTINGS.radius}
