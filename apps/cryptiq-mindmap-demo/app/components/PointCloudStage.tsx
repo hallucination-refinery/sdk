@@ -183,10 +183,7 @@ function readSearchParamSafe(name: string): string | null {
   }
 }
 
-function readNumberOverride(
-  queryKey: string,
-  envKey?: string,
-): number | null {
+function readNumberOverride(queryKey: string, envKey?: string): number | null {
   const queryValue = readSearchParamSafe(queryKey)
   if (queryValue !== null) {
     const parsed = Number(queryValue)
@@ -383,8 +380,7 @@ function buildAttributes(
 
   let kept = 0
 
-  const rowPhase =
-    cellsY > 0 ? Math.floor(hash(cellsX + 0.5, cellsY + 0.25) * cellsY) % cellsY : 0
+  const rowPhase = cellsY > 0 ? Math.floor(hash(cellsX + 0.5, cellsY + 0.25) * cellsY) % cellsY : 0
 
   const sampleCells = (forceKeep: boolean) => {
     for (let rowIter = 0; rowIter < cellsY; rowIter++) {
@@ -430,7 +426,7 @@ function buildAttributes(
           const keep = (0.45 + 0.35 * near + 0.2 * (1.0 - luma)) * keepRatio
           const dropSeed = hash(
             sampleX + rowSeed * 17.0 + cellX * 0.13,
-            sampleY + rowSeed * 13.0 + cellY * 0.17,
+            sampleY + rowSeed * 13.0 + cellY * 0.17
           )
           if (dropSeed > keep) continue
         }
@@ -1404,7 +1400,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   // Debug panel state (optional via ?debug=1)
   const presetFov = presetAiryActive && typeof PresetAiry.fov === 'number' ? PresetAiry.fov : null
   const initialFovDeg = clampFovDeg(
-    typeof fovOverride === 'number' ? fovOverride : presetFov ?? 27,
+    typeof fovOverride === 'number' ? fovOverride : (presetFov ?? 27)
   )
   const [debugVisible, setDebugVisible] = React.useState(false)
   // Lightweight array sampler hash (content-aware) to detect data changes even when lengths are identical
@@ -1505,8 +1501,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   React.useEffect(() => {
     const ready =
-      typeof dprClampValue === 'number' &&
-      (typeof instanceCount === 'number' || forceBloomOverride)
+      typeof dprClampValue === 'number' && (typeof instanceCount === 'number' || forceBloomOverride)
     if (ready !== bloomGuardReady) {
       setBloomGuardReady(ready)
     }
@@ -1841,7 +1836,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       simInitKeyRef.current = null
     }
     const gravityY = typeof simUniforms?.gravityY === 'number' ? simUniforms.gravityY : -0.05
-    const damping = typeof simUniforms?.velocityDamping === 'number' ? simUniforms.velocityDamping : 0.04
+    const damping =
+      typeof simUniforms?.velocityDamping === 'number' ? simUniforms.velocityDamping : 0.04
     const gravityVec: [number, number, number] = [0, gravityY, 0]
     instance.setDynamics({ gravity: gravityVec, damping })
     const simKey = `${sceneId ?? 'none'}:${simSource.count}:${debugDepth ? 1 : 0}:${hashArraySample(simSource.positions)}:${hashArraySample(simSource.depths)}:${hashArraySample(simSource.colors as any)}`
@@ -1858,7 +1854,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           positions: simSource.positions as Float32Array,
           depths: simSource.depths as Float32Array,
           colors: simSource.colors,
-        },
+        }
       )
       simInitKeyRef.current = simKey
       const bounds = instance.getBounds()
@@ -1939,7 +1935,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const cameraFitTarget = React.useMemo<[number, number, number]>(() => {
     if (simActive && simBounds) {
-      const center = new THREE.Vector3(simBounds.center[0], simBounds.center[1], simBounds.center[2])
+      const center = new THREE.Vector3(
+        simBounds.center[0],
+        simBounds.center[1],
+        simBounds.center[2]
+      )
       center.multiply(new THREE.Vector3(1, 1, thicknessScale))
       center.multiply(new THREE.Vector3(mirrorScale[0], mirrorScale[1], mirrorScale[2]))
       const scale = prebakedTransform?.scale ?? 1
@@ -1950,21 +1950,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           new THREE.Vector3(
             -prebakedTransform.center[0] * scale,
             -prebakedTransform.center[1] * scale,
-            -prebakedTransform.center[2] * scale,
-          ),
+            -prebakedTransform.center[2] * scale
+          )
         )
       }
       return [center.x, center.y, center.z]
     }
     return [0, 0, 0]
-  }, [
-    appliedQuaternion,
-    mirrorScale,
-    prebakedTransform,
-    simActive,
-    simBounds,
-    thicknessScale,
-  ])
+  }, [appliedQuaternion, mirrorScale, prebakedTransform, simActive, simBounds, thicknessScale])
   const cameraFitRadius = React.useMemo(() => {
     if (simActive && simBounds) {
       const scale = prebakedTransform?.scale ?? 1
@@ -2148,7 +2141,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           fitTarget={cameraFitTarget}
         />
         <DreamdustTicker tick={tick} />
-        <SimDriver simRef={simRef} active={simActive} uniforms={uniforms} material={prebakedMaterial} />
+        <SimDriver
+          simRef={simRef}
+          active={simActive}
+          uniforms={uniforms}
+          material={prebakedMaterial}
+        />
         <ambientLight intensity={1} />
         <directionalLight position={[2, 3, 4]} intensity={0.6} />
         {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
@@ -2175,7 +2173,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               <group scale={[1, 1, thicknessScale]}>
                 <points frustumCulled={false} renderOrder={1}>
                   <bufferGeometry>
-                    <bufferAttribute attach="attributes-position" args={[simActive && simState ? simState.positions : renderBuffers?.positions ?? prebaked?.positions ?? new Float32Array(0), 3]} />
+                    <bufferAttribute
+                      attach="attributes-position"
+                      args={[
+                        simActive && simState
+                          ? simState.positions
+                          : (renderBuffers?.positions ??
+                            prebaked?.positions ??
+                            new Float32Array(0)),
+                        3,
+                      ]}
+                    />
                     {stageUvDepth && (
                       <>
                         {/* custom uv for ink/reveal */}
@@ -2194,13 +2202,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                         />
                         {simActive && simState && (
                           // @ts-expect-error aSimUv attribute binding
-                          <bufferAttribute attachObject={['attributes', 'aSimUv']} args={[simState.simUvs, 2]} />
+                          <bufferAttribute
+                            attachObject={['attributes', 'aSimUv']}
+                            args={[simState.simUvs, 2]}
+                          />
                         )}
                       </>
                     )}
                     {(() => {
                       if (simActive && simState) {
-                        return <bufferAttribute attach="attributes-color" args={[simState.positions, 3]} />
+                        return (
+                          <bufferAttribute
+                            attach="attributes-color"
+                            args={[simState.positions, 3]}
+                          />
+                        )
                       }
                       const src = renderBuffers?.colors ?? recolored ?? null
                       const posCount = Math.floor(
