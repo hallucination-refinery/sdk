@@ -83,6 +83,7 @@ export function InkSurface({
   const dataRef = React.useRef<Uint8Array | null>(null)
   const textureRef = React.useRef<AnyDataTexture | null>(null)
   const rafRef = React.useRef<number | null>(null)
+  const readbackCoalesceLoggedRef = React.useRef(false)
   const onStartRef = React.useRef(onStart)
   const onEndRef = React.useRef(onEnd)
   const onTextureRef = React.useRef(onTexture)
@@ -156,7 +157,7 @@ export function InkSurface({
     const canvas = document.createElement('canvas')
     canvas.width = TEXTURE_SIZE
     canvas.height = TEXTURE_SIZE
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
     if (!ctx) {
       return undefined
     }
@@ -280,9 +281,15 @@ export function InkSurface({
 
     const scheduleFlush = () => {
       if (rafRef.current !== null) {
+        if (!readbackCoalesceLoggedRef.current) {
+          readbackCoalesceLoggedRef.current = true
+          console.log('[ink] readback coalesced')
+        }
         return
       }
+      readbackCoalesceLoggedRef.current = false
       rafRef.current = window.requestAnimationFrame(() => {
+        readbackCoalesceLoggedRef.current = false
         rafRef.current = null
         flushTexture()
       })
@@ -563,6 +570,7 @@ export function InkSurface({
         window.cancelAnimationFrame(rafRef.current)
         rafRef.current = null
       }
+      readbackCoalesceLoggedRef.current = false
       if (guardFanoutRafRef.current !== null) {
         window.cancelAnimationFrame(guardFanoutRafRef.current)
         guardFanoutRafRef.current = null

@@ -24,6 +24,31 @@ type DreamdustMaterialOptionsInput = {
   vertexInkOk?: boolean
 }
 
+const loggedSimUsage = new WeakSet<object>()
+let cachedDebugSearch: string | null = null
+let cachedDebugFlag: boolean | null = null
+
+function isDebugQueryEnabled(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const { search } = window.location
+  if (cachedDebugSearch === search && cachedDebugFlag !== null) {
+    return cachedDebugFlag
+  }
+
+  cachedDebugSearch = search
+  try {
+    const params = new URLSearchParams(search)
+    cachedDebugFlag = params.get('debug') === '1'
+  } catch {
+    cachedDebugFlag = false
+  }
+
+  return cachedDebugFlag ?? false
+}
+
 const DEFAULT_UNIFORM_VALUES = {
   uTime: 0,
   uReveal: 1,
@@ -527,6 +552,20 @@ export function makeDreamdustMaterial(
     syncLegacyVertexInkDefine((material as any).defines)
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)
+    }
+    if (!loggedSimUsage.has(material as object) && isDebugQueryEnabled()) {
+      const matDefines = (material as any).defines as Record<string, unknown> | undefined
+      const useSimPos = !!matDefines?.USE_SIM_POS
+      const simUniform = (uniforms as UniformRecord)?.uSimPositionTex
+      const hasSimTex = !!simUniform && simUniform.value
+      if (useSimPos && hasSimTex) {
+        loggedSimUsage.add(material as object)
+        try {
+          console.log('[VTFSanity] using USE_SIM_POS=true, uSimPositionTex!=null')
+        } catch {
+          /* noop */
+        }
+      }
     }
   }
 
