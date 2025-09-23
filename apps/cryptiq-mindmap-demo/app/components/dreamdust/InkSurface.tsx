@@ -13,6 +13,12 @@ type AnyDataTexture = {
   minFilter: unknown
   magFilter: unknown
   dispose?: () => void
+  __akdd07?: InkTextureDiagnostic
+}
+
+type InkTextureDiagnostic = {
+  revision: number; width: number; height: number; format: string; sampleAvgLuma: number; sampleCount: number;
+  frameIndex: number; latencyFrames: number | null; latencyMs: number | null; penDownTimestamp: number | null; timestamp: number;
 }
 
 type ThreeNamespace = {
@@ -84,6 +90,47 @@ export function InkSurface({
   const guardLoggedRef = React.useRef(true)
   const guardWatchdogRef = React.useRef<number | null>(null)
   const guardDeadlineRef = React.useRef(0)
+  const guardFanoutRafRef = React.useRef<number | null>(null)
+  const diagnosticsRef = React.useRef({
+    frame: 0, penDownFrame: null as number | null, penDownTime: null as number | null, pendingLatency: false,
+    uvLogged: false, guardLogged: false, inkLogged: false, inkRevision: 0,
+  })
+
+  const getNow = React.useCallback(() => {
+    return typeof performance !== 'undefined' ? performance.now() : Date.now()
+  }, [])
+
+  const scheduleGuardFanoutLog = React.useCallback(() => {
+    const diagnostics = diagnosticsRef.current
+    if (diagnostics.guardLogged || typeof window === 'undefined') {
+      return
+    }
+    if (guardFanoutRafRef.current !== null) {
+      return
+    }
+    guardFanoutRafRef.current = window.requestAnimationFrame(() => {
+      guardFanoutRafRef.current = null
+      if (diagnostics.guardLogged) {
+        return
+      }
+      diagnostics.guardLogged = true
+      const rect = gl?.domElement?.getBoundingClientRect()
+      const size =
+        rect && Number.isFinite(rect.width) && Number.isFinite(rect.height)
+          ? {
+              width: Number(rect.width.toFixed(2)),
+              height: Number(rect.height.toFixed(2)),
+            }
+          : null
+      try {
+        console.info('[AK-DD-09] caps/guards fan-out', {
+          frameIndex: diagnostics.frame, canvas: size, textureSize: TEXTURE_SIZE, mirror: mirrorRef.current,
+        })
+      } catch {
+        // noop
+      }
+    })
+  }, [gl, mirrorRef, diagnosticsRef])
 
   React.useEffect(() => {
     onStartRef.current = onStart
@@ -132,6 +179,7 @@ export function InkSurface({
     ctxRef.current = ctx
     dataRef.current = data
     textureRef.current = texture
+    scheduleGuardFanoutLog()
 
     const flushTexture = () => {
       const context = ctxRef.current
@@ -142,6 +190,83 @@ export function InkSurface({
       }
       const imageData = context.getImageData(0, 0, TEXTURE_SIZE, TEXTURE_SIZE)
       arr.set(imageData.data)
+      const diagnostics = diagnosticsRef.current
+      diagnostics.frame += 1
+      const pixels = imageData.data
+      let nonZeroIndex = -1
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i] || pixels[i + 1] || pixels[i + 2] || pixels[i + 3]) {
+          nonZeroIndex = i
+          break
+        }
+      }
+
+      if (nonZeroIndex >= 0 && diagnostics.pendingLatency && !diagnostics.inkLogged) {
+        const totalPixels = pixels.length / 4
+        const step = Math.max(1, Math.floor(totalPixels / 64))
+        let count = 0
+        let luminanceSum = 0
+        for (let idx = 0; idx < pixels.length && count < 64; idx += step * 4) {
+          const r = pixels[idx]
+          const g = pixels[idx + 1]
+          const b = pixels[idx + 2]
+          const a = pixels[idx + 3]
+          if (!(r || g || b || a)) {
+            continue
+          }
+          luminanceSum += ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) * (a / 255)
+          count += 1
+        }
+        if (count === 0) {
+          const base = nonZeroIndex
+          const r = pixels[base]
+          const g = pixels[base + 1]
+          const b = pixels[base + 2]
+          const a = pixels[base + 3]
+          luminanceSum = ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) * (a / 255)
+          count = 1
+        }
+        const now = getNow()
+        const framesSincePenDown =
+          diagnostics.penDownFrame === null ? null : diagnostics.frame - diagnostics.penDownFrame
+        const latencyFrames =
+          framesSincePenDown !== null ? Math.max(0, Math.trunc(framesSincePenDown)) : null
+        const latencyMsRaw = diagnostics.penDownTime === null ? null : now - diagnostics.penDownTime
+        const latencyMs =
+          latencyMsRaw !== null && Number.isFinite(latencyMsRaw) ? latencyMsRaw : null
+        diagnostics.inkRevision += 1
+        const payload: InkTextureDiagnostic = {
+          revision: diagnostics.inkRevision,
+          width: TEXTURE_SIZE,
+          height: TEXTURE_SIZE,
+          format: 'RGBAFormat',
+          sampleAvgLuma: count > 0 ? luminanceSum / count : 0,
+          sampleCount: count,
+          frameIndex: diagnostics.frame,
+          latencyFrames,
+          latencyMs,
+          penDownTimestamp: diagnostics.penDownTime,
+          timestamp: now,
+        }
+        tex.__akdd07 = payload
+        try {
+          console.info('[AK-DD-07] uInkTex bind', {
+            width: payload.width, height: payload.height, format: payload.format,
+            sampleAvgLuma: Number(payload.sampleAvgLuma.toFixed(4)), sampleCount: payload.sampleCount,
+            frameIndex: payload.frameIndex, latencyFrames: payload.latencyFrames,
+            latencyMs:
+              payload.latencyMs !== null && Number.isFinite(payload.latencyMs)
+                ? Number(payload.latencyMs.toFixed(2))
+                : null,
+            penDownTimestamp: payload.penDownTimestamp, timestamp: payload.timestamp,
+          })
+        } catch {
+          // noop
+        }
+        diagnostics.inkLogged = true
+        diagnostics.pendingLatency = false
+      }
+      scheduleGuardFanoutLog()
       tex.needsUpdate = true
       const cb = onTextureRef.current
       if (typeof cb === 'function') {
@@ -223,6 +348,10 @@ export function InkSurface({
       distanceRef.current = 0
       guardLoggedRef.current = true
       stopGuardWatchdog()
+      const diagnostics = diagnosticsRef.current
+      diagnostics.pendingLatency = false
+      diagnostics.penDownFrame = null
+      diagnostics.penDownTime = null
     }
 
     const paintDisc = (point: Vec2) => {
@@ -264,10 +393,8 @@ export function InkSurface({
       const rect = domElement.getBoundingClientRect()
       const width = rect.width || 0
       const height = rect.height || 0
-      const offsetX = client.x - rect.left
-      const offsetY = client.y - rect.top
-      const rawU = width > 0 ? offsetX / width : Number.NaN
-      const rawV = height > 0 ? offsetY / height : Number.NaN
+      const rawU = width > 0 ? (client.x - rect.left) / width : Number.NaN
+      const rawV = height > 0 ? (client.y - rect.top) / height : Number.NaN
       const u = clamp01(rawU)
       const v = clamp01(rawV)
       logInkGuard(rawU, rawV, u, v)
@@ -276,6 +403,25 @@ export function InkSurface({
       }
       const canvasX = u * TEXTURE_SIZE
       const canvasY = v * TEXTURE_SIZE
+      const diagnostics = diagnosticsRef.current
+      if (!diagnostics.uvLogged && Number.isFinite(rawU) && Number.isFinite(rawV)) {
+        diagnostics.uvLogged = true
+        const normalizedOk = u >= 0 && u <= 1 && v >= 0 && v <= 1
+        const canvasOk =
+          canvasX >= 0 && canvasX <= TEXTURE_SIZE && canvasY >= 0 && canvasY <= TEXTURE_SIZE
+        const fmt = (value: number, digits: number) =>
+          Number.isFinite(value) ? Number(value.toFixed(digits)) : null
+        try {
+          console.info('[AK-DD-08] ink-uv normalized', {
+            raw: { u: [fmt(rawU, 4), fmt(rawU, 4)], v: [fmt(rawV, 4), fmt(rawV, 4)] },
+            normalized: { u: [fmt(u, 4), fmt(u, 4)], v: [fmt(v, 4), fmt(v, 4)] },
+            canvas: { x: [fmt(canvasX, 2), fmt(canvasX, 2)], y: [fmt(canvasY, 2), fmt(canvasY, 2)] },
+            normalizedOk, canvasOk, textureSize: TEXTURE_SIZE, mirror: mirrorRef.current,
+          })
+        } catch {
+          // noop
+        }
+      }
       const lastClient = lastClientRef.current
       if (lastClient) {
         distanceRef.current += Math.hypot(client.x - lastClient.x, client.y - lastClient.y) || 0
@@ -318,6 +464,10 @@ export function InkSurface({
       lastCanvasRef.current = null
       distanceRef.current = 0
       ctxRef.current.clearRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE) // single-stroke heatmap
+      const diagnostics = diagnosticsRef.current
+      diagnostics.penDownFrame = diagnostics.frame
+      diagnostics.penDownTime = getNow()
+      diagnostics.pendingLatency = true
       startGuardWatchdog()
       drawAtClient({ x: event.clientX, y: event.clientY })
       scheduleFlush()
@@ -413,6 +563,10 @@ export function InkSurface({
         window.cancelAnimationFrame(rafRef.current)
         rafRef.current = null
       }
+      if (guardFanoutRafRef.current !== null) {
+        window.cancelAnimationFrame(guardFanoutRafRef.current)
+        guardFanoutRafRef.current = null
+      }
       domElement?.removeEventListener('pointerdown', handlePointerDown)
       domElement?.removeEventListener('pointermove', handlePointerMove)
       domElement?.removeEventListener('pointerup', handlePointerUp)
@@ -424,7 +578,7 @@ export function InkSurface({
       textureRef.current = null
       resetDrawingState()
     }
-  }, [gl])
+  }, [gl, getNow, scheduleGuardFanoutLog])
 
   return null
 }
