@@ -61,14 +61,16 @@
 - Metrics (one‑shot caps, frame‑percentiles): `apps/cryptiq-mindmap-demo/app/components/dreamdust/metrics.ts`
 - Quiz entry route: `apps/cryptiq-mindmap-demo/app/quiz/[slug]/page.tsx`
 
-## Current Evidence (last smoke test)
+## Current Evidence (latest smoke test — 2025‑09‑23)
 
-- Caps (single): `[dreamdust] caps { vertexInkOk: true, dprClamp: 1.8, ... }`
-- Instances (single): `[PC] instances: 134162`
-- Reveal timeline: `[Dreamdust] reveal start { duration: 2 }` then `reveal end { duration: 2 }`
-- Perf proxy (single): `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: ~8.3, p90Ms: ~9.1 }`
-- Input plumbing: `[PC] draw start/end ...`, `[dreamdust] ink-latency { ms: ~16.7, frames: 1 }`
-- Visual note: cloud legibility low (“vibrating haze”); no visible ink reaction despite events/heatmap ON.
+- Caps (one‑shot): `[dreamdust] caps { vertexInkOk: true, dprClamp: 1.8, ... }`; fan‑out once.
+- Instances (one‑shot): `[PC] instances: 89441` (under cap); sim enabled with: `"[engine] sim on { count:89441, texSize:[300,299] }"` and `"[engine] sim fit { radius:0.382, center:[0.01,-0.03,1.13] }"`.
+- Reveal timeline (1.1s): `[Dreamdust] reveal start { duration: 1.1 }` then `reveal end { duration: 1.1 }`.
+- Perf percentiles (one‑shot): `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: 9.1, p90Ms: 38.1 }` (note: p90 elevated due to JS churn).
+- Ink/UV diagnostics: `[AK-DD-07] uInkTex bind { ... }`, `[AK-DD-08] ink-uv normalized { ... }`, `[AK-DD-09] caps/guards fan-out { ... }` each once; `[dreamdust] ink-latency { ms: 33.1, frames: 1.99 }` on first stroke.
+- Bloom guard: `[dreamdust] bloom { enabled: false, ... }` while `engine=sim` (as expected).
+- Notable warnings (to fix): `Maximum update depth exceeded` (React effect loop), repeated `"[PC] controls start"` logs (listener spam), Canvas2D readback warning (`willReadFrequently`).
+- Visual note: cloud not visible (single bright dot with wobble) → likely VTF UV/defines issue; camera fit confirmed correct by sim‑fit log.
 
 ## Non‑Visual Acceptance Criteria (pass/fail, next smoke)
 
@@ -107,9 +109,9 @@
 
 - Acceptance Keys: `2025-09-20-acceptance-keys.md`
 - Architecture (Current): `2025-09-20-architecture-current.md`
-- External Repos Survey: `2025-09-20-external-repos-survey.md`
+- External Repos Survey: `2025-09-23-external-repos-survey.md`
 - Architecture (Target): `2025-09-20-architecture-target.md`
-- Presets: `2025-09-20-presets.md`
+- Presets: `2025-09-23-presets.md`
 - Diagnostic Guards: `2025-09-20-diagnostic-guards.md`
 - Test Protocol: `2025-09-20-test-protocol.md`
 
@@ -117,7 +119,7 @@
 
 - [2025-09-20 — Acceptance Keys](./2025-09-20-acceptance-keys.md)
 - [2025-09-20 — Architecture (Current)](./2025-09-20-architecture-current.md)
-- [2025-09-20 — External Repos Survey](./2025-09-20-external-repos-survey.md)
+- [2025-09-20 — External Repos Survey](./2025-09-23-external-repos-survey.md)
 - [2025-09-20 — Test Protocol](./2025-09-20-test-protocol.md)
 
 ## Run Configuration (sim)

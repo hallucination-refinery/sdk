@@ -37,7 +37,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uDriftSpeed: 1,
   uTapGain: 0.5,
   uTapTau: 2,
-  uPointBaseSize: 1,
+  uPointBaseSize: 2.2,
   uFocal: 1,
   uMinSize: 1,
   uMaxSize: 1,
@@ -49,7 +49,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uDepthMax: 1,
   uGamma: 1,
   uRimGamma: 2,
-  uDepthBias: 1.8,
+  uDepthBias: 0.7,
   uDepthNormScale: 0.001,
   uHasCapture: 0,
   uZNearNdc: -0.85,
@@ -69,6 +69,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uViewport: [1, 1] as [number, number],
   uSimPositionTex: null,
   uSimColorTex: null,
+  uAlphaFloor: 0.08,
 } as const
 
 type DefaultUniformKey = keyof typeof DEFAULT_UNIFORM_VALUES
@@ -377,6 +378,7 @@ uniform float uDepthBias;
 uniform float uDepthNormScale;
 uniform float uGamma;
 uniform float uRimGamma;
+uniform float uAlphaFloor;
 uniform float uCascade;
 uniform vec3 uCascadeColor;
 
@@ -399,9 +401,10 @@ ${DREAMDUST_DEPTH_FADE_CHUNK}
 
 void main() {
   // Softer disc sprite for vapor look
-  vec2 pc = gl_PointCoord * 2.0 - 1.0;
-  float r = clamp(length(pc), 0.0, 1.0);
-  float sprite = smoothstep(1.0, 0.0, r);
+  float sprite = dreamdustSoftSprite(gl_PointCoord);
+  float spriteAlpha = pow(max(sprite, 0.0), 0.85);
+  float alphaFloor = clamp(uAlphaFloor, 0.0, 1.0);
+  float spriteMix = mix(alphaFloor, 1.0, spriteAlpha);
 
   float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
   // Static reveal mask (no time animation) to avoid brightness pulsing
@@ -411,7 +414,7 @@ void main() {
   float baseReveal = smoothstep(threshold - 0.2, 1.0, flow);
   float revealAlpha = max(baseReveal, revealStrength * 0.35);
 
-  float alpha = sprite * revealAlpha * revealStrength;
+  float alpha = spriteMix * revealAlpha * revealStrength;
   float depthNorm = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
   alpha *= dreamdustDepthAlpha(depthNorm, uDepthBias);
   if (alpha <= 0.001) {
@@ -461,11 +464,15 @@ export function makeDreamdustMaterial(
   opts: DreamdustMaterialOptions | DreamdustMaterialOptionsInput
 ) {
   aliasUniform(uniforms, 'uBaseSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uPointSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uThickness', 'uDepthBias')
   const uniformNames = Object.keys(DEFAULT_UNIFORM_VALUES) as DefaultUniformKey[]
   for (const name of uniformNames) {
     ensureUniform(uniforms, name)
   }
   aliasUniform(uniforms, 'uBaseSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uPointSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uThickness', 'uDepthBias')
 
   const resolved: DreamdustMaterialOptions = {
     unproject: opts.unproject,
