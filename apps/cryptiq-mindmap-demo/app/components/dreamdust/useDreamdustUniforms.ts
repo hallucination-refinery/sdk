@@ -22,6 +22,7 @@ type DreamdustUniformValueMap = {
   uReveal: number
   uBreath: number
   uBreathAmp: number
+  uAlphaFloor: number
   uCascade: number
   uCascadeColor: Vec3
   uCascadeSizeBoost: number
@@ -93,6 +94,7 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uReveal: 1,
   uBreath: 0.5,
   uBreathAmp: 0.08,
+  uAlphaFloor: 0.12,
   uCascade: 0,
   uCascadeColor: [1, 1, 1],
   uCascadeSizeBoost: 0,
@@ -103,10 +105,10 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uNoiseThreshold: 1,
   uDriftAmp: 0,
   uCurlAmp: 1,
-  uPointBaseSize: 1,
+  uPointBaseSize: 2.6,
   uDepthMin: 0,
   uDepthMax: 1,
-  uDepthBias: 1.8,
+  uDepthBias: 0.7,
   uDepthNormScale: 0.001,
   uGamma: 1,
   uRimGamma: 2,
@@ -599,6 +601,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       : presetVaporEnabled
         ? PresetC.breathAmp
         : DEFAULT_UNIFORM_VALUES.uBreathAmp
+    const alphaFloorValue = presetAiryEnabled ? DEFAULT_UNIFORM_VALUES.uAlphaFloor : 0.08
     const evolutionValue = presetAiryEnabled
       ? PresetAiry.evolution
       : presetVaporEnabled
@@ -634,6 +637,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uReveal: { value: DEFAULT_UNIFORM_VALUES.uReveal },
       uBreath: { value: DEFAULT_UNIFORM_VALUES.uBreath },
       uBreathAmp: { value: breathAmpValue },
+      uAlphaFloor: { value: alphaFloorValue },
       uCascade: { value: DEFAULT_UNIFORM_VALUES.uCascade },
       uCascadeColor: { value: [...DEFAULT_UNIFORM_VALUES.uCascadeColor] as Vec3 },
       uCascadeSizeBoost: { value: DEFAULT_UNIFORM_VALUES.uCascadeSizeBoost },

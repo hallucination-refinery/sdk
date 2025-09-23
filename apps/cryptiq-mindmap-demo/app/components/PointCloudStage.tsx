@@ -2326,12 +2326,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                     )}
                     {(() => {
                       if (simActive && simState) {
-                        return (
-                          <bufferAttribute
-                            attach="attributes-color"
-                            args={[simState.positions, 3]}
-                          />
-                        )
+                        // Under sim, rely on USE_SIM_COLOR sampling; do not bind bogus color attribute
+                        return null
                       }
                       const src = renderBuffers?.colors ?? recolored ?? null
                       const posCount = Math.floor(
