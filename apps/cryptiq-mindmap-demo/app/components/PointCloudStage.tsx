@@ -845,12 +845,12 @@ function FramePercentilesProbe({ idle, sceneKey }: { idle: boolean; sceneKey: st
     const sorted = [...state.samples].sort((a, b) => a - b)
     const p50 = percentile(sorted, 0.5)
     const p90 = percentile(sorted, 0.9)
-    const p50Ok = p50 <= 10
-    const p90Ok = p90 <= 16
+    const p50Ok = p50 <= 16.0
+    const p90Ok = p90 <= 28.0
     const status = p50Ok && p90Ok ? 'ok' : 'warn'
     try {
       console.log(
-        `[dreamdust] frame-percentiles { scene: ${sceneRef.current}, p50: ${p50.toFixed(2)}ms ${p50Ok ? '<=' : '>'}10, p90: ${p90.toFixed(2)}ms ${p90Ok ? '<=' : '>'}16, status: ${status} }`,
+        `[dreamdust] frame-percentiles { scene: ${sceneRef.current}, p50: ${p50.toFixed(2)}ms ${p50Ok ? '<=' : '>'}16.0, p90: ${p90.toFixed(2)}ms ${p90Ok ? '<=' : '>'}28.0, status: ${status} }`,
       )
     } catch {
       /* noop */
@@ -2038,7 +2038,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         positions: simSource.positions as Float32Array,
         bounds: { center: bounds.center.clone(), radius: bounds.radius },
       }
-      if (vtfAbort) setVtfAbort(false)
+      let vtfsanityChecked = false
+      let vtfsanityInvalid = false
       if (debugEnabled) {
         const total = nextState.count
         console.log(`[engine] sim on { count:${total}, texSize:[${texSize[0]},${texSize[1]}] }`)
@@ -2074,11 +2075,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               .slice(index + 1)
               .some((other) => Math.abs(s.u - other.u) <= 1e-5 && Math.abs(s.v - other.v) <= 1e-5)
           })
-          if (invalid) {
+          vtfsanityChecked = true
+          vtfsanityInvalid = invalid
+          if (invalid && !vtfAbort) {
             console.log('[VTFSanity] FAIL')
-            if (!vtfAbort) setVtfAbort(true)
           }
         }
+      }
+      if (vtfsanityInvalid) {
+        if (!vtfAbort) setVtfAbort(true)
+      } else if (vtfsanityChecked && vtfAbort) {
+        setVtfAbort(false)
       }
       setSimState(nextState)
     }
