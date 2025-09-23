@@ -232,6 +232,51 @@ function useOptionalDreamdustCtx() {
   }
 }
 
+const MOBILE_INSTANCE_CAP = 90_000, DESKTOP_INSTANCE_CAP = 95_000, LOW_POWER_INSTANCE_CAP = 75_000, ABSOLUTE_INSTANCE_CAP = 100_000
+
+const FRAME_PERCENTILE_IDLE_MS = 3500, FRAME_PERCENTILE_MIN_SAMPLES = 30, FRAME_PERCENTILE_MAX_SAMPLES = 600
+
+function getNowMs(): number {
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    return performance.now()
+  }
+  return Date.now()
+}
+
+function computeInstanceCap({
+  mobile,
+  lowPower,
+}: {
+  mobile: boolean
+  lowPower: boolean
+}): number {
+  const requested = Math.max(
+    0,
+    Math.floor(
+      pointCap({
+        userAgent: mobile ? 'iPhone' : 'Desktop',
+      }),
+    ),
+  )
+  const baselineLimit = mobile ? MOBILE_INSTANCE_CAP : DESKTOP_INSTANCE_CAP
+  const absoluteLimit = Math.min(baselineLimit, ABSOLUTE_INSTANCE_CAP)
+  const fallback = lowPower ? Math.min(absoluteLimit, LOW_POWER_INSTANCE_CAP) : absoluteLimit
+  const fallbackInt = Math.max(1, Math.floor(fallback))
+  if (requested <= 0) {
+    return fallbackInt
+  }
+  return Math.max(1, Math.min(requested, fallbackInt))
+}
+
+function percentile(sorted: number[], fraction: number): number {
+  if (sorted.length === 0) {
+    return 0
+  }
+  const clamped = Math.min(Math.max(fraction, 0), 1)
+  const index = Math.round(clamped * (sorted.length - 1))
+  return sorted[index]
+}
+
 type AssetStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 function useImageData(url: string | null): {
@@ -764,6 +809,57 @@ function DreamdustTicker({ tick }: { tick?: (state: unknown, delta: number) => v
   return null
 }
 
+function FramePercentilesProbe({ idle, sceneKey }: { idle: boolean; sceneKey: string }) {
+  const idleRef = React.useRef(idle)
+  const sceneRef = React.useRef(sceneKey)
+  const loggedRef = React.useRef<string | null>(null)
+  const stateRef = React.useRef<{ idleSince: number; samples: number[] }>({ idleSince: 0, samples: [] })
+
+  React.useEffect(() => {
+    idleRef.current = idle
+    const state = stateRef.current
+    if (!idle) {
+      state.idleSince = 0
+      state.samples.length = 0
+    }
+    if (sceneRef.current !== sceneKey) {
+      sceneRef.current = sceneKey
+      state.idleSince = 0
+      state.samples.length = 0
+      loggedRef.current = null
+    }
+  }, [idle, sceneKey])
+
+  useFrame((_, delta) => {
+    if (!idleRef.current) return
+    const state = stateRef.current
+    const now = getNowMs()
+    if (state.idleSince <= 0) {
+      state.idleSince = now
+      state.samples.length = 0
+    }
+    if (state.samples.length >= FRAME_PERCENTILE_MAX_SAMPLES) state.samples.shift()
+    state.samples.push(delta * 1000)
+    if (loggedRef.current === sceneRef.current) return
+    if (now - state.idleSince < FRAME_PERCENTILE_IDLE_MS || state.samples.length < FRAME_PERCENTILE_MIN_SAMPLES) return
+    const sorted = [...state.samples].sort((a, b) => a - b)
+    const p50 = percentile(sorted, 0.5)
+    const p90 = percentile(sorted, 0.9)
+    const p50Ok = p50 <= 10
+    const p90Ok = p90 <= 16
+    const status = p50Ok && p90Ok ? 'ok' : 'warn'
+    try {
+      console.log(
+        `[dreamdust] frame-percentiles { scene: ${sceneRef.current}, p50: ${p50.toFixed(2)}ms ${p50Ok ? '<=' : '>'}10, p90: ${p90.toFixed(2)}ms ${p90Ok ? '<=' : '>'}16, status: ${status} }`,
+      )
+    } catch {
+      /* noop */
+    }
+    loggedRef.current = sceneRef.current
+  })
+  return null
+}
+
 function SimDriver({
   simRef,
   active,
@@ -868,6 +964,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stride = 1,
     // omit perspective in baseline
   } = props
+  const [initialLowPower] = React.useState(() => isLowPowerDevice())
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
   const [noBloomOverride] = React.useState(readNoBloomOverride)
   const [forceBloomOverride] = React.useState(readForceBloomOverride)
@@ -897,7 +994,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
-  const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
+  const [lowPowerGuard, setLowPowerGuard] = React.useState(initialLowPower)
+  const [pointBudget, setPointBudget] = React.useState(() =>
+    computeInstanceCap({ mobile: detectMobile(), lowPower: initialLowPower })
+  )
   const [drawing, setDrawing] = React.useState(false)
   const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
@@ -968,7 +1068,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     packed.width > 0 &&
     packed.height > 0
   const readyFallback = fallbackGate && colorReady && !!depth16From8
-  const pointBudget = React.useMemo(() => pointCap({ mobile: 100_000, desktop: 100_000 }), [])
   const [runtimeCaps, setRuntimeCaps] = React.useState<Readonly<DreamdustRuntimeCaps> | null>(null)
 
   const dreamdustUniformApi = useDreamdustUniforms()
@@ -2057,13 +2156,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }}
         onCreated={({ gl }) => {
           rendererRef.current = gl
-          setRendererReadyTick((v) => v + 1)
           const mobile = detectMobile()
           const dprLimit = mobile ? 1.6 : 1.8
           const dprClamp = clampDPR(gl, dprLimit)
-          setDprClampValue(Number.isFinite(dprClamp) ? dprClamp : null)
           const lowPower = isLowPowerDevice()
-          setLowPowerGuard(lowPower)
+          const nextDpr = Number.isFinite(dprClamp) ? dprClamp : null
+          setDprClampValue((prev) => (prev === nextDpr ? prev : nextDpr))
+          setLowPowerGuard((prev) => (prev === lowPower ? prev : lowPower))
+          const instanceCap = computeInstanceCap({ mobile, lowPower })
+          setPointBudget((prev) => (prev === instanceCap ? prev : instanceCap))
           const caps = getDreamdustCaps(gl.domElement)
           // Do not freeze typed arrays directly (V8 throws on freezing array buffer views with elements).
           // Instead, clone the range and freeze the container object to maintain immutability semantics.
@@ -2086,9 +2187,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             floatOk: frozenCaps.floatOk,
             aliasedPointSizeRange: Array.from(frozenCaps.aliasedPointSizeRange),
             dpr: frozenCaps.dpr,
-            dprClamp,
+            dprClamp: nextDpr,
             dprLimit,
+            instanceCap,
+            lowPower,
           })
+          setRendererReadyTick((v) => v + 1)
           // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -2148,6 +2252,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           fitTarget={cameraFitTarget}
         />
         <DreamdustTicker tick={tick} />
+        <FramePercentilesProbe
+          idle={geometryReady && !simActive && !drawing}
+          sceneKey={sceneId ?? 'default'}
+        />
         <SimDriver
           simRef={simRef}
           active={simActive}
