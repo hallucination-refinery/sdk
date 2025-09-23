@@ -1,4 +1,4 @@
-# External Repos Survey — Adaptation Plan (2025-09-20)
+# External Repos Survey — Adaptation Plan (2025-09-23)
 
 ## Candidates (one section per repo)
 

@@ -107,9 +107,9 @@
 
 - Acceptance Keys: `2025-09-20-acceptance-keys.md`
 - Architecture (Current): `2025-09-20-architecture-current.md`
-- External Repos Survey: `2025-09-20-external-repos-survey.md`
+- External Repos Survey: `2025-09-23-external-repos-survey.md`
 - Architecture (Target): `2025-09-20-architecture-target.md`
-- Presets: `2025-09-20-presets.md`
+- Presets: `2025-09-23-presets.md`
 - Diagnostic Guards: `2025-09-20-diagnostic-guards.md`
 - Test Protocol: `2025-09-20-test-protocol.md`
 
@@ -117,7 +117,7 @@
 
 - [2025-09-20 — Acceptance Keys](./2025-09-20-acceptance-keys.md)
 - [2025-09-20 — Architecture (Current)](./2025-09-20-architecture-current.md)
-- [2025-09-20 — External Repos Survey](./2025-09-20-external-repos-survey.md)
+- [2025-09-20 — External Repos Survey](./2025-09-23-external-repos-survey.md)
 - [2025-09-20 — Test Protocol](./2025-09-20-test-protocol.md)
 
 ## Run Configuration (sim)
