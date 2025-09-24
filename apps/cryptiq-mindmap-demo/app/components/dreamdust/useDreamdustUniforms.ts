@@ -92,24 +92,24 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uInkIntensity: 1,
   uReveal: 1,
   uBreath: 0.5,
-  uBreathAmp: 0.08,
+  uBreathAmp: 0.05,
   uCascade: 0,
   uCascadeColor: [1, 1, 1],
   uCascadeSizeBoost: 0,
   uVaporGain: 0,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
-  uEvolution: 1,
-  uNoiseThreshold: 1,
-  uDriftAmp: 0,
-  uCurlAmp: 1,
+  uEvolution: 0.85,
+  uNoiseThreshold: 0.92,
+  uDriftAmp: 0.55,
+  uCurlAmp: 0.55,
   uPointBaseSize: 1,
   uDepthMin: 0,
   uDepthMax: 1,
   uDepthBias: 1.8,
   uDepthNormScale: 0.001,
-  uGamma: 1,
-  uRimGamma: 2,
+  uGamma: 1.15,
+  uRimGamma: 2.4,
   uFocal: 1,
   uMinSize: 1,
   uMaxSize: 1,
@@ -190,13 +190,16 @@ function useOptionalThree<T>(selector: (state: RootState) => T): T | null {
   }
 }
 
-const DEFAULT_REVEAL_MS = 2000
+const DEFAULT_REVEAL_MS = 900
 const MIN_REVEAL_SECONDS = 0.2
 const BREATH_PERIOD_SECONDS = 7.5
 const BREATH_SPEED = (Math.PI * 2) / BREATH_PERIOD_SECONDS
-const CASCADE_DURATION_SECONDS = 1.6
-const CASCADE_SIZE_BOOST = 2.4
-const CASCADE_VAPOR_GAIN = 1.35
+const CASCADE_RAMP_S = 0.7
+const CASCADE_HOLD_S = 0.2
+const CASCADE_DECAY_S = 0.8
+const CASCADE_DURATION_SECONDS = CASCADE_RAMP_S + CASCADE_HOLD_S + CASCADE_DECAY_S
+const CASCADE_SIZE_PEAK = 0.25
+const CASCADE_VAPOR_PEAK = 0.9
 
 function clamp01(value: number): number {
   if (value < 0) return 0
@@ -682,7 +685,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     ? PresetAiry.cascadeRate
     : presetVaporEnabled
       ? PresetC.cascadeRate
-      : CASCADE_VAPOR_GAIN
+      : CASCADE_VAPOR_PEAK
 
   const revealTimelineRef = React.useRef<RevealTimelineState>({
     active: false,
@@ -694,7 +697,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     active: false,
     elapsed: 0,
     duration: CASCADE_DURATION_SECONDS,
-    sizeBoost: CASCADE_SIZE_BOOST,
+    sizeBoost: CASCADE_SIZE_PEAK,
     vaporGain: cascadeVaporGain,
     didLogStart: false,
     didLogEnd: false,
@@ -771,6 +774,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       }
 
       const cascade = cascadeTimelineRef.current
+      let cascadeEnded = false
       if (cascade.active) {
         if (!cascade.didLogStart) {
           cascade.didLogStart = true
@@ -778,23 +782,32 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
             duration: Number(cascade.duration.toFixed(3)),
           })
         }
-        cascade.elapsed = Math.min(cascade.elapsed + safeDelta, cascade.duration)
-        const progress = cascade.duration > 0 ? cascade.elapsed / cascade.duration : 1
-        const eased = cubicEaseInOut(progress)
-        const mix = clamp01(eased)
-        uniforms.uCascade.value = mix
-        uniforms.uCascadeSizeBoost.value = cascade.sizeBoost
-        uniforms.uVaporGain.value = cascade.vaporGain * mix
-        if (cascade.elapsed >= cascade.duration) {
+        const cascadeDuration = CASCADE_DURATION_SECONDS
+        cascade.elapsed = Math.min(cascade.elapsed + safeDelta, cascadeDuration)
+        const t = cascade.elapsed
+        let mix = 0
+        if (t < CASCADE_RAMP_S) {
+          const s = t / CASCADE_RAMP_S
+          mix = cubicEaseInOut(s)
+        } else if (t < CASCADE_RAMP_S + CASCADE_HOLD_S) {
+          mix = 1
+        } else if (t < cascadeDuration) {
+          const s = (t - CASCADE_RAMP_S - CASCADE_HOLD_S) / CASCADE_DECAY_S
+          mix = 1 - cubicEaseInOut(s)
+        } else {
           cascade.active = false
-          uniforms.uCascade.value = 1
-          uniforms.uVaporGain.value = 0
-          if (!cascade.didLogEnd) {
-            cascade.didLogEnd = true
-            safeLog('[Dreamdust] cascade end', {
-              duration: Number(cascade.duration.toFixed(3)),
-            })
-          }
+          cascade.elapsed = 0
+          mix = 0
+          cascadeEnded = true
+        }
+        uniforms.uCascade.value = mix
+        uniforms.uVaporGain.value = CASCADE_VAPOR_PEAK * mix
+        uniforms.uCascadeSizeBoost.value = CASCADE_SIZE_PEAK * mix
+        if (cascadeEnded && !cascade.didLogEnd) {
+          cascade.didLogEnd = true
+          safeLog('[Dreamdust] cascade end', {
+            duration: Number(cascade.duration.toFixed(3)),
+          })
         }
       } else if (uniforms.uVaporGain.value > 1e-4) {
         uniforms.uVaporGain.value = Math.max(
@@ -903,13 +916,13 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     cascade.active = true
     cascade.elapsed = 0
     cascade.duration = CASCADE_DURATION_SECONDS
-    cascade.sizeBoost = CASCADE_SIZE_BOOST
+    cascade.sizeBoost = CASCADE_SIZE_PEAK
     cascade.vaporGain = cascadeVaporGain
     cascade.didLogStart = false
     cascade.didLogEnd = false
     if (!uniforms) return
     uniforms.uCascade.value = 0
-    uniforms.uCascadeSizeBoost.value = cascade.sizeBoost
+    uniforms.uCascadeSizeBoost.value = 0
     uniforms.uVaporGain.value = 0
     const target = uniforms.uCascadeColor.value
     for (let i = 0; i < target.length && i < color.length; i += 1) {
