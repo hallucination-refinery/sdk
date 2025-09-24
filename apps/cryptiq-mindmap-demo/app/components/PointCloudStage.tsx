@@ -206,9 +206,16 @@ function readNumberOverride(queryKey: string, envKey?: string): number | null {
 
 const FOV_QUERY_KEY = 'fov'
 const FOV_ENV_KEY = 'DD_FOV'
+const SIM_CAP_QUERY_KEY = 'simCap'
+const SIM_CAP_ENV_KEY = 'DD_SIM_CAP'
+const SIM_CAP_MIN = 1000
 
 function readFovOverride(): number | null {
   return readNumberOverride(FOV_QUERY_KEY, FOV_ENV_KEY)
+}
+
+function readSimCapOverride(): number | null {
+  return readNumberOverride(SIM_CAP_QUERY_KEY, SIM_CAP_ENV_KEY)
 }
 
 function clampFovDeg(value: number): number {
@@ -233,6 +240,45 @@ function useOptionalDreamdustCtx() {
 }
 
 const MOBILE_INSTANCE_CAP = 90_000, DESKTOP_INSTANCE_CAP = 95_000, LOW_POWER_INSTANCE_CAP = 75_000, ABSOLUTE_INSTANCE_CAP = 100_000
+
+let simCapLogged = false
+let simCapOverrideWarned = false
+
+function logSimCapOnce({
+  requested,
+  mobile,
+  lowPower,
+  cap,
+}: {
+  requested: number | 'auto'
+  mobile: boolean
+  lowPower: boolean
+  cap: number
+}): void {
+  if (simCapLogged) {
+    return
+  }
+  simCapLogged = true
+  try {
+    console.log(
+      `[engine] sim cap { requested:${requested}, mobile:${mobile}, lowPower:${lowPower}, cap:${cap} }`,
+    )
+  } catch {
+    // Ignore logging failures.
+  }
+}
+
+function warnSimCapOverrideRejected(value: number): void {
+  if (simCapOverrideWarned) {
+    return
+  }
+  simCapOverrideWarned = true
+  try {
+    console.warn(`[engine] sim cap override rejected { value:${value} }`)
+  } catch {
+    // Ignore logging failures.
+  }
+}
 
 const FRAME_PERCENTILE_IDLE_MS = 3500, FRAME_PERCENTILE_MIN_SAMPLES = 30, FRAME_PERCENTILE_MAX_SAMPLES = 600
 
@@ -262,10 +308,23 @@ function computeInstanceCap({
   const absoluteLimit = Math.min(baselineLimit, ABSOLUTE_INSTANCE_CAP)
   const fallback = lowPower ? Math.min(absoluteLimit, LOW_POWER_INSTANCE_CAP) : absoluteLimit
   const fallbackInt = Math.max(1, Math.floor(fallback))
-  if (requested <= 0) {
-    return fallbackInt
+  const overrideRaw = readSimCapOverride()
+  let overrideCap: number | null = null
+  if (overrideRaw !== null) {
+    const normalized = Math.floor(overrideRaw)
+    if (normalized < SIM_CAP_MIN || normalized > ABSOLUTE_INSTANCE_CAP) {
+      warnSimCapOverrideRejected(overrideRaw)
+    } else {
+      overrideCap = Math.max(1, Math.min(normalized, ABSOLUTE_INSTANCE_CAP))
+    }
   }
-  return Math.max(1, Math.min(requested, fallbackInt))
+  if (overrideCap !== null) {
+    logSimCapOnce({ requested: overrideCap, mobile, lowPower, cap: overrideCap })
+    return overrideCap
+  }
+  const autoCap = requested <= 0 ? fallbackInt : Math.max(1, Math.min(requested, fallbackInt))
+  logSimCapOnce({ requested: 'auto', mobile, lowPower, cap: autoCap })
+  return autoCap
 }
 
 function percentile(sorted: number[], fraction: number): number {
