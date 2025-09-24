@@ -44,7 +44,8 @@
 
 - DPR clamp: the stage enforces `clampDPR(gl, 2)` (overrideable via env) when the canvas boots, recording the applied ratio alongside detected caps.【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L1415-L1429】【F:apps/cryptiq-mindmap-demo/app/components/pointcloud/budget.ts†L70-L91】
 - Point budget: `pointCap()` defaults to 60 k points on mobile and 150 k on desktop, with env overrides, before feeding geometry decimation and HUD stats.【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L699-L738】【F:apps/cryptiq-mindmap-demo/app/components/pointcloud/budget.ts†L43-L88】
-- Fallback behavior: if the Dreamdust shader fails to compile within 180 frames or vertex textures are unsupported, the stage swaps to a `PointsMaterial` fallback and drops vertex-ink defines, retaining fragment ink for resilience.【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L420-L492】【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L800-L817】【F:apps/cryptiq-mindmap-demo/app/components/dreamdust/capabilities.ts†L30-L107】
+- Fallback behavior: if the Dreamdust shader fails to compile within 180 frames or vertex textures are unsupported, the stage swaps to a `PointsMaterial` fallback and drops vertex-ink defines, retaining fragment ink for resilience.【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L420-L492】【F:apps/cryptiq-mindmap-demo/app/components/dreamdust/capabilities.ts†L30-L107】
+- Diagnostics: VTFSanity logs sample SIM UVs and confirm `USE_SIM_POS` whenever `debug=1`; `?debugSim=1` renders a plain `PointsMaterial` with color attributes for geometry sanity.【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L974-L2475】
 
 ## Tunables & Presets (current)
 
