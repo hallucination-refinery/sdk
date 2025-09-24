@@ -740,8 +740,17 @@ function BloomPass({
     }
   }, [gl, scene, camera, strength, radius, threshold])
   React.useEffect(() => {
-    if (composerRef.current) composerRef.current.setSize(size.width, size.height)
-  }, [size.width, size.height])
+    const comp = composerRef.current
+    if (!comp) return
+    const rendererDpr =
+      typeof gl.getPixelRatio === 'function'
+        ? gl.getPixelRatio()
+        : typeof window !== 'undefined' && typeof window.devicePixelRatio === 'number'
+          ? window.devicePixelRatio
+          : 1
+    const scale = rendererDpr > 1.6 ? 0.75 : 1
+    comp.setSize(size.width * scale, size.height * scale)
+  }, [gl, size.width, size.height])
   useFrame(() => {
     if (composerRef.current) composerRef.current.render()
   }, 1)
@@ -872,6 +881,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [noBloomOverride] = React.useState(readNoBloomOverride)
   const [forceBloomOverride] = React.useState(readForceBloomOverride)
   const [bloomEligible, setBloomEligible] = React.useState(false)
+  const [isMobile, setIsMobile] = React.useState(false)
   const rendererRef = React.useRef<THREE.WebGLRenderer | null>(null)
   const [rendererReadyTick, setRendererReadyTick] = React.useState(0)
   const simRef = React.useRef<ParticleSim | null>(null)
@@ -897,6 +907,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
+  const [devicePixelRatioRaw, setDevicePixelRatioRaw] = React.useState<number | null>(null)
   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [drawing, setDrawing] = React.useState(false)
   const inkUpdateLoggedRef = React.useRef(false)
@@ -968,7 +979,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     packed.width > 0 &&
     packed.height > 0
   const readyFallback = fallbackGate && colorReady && !!depth16From8
-  const pointBudget = React.useMemo(() => pointCap({ mobile: 100_000, desktop: 100_000 }), [])
+  const pointBudget = React.useMemo(() => pointCap({ mobile: 75_000, desktop: 95_000 }), [])
   const [runtimeCaps, setRuntimeCaps] = React.useState<Readonly<DreamdustRuntimeCaps> | null>(null)
 
   const dreamdustUniformApi = useDreamdustUniforms()
@@ -1444,7 +1455,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     thickness: 0.7,
     pointSizeScale: 2.2,
     keepRatio: 0.8,
-    bloom: false,
+    bloom: true,
     fovDeg: initialFovDeg,
     reveal: 1,
     flipUp: false,
@@ -1497,24 +1508,39 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [bloomActive, simEnabled])
 
   React.useEffect(() => {
-    const guardOk =
-      !simEnabled &&
-      !lowPowerGuard &&
-      typeof dprClampValue === 'number' &&
-      dprClampValue <= 1.8 &&
+    const countOk =
       typeof instanceCount === 'number' &&
-      instanceCount > 0 &&
+      instanceCount >= 60_000 &&
       instanceCount <= Math.min(pointBudget, 110_000)
+    const dprOk =
+      typeof devicePixelRatioRaw === 'number' ? devicePixelRatioRaw <= 2.0 : true
+    const guardOk =
+      !simEnabled && !lowPowerGuard && !isMobile && countOk && dprOk
     setBloomEligible(guardOk)
-  }, [simEnabled, lowPowerGuard, dprClampValue, instanceCount, pointBudget])
+  }, [
+    devicePixelRatioRaw,
+    instanceCount,
+    isMobile,
+    lowPowerGuard,
+    pointBudget,
+    simEnabled,
+  ])
 
   React.useEffect(() => {
     const ready =
-      typeof dprClampValue === 'number' && (typeof instanceCount === 'number' || forceBloomOverride)
+      typeof dprClampValue === 'number' &&
+      devicePixelRatioRaw !== null &&
+      (typeof instanceCount === 'number' || forceBloomOverride)
     if (ready !== bloomGuardReady) {
       setBloomGuardReady(ready)
     }
-  }, [bloomGuardReady, dprClampValue, forceBloomOverride, instanceCount])
+  }, [
+    bloomGuardReady,
+    devicePixelRatioRaw,
+    dprClampValue,
+    forceBloomOverride,
+    instanceCount,
+  ])
 
   const bloomLogRef = React.useRef(false)
   React.useEffect(() => {
@@ -2059,6 +2085,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           rendererRef.current = gl
           setRendererReadyTick((v) => v + 1)
           const mobile = detectMobile()
+          setIsMobile(mobile)
+          const rawDpr =
+            typeof window !== 'undefined' && typeof window.devicePixelRatio === 'number'
+              ? window.devicePixelRatio
+              : typeof gl.getPixelRatio === 'function'
+                ? gl.getPixelRatio()
+                : 1
+          setDevicePixelRatioRaw(Number.isFinite(rawDpr) ? rawDpr : null)
           const dprLimit = mobile ? 1.6 : 1.8
           const dprClamp = clampDPR(gl, dprLimit)
           setDprClampValue(Number.isFinite(dprClamp) ? dprClamp : null)
