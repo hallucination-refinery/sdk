@@ -24,6 +24,31 @@ type DreamdustMaterialOptionsInput = {
   vertexInkOk?: boolean
 }
 
+const loggedSimUsage = new WeakSet<object>()
+let cachedDebugSearch: string | null = null
+let cachedDebugFlag: boolean | null = null
+
+function isDebugQueryEnabled(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const { search } = window.location
+  if (cachedDebugSearch === search && cachedDebugFlag !== null) {
+    return cachedDebugFlag
+  }
+
+  cachedDebugSearch = search
+  try {
+    const params = new URLSearchParams(search)
+    cachedDebugFlag = params.get('debug') === '1'
+  } catch {
+    cachedDebugFlag = false
+  }
+
+  return cachedDebugFlag ?? false
+}
+
 const DEFAULT_UNIFORM_VALUES = {
   uTime: 0,
   uReveal: 1,
@@ -34,6 +59,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uDriftAmp: 0,
   uCurlFreq: 1,
   uCurlAmp: 1,
+  uCurlActive: 0,
   uDriftSpeed: 1,
   uTapGain: 0.5,
   uTapTau: 2,
@@ -60,6 +86,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uCascadeColor: [1, 1, 1] as [number, number, number],
   uCascadeSizeBoost: 0,
   uVaporGain: 0,
+  uVaporActive: 0,
   uBreathAmp: 0.08,
   uEvolution: 1,
   uInkOffsetBoost: 1,
@@ -161,6 +188,7 @@ uniform float uEvolution;
 uniform float uDriftAmp;
 uniform float uCurlFreq;
 uniform float uCurlAmp;
+uniform float uCurlActive;
 uniform float uDriftSpeed;
 uniform float uTapGain;
 uniform float uTapTau;
@@ -183,6 +211,7 @@ uniform float uVertexInkOk;
 uniform float uCascade;
 uniform float uCascadeSizeBoost;
 uniform float uVaporGain;
+uniform float uVaporActive;
 
 uniform float uHasCapture;
 uniform float uZNearNdc;
@@ -217,6 +246,8 @@ ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
 ${DD_FBM3}
 ${DD_CURL3}
+
+const float DD_EPS = 1e-4;
 
 vec4 dreamdustUnproject(vec3 localPos, vec2 captureUv, float depth01) {
 #ifdef USE_UNPROJECT
@@ -304,15 +335,20 @@ void main() {
   float curlBoost = mix(1.0, 4.0, cascadeMix);
   float vaporBoost = 1.0 + vaporGain * cascadeMix;
   curlMix *= curlBoost * vaporBoost;
-  vec3 curlOffset = dd_curl3(curlSample) * curlMix;
+  vec3 curlOffset = vec3(0.0);
+  if (uCurlActive > 0.5 && abs(curlMix) > DD_EPS) {
+    curlOffset = dd_curl3(curlSample) * curlMix;
+  }
   revealPos += curlOffset;
 
-  if (cascadeMix > 1e-5) {
+  if (uVaporActive > 0.5 && cascadeMix > DD_EPS) {
     vec3 vaporSample = curlSample * 0.75
       + vec3(uTime * 0.21 * uEvolution, uTime * 0.13 * uEvolution, uTime * 0.07 * uEvolution);
     vec3 vaporFlow = dd_fbm3Vec(vaporSample) - vec3(0.5);
     float vaporStrength = cascadeMix * (0.35 + vaporGain * 0.85);
-    revealPos += vaporFlow * vaporStrength;
+    if (abs(vaporStrength) > DD_EPS) {
+      revealPos += vaporFlow * vaporStrength;
+    }
   }
 
   vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0);
@@ -527,6 +563,20 @@ export function makeDreamdustMaterial(
     syncLegacyVertexInkDefine((material as any).defines)
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)
+    }
+    if (!loggedSimUsage.has(material as object) && isDebugQueryEnabled()) {
+      const matDefines = (material as any).defines as Record<string, unknown> | undefined
+      const useSimPos = !!matDefines?.USE_SIM_POS
+      const simUniform = (uniforms as UniformRecord)?.uSimPositionTex
+      const hasSimTex = !!simUniform && simUniform.value
+      if (useSimPos && hasSimTex) {
+        loggedSimUsage.add(material as object)
+        try {
+          console.log('[VTFSanity] using USE_SIM_POS=true, uSimPositionTex!=null')
+        } catch {
+          /* noop */
+        }
+      }
     }
   }
 

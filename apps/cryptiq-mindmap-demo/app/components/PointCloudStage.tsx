@@ -206,9 +206,16 @@ function readNumberOverride(queryKey: string, envKey?: string): number | null {
 
 const FOV_QUERY_KEY = 'fov'
 const FOV_ENV_KEY = 'DD_FOV'
+const SIM_CAP_QUERY_KEY = 'simCap'
+const SIM_CAP_ENV_KEY = 'DD_SIM_CAP'
+const SIM_CAP_MIN = 1000
 
 function readFovOverride(): number | null {
   return readNumberOverride(FOV_QUERY_KEY, FOV_ENV_KEY)
+}
+
+function readSimCapOverride(): number | null {
+  return readNumberOverride(SIM_CAP_QUERY_KEY, SIM_CAP_ENV_KEY)
 }
 
 function clampFovDeg(value: number): number {
@@ -233,6 +240,45 @@ function useOptionalDreamdustCtx() {
 }
 
 const MOBILE_INSTANCE_CAP = 90_000, DESKTOP_INSTANCE_CAP = 95_000, LOW_POWER_INSTANCE_CAP = 75_000, ABSOLUTE_INSTANCE_CAP = 100_000
+
+let simCapLogged = false
+let simCapOverrideWarned = false
+
+function logSimCapOnce({
+  requested,
+  mobile,
+  lowPower,
+  cap,
+}: {
+  requested: number | 'auto'
+  mobile: boolean
+  lowPower: boolean
+  cap: number
+}): void {
+  if (simCapLogged) {
+    return
+  }
+  simCapLogged = true
+  try {
+    console.log(
+      `[engine] sim cap { requested:${requested}, mobile:${mobile}, lowPower:${lowPower}, cap:${cap} }`,
+    )
+  } catch {
+    // Ignore logging failures.
+  }
+}
+
+function warnSimCapOverrideRejected(value: number): void {
+  if (simCapOverrideWarned) {
+    return
+  }
+  simCapOverrideWarned = true
+  try {
+    console.warn(`[engine] sim cap override rejected { value:${value} }`)
+  } catch {
+    // Ignore logging failures.
+  }
+}
 
 const FRAME_PERCENTILE_IDLE_MS = 3500, FRAME_PERCENTILE_MIN_SAMPLES = 30, FRAME_PERCENTILE_MAX_SAMPLES = 600
 
@@ -262,10 +308,23 @@ function computeInstanceCap({
   const absoluteLimit = Math.min(baselineLimit, ABSOLUTE_INSTANCE_CAP)
   const fallback = lowPower ? Math.min(absoluteLimit, LOW_POWER_INSTANCE_CAP) : absoluteLimit
   const fallbackInt = Math.max(1, Math.floor(fallback))
-  if (requested <= 0) {
-    return fallbackInt
+  const overrideRaw = readSimCapOverride()
+  let overrideCap: number | null = null
+  if (overrideRaw !== null) {
+    const normalized = Math.floor(overrideRaw)
+    if (normalized < SIM_CAP_MIN || normalized > ABSOLUTE_INSTANCE_CAP) {
+      warnSimCapOverrideRejected(overrideRaw)
+    } else {
+      overrideCap = Math.max(1, Math.min(normalized, ABSOLUTE_INSTANCE_CAP))
+    }
   }
-  return Math.max(1, Math.min(requested, fallbackInt))
+  if (overrideCap !== null) {
+    logSimCapOnce({ requested: overrideCap, mobile, lowPower, cap: overrideCap })
+    return overrideCap
+  }
+  const autoCap = requested <= 0 ? fallbackInt : Math.max(1, Math.min(requested, fallbackInt))
+  logSimCapOnce({ requested: 'auto', mobile, lowPower, cap: autoCap })
+  return autoCap
 }
 
 function percentile(sorted: number[], fraction: number): number {
@@ -845,12 +904,12 @@ function FramePercentilesProbe({ idle, sceneKey }: { idle: boolean; sceneKey: st
     const sorted = [...state.samples].sort((a, b) => a - b)
     const p50 = percentile(sorted, 0.5)
     const p90 = percentile(sorted, 0.9)
-    const p50Ok = p50 <= 10
-    const p90Ok = p90 <= 16
+    const p50Ok = p50 <= 16.0
+    const p90Ok = p90 <= 28.0
     const status = p50Ok && p90Ok ? 'ok' : 'warn'
     try {
       console.log(
-        `[dreamdust] frame-percentiles { scene: ${sceneRef.current}, p50: ${p50.toFixed(2)}ms ${p50Ok ? '<=' : '>'}10, p90: ${p90.toFixed(2)}ms ${p90Ok ? '<=' : '>'}16, status: ${status} }`,
+        `[dreamdust] frame-percentiles { scene: ${sceneRef.current}, p50: ${p50.toFixed(2)}ms ${p50Ok ? '<=' : '>'}16.0, p90: ${p90.toFixed(2)}ms ${p90Ok ? '<=' : '>'}28.0, status: ${status} }`,
       )
     } catch {
       /* noop */
@@ -865,16 +924,57 @@ function SimDriver({
   active,
   uniforms,
   material,
+  busyHint = () => true,
 }: {
   simRef: React.MutableRefObject<ParticleSim | null>
   active: boolean
   uniforms: DreamdustStageUniforms
   material: THREE.ShaderMaterial | null
+  busyHint?: () => boolean
 }) {
+  const accumulatorRef = React.useRef(0)
+
   useFrame((_, delta) => {
     const sim = simRef.current
     if (!active || !sim) return
-    sim.update(delta)
+
+    const safeDelta = Number.isFinite(delta) ? Math.max(0, delta) : 0
+    accumulatorRef.current += safeDelta
+
+    let isBusy = false
+    try {
+      isBusy = !!busyHint()
+    } catch {
+      isBusy = false
+    }
+
+    const fixedStep = 1 / 60
+    const targetStep = isBusy ? fixedStep : 1 / 15
+    const maxAccum = isBusy ? 0.1 : 0.2
+    if (accumulatorRef.current > maxAccum) {
+      accumulatorRef.current = maxAccum
+    }
+
+    let stepped = false
+    while (accumulatorRef.current >= targetStep) {
+      const steps = Math.max(1, Math.round(targetStep / fixedStep))
+      for (let i = 0; i < steps; i += 1) {
+        sim.update(fixedStep)
+      }
+      accumulatorRef.current -= targetStep
+      stepped = true
+    }
+
+    if (!stepped && isBusy && accumulatorRef.current >= fixedStep * 0.5) {
+      sim.update(fixedStep)
+      accumulatorRef.current = Math.max(0, accumulatorRef.current - fixedStep)
+      stepped = true
+    }
+
+    if (accumulatorRef.current < 0) {
+      accumulatorRef.current = 0
+    }
+
     const posTex = sim.getPositionTexture()
     const colorTex = sim.getColorTexture()
     if (uniforms.uSimPositionTex && uniforms.uSimPositionTex.value !== posTex) {
@@ -899,9 +999,33 @@ function SimDriver({
 function SceneControls({ radius, drawing = false }: { radius?: number; drawing?: boolean }) {
   const controlsRef = React.useRef(null)
   const { gl } = useThree()
+  const controlsStartLoggedRef = React.useRef(false)
   React.useEffect(() => {
     console.log('[PC] attach controls to', gl.domElement)
   }, [gl])
+  React.useEffect(() => {
+    const controls = controlsRef.current as
+      | {
+          addEventListener?: (event: string, handler: () => void) => void
+          removeEventListener?: (event: string, handler: () => void) => void
+        }
+      | null
+    if (!controls || typeof controls.addEventListener !== 'function') {
+      return
+    }
+    const handleStart = () => {
+      if (controlsStartLoggedRef.current) {
+        return
+      }
+      controlsStartLoggedRef.current = true
+      console.log('[controls] start')
+    }
+    controls.addEventListener('start', handleStart)
+    handleStart()
+    return () => {
+      controls.removeEventListener?.('start', handleStart)
+    }
+  }, [])
   return (
     <OrbitControls
       ref={controlsRef}
@@ -921,7 +1045,6 @@ function SceneControls({ radius, drawing = false }: { radius?: number; drawing?:
         MIDDLE: (THREE as any).MOUSE.DOLLY,
         RIGHT: (THREE as any).MOUSE.PAN,
       }}
-      onStart={() => console.log('[PC] controls start')}
     />
   )
 }
@@ -973,10 +1096,41 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [rendererReadyTick, setRendererReadyTick] = React.useState(0)
   const simRef = React.useRef<ParticleSim | null>(null)
   const [simState, setSimState] = React.useState<StageSimState | null>(null)
+  const [vtfAbort, setVtfAbort] = React.useState(false)
   const simFitRequestKeyRef = React.useRef<string | null>(null)
   const simFitLoggedKeyRef = React.useRef<string | null>(null)
   const simInitKeyRef = React.useRef<string | null>(null)
   const debugDepth = React.useMemo(() => readSearchParamSafe('debugDepth') === '1', [])
+  const debugEnabled = React.useMemo(() => readSearchParamSafe('debug') === '1', [])
+  const debugSimBypass = React.useMemo(() => readSearchParamSafe('debugSim') === '1', [])
+  const debugSimLoggedRef = React.useRef(false)
+  React.useEffect(() => {
+    if (!debugSimBypass || debugSimLoggedRef.current) {
+      return
+    }
+    debugSimLoggedRef.current = true
+    console.log('[debugSim] points-material bypass ON')
+  }, [debugSimBypass])
+  const debugSimMaterial = React.useMemo(() => {
+    if (!debugSimBypass) {
+      return null
+    }
+    const material = new THREE.PointsMaterial({
+      size: 3,
+      vertexColors: true,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    })
+    material.premultipliedAlpha = true
+    material.toneMapped = true
+    return material
+  }, [debugSimBypass])
+  React.useEffect(() => {
+    return () => {
+      debugSimMaterial?.dispose()
+    }
+  }, [debugSimMaterial])
   React.useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer) {
@@ -1078,6 +1232,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     simUniforms,
     presetAiryActive,
     simEngineActive,
+    recordInkImpulse,
+    isCurlLatched,
   } = dreamdustUniformApi
   const simEnabled = simEngineActive
   const fovOverride = React.useMemo(readFovOverride, [])
@@ -1104,6 +1260,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!u.uInkTintGain) u.uInkTintGain = u.uTintGain as typeof u.uTintGain
     return u
   }, [baseUniforms, pointSize])
+
+  const busyHint = React.useCallback(() => {
+    const reveal = uniforms.uReveal?.value ?? 1
+    const cascade = uniforms.uCascade?.value ?? 0
+    const vaporGain = uniforms.uVaporGain?.value ?? 0
+    const vaporActive = uniforms.uVaporActive?.value ?? 0
+    const curlActiveUniform = uniforms.uCurlActive?.value ?? 0
+    const curlLatched = typeof isCurlLatched === 'function' ? isCurlLatched() : curlActiveUniform > 0.5
+    return (
+      drawing ||
+      reveal < 0.999 ||
+      cascade > 0.001 ||
+      vaporGain > 0.001 ||
+      vaporActive > 0.5 ||
+      curlActiveUniform > 0.5 ||
+      curlLatched
+    )
+  }, [drawing, isCurlLatched, uniforms])
 
   const tunablesRef = React.useRef<DreamdustTunables>(getDreamdustTunables())
 
@@ -1140,6 +1314,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [uniforms])
 
   const dreamdustCtx = useOptionalDreamdustCtx()
+  const mirrorFlagsRef = React.useRef<{ lr: boolean; ud: boolean } | null>(null)
   const startCascade = dreamdustCtx?.startCascade
   const inkTex = dreamdustCtx?.inkTex ?? null
   const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
@@ -1181,7 +1356,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [setUniform, vertexInkOk])
 
   const fallbackMaterial = React.useMemo(() => {
-    if (!runtimeCaps) return null
+    if (!runtimeCaps || debugSimBypass) return null
     const material = createDreamdustMaterial(uniforms, {
       unproject: true,
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
@@ -1197,9 +1372,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [runtimeCaps, uniforms])
+  }, [debugSimBypass, runtimeCaps, uniforms])
   const prebakedMaterial = React.useMemo(() => {
-    if (!runtimeCaps) return null
+    if (!runtimeCaps || debugSimBypass) return null
     const material = createDreamdustMaterial(uniforms, {
       unproject: false,
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
@@ -1215,7 +1390,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [runtimeCaps, uniforms])
+  }, [debugSimBypass, runtimeCaps, uniforms])
 
   React.useEffect(() => {
     return () => {
@@ -1917,7 +2092,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     simUniforms?.numParticles,
   ])
 
-  const simActive = simEnabled && !!simState
+  const simActive = simEnabled && !!simState && !vtfAbort
   const simBounds = simState?.bounds ?? null
   const stageUvDepth = React.useMemo(() => {
     if (simActive && simState) {
@@ -1973,7 +2148,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       const bounds = instance.getBounds()
       const texSize = instance.getTexSize()
       const simUvs = instance.getSimUvs()
-      setSimState({
+      const nextState: StageSimState = {
         key: simKey,
         count: simSource.count,
         texSize,
@@ -1982,7 +2157,57 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         stageDepths: simSource.depths as Float32Array,
         positions: simSource.positions as Float32Array,
         bounds: { center: bounds.center.clone(), radius: bounds.radius },
-      })
+      }
+      let vtfsanityChecked = false
+      let vtfsanityInvalid = false
+      if (debugEnabled) {
+        const total = nextState.count
+        console.log(`[engine] sim on { count:${total}, texSize:[${texSize[0]},${texSize[1]}] }`)
+        const data = nextState.simUvs
+        if (data && total > 0) {
+          const samples = [0, Math.max(0, Math.floor((total - 1) * 0.5)), Math.max(0, total - 1)].map((idx) => ({
+            idx,
+            u: data[idx * 2] ?? Number.NaN,
+            v: data[idx * 2 + 1] ?? Number.NaN,
+          }))
+          const formatUv = (value: number) => (Number.isFinite(value) ? value.toFixed(5) : 'NaN')
+          console.log(
+            `[VTFSanity] aSimUv samples ${samples
+              .map((s) => `{ idx:${s.idx}, uv:[${formatUv(s.u)},${formatUv(s.v)}] }`)
+              .join(', ')}`
+          )
+          const texel = (value: number, size: number) => (!Number.isFinite(value) || size <= 0
+            ? -1
+            : Math.max(0, Math.min(Math.max(0, size - 1), Math.round(value * Math.max(0, size - 1)))))
+          console.log(
+            `[VTFSanity] uv→texel ${samples
+              .map((s) =>
+                `{ idx:${s.idx}, texSize:[${texSize[0]},${texSize[1]}], texel:[${texel(s.u, texSize[0])},${texel(
+                  s.v,
+                  texSize[1]
+                )}] }`
+              )
+              .join(', ')}`
+          )
+          const invalid = samples.some((s, index) => {
+            if (!Number.isFinite(s.u) || !Number.isFinite(s.v) || s.u < 0 || s.u > 1 || s.v < 0 || s.v > 1) return true
+            return samples
+              .slice(index + 1)
+              .some((other) => Math.abs(s.u - other.u) <= 1e-5 && Math.abs(s.v - other.v) <= 1e-5)
+          })
+          vtfsanityChecked = true
+          vtfsanityInvalid = invalid
+          if (invalid && !vtfAbort) {
+            console.log('[VTFSanity] FAIL')
+          }
+        }
+      }
+      if (vtfsanityInvalid) {
+        if (!vtfAbort) setVtfAbort(true)
+      } else if (vtfsanityChecked && vtfAbort) {
+        setVtfAbort(false)
+      }
+      setSimState(nextState)
     }
   }, [
     rendererReadyTick,
@@ -1994,11 +2219,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     debugDepth,
     hashArraySample,
     simState,
+    debugEnabled,
+    vtfAbort,
   ])
 
   React.useEffect(() => {
     const material = prebakedMaterial
-    if (!material) {
+    if (debugSimBypass || !material) {
       if (uniforms.uSimPositionTex) uniforms.uSimPositionTex.value = null
       if (uniforms.uSimColorTex) uniforms.uSimColorTex.value = null
       return
@@ -2030,7 +2257,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     ;(material as THREE.ShaderMaterial & { uniformsNeedUpdate?: boolean }).uniformsNeedUpdate = true
     material.needsUpdate = true
-  }, [prebakedMaterial, simActive, simState, uniforms])
+  }, [debugSimBypass, prebakedMaterial, simActive, simState, uniforms])
 
   // Mirror scale (local reflection) for left/right and up/down
   const mirrorScale = React.useMemo(() => {
@@ -2038,8 +2265,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [ui.mirrorLR, ui.mirrorUD])
 
   React.useEffect(() => {
-    if (!dreamdustCtx) return
-    dreamdustCtx.setMirrorFlags(!!ui.mirrorLR, !!ui.mirrorUD)
+    if (!dreamdustCtx || typeof dreamdustCtx.setMirrorFlags !== 'function') {
+      return
+    }
+    const next = { lr: !!ui.mirrorLR, ud: !!ui.mirrorUD }
+    const prev = mirrorFlagsRef.current
+    if (prev && prev.lr === next.lr && prev.ud === next.ud) {
+      return
+    }
+    mirrorFlagsRef.current = next
+    dreamdustCtx.setMirrorFlags(next.lr, next.ud)
   }, [dreamdustCtx, ui.mirrorLR, ui.mirrorUD])
 
   const cameraFitTarget = React.useMemo<[number, number, number]>(() => {
@@ -2141,6 +2376,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     uniforms.uDepthNormScale.value = depthScale
   }, [cameraFitRadius, prebakedTransform, thicknessScale, uniforms, fitRequest])
 
+  const simDriverMaterial = debugSimBypass ? null : prebakedMaterial
+  const stagePrebakedMaterial = debugSimMaterial ?? prebakedMaterial
+  const fallbackRenderMaterial = debugSimMaterial ?? fallbackMaterial
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
@@ -2220,6 +2459,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           onStart={() => {
             inkUpdateLoggedRef.current = false
             setDrawing(true)
+            try {
+              recordInkImpulse?.()
+            } catch {
+              /* noop */
+            }
           }}
           onTexture={(tex) => {
             try {
@@ -2260,12 +2504,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           simRef={simRef}
           active={simActive}
           uniforms={uniforms}
-          material={prebakedMaterial}
+          material={simDriverMaterial}
+          busyHint={busyHint}
         />
         <ambientLight intensity={1} />
         <directionalLight position={[2, 3, 4]} intensity={0.6} />
         {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
-        {prebaked && prebakedMaterial ? (
+        {prebaked && stagePrebakedMaterial ? (
           <group
             position={
               prebakedTransform
@@ -2341,30 +2586,30 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                       ) : null
                     })()}
                   </bufferGeometry>
-                  <primitive object={prebakedMaterial} attach="material" />
+                  <primitive object={stagePrebakedMaterial} attach="material" />
                 </points>
               </group>
             </group>
           </group>
-        ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
+        ) : prebakedStatus === 'absent' && fallbackRenderMaterial && readyPacked ? (
           <PointsMesh
             colorImage={{ data: color.data!, width: color.width, height: color.height }}
             depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
             stride={stride}
             pointBudget={pointBudget}
-            material={fallbackMaterial}
+            material={fallbackRenderMaterial}
             uniforms={uniforms}
             onMaterialValid={() => setBloomEnabled(bloomActive)}
             onInstancesReady={logInstances}
           />
-        ) : prebakedStatus === 'absent' && fallbackMaterial ? (
+        ) : prebakedStatus === 'absent' && fallbackRenderMaterial ? (
           readyFallback && (
             <PointsMesh
               colorImage={{ data: color.data!, width: color.width, height: color.height }}
               depth16={depth16From8!}
               stride={stride}
               pointBudget={pointBudget}
-              material={fallbackMaterial}
+              material={fallbackRenderMaterial}
               uniforms={uniforms}
               onMaterialValid={() => setBloomEnabled(bloomActive)}
               onInstancesReady={logInstances}

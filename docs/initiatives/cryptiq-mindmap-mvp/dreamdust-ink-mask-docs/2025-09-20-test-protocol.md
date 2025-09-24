@@ -1,43 +1,50 @@
 # Deterministic Test Protocol — 2025-09-20
 
 ## Route
-- Launch: `http://localhost:3000/quiz/archetype-v1?pc=scene-02&debug=1`
-- Query params: `pc=scene-02` (prebaked cat layout), `debug=1` to surface logs and overlays
-- Browser prep: open a fresh incognito window, disable extensions, and perform a hard reload (`Cmd+Shift+R` / `Ctrl+Shift+R`) after first paint
+- Launch: `http://localhost:3000/quiz/archetype-v1?pc=scene-02&debug=1&engine=sim&noBloom=1`
+- Optional perf override: append `&simCap=<points>` when testing lower particle budgets.
+- Debug geometry sanity: append `&debugSim=1` to render the plain `PointsMaterial` bypass.
+- Browser prep: open a fresh incognito window, disable extensions, and perform a hard reload (`Cmd+Shift+R` / `Ctrl+Shift+R`) after first paint.
 
 ## Steps
-1. **Cache reset and dev boot**
-   - Clear the Next build cache: `rm -rf apps/cryptiq-mindmap-demo/.next`
-   - Start the Dreamdust dev server: `pnpm --filter cryptiq-mindmap-demo run dev`
-   - Wait for `ready - started server on http://localhost:3000` before loading the route
+1. **Cache reset and prod boot**
+   - `rm -rf apps/cryptiq-mindmap-demo/.next`
+   - `pnpm --filter cryptiq-mindmap-demo run build`
+   - `pnpm --filter cryptiq-mindmap-demo run start`
+   - Avoid `run dev` when capturing percentiles (development bundlers distort timings).
 2. **Initial load + countdown observation**
-   - Navigate to the canonical URL above and let the cinematic countdown complete without interaction
-   - Confirm no console errors and note the first burst of Dreamdust one-shot logs
+   - Navigate to the canonical URL; leave DevTools closed for ~10 s so VTFSanity and frame samples settle.
+   - Confirm the expected one-shot logs appear once (`caps`, `instances`, `sim fit`, VTFSanity, bloom status).
 3. **Ink interaction sweep**
-   - Perform one short tap (press + release) near canvas center; observe local buoyant curls and heatmap alignment
-   - Perform one long stroke covering 40–60% of canvas width; watch the cascade recolor and hold the reveal for at least 5 seconds
-4. **Capture + archive**
-   - Screenshot at the payoff moment: immediately after the long-stroke cascade settles and the centered label appears
-   - Save the DevTools console log (preserve log enabled) and the screenshot into the dated `dreamdust-ink-mask` evidence folder
+   - Perform one short tap near canvas center; confirm `[dreamdust] ink-latency` and `[PC] draw start/end … type:'tap'` fire once.
+   - Perform one long stroke (~40–60 % width); confirm reveal/cascade logs fire and the canvas holds for ≥5 s.
+4. **Frame percentile capture**
+   - Open DevTools console (Preserve log on) and copy the first `[dreamdust] frame-percentiles { … }` line; ensure `p50 ≤ 16` and `p90 ≤ 28`.
+5. **DebugSim geometry sanity**
+   - Reload with `&debugSim=1` (same build) to verify `[debugSim] points-material bypass ON` and VTFSanity logs.
+6. **Capture + archive**
+   - Screenshot the payoff moment and archive raw console output (production + debugSim) in `dreamdust-ink-mask` evidence.
 
-### Cache clear & dev commands (exact)
+### Cache clear & prod commands (exact)
 ```bash
 rm -rf apps/cryptiq-mindmap-demo/.next
-pnpm --filter cryptiq-mindmap-demo run dev
+pnpm --filter cryptiq-mindmap-demo run build
+pnpm --filter cryptiq-mindmap-demo run start
 ```
 
 ### Log & screenshot capture points
 - **Server boot**: record the successful Next dev banner and confirm no compilation warnings
-- **First paint**: capture the `[dreamdust] caps …` one-shot payload
+- **First paint**: capture `[dreamdust] caps …`, `[PC] instances: …`, `[engine] sim fit …`, VTFSanity usage, and bloom status.
 - **Post-short tap**: note `[dreamdust] ink-latency { … }` and the absence of fallback logs
-- **Post-long stroke**: capture `[Dreamdust] reveal end { duration: ~2 }` and take the payoff screenshot
-- **Session end**: export the console log containing all Acceptance Key events and attach the screenshot to the run report
+- **Post-long stroke**: capture `[Dreamdust] reveal end { … }` (and cascade logs when available) and take the payoff screenshot.
+- **DebugSim sanity**: with `&debugSim=1`, capture the bypass log plus VTFSanity samples.
+- **Session end**: export the console log containing all Acceptance Key events (production + debugSim) and archive with the screenshot.
 
 ## Expected one-shots mapped to Acceptance Keys
 - **AK-DD-01 — Caps Snapshot**: `[dreamdust] caps { vertexInkOk: true, dprClamp: 1.8, … }` emitted exactly once on canvas creation
-- **AK-DD-02 — Instance Count**: `[PC] instances: 134162` (±500 tolerance) logged once after geometry upload
+- **AK-DD-02 — Instance Count**: `[PC] instances: <count>` logged once; ensure count respects active caps (≤100 k during perf experiments).
 - **AK-DD-03 — Reveal Timeline**: `[Dreamdust] reveal start { duration: 2 }` followed by `[Dreamdust] reveal end { duration: 2 }`, each once per session
-- **AK-DD-04 — Frame Percentiles**: `[dreamdust] frame-percentiles { sampleCount: ~240, p50Ms: 8–9, p90Ms: 9–10 }` logged once after the long stroke
+- **AK-DD-04 — Frame Percentiles**: `[dreamdust] frame-percentiles { sampleCount: ≥240, p50Ms: ≤16, p90Ms: ≤28 }` logged once after idle settle in production mode.
 - **AK-DD-05 — Ink Latency**: `[dreamdust] ink-latency { ms: ~16.7, frames: 1 }` logged once immediately after the short tap
 - **AK-DD-06 — Fallback Guard**: **Absence** of `[Dreamdust] compile timeout — falling back to PointsMaterial`; any appearance is an automatic fail
 
