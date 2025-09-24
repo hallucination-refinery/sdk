@@ -4,6 +4,7 @@
 - Use the templates below to standardize documentation and planning.
 
 ## Templates
+
 - Acceptance Keys Registry: `_template.acceptance-keys.md`
 - Deterministic Test Protocol: `_template.test-protocol.md`
 
@@ -30,6 +31,7 @@
 4. Publish a dated “Brief” with acceptance criteria and test protocol.
 
 ## Index
+
 - [2025-09-20 — Acceptance Keys](./2025-09-20-acceptance-keys.md)
 - [2025-09-20 — Architecture (Current)](./2025-09-20-architecture-current.md)
 - [2025-09-20 — External Repos Survey](./2025-09-20-external-repos-survey.md)
@@ -37,3 +39,4 @@
 - [2025-09-20 — Architecture (Target)](./2025-09-20-architecture-target.md)
 - [2025-09-20 — Presets](./2025-09-20-presets.md)
 - [2025-09-20 — Diagnostic Guards](./2025-09-20-diagnostic-guards.md)
+- [2025-09-24 — Dreamdust Ink Mask Brief](./2025-09-24-dreamdust-ink-mask-brief.md)
