@@ -33,6 +33,7 @@ type DreamdustUniformValueMap = {
   uNoiseThreshold: number
   uDriftAmp: number
   uCurlAmp: number
+  uCurlActive: number
   uPointBaseSize: number
   uDepthMin: number
   uDepthMax: number
@@ -50,6 +51,7 @@ type DreamdustUniformValueMap = {
   uTintGain: number
   uInkTintBoost: number
   uVertexInkOk: number
+  uVaporActive: number
 }
 
 export type DreamdustUniforms = {
@@ -105,6 +107,7 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uNoiseThreshold: 1,
   uDriftAmp: 0,
   uCurlAmp: 1,
+  uCurlActive: 0,
   uPointBaseSize: 2.6,
   uDepthMin: 0,
   uDepthMax: 1,
@@ -122,6 +125,7 @@ const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
   uTintGain: 1,
   uInkTintBoost: 1,
   uVertexInkOk: 0,
+  uVaporActive: 0,
 }
 
 const ENGINE_QUERY_KEY = 'engine'
@@ -199,6 +203,9 @@ const BREATH_SPEED = (Math.PI * 2) / BREATH_PERIOD_SECONDS
 const CASCADE_DURATION_SECONDS = 1.6
 const CASCADE_SIZE_BOOST = 2.4
 const CASCADE_VAPOR_GAIN = 1.35
+const CURL_LATCH_MS = 1200
+const CASCADE_LATCH_MS = 1600
+const VAPOR_LATCH_MS = 1600
 
 function clamp01(value: number): number {
   if (value < 0) return 0
@@ -346,6 +353,13 @@ const INK_BUMP_SIZE_MULTIPLIER = 1.2
 const INK_BUMP_OFFSET_MULTIPLIER = 1.15
 const INK_BUMP_TINT_MULTIPLIER = 1.18
 const TRUTHY_BUMP_VALUES = new Set(['1', 'true'])
+
+function nowMs(): number {
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    return performance.now()
+  }
+  return Date.now()
+}
 
 function normalizeGateValue(value: string | null | undefined): string {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
@@ -642,12 +656,14 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uCascadeColor: { value: [...DEFAULT_UNIFORM_VALUES.uCascadeColor] as Vec3 },
       uCascadeSizeBoost: { value: DEFAULT_UNIFORM_VALUES.uCascadeSizeBoost },
       uVaporGain: { value: DEFAULT_UNIFORM_VALUES.uVaporGain },
+      uVaporActive: { value: DEFAULT_UNIFORM_VALUES.uVaporActive },
       uNoiseScale: { value: DEFAULT_UNIFORM_VALUES.uNoiseScale },
       uNoiseSpeed: { value: DEFAULT_UNIFORM_VALUES.uNoiseSpeed },
       uEvolution: { value: evolutionValue },
       uNoiseThreshold: { value: DEFAULT_UNIFORM_VALUES.uNoiseThreshold },
       uDriftAmp: { value: DEFAULT_UNIFORM_VALUES.uDriftAmp },
       uCurlAmp: { value: curlAmpValue },
+      uCurlActive: { value: DEFAULT_UNIFORM_VALUES.uCurlActive },
       uPointBaseSize: { value: DEFAULT_UNIFORM_VALUES.uPointBaseSize },
       uDepthMin: { value: DEFAULT_UNIFORM_VALUES.uDepthMin },
       uDepthMax: { value: DEFAULT_UNIFORM_VALUES.uDepthMax },
@@ -707,6 +723,8 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     phase: 0,
   })
   const lastInkTextureRef = React.useRef<TextureLike | null>(null)
+  const curlLatchRef = React.useRef({ until: 0 })
+  const vaporLatchRef = React.useRef({ until: 0 })
 
   React.useEffect(() => {
     return subscribeDreamdustTunables((next) => {
@@ -726,6 +744,26 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       viewport[0] = width
       viewport[1] = height
     }
+  }, [])
+
+  const triggerCurl = React.useCallback((ms: number) => {
+    const duration = Number.isFinite(ms) ? Math.max(0, ms) : 0
+    const target = nowMs() + duration
+    if (target > curlLatchRef.current.until) {
+      curlLatchRef.current.until = target
+    }
+  }, [])
+
+  const triggerVapor = React.useCallback((ms: number) => {
+    const duration = Number.isFinite(ms) ? Math.max(0, ms) : 0
+    const target = nowMs() + duration
+    if (target > vaporLatchRef.current.until) {
+      vaporLatchRef.current.until = target
+    }
+  }, [])
+
+  const isCurlLatched = React.useCallback(() => {
+    return nowMs() < curlLatchRef.current.until
   }, [])
 
   const size = useOptionalThree((state) => state.size)
@@ -789,6 +827,8 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
         uniforms.uCascade.value = mix
         uniforms.uCascadeSizeBoost.value = cascade.sizeBoost
         uniforms.uVaporGain.value = cascade.vaporGain * mix
+        triggerCurl(CASCADE_LATCH_MS)
+        triggerVapor(VAPOR_LATCH_MS)
         if (cascade.elapsed >= cascade.duration) {
           cascade.active = false
           uniforms.uCascade.value = 1
@@ -806,8 +846,22 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
           uniforms.uVaporGain.value - safeDelta * cascade.vaporGain,
         )
       }
+
+      const now = nowMs()
+      const cascadeMix = uniforms.uCascade?.value ?? 0
+      const vaporGain = uniforms.uVaporGain?.value ?? 0
+      const curlActive = now < curlLatchRef.current.until || cascadeMix > 0.001
+      const vaporActive =
+        now < vaporLatchRef.current.until || cascadeMix > 0.001 || vaporGain > 0.001
+
+      if (uniforms.uCurlActive) {
+        uniforms.uCurlActive.value = curlActive ? 1 : 0
+      }
+      if (uniforms.uVaporActive) {
+        uniforms.uVaporActive.value = vaporActive ? 1 : 0
+      }
     },
-    [],
+    [triggerCurl, triggerVapor],
   )
 
   const startReveal = React.useCallback(() => {
@@ -820,10 +874,11 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     if (uniforms) {
       uniforms.uReveal.value = 0
     }
+    triggerCurl(CURL_LATCH_MS)
     safeLog('[Dreamdust] reveal start', {
       duration: Number(reveal.duration.toFixed(3)),
     })
-  }, [resolveRevealDurationSeconds])
+  }, [resolveRevealDurationSeconds, triggerCurl])
 
   React.useEffect(() => {
     if (size) {
@@ -915,11 +970,13 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     uniforms.uCascade.value = 0
     uniforms.uCascadeSizeBoost.value = cascade.sizeBoost
     uniforms.uVaporGain.value = 0
+    triggerCurl(CASCADE_LATCH_MS)
+    triggerVapor(VAPOR_LATCH_MS)
     const target = uniforms.uCascadeColor.value
     for (let i = 0; i < target.length && i < color.length; i += 1) {
       target[i] = color[i]
     }
-  }, [cascadeVaporGain])
+  }, [cascadeVaporGain, triggerCurl, triggerVapor])
 
   const stopCascade = React.useCallback(() => {
     const uniforms = uniformsRef.current
@@ -938,6 +995,10 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       target[i] = defaults[i]
     }
   }, [])
+
+  const recordInkImpulse = React.useCallback(() => {
+    triggerCurl(CURL_LATCH_MS)
+  }, [triggerCurl])
 
   const updateInkTexture = React.useCallback(
     (texture: TextureLike | null) => {
@@ -980,6 +1041,8 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     startReveal,
     startCascade,
     stopCascade,
+    recordInkImpulse,
+    isCurlLatched,
     setUniform,
     updateInkTexture,
     simUniforms,

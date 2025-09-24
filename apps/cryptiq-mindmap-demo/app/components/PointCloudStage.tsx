@@ -924,16 +924,57 @@ function SimDriver({
   active,
   uniforms,
   material,
+  busyHint = () => true,
 }: {
   simRef: React.MutableRefObject<ParticleSim | null>
   active: boolean
   uniforms: DreamdustStageUniforms
   material: THREE.ShaderMaterial | null
+  busyHint?: () => boolean
 }) {
+  const accumulatorRef = React.useRef(0)
+
   useFrame((_, delta) => {
     const sim = simRef.current
     if (!active || !sim) return
-    sim.update(delta)
+
+    const safeDelta = Number.isFinite(delta) ? Math.max(0, delta) : 0
+    accumulatorRef.current += safeDelta
+
+    let isBusy = false
+    try {
+      isBusy = !!busyHint()
+    } catch {
+      isBusy = false
+    }
+
+    const fixedStep = 1 / 60
+    const targetStep = isBusy ? fixedStep : 1 / 15
+    const maxAccum = isBusy ? 0.1 : 0.2
+    if (accumulatorRef.current > maxAccum) {
+      accumulatorRef.current = maxAccum
+    }
+
+    let stepped = false
+    while (accumulatorRef.current >= targetStep) {
+      const steps = Math.max(1, Math.round(targetStep / fixedStep))
+      for (let i = 0; i < steps; i += 1) {
+        sim.update(fixedStep)
+      }
+      accumulatorRef.current -= targetStep
+      stepped = true
+    }
+
+    if (!stepped && isBusy && accumulatorRef.current >= fixedStep * 0.5) {
+      sim.update(fixedStep)
+      accumulatorRef.current = Math.max(0, accumulatorRef.current - fixedStep)
+      stepped = true
+    }
+
+    if (accumulatorRef.current < 0) {
+      accumulatorRef.current = 0
+    }
+
     const posTex = sim.getPositionTexture()
     const colorTex = sim.getColorTexture()
     if (uniforms.uSimPositionTex && uniforms.uSimPositionTex.value !== posTex) {
@@ -1191,6 +1232,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     simUniforms,
     presetAiryActive,
     simEngineActive,
+    recordInkImpulse,
+    isCurlLatched,
   } = dreamdustUniformApi
   const simEnabled = simEngineActive
   const fovOverride = React.useMemo(readFovOverride, [])
@@ -1217,6 +1260,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!u.uInkTintGain) u.uInkTintGain = u.uTintGain as typeof u.uTintGain
     return u
   }, [baseUniforms, pointSize])
+
+  const busyHint = React.useCallback(() => {
+    const reveal = uniforms.uReveal?.value ?? 1
+    const cascade = uniforms.uCascade?.value ?? 0
+    const vaporGain = uniforms.uVaporGain?.value ?? 0
+    const vaporActive = uniforms.uVaporActive?.value ?? 0
+    const curlActiveUniform = uniforms.uCurlActive?.value ?? 0
+    const curlLatched = typeof isCurlLatched === 'function' ? isCurlLatched() : curlActiveUniform > 0.5
+    return (
+      drawing ||
+      reveal < 0.999 ||
+      cascade > 0.001 ||
+      vaporGain > 0.001 ||
+      vaporActive > 0.5 ||
+      curlActiveUniform > 0.5 ||
+      curlLatched
+    )
+  }, [drawing, isCurlLatched, uniforms])
 
   const tunablesRef = React.useRef<DreamdustTunables>(getDreamdustTunables())
 
@@ -2398,6 +2459,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           onStart={() => {
             inkUpdateLoggedRef.current = false
             setDrawing(true)
+            try {
+              recordInkImpulse?.()
+            } catch {
+              /* noop */
+            }
           }}
           onTexture={(tex) => {
             try {
@@ -2439,6 +2505,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           active={simActive}
           uniforms={uniforms}
           material={simDriverMaterial}
+          busyHint={busyHint}
         />
         <ambientLight intensity={1} />
         <directionalLight position={[2, 3, 4]} intensity={0.6} />
