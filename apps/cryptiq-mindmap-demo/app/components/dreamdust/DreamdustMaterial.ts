@@ -30,11 +30,11 @@ const DEFAULT_UNIFORM_VALUES = {
   uBreath: 0.5,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
-  uNoiseThreshold: 1,
-  uDriftAmp: 0,
+  uNoiseThreshold: 0.92,
+  uDriftAmp: 0.55,
   uCurlFreq: 1,
-  uCurlAmp: 1,
-  uDriftSpeed: 1,
+  uCurlAmp: 0.55,
+  uDriftSpeed: 0.28,
   uTapGain: 0.5,
   uTapTau: 2,
   uPointBaseSize: 2.2,
@@ -47,8 +47,8 @@ const DEFAULT_UNIFORM_VALUES = {
   uTintGain: 1,
   uDepthMin: 0,
   uDepthMax: 1,
-  uGamma: 1,
-  uRimGamma: 2,
+  uGamma: 1.15,
+  uRimGamma: 2.4,
   uDepthBias: 0.7,
   uDepthNormScale: 0.001,
   uHasCapture: 0,
@@ -60,8 +60,8 @@ const DEFAULT_UNIFORM_VALUES = {
   uCascadeColor: [1, 1, 1] as [number, number, number],
   uCascadeSizeBoost: 0,
   uVaporGain: 0,
-  uBreathAmp: 0.08,
-  uEvolution: 1,
+  uBreathAmp: 0.05,
+  uEvolution: 0.85,
   uInkOffsetBoost: 1,
   uInkSizeBoost: 1,
   uInkTintBoost: 1,
@@ -69,7 +69,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uViewport: [1, 1] as [number, number],
   uSimPositionTex: null,
   uSimColorTex: null,
-  uAlphaFloor: 0.08,
+  uAlphaFloor: 0.06,
 } as const
 
 type DefaultUniformKey = keyof typeof DEFAULT_UNIFORM_VALUES
@@ -259,14 +259,15 @@ void main() {
   vec3 jitterSeed = dd_hash33(vec3(aUv * 173.0, aDepth * 59.0));
   vec3 mistDir = jitterSeed * 2.0 - 1.0;
   mistDir = normalize(mistDir + vec3(1e-4));
-  float mistAmount = (1.0 - revealGate) * 1.8 + 0.35;
+  float settle = smoothstep(0.55, 1.0, revealProgress);
+  float mistAmount = (1.0 - revealProgress) * 1.8;
   vec3 mistPos = basePos + mistDir * mistAmount;
 
   float breathPhase = (uBreath - 0.5) * 2.0;
   float breathAmp = max(uBreathAmp, 0.0);
-  mistPos += mistDir * (breathPhase * breathAmp);
+  mistPos += mistDir * (breathPhase * breathAmp * (1.0 - 0.7 * settle));
 
-  vec3 revealPos = mix(mistPos, basePos, revealGate);
+  vec3 revealPos = mix(mistPos, basePos, settle);
 
   float tapImpulse = 0.0;
   vec2 inkSampleOffset = vec2(0.0);
@@ -300,7 +301,8 @@ void main() {
   vec3 curlSample = revealPos * uCurlFreq + vec3(uTime * uDriftSpeed);
   float cascadeMix = clamp(uCascade, 0.0, 1.0);
   float vaporGain = max(uVaporGain, 0.0);
-  float curlMix = (uDriftAmp + tapImpulse) * uCurlAmp;
+  float curlFade = 1.0 - 0.7 * settle;
+  float curlMix = (uDriftAmp + tapImpulse) * uCurlAmp * curlFade;
   float curlBoost = mix(1.0, 4.0, cascadeMix);
   float vaporBoost = 1.0 + vaporGain * cascadeMix;
   curlMix *= curlBoost * vaporBoost;
@@ -319,7 +321,7 @@ void main() {
   vec3 viewPos = viewPos4.xyz;
   float viewDist = max(1e-3, -viewPos.z);
   float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
-  float breathScale = 1.0 + breathPhase * 0.12;
+  float breathScale = 1.0 + breathPhase * 0.06;
   float cascadeSize = mix(0.0, max(uCascadeSizeBoost, 0.0), cascadeMix);
   float pointSize = uPointBaseSize * attenuation * breathScale * (1.0 + cascadeSize);
 
@@ -354,9 +356,10 @@ void main() {
   vec4 clipPos = projectionMatrix * viewPos4;
   float invW = 1.0 / max(1e-6, clipPos.w);
   vec2 ndc = clipPos.xy * invW; // [-1,1]
-  vInkUv = ndc * 0.5 + 0.5;     // [0,1]
+  vec2 ss = ndc * 0.5 + 0.5;
+  vInkUv = ss;                   // [0,1]
   vRevealMix = mistLift;
-  vRevealCoord = aUv * (3.0 + uNoiseScale) + jitterSeed.xy;
+  vRevealCoord = ss * (2.6 + uNoiseScale * 0.8) + jitterSeed.xy * 0.07;
   vPosMV = viewPos;
   vDepthView = viewDist;
 
@@ -407,12 +410,11 @@ void main() {
   float spriteMix = mix(alphaFloor, 1.0, spriteAlpha);
 
   float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
-  // Static reveal mask (no time animation) to avoid brightness pulsing
   float revealNoise = dd_noise2(vRevealCoord);
   float revealStrength = clamp(vRevealMix, 0.0, 1.0);
-  float flow = revealNoise + revealStrength * (1.0 - threshold * 0.5);
-  float baseReveal = smoothstep(threshold - 0.2, 1.0, flow);
-  float revealAlpha = max(baseReveal, revealStrength * 0.35);
+  float w = 0.08;
+  float baseReveal = smoothstep(threshold - w, threshold + w, revealNoise);
+  float revealAlpha = max(baseReveal, revealStrength * 0.40);
 
   float alpha = spriteMix * revealAlpha * revealStrength;
   float depthNorm = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
