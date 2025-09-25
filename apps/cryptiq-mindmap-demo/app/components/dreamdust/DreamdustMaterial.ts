@@ -17,13 +17,19 @@ type UniformRecord = Record<string, { value: unknown }>
 type DreamdustMaterialOptions = {
   unproject: boolean
   vertexInkOk: boolean
-  debugInkProbe: boolean
+  debugInkProbe?: boolean
 }
 
 type DreamdustMaterialOptionsInput = {
   unproject: boolean
   vertexInkOk?: boolean
   debugInkProbe?: boolean
+}
+
+type DreamdustMaterialResolvedOptions = {
+  unproject: boolean
+  vertexInkOk: boolean
+  debugInkProbe: boolean
 }
 
 const DEFAULT_UNIFORM_VALUES = {
@@ -498,7 +504,7 @@ export function makeDreamdustMaterial(
   aliasUniform(uniforms, 'uPointSize', 'uPointBaseSize')
   aliasUniform(uniforms, 'uThickness', 'uDepthBias')
 
-  const resolved: DreamdustMaterialOptions = {
+  const resolved: DreamdustMaterialResolvedOptions = {
     unproject: opts.unproject,
     vertexInkOk: opts.vertexInkOk ?? false,
     debugInkProbe: opts.debugInkProbe ?? false,
