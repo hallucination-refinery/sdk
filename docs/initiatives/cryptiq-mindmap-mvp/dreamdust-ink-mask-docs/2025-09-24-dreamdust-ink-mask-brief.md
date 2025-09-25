@@ -83,6 +83,16 @@ Screenshot: `assets/2025-09-25-cover-fit.png` (cover-fit framing, full-viewport 
 
 Screenshot: `assets/2025-09-25-sim-smoke.png` (sim-enabled smoke test, scene dark/minimal).
 
+### 2025-09-25 Probes Smoke (inkProbe=1, simProbe=1)
+
+- Branch: `debug/batch0-baseline` (prod build) with `?engine=sim&inkProbe=1&simProbe=1`.
+- Visual: scene fails to render due to shader compile errors when the VTF probe is active; console shows vertex compile errors (`vSimProbe redefinition`, `aSimUv undeclared`, `dreamdustSampleSimPosition` mismatch), confirming probe wiring issues rather than content absence.
+- Logs present: `[dreamdust] caps`, `caps-fanout`, `ink-tex bind` (twice), `[PC] instances: 89441`, `[Dreamdust] reveal start/end`, `[engine] sim on { count: 89441, texSize: [300,299] }`, `[engine] sim fit { radius: 0.382, center: [...] }`, frame-percentiles `{ p50: 8.3, p90: 9.1 }`, and ink metrics (`ink debug`, `ink-latency`).
+- Missing/blocked: any visual probe tint/size change—compile failure prevents probe rendering; long-stroke cascade logs absent.
+- Action: fix VTF probe shader issues (remove duplicate `varying vSimProbe` in VS, ensure `aSimUv` is always defined when `DEBUG_VTF_SANITY`, and provide the correct `dreamdustSampleSimPosition` overload).
+
+Screenshot: `assets/2025-09-25-probes-smoke.png` (compile-failure state captured with probes enabled).
+
 ## Status Summary
 
 - Render path technically initializes, but the sim-enabled run currently produces an almost blank canvas (just a tiny distant orb) rather than the intended cat silhouette.

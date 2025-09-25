@@ -15,18 +15,19 @@
    - Open the URL above in Chrome incognito (DevTools closed).
    - Wait ~5 seconds; observe the point cloud (post-merge shows a tighter silhouette roughly mid-frame, still distant and shimmering).
 3. **Log capture**
-   - Open DevTools console, copy entire log snapshot:
+   - Open DevTools console, copy entire log snapshot (with probes enabled):
      - `[PC] instances: 89441`
      - `[dreamdust] caps { vertexInkOk: true, … }`
      - `[dreamdust] cover-fit { mode: 'cover', margin: 0.78, … }`
      - `[engine] sim on { count: …, texSize: […] }`
      - `[engine] sim fit { radius: …, center: […] }`
+     - If probes cause a compile failure, capture the shader error block (`vSimProbe redefinition`, `aSimUv undeclared`, etc.).
    - `[dreamdust] frame-percentiles { … }` (note any regression vs 2025-09-25 cover-fit baseline; current sim smoke shows p50 ≈ 32.9 ms, p90 ≈ 37.1 ms)
      - `[dreamdust] ink-tex bind …`
      - `[Dreamdust] reveal start …`
      - `[Dreamdust] reveal end …`
 4. **Screenshot**
-   - Save a screenshot of the sim-enabled smoke test (`assets/2025-09-25-sim-smoke.png`).
+   - Save a screenshot of the probes run (`assets/2025-09-25-probes-smoke.png`).
 5. **Stop server**
    - `Ctrl+C` to terminate `next start`.
 
