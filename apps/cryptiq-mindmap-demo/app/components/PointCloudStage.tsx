@@ -193,6 +193,15 @@ function readDebugInkProbe(): boolean {
   return false
 }
 
+function readDebugSimProbe(): boolean {
+  const value = readSearchParamSafe('simProbe')
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    return normalized === '1' || normalized === 'true'
+  }
+  return false
+}
+
 function readNumberOverride(queryKey: string, envKey?: string): number | null {
   const queryValue = readSearchParamSafe(queryKey)
   if (queryValue !== null) {
@@ -1066,6 +1075,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
   const vertexInkOk = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
   const debugInkProbe = React.useMemo(() => readDebugInkProbe(), [])
+  const debugSimProbe = React.useMemo(() => readDebugSimProbe(), [])
   const uniformsWithReveal = uniforms as DreamdustStageUniformsWithReveal
   const hasRevealUniform = !!uniformsWithReveal.uReveal
   const timelineSupported = hasRevealUniform && typeof startReveal === 'function'
@@ -1108,6 +1118,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       unproject: true,
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
       debugInkProbe,
+      debugSimProbe,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1120,13 +1131,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugInkProbe, runtimeCaps, uniforms])
+  }, [debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
   const prebakedMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
     const material = createDreamdustMaterial(uniforms, {
       unproject: false,
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
       debugInkProbe,
+      debugSimProbe,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1139,7 +1151,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugInkProbe, runtimeCaps, uniforms])
+  }, [debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
 
   React.useEffect(() => {
     return () => {
