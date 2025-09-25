@@ -4,11 +4,7 @@ import * as React from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { RootState } from '@react-three/fiber'
 
-import {
-  getDreamdustTunables,
-  logOnce,
-  subscribeDreamdustTunables,
-} from './metrics'
+import { getDreamdustTunables, logOnce, subscribeDreamdustTunables } from './metrics'
 import { PresetAiry, PresetC } from './presets'
 
 type TextureLike = unknown
@@ -261,9 +257,9 @@ function toFiniteNumber(value: unknown): number | null {
   return value
 }
 
-function readTextureDimensions(candidate: unknown):
-  | Pick<TextureMetrics, 'width' | 'height'>
-  | null {
+function readTextureDimensions(
+  candidate: unknown
+): Pick<TextureMetrics, 'width' | 'height'> | null {
   if (Array.isArray(candidate)) {
     for (const entry of candidate) {
       const dimensions = readTextureDimensions(entry)
@@ -304,9 +300,7 @@ function extractInkTextureMetrics(texture: TextureLike): TextureMetrics | null {
 
   const needsUpdateValue = record.needsUpdate
   const needsUpdate =
-    typeof needsUpdateValue === 'boolean'
-      ? needsUpdateValue
-      : Boolean(needsUpdateValue)
+    typeof needsUpdateValue === 'boolean' ? needsUpdateValue : Boolean(needsUpdateValue)
 
   const candidates: unknown[] = []
 
@@ -463,16 +457,13 @@ function sanitizeParticleCount(value: number): number {
 function createSimUniforms(): DreamdustSimUniforms {
   const uniforms = createDefaultSimUniforms()
   uniforms.numParticles = sanitizeParticleCount(
-    resolveSimNumber('numParticles', uniforms.numParticles),
+    resolveSimNumber('numParticles', uniforms.numParticles)
   )
   const damping = resolveSimNumber('velocityDamping', uniforms.velocityDamping)
   uniforms.velocityDamping = Number.isFinite(damping) ? damping : uniforms.velocityDamping
   const gravity = resolveSimNumber('gravityY', uniforms.gravityY)
   uniforms.gravityY = Number.isFinite(gravity) ? gravity : uniforms.gravityY
-  const turbulenceStrength = resolveSimNumber(
-    'turbulenceStrength',
-    uniforms.turbulenceStrength,
-  )
+  const turbulenceStrength = resolveSimNumber('turbulenceStrength', uniforms.turbulenceStrength)
   uniforms.turbulenceStrength = Number.isFinite(turbulenceStrength)
     ? turbulenceStrength
     : uniforms.turbulenceStrength
@@ -482,26 +473,21 @@ function createSimUniforms(): DreamdustSimUniforms {
     : uniforms.turbulenceTime
   const turbulencePosFreq = resolveSimNumber(
     'turbulencePositionFrequency',
-    uniforms.turbulencePositionFrequency,
+    uniforms.turbulencePositionFrequency
   )
   uniforms.turbulencePositionFrequency = Number.isFinite(turbulencePosFreq)
     ? turbulencePosFreq
     : uniforms.turbulencePositionFrequency
   const emitterRadius = resolveSimNumber('emitterRadius', uniforms.emitterRadius)
-  uniforms.emitterRadius = Number.isFinite(emitterRadius)
-    ? emitterRadius
-    : uniforms.emitterRadius
+  uniforms.emitterRadius = Number.isFinite(emitterRadius) ? emitterRadius : uniforms.emitterRadius
   const emitterVelocity = resolveSimNumber(
     'emitterVelocityStrength',
-    uniforms.emitterVelocityStrength,
+    uniforms.emitterVelocityStrength
   )
   uniforms.emitterVelocityStrength = Number.isFinite(emitterVelocity)
     ? emitterVelocity
     : uniforms.emitterVelocityStrength
-  const randomVelocity = resolveSimNumber(
-    'initialRandomVelocity',
-    uniforms.initialRandomVelocity,
-  )
+  const randomVelocity = resolveSimNumber('initialRandomVelocity', uniforms.initialRandomVelocity)
   uniforms.initialRandomVelocity = Number.isFinite(randomVelocity)
     ? randomVelocity
     : uniforms.initialRandomVelocity
@@ -542,8 +528,7 @@ function createSimUniforms(): DreamdustSimUniforms {
 
 type DreamdustUniformName = keyof DreamdustUniforms
 
-type DreamdustUniformValue<Name extends DreamdustUniformName> =
-  DreamdustUniforms[Name]['value']
+type DreamdustUniformValue<Name extends DreamdustUniformName> = DreamdustUniforms[Name]['value']
 
 type UseDreamdustUniformsResult = {
   uniforms: DreamdustUniforms
@@ -553,7 +538,7 @@ type UseDreamdustUniformsResult = {
   stopCascade: () => void
   setUniform: <Name extends DreamdustUniformName>(
     name: Name,
-    value: DreamdustUniformValue<Name>,
+    value: DreamdustUniformValue<Name>
   ) => void
   updateInkTexture: (texture: TextureLike | null) => void
   simUniforms: DreamdustSimUniforms
@@ -582,12 +567,12 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   const simEngineActive = React.useMemo(detectSimEngine, [])
   const presetAiryEnabled = React.useMemo(
     () => detectAiryPreset(simEngineActive),
-    [simEngineActive],
+    [simEngineActive]
   )
   const presetVaporEnabled = React.useMemo(detectVaporPreset, [])
   const inkBumpEnabled = React.useMemo(
     () => (presetAiryEnabled ? false : detectInkBump()),
-    [presetAiryEnabled],
+    [presetAiryEnabled]
   )
   const uniformsRef = React.useRef<DreamdustUniforms | null>(null)
   const simUniformsRef = React.useRef<DreamdustSimUniforms | null>(null)
@@ -622,12 +607,9 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       : presetVaporEnabled
         ? PresetC.inkGain
         : 1
-    const inkOffsetBoostValue =
-      baseInkGain * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
-    const inkSizeBoostValue =
-      baseInkGain * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
-    const inkTintBoostValue =
-      baseInkGain * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
+    const inkOffsetBoostValue = baseInkGain * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
+    const inkSizeBoostValue = baseInkGain * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
+    const inkTintBoostValue = baseInkGain * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
 
     uniformsRef.current = {
       uTime: { value: DEFAULT_UNIFORM_VALUES.uTime },
@@ -706,6 +688,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     phase: 0,
   })
   const lastInkTextureRef = React.useRef<TextureLike | null>(null)
+  const vertexInkOkPrevRef = React.useRef(DEFAULT_UNIFORM_VALUES.uVertexInkOk)
 
   React.useEffect(() => {
     return subscribeDreamdustTunables((next) => {
@@ -738,86 +721,83 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     applyViewport(viewportWidth, viewportHeight)
   }, [applyViewport, viewportHeight, viewportWidth])
 
-  const tick = React.useCallback(
-    (delta: number) => {
-      const uniforms = uniformsRef.current
-      if (!uniforms) return
-      const safeDelta = Number.isFinite(delta) ? Math.max(0, delta) : 0
-      uniforms.uTime.value += safeDelta
+  const tick = React.useCallback((delta: number) => {
+    const uniforms = uniformsRef.current
+    if (!uniforms) return
+    const safeDelta = Number.isFinite(delta) ? Math.max(0, delta) : 0
+    uniforms.uTime.value += safeDelta
 
-      const breath = breathStateRef.current
-      breath.phase += safeDelta * BREATH_SPEED
-      if (!Number.isFinite(breath.phase)) {
-        breath.phase = 0
-      } else if (breath.phase > Math.PI * 2 || breath.phase < -Math.PI * 2) {
-        breath.phase %= Math.PI * 2
-      }
-      const breathValue = (Math.sin(breath.phase) + 1) * 0.5
-      uniforms.uBreath.value = clamp01(breathValue)
+    const breath = breathStateRef.current
+    breath.phase += safeDelta * BREATH_SPEED
+    if (!Number.isFinite(breath.phase)) {
+      breath.phase = 0
+    } else if (breath.phase > Math.PI * 2 || breath.phase < -Math.PI * 2) {
+      breath.phase %= Math.PI * 2
+    }
+    const breathValue = (Math.sin(breath.phase) + 1) * 0.5
+    uniforms.uBreath.value = clamp01(breathValue)
 
-      const reveal = revealTimelineRef.current
-      if (reveal.active) {
-        reveal.elapsed = Math.min(reveal.elapsed + safeDelta, reveal.duration)
-        const progress = reveal.duration > 0 ? reveal.elapsed / reveal.duration : 1
-        const eased = cubicEaseInOut(progress)
-        uniforms.uReveal.value = eased
-        if (reveal.elapsed >= reveal.duration) {
-          reveal.active = false
-          uniforms.uReveal.value = 1
-          if (!reveal.didLogEnd) {
-            reveal.didLogEnd = true
-            safeLog('[Dreamdust] reveal end', {
-              duration: Number(reveal.duration.toFixed(3)),
-            })
-          }
-        }
-      }
-
-      const cascade = cascadeTimelineRef.current
-      let cascadeEnded = false
-      if (cascade.active) {
-        if (!cascade.didLogStart) {
-          cascade.didLogStart = true
-          safeLog('[Dreamdust] cascade start', {
-            duration: Number(cascade.duration.toFixed(3)),
+    const reveal = revealTimelineRef.current
+    if (reveal.active) {
+      reveal.elapsed = Math.min(reveal.elapsed + safeDelta, reveal.duration)
+      const progress = reveal.duration > 0 ? reveal.elapsed / reveal.duration : 1
+      const eased = cubicEaseInOut(progress)
+      uniforms.uReveal.value = eased
+      if (reveal.elapsed >= reveal.duration) {
+        reveal.active = false
+        uniforms.uReveal.value = 1
+        if (!reveal.didLogEnd) {
+          reveal.didLogEnd = true
+          safeLog('[Dreamdust] reveal end', {
+            duration: Number(reveal.duration.toFixed(3)),
           })
         }
-        const cascadeDuration = CASCADE_DURATION_SECONDS
-        cascade.elapsed = Math.min(cascade.elapsed + safeDelta, cascadeDuration)
-        const t = cascade.elapsed
-        let mix = 0
-        if (t < CASCADE_RAMP_S) {
-          const s = t / CASCADE_RAMP_S
-          mix = cubicEaseInOut(s)
-        } else if (t < CASCADE_RAMP_S + CASCADE_HOLD_S) {
-          mix = 1
-        } else if (t < cascadeDuration) {
-          const s = (t - CASCADE_RAMP_S - CASCADE_HOLD_S) / CASCADE_DECAY_S
-          mix = 1 - cubicEaseInOut(s)
-        } else {
-          cascade.active = false
-          cascade.elapsed = 0
-          mix = 0
-          cascadeEnded = true
-        }
-        uniforms.uCascade.value = mix
-        uniforms.uVaporGain.value = CASCADE_VAPOR_PEAK * mix
-        uniforms.uCascadeSizeBoost.value = CASCADE_SIZE_PEAK * mix
-        if (cascadeEnded && !cascade.didLogEnd) {
-          cascade.didLogEnd = true
-          safeLog('[Dreamdust] cascade end', {
-            duration: Number(cascade.duration.toFixed(3)),
-          })
-        }
-      } else if (uniforms.uVaporGain.value > 1e-4) {
-        uniforms.uVaporGain.value = Math.max(
-          0,
-          uniforms.uVaporGain.value - safeDelta * cascade.vaporGain,
-        )
       }
-    },
-    [],
-  )
+    }
+
+    const cascade = cascadeTimelineRef.current
+    let cascadeEnded = false
+    if (cascade.active) {
+      if (!cascade.didLogStart) {
+        cascade.didLogStart = true
+        safeLog('[Dreamdust] cascade start', {
+          duration: Number(cascade.duration.toFixed(3)),
+        })
+      }
+      const cascadeDuration = CASCADE_DURATION_SECONDS
+      cascade.elapsed = Math.min(cascade.elapsed + safeDelta, cascadeDuration)
+      const t = cascade.elapsed
+      let mix = 0
+      if (t < CASCADE_RAMP_S) {
+        const s = t / CASCADE_RAMP_S
+        mix = cubicEaseInOut(s)
+      } else if (t < CASCADE_RAMP_S + CASCADE_HOLD_S) {
+        mix = 1
+      } else if (t < cascadeDuration) {
+        const s = (t - CASCADE_RAMP_S - CASCADE_HOLD_S) / CASCADE_DECAY_S
+        mix = 1 - cubicEaseInOut(s)
+      } else {
+        cascade.active = false
+        cascade.elapsed = 0
+        mix = 0
+        cascadeEnded = true
+      }
+      uniforms.uCascade.value = mix
+      uniforms.uVaporGain.value = CASCADE_VAPOR_PEAK * mix
+      uniforms.uCascadeSizeBoost.value = CASCADE_SIZE_PEAK * mix
+      if (cascadeEnded && !cascade.didLogEnd) {
+        cascade.didLogEnd = true
+        safeLog('[Dreamdust] cascade end', {
+          duration: Number(cascade.duration.toFixed(3)),
+        })
+      }
+    } else if (uniforms.uVaporGain.value > 1e-4) {
+      uniforms.uVaporGain.value = Math.max(
+        0,
+        uniforms.uVaporGain.value - safeDelta * cascade.vaporGain
+      )
+    }
+  }, [])
 
   const startReveal = React.useCallback(() => {
     const uniforms = uniformsRef.current
@@ -838,10 +818,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     if (size) {
       return undefined
     }
-    if (
-      typeof window === 'undefined' ||
-      typeof window.requestAnimationFrame === 'undefined'
-    ) {
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame === 'undefined') {
       return undefined
     }
 
@@ -889,10 +866,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   }
 
   const setUniform = React.useCallback(
-    <Name extends DreamdustUniformName>(
-      name: Name,
-      value: DreamdustUniformValue<Name>,
-    ) => {
+    <Name extends DreamdustUniformName>(name: Name, value: DreamdustUniformValue<Name>) => {
       const uniforms = uniformsRef.current
       if (!uniforms) return
       const uniform = uniforms[name]
@@ -905,30 +879,47 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
         }
         return
       }
+      if (name === 'uVertexInkOk') {
+        if (typeof value === 'number') {
+          if (
+            process.env.NODE_ENV !== 'production' &&
+            vertexInkOkPrevRef.current === 0 &&
+            value > 0
+          ) {
+            safeLog('[dreamdust] vertex-ink-ok', { value: 1 })
+          }
+          vertexInkOkPrevRef.current = value
+        } else {
+          vertexInkOkPrevRef.current = value as number
+        }
+      }
       ;(uniform as typeof uniform).value = value as typeof uniform.value
     },
-    [],
+    []
   )
 
-  const startCascade = React.useCallback((color: Vec3) => {
-    const uniforms = uniformsRef.current
-    const cascade = cascadeTimelineRef.current
-    cascade.active = true
-    cascade.elapsed = 0
-    cascade.duration = CASCADE_DURATION_SECONDS
-    cascade.sizeBoost = CASCADE_SIZE_PEAK
-    cascade.vaporGain = cascadeVaporGain
-    cascade.didLogStart = false
-    cascade.didLogEnd = false
-    if (!uniforms) return
-    uniforms.uCascade.value = 0
-    uniforms.uCascadeSizeBoost.value = 0
-    uniforms.uVaporGain.value = 0
-    const target = uniforms.uCascadeColor.value
-    for (let i = 0; i < target.length && i < color.length; i += 1) {
-      target[i] = color[i]
-    }
-  }, [cascadeVaporGain])
+  const startCascade = React.useCallback(
+    (color: Vec3) => {
+      const uniforms = uniformsRef.current
+      const cascade = cascadeTimelineRef.current
+      cascade.active = true
+      cascade.elapsed = 0
+      cascade.duration = CASCADE_DURATION_SECONDS
+      cascade.sizeBoost = CASCADE_SIZE_PEAK
+      cascade.vaporGain = cascadeVaporGain
+      cascade.didLogStart = false
+      cascade.didLogEnd = false
+      if (!uniforms) return
+      uniforms.uCascade.value = 0
+      uniforms.uCascadeSizeBoost.value = 0
+      uniforms.uVaporGain.value = 0
+      const target = uniforms.uCascadeColor.value
+      for (let i = 0; i < target.length && i < color.length; i += 1) {
+        target[i] = color[i]
+      }
+    },
+    [cascadeVaporGain]
+  )
 
   const stopCascade = React.useCallback(() => {
     const uniforms = uniformsRef.current
@@ -969,8 +960,19 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       lastInkTextureRef.current = texture
       logOnce('ink-tex bind', metrics)
       safeLog('[Dreamdust] ink-tex bind', metrics)
+      if (process.env.NODE_ENV !== 'production') {
+        const uniforms = uniformsRef.current
+        if (uniforms) {
+          safeLog('[dreamdust] ink-telemetry', {
+            intensity: Number(uniforms.uInkIntensity.value.toFixed(3)),
+            offsetBoost: Number(uniforms.uInkOffsetBoost.value.toFixed(3)),
+            sizeBoost: Number(uniforms.uInkSizeBoost.value.toFixed(3)),
+            vertexInkOk: uniforms.uVertexInkOk.value,
+          })
+        }
+      }
     },
-    [setUniform],
+    [setUniform]
   )
 
   const simUniforms = simUniformsRef.current
