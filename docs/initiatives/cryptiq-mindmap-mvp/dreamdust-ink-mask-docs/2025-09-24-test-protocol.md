@@ -21,7 +21,7 @@
      - `[dreamdust] cover-fit { mode: 'cover', margin: 0.78, … }`
      - `[engine] sim on { count: …, texSize: […] }`
      - `[engine] sim fit { radius: …, center: […] }`
-     - `[dreamdust] frame-percentiles { … }`
+   - `[dreamdust] frame-percentiles { … }` (note any regression vs 2025-09-25 cover-fit baseline; current sim smoke shows p50 ≈ 32.9 ms, p90 ≈ 37.1 ms)
      - `[dreamdust] ink-tex bind …`
      - `[Dreamdust] reveal start …`
      - `[Dreamdust] reveal end …`

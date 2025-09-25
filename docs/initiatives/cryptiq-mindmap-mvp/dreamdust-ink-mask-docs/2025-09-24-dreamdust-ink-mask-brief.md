@@ -75,10 +75,11 @@ Screenshot: `assets/2025-09-25-cover-fit.png` (cover-fit framing, full-viewport 
 ### 2025-09-25 Sim Smoke
 
 - Branch: `debug/batch0-baseline` (production build) with `?engine=sim` flag.
-- Visual: canvas remains nearly black—even with the sim enabled there is no visible point cloud after reveal; screenshot captures only faint noise at the edges.
+- Visual: canvas remains nearly black—even with the sim enabled there is no visible point cloud after reveal. After panning, a single distant white orb becomes visible (same artifact seen in earlier sim regressions); the primary cat silhouette never appears.
 - Interaction: short click and long stroke yielded no displacement, no tint, and no cascade growth; only `[PC] ink debug` / `[dreamdust] ink-latency` logs appeared.
 - Diagnostics: `[engine] sim on { count: 89441, texSize: [300,299] }` and `[engine] sim fit { radius: 0.382, center: [0.01,-0.03,1.13] }` confirm ParticleSim initializes, but frame percentiles regressed (p50 ≈ 32.9 ms, p90 ≈ 37.1 ms) and `[dreamdust] bloom` disabled due to perf guard.
-- Status: displacement still absent despite VTF sim reporting active; next step is to instrument `USE_SIM_POS` / ink fetch in shaders.
+- Regression vs 2025-09-25 cover-fit dev snapshot: previously the cat-filled viewport rendered sharply with bloom on (p50 ≈ 8 ms, p90 ≈ 9 ms). Enabling the sim replaces that image with a near-blank scene and drops perf by ~4×, implying the sim output overwrites geometry with invalid data.
+- Status: displacement still absent despite VTF sim reporting active; next step is to instrument `USE_SIM_POS` / ink fetch in shaders and validate sim texture contents.
 
 Screenshot: `assets/2025-09-25-sim-smoke.png` (sim-enabled smoke test, scene dark/minimal).
 
