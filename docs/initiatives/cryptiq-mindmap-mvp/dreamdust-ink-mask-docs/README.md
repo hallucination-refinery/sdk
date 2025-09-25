@@ -40,3 +40,7 @@
 - [2025-09-20 — Presets](./2025-09-20-presets.md)
 - [2025-09-20 — Diagnostic Guards](./2025-09-20-diagnostic-guards.md)
 - [2025-09-24 — Dreamdust Ink Mask Brief](./2025-09-24-dreamdust-ink-mask-brief.md)
+
+## Technical References
+
+- [2025-09-24 — GPGPU Pipeline Audit](./2025-09-24-gpgpu-pipeline.md)
