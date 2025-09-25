@@ -16,7 +16,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
-import { applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
+import { applyPerspectiveCover, applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { getDreamdustCaps, type DreamdustRuntimeCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
@@ -1419,8 +1419,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   // Debug panel state (optional via ?debug=1)
   const presetFov = presetAiryActive && typeof PresetAiry.fov === 'number' ? PresetAiry.fov : null
-  const initialFovDeg = clampFovDeg(
-    typeof fovOverride === 'number' ? fovOverride : (presetFov ?? 27)
+  const defaultFovDeg = clampFovDeg(
+    typeof fovOverride === 'number' ? fovOverride : (presetFov ?? 20)
   )
   const [debugVisible, setDebugVisible] = React.useState(false)
   // Lightweight array sampler hash (content-aware) to detect data changes even when lengths are identical
@@ -1452,11 +1452,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     mirrorUD?: boolean
     roll180?: boolean
   }>(() => ({
-    thickness: 0.7,
+    thickness: 0.38,
     pointSizeScale: 2.2,
-    keepRatio: 0.8,
+    keepRatio: 1,
     bloom: true,
-    fovDeg: initialFovDeg,
+    fovDeg: defaultFovDeg,
     reveal: 1,
     flipUp: false,
     flipNormal: false,
@@ -1512,19 +1512,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       typeof instanceCount === 'number' &&
       instanceCount >= 60_000 &&
       instanceCount <= Math.min(pointBudget, 110_000)
-    const dprOk =
-      typeof devicePixelRatioRaw === 'number' ? devicePixelRatioRaw <= 2.0 : true
-    const guardOk =
-      !simEnabled && !lowPowerGuard && !isMobile && countOk && dprOk
+    const dprOk = typeof devicePixelRatioRaw === 'number' ? devicePixelRatioRaw <= 2.0 : true
+    const guardOk = !simEnabled && !lowPowerGuard && !isMobile && countOk && dprOk
     setBloomEligible(guardOk)
-  }, [
-    devicePixelRatioRaw,
-    instanceCount,
-    isMobile,
-    lowPowerGuard,
-    pointBudget,
-    simEnabled,
-  ])
+  }, [devicePixelRatioRaw, instanceCount, isMobile, lowPowerGuard, pointBudget, simEnabled])
 
   React.useEffect(() => {
     const ready =
@@ -1534,13 +1525,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (ready !== bloomGuardReady) {
       setBloomGuardReady(ready)
     }
-  }, [
-    bloomGuardReady,
-    devicePixelRatioRaw,
-    dprClampValue,
-    forceBloomOverride,
-    instanceCount,
-  ])
+  }, [bloomGuardReady, devicePixelRatioRaw, dprClampValue, forceBloomOverride, instanceCount])
 
   const bloomLogRef = React.useRef(false)
   React.useEffect(() => {
@@ -2178,8 +2163,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           fovDeg={ui.fovDeg}
           fitRequest={fitRequest}
           fitRadius={cameraCoverRadius}
-          fitMargin={simActive ? 0.95 : 0.6}
+          fitMargin={simActive ? 0.9 : 0.78}
           fitTarget={cameraFitTarget}
+          fitMode={simActive ? 'fit' : 'cover'}
         />
         <DreamdustTicker tick={tick} />
         <SimDriver
@@ -2473,6 +2459,7 @@ function CameraSync({
   fitRadius,
   fitMargin = 0.95,
   fitTarget,
+  fitMode = 'fit',
 }: {
   fovDeg: number
   distance?: number
@@ -2480,6 +2467,7 @@ function CameraSync({
   fitRadius?: number
   fitMargin?: number
   fitTarget?: [number, number, number]
+  fitMode?: 'fit' | 'cover'
 }) {
   const { camera } = useThree()
   React.useEffect(() => {
@@ -2514,7 +2502,25 @@ function CameraSync({
       data.target = targetVec.clone()
       data.fitTarget = targetVec.clone()
     }
-    applyPerspectiveFit(cam, fitRadius, fitMargin)
-  }, [camera, fitRequest, fitRadius, fitMargin, fitTarget])
+    const margin = typeof fitMargin === 'number' ? fitMargin : undefined
+    const distanceResult =
+      fitMode === 'cover'
+        ? applyPerspectiveCover(cam, fitRadius, margin)
+        : applyPerspectiveFit(cam, fitRadius, margin)
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        console.info('[dreamdust] cover-fit', {
+          mode: fitMode,
+          radius: Number(fitRadius.toFixed(3)),
+          margin: Number((margin ?? 1).toFixed(3)),
+          distance: Number((distanceResult ?? 0).toFixed(3)),
+          fov: Number(cam.fov.toFixed(3)),
+          aspect: Number(cam.aspect.toFixed(3)),
+        })
+      } catch {
+        /* noop */
+      }
+    }
+  }, [camera, fitRequest, fitRadius, fitMargin, fitTarget, fitMode])
   return null
 }
