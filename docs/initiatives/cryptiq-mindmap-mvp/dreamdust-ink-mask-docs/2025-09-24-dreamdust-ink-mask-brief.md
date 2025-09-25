@@ -85,6 +85,6 @@ Screenshot: `assets/2025-09-25-sim-smoke.png` (sim-enabled smoke test, scene dar
 
 ## Status Summary
 
-- Render path functional (no blank canvas), but visuals far from desired airy aesthetic.
+- Render path technically initializes, but the sim-enabled run currently produces an almost blank canvas (just a tiny distant orb) rather than the intended cat silhouette.
 - Performance guardrails violated (p90 > 28 ms).
-- Interaction behaviour pending revalidation.
+- Interaction behaviour still unvalidated; ink strokes show no displacement.
