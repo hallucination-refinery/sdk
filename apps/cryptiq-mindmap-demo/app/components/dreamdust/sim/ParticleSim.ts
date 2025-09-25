@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import type { WebGLRenderer } from 'three'
 
+import { createSimTelemetryCollector } from '../telemetry'
+
 const QUAD = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
 const VERT = `#version 300 es
 in vec2 position;
@@ -147,6 +149,7 @@ export class ParticleSim {
   private readonly initProgram: WebGLProgram
   private readonly updateProgram: WebGLProgram
   private readonly u: Record<string, WebGLUniformLocation | null>
+  private readonly simTelemetry: ReturnType<typeof createSimTelemetryCollector>
   private pos: TexturePackage[] = []
   private vel: TexturePackage[] = []
   private color: TexturePackage | null = null
@@ -202,6 +205,7 @@ export class ParticleSim {
     raw.bufferData(raw.ARRAY_BUFFER, QUAD, raw.STATIC_DRAW)
     raw.enableVertexAttribArray(0); raw.vertexAttribPointer(0, 2, raw.FLOAT, false, 0, 0)
     raw.bindVertexArray(null); raw.bindBuffer(raw.ARRAY_BUFFER, null)
+    this.simTelemetry = createSimTelemetryCollector(renderer)
   }
 
   private release() {
@@ -465,6 +469,12 @@ export class ParticleSim {
     gl.bindVertexArray(null)
     gl.useProgram(null)
     this.renderer.state.reset()
+    this.simTelemetry.sample(
+      this.fbos[dst] ?? null,
+      this.pos[dst] ?? null,
+      this.width,
+      this.height,
+    )
     this.current = dst
   }
 
@@ -496,5 +506,6 @@ export class ParticleSim {
 
   dispose() {
     this.release()
+    this.simTelemetry.dispose()
   }
 }

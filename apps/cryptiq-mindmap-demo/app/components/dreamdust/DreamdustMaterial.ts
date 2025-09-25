@@ -2,6 +2,8 @@
 // @ts-ignore three types are optional in this workspace
 import * as THREE from 'three'
 
+import { createInkTelemetryCollector } from './telemetry'
+
 import {
   DD_CURL3,
   DD_FBM3,
@@ -582,6 +584,21 @@ export function makeDreamdustMaterial(
   ;(material as any).uniforms = uniforms
   ;(material as any).defines = (material as any).defines ?? {}
   syncLegacyVertexInkDefine((material as any).defines)
+  const inkTelemetry = createInkTelemetryCollector()
+  const originalOnAfterRender = material.onAfterRender?.bind(material)
+  material.onAfterRender = function onAfterRenderHook(
+    renderer: THREE.WebGLRenderer,
+    scene: THREE.Scene,
+    camera: THREE.Camera,
+    geometry: THREE.BufferGeometry,
+    object: THREE.Object3D,
+    group?: THREE.Group,
+  ) {
+    inkTelemetry.capture(renderer, uniforms)
+    if (originalOnAfterRender) {
+      originalOnAfterRender(renderer, scene, camera, geometry, object, group)
+    }
+  }
   if (resolved.unproject) {
     ;(material as any).defines.USE_UNPROJECT = 1
   } else {
@@ -603,6 +620,12 @@ export function makeDreamdustMaterial(
     ;(material as any).defines.DEBUG_VTF_SANITY = 1
   } else {
     delete (material as any).defines.DEBUG_VTF_SANITY
+  }
+
+  const originalDispose = material.dispose.bind(material)
+  material.dispose = function disposeWithTelemetry() {
+    inkTelemetry.dispose()
+    originalDispose()
   }
 
   if (uniforms.uVertexInkOk) {
