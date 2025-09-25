@@ -19,12 +19,14 @@
      - `[PC] instances: 89441`
      - `[dreamdust] caps { vertexInkOk: true, … }`
      - `[dreamdust] cover-fit { mode: 'cover', margin: 0.78, … }`
+     - `[engine] sim on { count: …, texSize: […] }`
+     - `[engine] sim fit { radius: …, center: […] }`
+     - `[dreamdust] frame-percentiles { … }`
      - `[dreamdust] ink-tex bind …`
      - `[Dreamdust] reveal start …`
-     - `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: ~8.3, p90Ms: ~9.1 }`
      - `[Dreamdust] reveal end …`
 4. **Screenshot**
-   - Save a screenshot of the cover-fit render (`assets/2025-09-25-cover-fit.png`).
+   - Save a screenshot of the sim-enabled smoke test (`assets/2025-09-25-sim-smoke.png`).
 5. **Stop server**
    - `Ctrl+C` to terminate `next start`.
 
