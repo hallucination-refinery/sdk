@@ -13,17 +13,17 @@
    - `pnpm --filter cryptiq-mindmap-demo run start`
 2. **Initial load**
    - Open the URL above in Chrome incognito (DevTools closed).
-   - Wait ~5 seconds; observe particle render (baseline shows bright white jittering cloud).
+   - Wait ~5 seconds; observe the point cloud (post-merge shows a tighter silhouette roughly mid-frame, still distant and shimmering).
 3. **Log capture**
    - Open DevTools console, copy entire log snapshot:
      - `[PC] instances: 89441`
      - `[dreamdust] caps { vertexInkOk: true, … }`
      - `[dreamdust] ink-tex bind …`
      - `[Dreamdust] reveal start …`
-     - `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: ~16.7, p90Ms: ~58 }`
+   - `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: ~8.3, p90Ms: ~9.1 }`
      - `[Dreamdust] reveal end …`
 4. **Screenshot**
-   - Save a screenshot of the jittering white cloud (`assets/2025-09-24-baseline-jitter.png`).
+   - Save a screenshot of the post-merge render (`assets/2025-09-24-post-merge.png`).
 5. **Stop server**
    - `Ctrl+C` to terminate `next start`.
 
