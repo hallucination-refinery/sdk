@@ -17,11 +17,19 @@ type UniformRecord = Record<string, { value: unknown }>
 type DreamdustMaterialOptions = {
   unproject: boolean
   vertexInkOk: boolean
+  debugInkProbe?: boolean
 }
 
 type DreamdustMaterialOptionsInput = {
   unproject: boolean
   vertexInkOk?: boolean
+  debugInkProbe?: boolean
+}
+
+type DreamdustMaterialResolvedOptions = {
+  unproject: boolean
+  vertexInkOk: boolean
+  debugInkProbe: boolean
 }
 
 const DEFAULT_UNIFORM_VALUES = {
@@ -275,9 +283,16 @@ void main() {
   vec3 inkSampleTint = vec3(0.0);
   float inkSampleIntensity = 0.0;
 
+#ifdef DEBUG_INK_PROBE
+  float inkProbe = 0.0;
+#endif
+
 #ifdef USE_VERTEX_INK
   if (uInkIntensity > 1e-5 && uVertexInkOk > 0.5) {
     DreamdustInkSample inkSample = dreamdustSampleInk(uInkTex, aUv);
+#ifdef DEBUG_INK_PROBE
+    inkProbe = smoothstep(0.1, 1.0, inkSample.intensity);
+#endif
     float localIntensity = inkSample.intensity * uInkIntensity;
     if (localIntensity > 1e-5) {
       inkSampleOffset = inkSample.offset;
@@ -336,10 +351,17 @@ void main() {
     pointSize += inkSampleSwell * inkSampleIntensity * uSizeGain * uInkSizeBoost;
     inkTint = inkSampleTint;
     inkMix = inkSampleIntensity * uTintGain * uInkTintBoost;
+
   }
 #endif
 
-  gl_PointSize = max(0.0, pointSize);
+  float pointSizeClamped = max(0.0, pointSize);
+
+#ifdef DEBUG_INK_PROBE
+  pointSizeClamped *= mix(1.0, 4.0, inkProbe);
+#endif
+
+  gl_PointSize = pointSizeClamped;
 
   float mistLift = mix(0.35, 1.0, revealGate);
   mistLift = clamp(max(mistLift, revealProgress * 0.9), 0.0, 1.0);
@@ -454,6 +476,12 @@ void main() {
   color = dreamdustApplyRimLight(color, rim);
   alpha = dreamdustApplyRimAlpha(alpha, rim);
 
+#ifdef DEBUG_INK_PROBE
+  DreamdustInkSample debugInkSample = dreamdustSampleInk(uInkTex, vInkUv);
+  float inkProbe = smoothstep(0.1, 1.0, debugInkSample.intensity);
+  color = mix(color, vec3(0.1, 0.9, 0.8), inkProbe);
+#endif
+
   color = dreamdustApplyGamma(color, uGamma);
 
   // Premultiplied alpha output
@@ -476,9 +504,10 @@ export function makeDreamdustMaterial(
   aliasUniform(uniforms, 'uPointSize', 'uPointBaseSize')
   aliasUniform(uniforms, 'uThickness', 'uDepthBias')
 
-  const resolved: DreamdustMaterialOptions = {
+  const resolved: DreamdustMaterialResolvedOptions = {
     unproject: opts.unproject,
     vertexInkOk: opts.vertexInkOk ?? false,
+    debugInkProbe: opts.debugInkProbe ?? false,
   }
 
   const defines: Record<string, unknown> = {}
@@ -488,6 +517,9 @@ export function makeDreamdustMaterial(
   if (resolved.vertexInkOk) {
     defines.USE_VERTEX_INK = 1
     defines.VERTEX_INK_OK = 1
+  }
+  if (resolved.debugInkProbe) {
+    defines.DEBUG_INK_PROBE = 1
   }
   syncLegacyVertexInkDefine(defines)
 
@@ -519,6 +551,11 @@ export function makeDreamdustMaterial(
     delete (material as any).defines.USE_VERTEX_INK
     delete (material as any).defines.VERTEX_INK_OK
   }
+  if (resolved.debugInkProbe) {
+    ;(material as any).defines.DEBUG_INK_PROBE = 1
+  } else {
+    delete (material as any).defines.DEBUG_INK_PROBE
+  }
 
   if (uniforms.uVertexInkOk) {
     uniforms.uVertexInkOk.value = resolved.vertexInkOk ? 1 : 0
@@ -527,6 +564,12 @@ export function makeDreamdustMaterial(
   const originalOnBeforeCompile = (material as any).onBeforeCompile?.bind(material)
   ;(material as any).onBeforeCompile = function onBeforeCompile(shader: any, renderer: any) {
     syncLegacyVertexInkDefine((material as any).defines)
+    if (resolved.debugInkProbe) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_INK_PROBE = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_INK_PROBE
+    }
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)
     }
