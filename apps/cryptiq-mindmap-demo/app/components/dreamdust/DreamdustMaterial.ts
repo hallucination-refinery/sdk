@@ -18,18 +18,21 @@ type DreamdustMaterialOptions = {
   unproject: boolean
   vertexInkOk: boolean
   debugInkProbe?: boolean
+  debugSimProbe?: boolean
 }
 
 type DreamdustMaterialOptionsInput = {
   unproject: boolean
   vertexInkOk?: boolean
   debugInkProbe?: boolean
+  debugSimProbe?: boolean
 }
 
 type DreamdustMaterialResolvedOptions = {
   unproject: boolean
   vertexInkOk: boolean
   debugInkProbe: boolean
+  debugSimProbe: boolean
 }
 
 const DEFAULT_UNIFORM_VALUES = {
@@ -220,11 +223,24 @@ varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
 varying float vDepthView;
+#ifdef DEBUG_VTF_SANITY
+varying float vSimProbe;
+#endif
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
 ${DD_FBM3}
 ${DD_CURL3}
+
+#ifdef DEBUG_VTF_SANITY
+vec3 dreamdustSampleSimPosition(vec2 uv) {
+#ifdef USE_SIM_POS
+  return texture2D(uSimPositionTex, uv).xyz;
+#else
+  return vec3(0.0);
+#endif
+}
+#endif
 
 vec4 dreamdustUnproject(vec3 localPos, vec2 captureUv, float depth01) {
 #ifdef USE_UNPROJECT
@@ -384,6 +400,10 @@ void main() {
   vRevealCoord = ss * (2.6 + uNoiseScale * 0.8) + jitterSeed.xy * 0.07;
   vPosMV = viewPos;
   vDepthView = viewDist;
+#ifdef DEBUG_VTF_SANITY
+  vec3 simProbePos = dreamdustSampleSimPosition(aSimUv);
+  vSimProbe = length(simProbePos);
+#endif
 
   gl_Position = projectionMatrix * viewPos4;
 }
@@ -482,6 +502,19 @@ void main() {
   color = mix(color, vec3(0.1, 0.9, 0.8), inkProbe);
 #endif
 
+#ifdef DEBUG_VTF_SANITY
+  float simProbe = vSimProbe;
+  bool probeNaN = isnan(simProbe);
+  bool probeInf = isinf(simProbe);
+  bool probeBad = probeNaN || probeInf || simProbe < 0.01;
+  if (probeBad) {
+    color = mix(color, vec3(1.0, 0.15, 0.15), 0.7);
+  }
+  if (probeNaN || probeInf) {
+    alpha = -abs(alpha);
+  }
+#endif
+
   color = dreamdustApplyGamma(color, uGamma);
 
   // Premultiplied alpha output
@@ -508,6 +541,7 @@ export function makeDreamdustMaterial(
     unproject: opts.unproject,
     vertexInkOk: opts.vertexInkOk ?? false,
     debugInkProbe: opts.debugInkProbe ?? false,
+    debugSimProbe: opts.debugSimProbe ?? false,
   }
 
   const defines: Record<string, unknown> = {}
@@ -520,6 +554,9 @@ export function makeDreamdustMaterial(
   }
   if (resolved.debugInkProbe) {
     defines.DEBUG_INK_PROBE = 1
+  }
+  if (resolved.debugSimProbe) {
+    defines.DEBUG_VTF_SANITY = 1
   }
   syncLegacyVertexInkDefine(defines)
 
@@ -556,6 +593,11 @@ export function makeDreamdustMaterial(
   } else {
     delete (material as any).defines.DEBUG_INK_PROBE
   }
+  if (resolved.debugSimProbe) {
+    ;(material as any).defines.DEBUG_VTF_SANITY = 1
+  } else {
+    delete (material as any).defines.DEBUG_VTF_SANITY
+  }
 
   if (uniforms.uVertexInkOk) {
     uniforms.uVertexInkOk.value = resolved.vertexInkOk ? 1 : 0
@@ -569,6 +611,12 @@ export function makeDreamdustMaterial(
       shader.defines.DEBUG_INK_PROBE = 1
     } else if (shader.defines) {
       delete shader.defines.DEBUG_INK_PROBE
+    }
+    if (resolved.debugSimProbe) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_VTF_SANITY = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_VTF_SANITY
     }
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)
