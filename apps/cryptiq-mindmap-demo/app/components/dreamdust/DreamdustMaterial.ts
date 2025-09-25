@@ -226,6 +226,9 @@ varying float vDepthView;
 #ifdef DEBUG_VTF_SANITY
 varying float vSimProbe;
 #endif
+#ifdef DEBUG_VTF_SANITY
+varying float vSimProbe;
+#endif
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
@@ -437,6 +440,9 @@ varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
 varying float vDepthView;
+#ifdef DEBUG_VTF_SANITY
+varying float vSimProbe;
+#endif
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_SOFT_SPRITE_CHUNK}
