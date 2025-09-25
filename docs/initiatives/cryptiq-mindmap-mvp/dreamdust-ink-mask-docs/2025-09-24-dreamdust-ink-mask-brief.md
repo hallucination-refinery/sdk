@@ -63,6 +63,15 @@ Screenshot: see `assets/2025-09-24-baseline-jitter.png` (white jittering cloud).
 
 Screenshot: `assets/2025-09-24-post-merge.png` (post-merge cloud with bloom, small/distant mid-frame cluster on black background).
 
+### 2025-09-25 Cover-Fit Dev Snapshot
+
+- Branch: `debug/batch0-baseline` (local dev) after tightening camera cover fit defaults.
+- Visual: cloud now spans essentially the full viewport (detected bounding box ≈2866×1838 within 2868×2034 frame → ~99% width, ~90% height). Image reads crisp and legible; bloom gives gentle sheen but particles remain discrete stipple rather than airy smoke.
+- Interaction: brush strokes still fail to perturb the cloud (no curl/swirl, no cascade growth) despite `vertexInkOk: true` and healthy ink-latency log; reactive pipeline remains broken.
+- Diagnostics: new `[dreamdust] cover-fit { mode: 'cover', margin: 0.78, distance ≈ XXX }` log prints once per fit, confirming the tighter margin. Frame percentile snapshot remains ~8 ms / 9 ms in dev.
+
+Screenshot: `assets/2025-09-25-cover-fit.png` (cover-fit framing, full-viewport cat render).
+
 ## Status Summary
 
 - Render path functional (no blank canvas), but visuals far from desired airy aesthetic.

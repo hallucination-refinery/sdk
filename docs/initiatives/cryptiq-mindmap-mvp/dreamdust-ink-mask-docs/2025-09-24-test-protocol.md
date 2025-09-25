@@ -18,12 +18,13 @@
    - Open DevTools console, copy entire log snapshot:
      - `[PC] instances: 89441`
      - `[dreamdust] caps { vertexInkOk: true, … }`
+     - `[dreamdust] cover-fit { mode: 'cover', margin: 0.78, … }`
      - `[dreamdust] ink-tex bind …`
      - `[Dreamdust] reveal start …`
-   - `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: ~8.3, p90Ms: ~9.1 }`
+     - `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: ~8.3, p90Ms: ~9.1 }`
      - `[Dreamdust] reveal end …`
 4. **Screenshot**
-   - Save a screenshot of the post-merge render (`assets/2025-09-24-post-merge.png`).
+   - Save a screenshot of the cover-fit render (`assets/2025-09-25-cover-fit.png`).
 5. **Stop server**
    - `Ctrl+C` to terminate `next start`.
 
