@@ -3,7 +3,7 @@
 ## Metadata
 
 - Branch: `debug/batch0-baseline`
-- Commit: `c962c318`
+- Commit: `9aa50da1`
 - Build: `pnpm install --frozen-lockfile` → thin-slice `tsc` → `pnpm --filter cryptiq-mindmap-demo run lint || true` (fails on existing app/page.tsx unused exports) → `CI=1 pnpm --filter cryptiq-mindmap-demo run build` → `pnpm --filter cryptiq-mindmap-demo run start`
 - Probes: `?engine=sim&inkProbe=1&simProbe=1&simStats=1&inkStats=1`
 - Device/Browser: MacBook Pro (M1 Pro, 16 GB) · Chrome 140 incognito
@@ -16,13 +16,13 @@ Validate that the probe shader fix (single `vSimProbe`, bound `aSimUv`) links co
 ## Artifacts
 
 - **Terminal transcript:** see raw capture (`2025-09-26-probes-smoke-raw.md`). Lint still reports the long-standing `app/page.tsx` unused exports; treated as known debt per earlier runs.
-- **Initial console batch:** `[dreamdust] caps`, `[dreamdust] caps-fanout`, `[PC] prebaked*`, `[engine] sim on`, `[engine] sim fit`, repeated `[sim] metrics` samples, `[dreamdust] frame-percentiles`, no shader compile errors or `useProgram` spam observed.
+- **Initial console batch:** `[dreamdust] caps`, `[dreamdust] caps-fanout`, `[PC] prebaked*`, `[engine] sim on`, `[engine] sim fit`, repeated `[sim] metrics` bursts, `[dreamdust] frame-percentiles { p50Ms: 39.2, p90Ms: 42 }`, no shader compile errors or `useProgram` spam observed.
 - **Telemetry dump:**
   ```
   [sim] metrics {
     min: 0,
     max: 1.5524,
-    avg: 1.0165,
+    avg: 1.0279,
     nanCount: 0,
     infCount: 0,
     samples: [0.8177 … 1.5524, trailing zero plateau],
@@ -30,17 +30,19 @@ Validate that the probe shader fix (single `vSimProbe`, bound `aSimUv`) links co
     grid: 8
   }
   [PC] ink debug { vertexInkOk: true, uViewport: [1370, 1022], inkIntensity: 0.75 }
-  [dreamdust] ink-latency { ms: 38.6, frames: 2.32 }
+  [dreamdust] ink-latency { ms: 38.7, frames: 2.32 }
   ```
-- **Gestures:** Short tap produced the telemetry above; long drag emitted no additional ink logs and yielded no visible displacement.
+- **Gestures:** Short tap produced the telemetry above; long drag emitted no additional ink logs or HUD changes and yielded no visible displacement.
 - **Visual:** Canvas remains effectively black—no visible mist, teal probe glow, or red VTF highlights despite probes compiling. HUD badges show Sim (teal) and Ink (amber) as expected.
+- **Uniform snapshot:** `window.debugDreamdustUniforms` reports `uInkIntensity: 0`, `uReveal: 1`, `uDriftAmp: 8`, `uPointSize: 1`, `uAlphaFloor: 0.06`, indicating reveal completed but ink intensity is clamped to zero while drift amplitude is drastically higher than preset defaults.
 
 ## Telemetry Assessment
 
 | Metric        | Observation                               | AK-DD Target                         | Status                                                                   |
 | ------------- | ----------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------ |
-| Sim magnitude | `min 0`, `avg 1.0165`, `max 1.5524`       | n/a (diagnostic)                     | Data flowing; magnitudes stable but plateau at ~1.55 with zeros trailing |
-| Ink latency   | `38.6 ms (2.32 frames)`                   | `≤ 20 ms`                            | **Fail** — latency regressed sharply vs. prior 5–6 ms captures           |
+| Sim magnitude | `min 0`, `avg 1.0279`, `max 1.5524`       | n/a (diagnostic)                     | Data flowing; magnitudes stable but plateau at ~1.55 with zeros trailing |
+| Frame latency | `p50Ms 39.2`, `p90Ms 42.0`                | `≤ 16.7 / ≤ 28`                      | **Fail** — render loop stalling, matches rAF violations                  |
+| Ink latency   | `38.7 ms (2.32 frames)`                   | `≤ 20 ms`                            | **Fail** — latency regressed sharply vs. prior 5–6 ms captures           |
 | Ink probe     | `vertexInkOk: true`, `inkIntensity: 0.75` | expect teal point-size amplification | **Fail** — no on-screen teal growth detected                             |
 | Sim probe     | metrics stream emitting                   | expect red tint for invalid texels   | **Fail** — no visible tint despite non-zero magnitudes                   |
 

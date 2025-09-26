@@ -97,9 +97,10 @@ Screenshot: `assets/Screenshot 2025-09-25 at 6.26.43 PM.png` (probes enabled, ne
 
 - Branch: `debug/batch0-baseline` (prod build) with `?engine=sim&inkProbe=1&simProbe=1&simStats=1&inkStats=1` after GLSL guard fix.
 - Visual: shader now links (no compile errors), but canvas remains blank—no teal ink scale, no red VTF tint, and underlying cat silhouette still missing.
-- Logs: `[dreamdust] caps`, `caps-fanout`, `[PC] prebaked*`, `[engine] sim on`, `[engine] sim fit`, repeated `[sim] metrics { min: 0, max: 1.5524, avg: 1.0165, nanCount: 0, infCount: 0, samples: [...] }`, `[PC] ink debug { vertexInkOk: true, uViewport: [1370,1022], inkIntensity: 0.75 }`, `[dreamdust] ink-latency { ms: 38.6, frames: 2.32 }`, numerous `requestAnimationFrame` violation warnings; no shader error spam.
+- Logs: `[dreamdust] caps`, `caps-fanout`, `[PC] prebaked*`, `[engine] sim on`, `[engine] sim fit`, repeated `[sim] metrics { min: 0, max: 1.5524, avg: 1.0279, nanCount: 0, infCount: 0, samples: [...] }`, `[dreamdust] frame-percentiles { p50Ms: 39.2, p90Ms: 42 }`, `[PC] ink debug { vertexInkOk: true, uViewport: [1370,1022], inkIntensity: 0.75 }`, `[dreamdust] ink-latency { ms: 38.7, frames: 2.32 }`, numerous `requestAnimationFrame` violation warnings; no shader error spam.
+- Uniforms: `window.debugDreamdustUniforms` shows `uInkIntensity: 0`, `uDriftAmp: 8`, `uPointSize: 1`, `uAlphaFloor: 0.06`, suggesting ink is fully muted while drift is overstated.
 - Interaction: short tap triggers telemetry but no visible response; long drag emits no additional ink logs or cascade events.
-- Notes: Ink latency regressed (exceeds AK-DD ≤20 ms target) and visual outputs remain absent despite healthy telemetry, indicating downstream alpha/size choke or point visibility issue post-link.
+- Notes: Visual regression persists despite probes linking; investigate alpha/size choke, zero ink intensity, and elevated frame/ink latency before next smoke.
 - Screenshot: `assets/2025-09-26-probes-smoke.png` (blank scene with HUD badges).
 
 ## Status Summary
