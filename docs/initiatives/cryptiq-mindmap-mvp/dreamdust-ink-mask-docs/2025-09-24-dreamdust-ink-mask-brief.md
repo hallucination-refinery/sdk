@@ -86,12 +86,21 @@ Screenshot: `assets/2025-09-25-sim-smoke.png` (sim-enabled smoke test, scene dar
 ### 2025-09-25 Probes Smoke (inkProbe=1, simProbe=1)
 
 - Branch: `debug/batch0-baseline` (prod build) with `?engine=sim&inkProbe=1&simProbe=1`.
-- Visual: scene fails to render due to shader compile errors when the VTF probe is active; console shows vertex compile errors (`vSimProbe redefinition`, `aSimUv undeclared`, `dreamdustSampleSimPosition` mismatch), confirming probe wiring issues rather than content absence.
-- Logs present: `[dreamdust] caps`, `caps-fanout`, `ink-tex bind` (twice), `[PC] instances: 89441`, `[Dreamdust] reveal start/end`, `[engine] sim on { count: 89441, texSize: [300,299] }`, `[engine] sim fit { radius: 0.382, center: [...] }`, frame-percentiles `{ p50: 8.3, p90: 9.1 }`, and ink metrics (`ink debug`, `ink-latency`).
-- Missing/blocked: any visual probe tint/size change—compile failure prevents probe rendering; long-stroke cascade logs absent.
-- Action: fix VTF probe shader issues (remove duplicate `varying vSimProbe` in VS, ensure `aSimUv` is always defined when `DEBUG_VTF_SANITY`, and provide the correct `dreamdustSampleSimPosition` overload).
+- Visual: probe shader links after the guard fix, but the viewport remains almost entirely black with a single faint orb; teal ink expansion and red VTF tint still do not appear.
+- Logs present: `[dreamdust] caps`, `caps-fanout`, `ink-tex bind` (twice), `[PC] instances: 89441`, `[Dreamdust] reveal start/end`, `[engine] sim on { count: 89441, texSize: [300,299] }`, `[engine] sim fit { radius: 0.382, center: [...] }`, `[dreamdust] bloom { enabled: false, ... }`, frame-percentiles `{ p50: 39.3, p90: 41.8 }`, and ink metrics (`[PC] ink debug { vertexInkOk: true, inkIntensity: 0.75 }`, `[dreamdust] ink-latency { ms: 40.1, frames: 2.41 }`).
+- Missing/blocked: teal/red overlays and any displacement response—the sim appears to feed near-zero positions, and long-stroke cascade logs remain absent.
+- Action: instrument sim magnitude/NaN stats and ink offsets so we can trace whether the pipeline dies inside the GPGPU update or in the shader consumption path.
 
-Screenshot: `assets/2025-09-25-probes-smoke.png` (compile-failure state captured with probes enabled).
+Screenshot: `assets/Screenshot 2025-09-25 at 6.26.43 PM.png` (probes enabled, near-black canvas with a single distant orb).
+
+### 2025-09-26 Probes Smoke (post-probe fix)
+
+- Branch: `debug/batch0-baseline` (prod build) with `?engine=sim&inkProbe=1&simProbe=1&simStats=1&inkStats=1` after GLSL guard fix.
+- Visual: shader now links (no compile errors), but canvas remains blank—no teal ink scale, no red VTF tint, and underlying cat silhouette still missing.
+- Logs: `[dreamdust] caps`, `caps-fanout`, `[PC] prebaked*`, `[engine] sim on`, `[engine] sim fit`, repeated `[sim] metrics { min: 0, max: 1.5524, avg: 1.0165, nanCount: 0, infCount: 0, samples: [...] }`, `[PC] ink debug { vertexInkOk: true, uViewport: [1370,1022], inkIntensity: 0.75 }`, `[dreamdust] ink-latency { ms: 38.6, frames: 2.32 }`, numerous `requestAnimationFrame` violation warnings; no shader error spam.
+- Interaction: short tap triggers telemetry but no visible response; long drag emits no additional ink logs or cascade events.
+- Notes: Ink latency regressed (exceeds AK-DD ≤20 ms target) and visual outputs remain absent despite healthy telemetry, indicating downstream alpha/size choke or point visibility issue post-link.
+- Screenshot: `assets/2025-09-26-probes-smoke.png` (blank scene with HUD badges).
 
 ## Status Summary
 

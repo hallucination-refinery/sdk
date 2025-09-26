@@ -7,42 +7,42 @@ This reference explains how to enable the Dreamdust telemetry overlays, interpre
 1. Append `?simStats=1&inkStats=1` to any Dreamdust URL that already includes the probe flags (`inkProbe=1&simProbe=1`).
 2. Load the page and, once the reveal overlay clears, press `T` if the telemetry HUD badges are not visible.
 3. Capture at least two cadence points per run: immediately after the first short-click gesture (T+0s) and 30 seconds after the long stroke (T+30s). Each cadence point must include:
-   - HUD screenshot with the Sim Stats and Ink Stats badges visible.
-   - Console logs for `[dreamdust] sim-stats {...}` and `[dreamdust] ink-stats {...}`.
+   - HUD screenshot showing the Sim Stats and Ink Stats badges.
+   - Console logs for `[sim] metrics {...}`, `[PC] ink debug {...}`, and `[dreamdust] ink-latency {...}` (expand the objects so numeric fields are recorded).
 
 ## HUD color map
 
 | Badge | Color  | Meaning | Action |
 | ----- | ------ | ------- | ------ |
-| Sim Stats | Teal | Simulation telemetry streaming; all thresholds currently passing. | Record values; compare against AK-DD coverage/variance.
-| Sim Stats | Red  | One or more sim thresholds exceeded (coverage < 0.90, variance > 0.12, settleMs > 500). | Pause run, capture logs, file regression.
-| Ink Stats | Amber | Ink uniforms live, requires manual confirmation of aesthetic output. | Ensure screenshot captures texture response.
-| Ink Stats | Red   | Ink latency > 6 ms or opacity < 0.60. | Escalate to Dreamdust shader owner; block release.
-| Ink Stats | Purple | Drift > 0.05 or HUD reports desync with sim. | Collect gesture reproduction steps and cross-check AK-DD cascade goals.
+| Sim Stats | Teal | Simulation telemetry streaming; console is emitting `[sim] metrics` bursts. | Record min/avg/max, nan/inf counts, and grid size. |
+| Sim Stats | Red  | HUD turns red when the metrics collector detects NaN/Inf or a stalled texture upload. | Pause the run, capture the console payload, escalate. |
+| Ink Stats | Amber | Ink uniforms live; no automatic pass/fail thresholds applied yet. | Confirm screenshot captures the lack or presence of teal probe response. |
+| Ink Stats | Red   | HUD indicates ink latency or intensity failure (latency > 20 ms or intensity ≤ 0.5). | Capture console payload and block release until resolved. |
+| Ink Stats | Gray  | HUD hidden/off. | Press `T`; if the badge will not display, note it in the brief. |
 
 ## Log interpretation
 
 Each telemetry bundle contains the values required for AK-DD checkpoints. Record both the absolute numbers and their trend between cadence points.
 
-### Simulation (`[dreamdust] sim-stats`)
+### Simulation (`[sim] metrics`)
 
-- **coverage** — fraction of active voxels. Target ≥ 0.90 for smoky volume occupancy.
-- **variance** — flow turbulence. Target ≤ 0.12 to avoid jitter that breaks vapor ribbons.
-- **settleMs** — time for the sim to stabilize after input. Target ≤ 500 ms to keep interactions responsive.
-- **frameP90Ms** — 90th percentile frame time. Target ≤ 11 ms (AK-DD latency budget).
+- **min / max / avg** — vector length statistics sampled from the sim position texture. `max` should exceed 0.5 once the sim stabilises; investigate when `avg` stays near zero or `max` collapses.
+- **nanCount / infCount** — NaN or Infinity texels discovered in the sampled grid. Both must remain `0`; any non-zero value is a hard stop.
+- **grid** — size of the sampling grid (currently `8`).
+- **samples** — flattened array of sampled magnitudes (first handful of texels). Review when plateaus or spikes appear.
 
-### Ink (`[dreamdust] ink-stats`)
+### Ink (`[PC] ink debug` + `[dreamdust] ink-latency`)
 
-- **opacity** — aggregate alpha response of the ink mask. Target ≥ 0.60 to maintain visible ink curls.
-- **latencyMs** — input-to-uniform delay. Target ≤ 6 ms to preserve the airy feel.
-- **drift** — positional offset vs. sim centroid. Target ≤ 0.05 to keep trails anchored.
-- **hudColor** — status broadcast used by the HUD badges; should match the table above.
+- **vertexInkOk / inkIntensity** — confirm that the ink uniforms report readiness and intensity above `0.5`.
+- **uViewport** — viewport size used by the ink uniforms; capture for regression comparison.
+- **ink-latency.ms** — input-to-uniform delay. Target ≤ `20 ms`; higher values should be called out in the brief.
+- **ink-latency.frames** — frame count corresponding to the latency measurement (helps diagnose stalled render loops).
 
 ## Acceptance key alignment
 
-- **AK-DD-SIM-01 (Coverage stability)** — satisfied when coverage ≥ 0.90 at both cadence points and variance remains within 0.02 delta.
-- **AK-DD-SIM-02 (Recovery speed)** — satisfied when settleMs ≤ 500 ms and frameP90Ms ≤ 11 ms at every cadence point.
-- **AK-DD-INK-01 (Opacity envelope)** — satisfied when opacity ≥ 0.60 and drift ≤ 0.05.
-- **AK-DD-INK-02 (Latency)** — satisfied when latencyMs ≤ 6 and hudColor stays amber (never red/purple).
+- **AK-DD-SIM-01 (Coverage stability)** — provisional; until coverage variance metrics are exposed, track `min/avg/max` trends and call out regressions.
+- **AK-DD-SIM-02 (Recovery speed)** — provisional; use `[dreamdust] frame-percentiles` alongside `[sim] metrics` to judge frame health.
+- **AK-DD-INK-01 (Opacity envelope)** — treat `inkIntensity` as the current proxy; document when it drops below 0.5.
+- **AK-DD-INK-02 (Latency)** — fail the key when `[dreamdust] ink-latency.ms` exceeds 20 or the HUD badge turns red.
 
-When any acceptance key fails, annotate the brief with the offending metric, attach the cadence logs, and link to this guide section to justify the block.
+When any acceptance key fails, annotate the brief with the offending metric, attach the cadence logs, and reference this guide to justify the block.

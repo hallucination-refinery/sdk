@@ -42,8 +42,11 @@
 - [2025-09-24 — Dreamdust Ink Mask Brief](./2025-09-24-dreamdust-ink-mask-brief.md)
 - [2025-09-25 — Dreamdust Ink Mask Brief](./2025-09-25-dreamdust-ink-mask-brief.md)
 - [2025-09-25 — Deterministic Test Protocol](./2025-09-25-test-protocol.md)
+- [2025-09-26 — Dreamdust Ink Mask Brief](./2025-09-26-dreamdust-ink-mask-brief.md)
+- [2025-09-26 — Probes Smoke Raw Capture](./2025-09-26-probes-smoke-raw.md)
 
 ## Technical References
 
 - [2025-09-24 — GPGPU Pipeline Audit](./2025-09-24-gpgpu-pipeline.md)
 - [2025-09-25 — GPGPU Pipeline Probe Audit](./2025-09-25-gpgpu-pipeline.md)
+- [Telemetry Guide](./telemetry-guide.md)
