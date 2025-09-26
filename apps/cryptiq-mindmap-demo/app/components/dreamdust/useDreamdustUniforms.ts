@@ -6,11 +6,12 @@ import type { RootState } from '@react-three/fiber'
 
 import { getDreamdustTunables, logOnce, subscribeDreamdustTunables } from './metrics'
 import { PresetAiry, PresetC } from './presets'
+import { DEFAULT_DREAMDUST_PRESET_ID, loadDreamdustPreset } from '../../utils/dreamdust/loadPreset'
 
 type TextureLike = unknown
 type Vec3 = [number, number, number]
 
-type DreamdustUniformValueMap = {
+export type DreamdustUniformValueMap = {
   uTime: number
   uViewport: [number, number]
   uInkTex: TextureLike | null
@@ -81,43 +82,6 @@ export type DreamdustSimUniforms = {
   lifetime: DreamdustSimCurveUniforms
 }
 
-const DEFAULT_UNIFORM_VALUES: DreamdustUniformValueMap = {
-  uTime: 0,
-  uViewport: [1, 1],
-  uInkTex: null,
-  uInkIntensity: 1,
-  uReveal: 1,
-  uBreath: 0.5,
-  uBreathAmp: 0.05,
-  uCascade: 0,
-  uCascadeColor: [1, 1, 1],
-  uCascadeSizeBoost: 0,
-  uVaporGain: 0,
-  uNoiseScale: 1,
-  uNoiseSpeed: 1,
-  uEvolution: 0.85,
-  uNoiseThreshold: 0.92,
-  uDriftAmp: 0.55,
-  uCurlAmp: 0.55,
-  uPointBaseSize: 1,
-  uDepthMin: 0,
-  uDepthMax: 1,
-  uDepthBias: 1.8,
-  uDepthNormScale: 0.001,
-  uGamma: 1.15,
-  uRimGamma: 2.4,
-  uFocal: 1,
-  uMinSize: 1,
-  uMaxSize: 1,
-  uSizeGain: 1,
-  uOffsetGain: 0,
-  uInkOffsetBoost: 1,
-  uInkSizeBoost: 1,
-  uTintGain: 1,
-  uInkTintBoost: 1,
-  uVertexInkOk: 0,
-}
-
 const ENGINE_QUERY_KEY = 'engine'
 const ENGINE_ENV_KEY = 'DD_ENGINE'
 const ENGINE_SIM_VALUE = 'sim'
@@ -169,8 +133,8 @@ const DEFAULT_SIM_UNIFORMS = Object.freeze({
   lifetime: Readonly<DreamdustSimCurveUniforms>
 }
 
-function initialViewport(): [number, number] {
-  const viewport: [number, number] = [...DEFAULT_UNIFORM_VALUES.uViewport]
+function initialViewport(defaultViewport: [number, number]): [number, number] {
+  const viewport: [number, number] = [...defaultViewport]
   if (typeof window !== 'undefined') {
     viewport[0] = window.innerWidth
     viewport[1] = window.innerHeight
@@ -332,7 +296,7 @@ function extractInkTextureMetrics(texture: TextureLike): TextureMetrics | null {
 }
 
 const PRESET_QUERY_KEY = 'preset'
-const PRESET_VAPOR_VALUE = 'vapor'
+const PRESET_CASCADE_VALUE = 'cascade'
 const PRESET_AIRY_VALUE = 'airy'
 const PRESET_ENV_KEY = 'DD_PRESET'
 const INK_BUMP_QUERY_KEY = 'inkBump'
@@ -341,6 +305,17 @@ const INK_BUMP_SIZE_MULTIPLIER = 1.2
 const INK_BUMP_OFFSET_MULTIPLIER = 1.15
 const INK_BUMP_TINT_MULTIPLIER = 1.18
 const TRUTHY_BUMP_VALUES = new Set(['1', 'true'])
+const PRESET_SWAP_SKIP_KEYS = new Set<keyof DreamdustUniformValueMap>([
+  'uTime',
+  'uViewport',
+  'uInkTex',
+  'uReveal',
+  'uBreath',
+  'uCascade',
+  'uCascadeColor',
+  'uCascadeSizeBoost',
+  'uVaporGain',
+])
 
 function normalizeGateValue(value: string | null | undefined): string {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
@@ -375,27 +350,16 @@ function detectSimEngine(): boolean {
   return envValue === ENGINE_SIM_VALUE
 }
 
-function detectPresetGate(target: string): boolean {
-  if (!target) {
-    return false
+function readPresetCandidate(): string {
+  const queryValue = normalizeGateValue(readSearchParam(PRESET_QUERY_KEY))
+  if (queryValue) {
+    return queryValue
   }
   const envValue = normalizeGateValue(readEnvValue(PRESET_ENV_KEY))
-  if (envValue === target) {
-    return true
+  if (envValue) {
+    return envValue
   }
-  const queryValue = normalizeGateValue(readSearchParam(PRESET_QUERY_KEY))
-  return queryValue === target
-}
-
-function detectVaporPreset(): boolean {
-  return detectPresetGate(PRESET_VAPOR_VALUE)
-}
-
-function detectAiryPreset(simActive: boolean): boolean {
-  if (!simActive) {
-    return false
-  }
-  return detectPresetGate(PRESET_AIRY_VALUE)
+  return DEFAULT_DREAMDUST_PRESET_ID
 }
 
 function detectInkBump(): boolean {
@@ -565,11 +529,46 @@ type CascadeTimelineState = {
 
 export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   const simEngineActive = React.useMemo(detectSimEngine, [])
-  const presetAiryEnabled = React.useMemo(
-    () => detectAiryPreset(simEngineActive),
-    [simEngineActive]
+  const resolvePresetCandidate = React.useCallback(readPresetCandidate, [])
+  const [presetState, setPresetState] = React.useState(() =>
+    loadDreamdustPreset(resolvePresetCandidate())
   )
-  const presetVaporEnabled = React.useMemo(detectVaporPreset, [])
+  const presetIdRef = React.useRef(presetState.id)
+
+  React.useEffect(() => {
+    presetIdRef.current = presetState.id
+  }, [presetState.id])
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame === 'undefined') {
+      return undefined
+    }
+
+    let frame = 0
+
+    const pollPreset = () => {
+      const candidate = resolvePresetCandidate()
+      if (candidate === presetIdRef.current) {
+        frame = window.requestAnimationFrame(pollPreset)
+        return
+      }
+      const next = loadDreamdustPreset(candidate)
+      if (next.id !== presetIdRef.current) {
+        presetIdRef.current = next.id
+        setPresetState(next)
+      }
+      frame = window.requestAnimationFrame(pollPreset)
+    }
+
+    frame = window.requestAnimationFrame(pollPreset)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+    }
+  }, [resolvePresetCandidate])
+
+  const presetAiryEnabled = presetState.id === PRESET_AIRY_VALUE
+  const presetCascadeEnabled = presetState.id === PRESET_CASCADE_VALUE
   const inkBumpEnabled = React.useMemo(
     () => (presetAiryEnabled ? false : detectInkBump()),
     [presetAiryEnabled]
@@ -582,70 +581,49 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   }
 
   if (!uniformsRef.current) {
-    const breathAmpValue = presetAiryEnabled
-      ? PresetAiry.breathAmp
-      : presetVaporEnabled
-        ? PresetC.breathAmp
-        : DEFAULT_UNIFORM_VALUES.uBreathAmp
-    const evolutionValue = presetAiryEnabled
-      ? PresetAiry.evolution
-      : presetVaporEnabled
-        ? PresetC.evolution
-        : DEFAULT_UNIFORM_VALUES.uEvolution
-    const curlAmpValue = presetAiryEnabled
-      ? PresetAiry.curlFactor
-      : presetVaporEnabled
-        ? PresetC.curlFactor
-        : DEFAULT_UNIFORM_VALUES.uCurlAmp
-    const rimGammaValue = presetAiryEnabled
-      ? PresetAiry.rimGamma
-      : presetVaporEnabled
-        ? PresetC.rimGamma
-        : DEFAULT_UNIFORM_VALUES.uRimGamma
-    const baseInkGain = presetAiryEnabled
-      ? PresetAiry.inkGain
-      : presetVaporEnabled
-        ? PresetC.inkGain
-        : 1
-    const inkOffsetBoostValue = baseInkGain * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
-    const inkSizeBoostValue = baseInkGain * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
-    const inkTintBoostValue = baseInkGain * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
+    const defaults = presetState.uniforms
+    const inkOffsetBase = defaults.uInkOffsetBoost
+    const inkSizeBase = defaults.uInkSizeBoost
+    const inkTintBase = defaults.uInkTintBoost
+    const inkOffsetBoostValue = inkOffsetBase * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
+    const inkSizeBoostValue = inkSizeBase * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
+    const inkTintBoostValue = inkTintBase * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
 
     uniformsRef.current = {
-      uTime: { value: DEFAULT_UNIFORM_VALUES.uTime },
-      uViewport: { value: initialViewport() },
-      uInkTex: { value: DEFAULT_UNIFORM_VALUES.uInkTex },
-      uInkIntensity: { value: DEFAULT_UNIFORM_VALUES.uInkIntensity },
-      uReveal: { value: DEFAULT_UNIFORM_VALUES.uReveal },
-      uBreath: { value: DEFAULT_UNIFORM_VALUES.uBreath },
-      uBreathAmp: { value: breathAmpValue },
-      uCascade: { value: DEFAULT_UNIFORM_VALUES.uCascade },
-      uCascadeColor: { value: [...DEFAULT_UNIFORM_VALUES.uCascadeColor] as Vec3 },
-      uCascadeSizeBoost: { value: DEFAULT_UNIFORM_VALUES.uCascadeSizeBoost },
-      uVaporGain: { value: DEFAULT_UNIFORM_VALUES.uVaporGain },
-      uNoiseScale: { value: DEFAULT_UNIFORM_VALUES.uNoiseScale },
-      uNoiseSpeed: { value: DEFAULT_UNIFORM_VALUES.uNoiseSpeed },
-      uEvolution: { value: evolutionValue },
-      uNoiseThreshold: { value: DEFAULT_UNIFORM_VALUES.uNoiseThreshold },
-      uDriftAmp: { value: DEFAULT_UNIFORM_VALUES.uDriftAmp },
-      uCurlAmp: { value: curlAmpValue },
-      uPointBaseSize: { value: DEFAULT_UNIFORM_VALUES.uPointBaseSize },
-      uDepthMin: { value: DEFAULT_UNIFORM_VALUES.uDepthMin },
-      uDepthMax: { value: DEFAULT_UNIFORM_VALUES.uDepthMax },
-      uDepthBias: { value: DEFAULT_UNIFORM_VALUES.uDepthBias },
-      uDepthNormScale: { value: DEFAULT_UNIFORM_VALUES.uDepthNormScale },
-      uGamma: { value: DEFAULT_UNIFORM_VALUES.uGamma },
-      uRimGamma: { value: rimGammaValue },
-      uFocal: { value: DEFAULT_UNIFORM_VALUES.uFocal },
-      uMinSize: { value: DEFAULT_UNIFORM_VALUES.uMinSize },
-      uMaxSize: { value: DEFAULT_UNIFORM_VALUES.uMaxSize },
-      uSizeGain: { value: DEFAULT_UNIFORM_VALUES.uSizeGain },
-      uOffsetGain: { value: DEFAULT_UNIFORM_VALUES.uOffsetGain },
+      uTime: { value: defaults.uTime },
+      uViewport: { value: initialViewport(defaults.uViewport) },
+      uInkTex: { value: defaults.uInkTex },
+      uInkIntensity: { value: defaults.uInkIntensity },
+      uReveal: { value: defaults.uReveal },
+      uBreath: { value: defaults.uBreath },
+      uBreathAmp: { value: defaults.uBreathAmp },
+      uCascade: { value: defaults.uCascade },
+      uCascadeColor: { value: [...defaults.uCascadeColor] as Vec3 },
+      uCascadeSizeBoost: { value: defaults.uCascadeSizeBoost },
+      uVaporGain: { value: defaults.uVaporGain },
+      uNoiseScale: { value: defaults.uNoiseScale },
+      uNoiseSpeed: { value: defaults.uNoiseSpeed },
+      uEvolution: { value: defaults.uEvolution },
+      uNoiseThreshold: { value: defaults.uNoiseThreshold },
+      uDriftAmp: { value: defaults.uDriftAmp },
+      uCurlAmp: { value: defaults.uCurlAmp },
+      uPointBaseSize: { value: defaults.uPointBaseSize },
+      uDepthMin: { value: defaults.uDepthMin },
+      uDepthMax: { value: defaults.uDepthMax },
+      uDepthBias: { value: defaults.uDepthBias },
+      uDepthNormScale: { value: defaults.uDepthNormScale },
+      uGamma: { value: defaults.uGamma },
+      uRimGamma: { value: defaults.uRimGamma },
+      uFocal: { value: defaults.uFocal },
+      uMinSize: { value: defaults.uMinSize },
+      uMaxSize: { value: defaults.uMaxSize },
+      uSizeGain: { value: defaults.uSizeGain },
+      uOffsetGain: { value: defaults.uOffsetGain },
       uInkOffsetBoost: { value: inkOffsetBoostValue },
       uInkSizeBoost: { value: inkSizeBoostValue },
-      uTintGain: { value: DEFAULT_UNIFORM_VALUES.uTintGain },
+      uTintGain: { value: defaults.uTintGain },
       uInkTintBoost: { value: inkTintBoostValue },
-      uVertexInkOk: { value: DEFAULT_UNIFORM_VALUES.uVertexInkOk },
+      uVertexInkOk: { value: defaults.uVertexInkOk },
     }
   }
 
@@ -655,17 +633,17 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     if (presetAiryEnabled) {
       return Math.max(MIN_REVEAL_SECONDS, PresetAiry.revealDuration)
     }
-    if (presetVaporEnabled) {
+    if (presetCascadeEnabled) {
       return Math.max(MIN_REVEAL_SECONDS, PresetC.revealDuration)
     }
     const { revealMs } = tunablesRef.current
     const ms = Number.isFinite(revealMs) ? Math.max(100, revealMs) : DEFAULT_REVEAL_MS
     return Math.max(MIN_REVEAL_SECONDS, ms / 1000)
-  }, [presetAiryEnabled, presetVaporEnabled])
+  }, [presetAiryEnabled, presetCascadeEnabled])
 
   const cascadeVaporGain = presetAiryEnabled
     ? PresetAiry.cascadeRate
-    : presetVaporEnabled
+    : presetCascadeEnabled
       ? PresetC.cascadeRate
       : CASCADE_VAPOR_PEAK
 
@@ -688,7 +666,57 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     phase: 0,
   })
   const lastInkTextureRef = React.useRef<TextureLike | null>(null)
-  const vertexInkOkPrevRef = React.useRef(DEFAULT_UNIFORM_VALUES.uVertexInkOk)
+  const vertexInkOkPrevRef = React.useRef(presetState.uniforms.uVertexInkOk)
+
+  React.useEffect(() => {
+    const uniforms = uniformsRef.current
+    if (!uniforms) {
+      return
+    }
+
+    const defaults = presetState.uniforms
+    const inkOffsetBase = defaults.uInkOffsetBoost
+    const inkSizeBase = defaults.uInkSizeBoost
+    const inkTintBase = defaults.uInkTintBoost
+    const inkOffsetValue = inkOffsetBase * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
+    const inkSizeValue = inkSizeBase * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
+    const inkTintValue = inkTintBase * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
+
+    for (const key of Object.keys(defaults) as (keyof DreamdustUniformValueMap)[]) {
+      if (!(key in uniforms)) {
+        continue
+      }
+      if (PRESET_SWAP_SKIP_KEYS.has(key)) {
+        continue
+      }
+
+      let nextValue = defaults[key]
+
+      if (key === 'uInkOffsetBoost') {
+        nextValue = inkOffsetValue as DreamdustUniformValueMap[typeof key]
+      } else if (key === 'uInkSizeBoost') {
+        nextValue = inkSizeValue as DreamdustUniformValueMap[typeof key]
+      } else if (key === 'uInkTintBoost') {
+        nextValue = inkTintValue as DreamdustUniformValueMap[typeof key]
+      }
+
+      const uniform = uniforms[key]
+      if (!uniform) {
+        continue
+      }
+
+      if (Array.isArray(uniform.value) && Array.isArray(nextValue)) {
+        const target = uniform.value as number[]
+        for (let i = 0; i < Math.min(target.length, nextValue.length); i += 1) {
+          target[i] = nextValue[i] as number
+        }
+      } else {
+        ;(uniform as typeof uniform).value = nextValue as typeof uniform.value
+      }
+    }
+
+    vertexInkOkPrevRef.current = defaults.uVertexInkOk
+  }, [inkBumpEnabled, presetState, uniformsRef])
 
   React.useEffect(() => {
     return subscribeDreamdustTunables((next) => {
@@ -930,14 +958,15 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     cascade.didLogEnd = false
     if (!uniforms) return
     uniforms.uCascade.value = 0
-    uniforms.uCascadeSizeBoost.value = DEFAULT_UNIFORM_VALUES.uCascadeSizeBoost
-    uniforms.uVaporGain.value = DEFAULT_UNIFORM_VALUES.uVaporGain
+    const defaults = presetState.uniforms
+    uniforms.uCascadeSizeBoost.value = defaults.uCascadeSizeBoost
+    uniforms.uVaporGain.value = defaults.uVaporGain
     const target = uniforms.uCascadeColor.value
-    const defaults = DEFAULT_UNIFORM_VALUES.uCascadeColor
-    for (let i = 0; i < target.length && i < defaults.length; i += 1) {
-      target[i] = defaults[i]
+    const fallback = defaults.uCascadeColor
+    for (let i = 0; i < target.length && i < fallback.length; i += 1) {
+      target[i] = fallback[i]
     }
-  }, [])
+  }, [presetState.uniforms])
 
   const updateInkTexture = React.useCallback(
     (texture: TextureLike | null) => {
