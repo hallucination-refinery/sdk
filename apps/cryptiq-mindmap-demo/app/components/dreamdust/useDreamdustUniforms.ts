@@ -750,8 +750,9 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      ;(window as typeof window & { debugDreamdustUniforms?: DreamdustUniforms | null }).debugDreamdustUniforms =
-        uniformsRef.current
+      ;(
+        window as typeof window & { debugDreamdustUniforms?: DreamdustUniforms | null }
+      ).debugDreamdustUniforms = uniformsRef.current
     }
   })
 

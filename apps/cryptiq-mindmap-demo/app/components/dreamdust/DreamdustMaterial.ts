@@ -206,6 +206,9 @@ uniform sampler2D uInkTex;
 
 #ifdef USE_SIM_POS
 uniform sampler2D uSimPositionTex;
+#endif
+
+#if defined(USE_SIM_POS) || defined(DEBUG_VTF_SANITY)
 attribute vec2 aSimUv;
 #endif
 
@@ -225,10 +228,7 @@ varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
 varying float vDepthView;
-#ifdef DEBUG_VTF_SANITY
-varying float vSimProbe;
-#endif
-#ifdef DEBUG_VTF_SANITY
+#if defined(DEBUG_VTF_SANITY)
 varying float vSimProbe;
 #endif
 
@@ -406,8 +406,9 @@ void main() {
   vPosMV = viewPos;
   vDepthView = viewDist;
 #ifdef DEBUG_VTF_SANITY
-  vec3 simProbePos = dreamdustSampleSimPosition(aSimUv);
-  vSimProbe = length(simProbePos);
+  vec3 simPos = dreamdustSampleSimPosition(aSimUv);
+  float simProbe = length(simPos);
+  vSimProbe = simProbe;
 #endif
 
   gl_Position = projectionMatrix * viewPos4;
@@ -442,7 +443,7 @@ varying float vRevealMix;
 varying vec2 vRevealCoord;
 varying vec3 vPosMV;
 varying float vDepthView;
-#ifdef DEBUG_VTF_SANITY
+#if defined(DEBUG_VTF_SANITY)
 varying float vSimProbe;
 #endif
 

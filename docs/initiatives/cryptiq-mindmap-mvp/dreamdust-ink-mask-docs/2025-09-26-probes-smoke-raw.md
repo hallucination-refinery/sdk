@@ -588,3 +588,62 @@ page-93c82d875ae85a9e.js:1 [dreamdust] ink-latency {ms: 38.6, frames: 2.32}
 - **Performance trace URL / file:**
 - **Extra screenshots:**
 - **Misc notes:**
+
+---
+
+# 2025-09-26 Probe Smoke — Uniform Dump
+
+Use this second section for the new run focused on uniform inspection.
+
+## A. Run Metadata
+
+- **Date & time (local):** 12:40 PM (NYC) · 2025-09-26
+- **Branch / commit:** `debug/batch0-baseline` @ `b76ff7ff`
+- **Device & browser:** MacBook Pro (M1 Pro, 16 GB) · Chrome 140 (incognito)
+- **Route:** `http://localhost:3000/quiz/archetype-v1?pc=scene-02&debug=1&engine=sim&inkProbe=1&simProbe=1&simStats=1&inkStats=1`
+- **Screenshot file:** `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-09-26-probes-smoke.png`
+
+## B. Terminal Commands & Results
+
+```
+<paste install → typecheck → lint → build → start → stop transcript>
+```
+
+## C. Initial Console Batch
+
+```
+<caps, prebaked*, sim on/fit, frame-percentiles, [sim] metrics burst>
+```
+
+## D. Uniform Snapshot (window.debugDreamdustUniforms)
+
+```
+<expanded dump of all uniform values>
+```
+
+## E. Gesture Logs & Telemetry
+
+- **Short tap (T+0 s):**
+
+```
+<ink latency, ink debug, sim metrics, HUD notes>
+```
+
+- **Long drag (~T+30 s):**
+
+```
+<follow-up logs or explicit “no additional logs”>
+```
+
+## F. Visual Observations
+
+- **Particles visible?:**
+- **Probe diagnostics (teal/red):**
+- **Perf behavior:**
+- **Other notes:**
+
+## G. Outstanding Issues / Follow-ups
+
+-
+-
+-
