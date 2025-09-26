@@ -18,6 +18,8 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import { applyPerspectiveCover, applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
+import { getDebugFlags } from './dreamdust/debug/getDebugFlags'
+import { useDebugControls } from './dreamdust/debug/useDebugControls'
 import { getDreamdustCaps, type DreamdustRuntimeCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
 import {
@@ -38,6 +40,7 @@ import {
   pointCap,
 } from './pointcloud/budget'
 import { ParticleSim } from './dreamdust/sim/ParticleSim'
+import DebugHud from './dreamdust/ui/DebugHud'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -182,24 +185,6 @@ function readSearchParamSafe(name: string): string | null {
   } catch {
     return null
   }
-}
-
-function readDebugInkProbe(): boolean {
-  const value = readSearchParamSafe('inkProbe')
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase()
-    return normalized === '1' || normalized === 'true'
-  }
-  return false
-}
-
-function readDebugSimProbe(): boolean {
-  const value = readSearchParamSafe('simProbe')
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase()
-    return normalized === '1' || normalized === 'true'
-  }
-  return false
 }
 
 function readNumberOverride(queryKey: string, envKey?: string): number | null {
@@ -1074,8 +1059,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const inkTex = dreamdustCtx?.inkTex ?? null
   const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
   const vertexInkOk = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
-  const debugInkProbe = React.useMemo(() => readDebugInkProbe(), [])
-  const debugSimProbe = React.useMemo(() => readDebugSimProbe(), [])
+  const debugFlags = React.useMemo(() => getDebugFlags(), [])
+  const { simSnapshot, inkSnapshot } = useDebugControls(debugFlags)
+  const debugInkProbe = debugFlags.inkProbe
+  const debugSimProbe = debugFlags.simProbe
   const uniformsWithReveal = uniforms as DreamdustStageUniformsWithReveal
   const hasRevealUniform = !!uniformsWithReveal.uReveal
   const timelineSupported = hasRevealUniform && typeof startReveal === 'function'
@@ -2469,6 +2456,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               />
               roll180 (rotate Z)
             </label>
+            {process.env.NODE_ENV !== 'production' && (debugFlags.simStats || debugFlags.inkStats) ? (
+              <DebugHud
+                simEnabled={debugFlags.simStats}
+                simSnapshot={simSnapshot}
+                inkEnabled={debugFlags.inkStats}
+                inkSnapshot={inkSnapshot}
+              />
+            ) : null}
           </div>
         </div>
       )}
