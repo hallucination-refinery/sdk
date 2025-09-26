@@ -22,6 +22,12 @@ describe('dreamdust presets', () => {
     expect(fallback.uniforms.uBreathAmp).toBeCloseTo(0.05)
   })
 
+  it('supports legacy vapor alias mapping to cascade', () => {
+    const vapor = loadDreamdustPreset('vapor')
+    expect(vapor.id).toBe('cascade')
+    expect(vapor.uniforms.uInkOffsetBoost).toBeGreaterThan(1)
+  })
+
   it('returns clones for each preset request', () => {
     const first = loadDreamdustPreset('cascade')
     const second = loadDreamdustPreset('cascade')

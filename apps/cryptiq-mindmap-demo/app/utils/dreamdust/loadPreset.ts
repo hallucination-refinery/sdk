@@ -18,6 +18,9 @@ for (const key of Object.keys(presets) as DreamdustPresetId[]) {
   PRESET_REGISTRY.set(key.toLowerCase(), key)
 }
 
+// Legacy aliases preserved for backwards compatibility.
+PRESET_REGISTRY.set('vapor', 'cascade')
+
 function cloneUniformValues(values: DreamdustUniformValueMap): DreamdustUniformValueMap {
   const next: Partial<DreamdustUniformValueMap> = {}
   for (const [key, value] of Object.entries(values) as [keyof DreamdustUniformValueMap, DreamdustUniformValueMap[keyof DreamdustUniformValueMap]][]) {

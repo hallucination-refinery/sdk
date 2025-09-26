@@ -315,6 +315,16 @@ const PRESET_SWAP_SKIP_KEYS = new Set<keyof DreamdustUniformValueMap>([
   'uCascadeColor',
   'uCascadeSizeBoost',
   'uVaporGain',
+  'uDepthBias',
+  'uDepthNormScale',
+  'uNoiseScale',
+  'uNoiseSpeed',
+  'uEvolution',
+  'uPointBaseSize',
+  'uMinSize',
+  'uMaxSize',
+  'uSizeGain',
+  'uOffsetGain',
 ])
 
 function normalizeGateValue(value: string | null | undefined): string {
