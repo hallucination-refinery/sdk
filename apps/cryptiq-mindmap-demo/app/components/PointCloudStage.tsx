@@ -1092,8 +1092,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [inkIntensity, uniforms])
 
   React.useEffect(() => {
-    setUniform('uInkIntensity', inkIntensity)
-  }, [inkIntensity, setUniform])
+    // TEMP: force non-zero ink intensity to validate visibility regression.
+    setUniform('uInkIntensity', 0.75)
+  }, [setUniform])
 
   React.useEffect(() => {
     setUniform('uVertexInkOk', vertexInkOk ? 1 : 0)
