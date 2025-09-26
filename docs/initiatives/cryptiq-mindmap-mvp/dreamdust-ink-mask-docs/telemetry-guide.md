@@ -7,8 +7,9 @@ This reference explains how to enable the Dreamdust telemetry overlays, interpre
 1. Append `?simStats=1&inkStats=1` to any Dreamdust URL that already includes the probe flags (`inkProbe=1&simProbe=1`).
 2. Load the page and, once the reveal overlay clears, press `T` if the telemetry HUD badges are not visible.
 3. Capture at least two cadence points per run: immediately after the first short-click gesture (T+0s) and 30 seconds after the long stroke (T+30s). Each cadence point must include:
-  - HUD screenshot showing the Sim Stats and Ink Stats badges.
-  - Console logs for `[sim] metrics {...}`, `[PC] ink debug {...}`, `[dreamdust] ink-latency {...}`, and `[dreamdust] frame-percentiles {...}` (expand the objects so numeric fields are recorded).
+
+- HUD screenshot showing the Sim Stats and Ink Stats badges.
+- Console logs for `[sim] metrics {...}`, `[PC] ink debug {...}`, `[dreamdust] ink-latency {...}`, and `[dreamdust] frame-percentiles {...}` (expand the objects so numeric fields are recorded).
 
 ## HUD color map
 

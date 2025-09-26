@@ -43,7 +43,7 @@
    - Capture HUD + console metrics at T+0s (immediately after the short tap) and again ~T+30s (after the long stroke).
 
 8. **Collect telemetry + logs**
-    - At each cadence mark, copy the `[sim] metrics` and `[dreamdust] ink-latency` / `[PC] ink debug` payloads (expand objects so numeric fields are captured). Flag `p50Ms > 16.7`, `p90Ms > 28`, ink latency > 20 ms, or missing probe visuals.
+   - At each cadence mark, copy the `[sim] metrics` and `[dreamdust] ink-latency` / `[PC] ink debug` payloads (expand objects so numeric fields are captured). Flag `p50Ms > 16.7`, `p90Ms > 28`, ink latency > 20 ms, or missing probe visuals.
    - Scroll the console to confirm the absence of shader compile errors; note any `requestAnimationFrame` violation spam.
    - Copy the terminal session (install → typecheck → lint → build → start → Ctrl+C).
 
@@ -52,19 +52,19 @@
 
 ## Expected instrumentation
 
-| Category            | Expected log(s)                                                                                      | Target / Notes                                                                                     |
-| ------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Renderer caps       | `[dreamdust] caps { vertexInkOk: true, floatOk: true, dprClamp: 1.8, ... }`                          | Emits once per load; confirms GPU capabilities.                                                   |
-| Capability fan-out  | `[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }`                  | Should appear once; verifies fan-out wiring.                                                       |
-| Geometry hydration  | `[PC] prebaked positions ...`, `[PC] prebaked PCA orientation applied`, `[PC] prebaked present ...`  | Confirms prebaked cloud selected; collect object payloads.                                         |
-| Instances           | `[PC] instances: 89441`, `[PC] attach controls ...`                                                  | Validate point budget and controls attachment.                                                     |
-| Reveal lifecycle    | `[Dreamdust] reveal start { duration: 2 }`, `[Dreamdust] reveal end { duration: 2 }`                 | Must bracket reveal; missing logs indicate lifecycle regression.                                   |
-| Simulation          | `[engine] sim on { count: 89441, texSize: [300,299] }`, `[engine] sim fit { radius: ..., center: ... }` | Confirms sim driver active with expected texture size and fit radius.                              |
-| Runtime metrics     | `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: <value>, p90Ms: <value> }`                 | Target ≤16 ms (p50) / ≤28 ms (p90); flag any regression.                                           |
-| Bloom guard         | `[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8 }`                   | Records state of bloom guard for comparison across runs.                                          |
-| Simulation telemetry| `[sim] metrics { min: ..., max: ..., avg: ..., nanCount: ..., infCount: ..., grid: ... }` (with `simStats=1`) | `nanCount`/`infCount` must stay 0; plateau at ~0 indicates stalled sim, plateau near 1.55 with trailing zeros signals muted motion. |
-| Ink telemetry       | `[PC] ink debug { vertexInkOk: true, uViewport: [...], inkIntensity: ... }`, `[dreamdust] ink-latency { ms: ..., frames: ... }` (with `inkStats=1`) | Target `inkIntensity > 0.5` and `ink-latency ≤ 20 ms`; highlight when intensity hits 0 or latency exceeds budget.                              |
-| Shader probes       | No GLSL compile errors, `DEBUG_VTF_SANITY` active, teal/red probe overlays visible in viewport.      | Log absence of visuals even if logs appear; treat as regression.                                   |
+| Category             | Expected log(s)                                                                                                                                     | Target / Notes                                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Renderer caps        | `[dreamdust] caps { vertexInkOk: true, floatOk: true, dprClamp: 1.8, ... }`                                                                         | Emits once per load; confirms GPU capabilities.                                                                                     |
+| Capability fan-out   | `[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }`                                                                 | Should appear once; verifies fan-out wiring.                                                                                        |
+| Geometry hydration   | `[PC] prebaked positions ...`, `[PC] prebaked PCA orientation applied`, `[PC] prebaked present ...`                                                 | Confirms prebaked cloud selected; collect object payloads.                                                                          |
+| Instances            | `[PC] instances: 89441`, `[PC] attach controls ...`                                                                                                 | Validate point budget and controls attachment.                                                                                      |
+| Reveal lifecycle     | `[Dreamdust] reveal start { duration: 2 }`, `[Dreamdust] reveal end { duration: 2 }`                                                                | Must bracket reveal; missing logs indicate lifecycle regression.                                                                    |
+| Simulation           | `[engine] sim on { count: 89441, texSize: [300,299] }`, `[engine] sim fit { radius: ..., center: ... }`                                             | Confirms sim driver active with expected texture size and fit radius.                                                               |
+| Runtime metrics      | `[dreamdust] frame-percentiles { sampleCount: 240, p50Ms: <value>, p90Ms: <value> }`                                                                | Target ≤16 ms (p50) / ≤28 ms (p90); flag any regression.                                                                            |
+| Bloom guard          | `[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8 }`                                                                  | Records state of bloom guard for comparison across runs.                                                                            |
+| Simulation telemetry | `[sim] metrics { min: ..., max: ..., avg: ..., nanCount: ..., infCount: ..., grid: ... }` (with `simStats=1`)                                       | `nanCount`/`infCount` must stay 0; plateau at ~0 indicates stalled sim, plateau near 1.55 with trailing zeros signals muted motion. |
+| Ink telemetry        | `[PC] ink debug { vertexInkOk: true, uViewport: [...], inkIntensity: ... }`, `[dreamdust] ink-latency { ms: ..., frames: ... }` (with `inkStats=1`) | Target `inkIntensity > 0.5` and `ink-latency ≤ 20 ms`; highlight when intensity hits 0 or latency exceeds budget.                   |
+| Shader probes        | No GLSL compile errors, `DEBUG_VTF_SANITY` active, teal/red probe overlays visible in viewport.                                                     | Log absence of visuals even if logs appear; treat as regression.                                                                    |
 
 ## Observed deviations - 2025-09-26 run
 
