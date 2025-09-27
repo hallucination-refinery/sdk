@@ -100,6 +100,126 @@ const DEFAULT_SIM_CURVE: DreamdustSimCurveUniforms = Object.freeze({
   solidAlpha: 0.6,
 })
 
+export const DEFAULT_POINT_SIZING = Object.freeze({
+  baseSize: 3,
+  minSize: 2,
+  maxSize: 10,
+  sizeGain: 1,
+  offsetGain: 1,
+}) as const
+
+type PointSizingUniformName =
+  | 'uPointBaseSize'
+  | 'uMinSize'
+  | 'uMaxSize'
+  | 'uSizeGain'
+  | 'uOffsetGain'
+
+type PointSizingValues = Pick<DreamdustUniformValueMap, PointSizingUniformName>
+
+function isPointSizingUniformName(name: keyof DreamdustUniformValueMap): name is PointSizingUniformName {
+  return (
+    name === 'uPointBaseSize' ||
+    name === 'uMinSize' ||
+    name === 'uMaxSize' ||
+    name === 'uSizeGain' ||
+    name === 'uOffsetGain'
+  )
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) {
+    return min
+  }
+  if (value < min) return min
+  if (value > max) return max
+  return value
+}
+
+function clampAlphaFloor(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0.1
+  }
+  return Math.max(0.1, value)
+}
+
+function clampNoiseThreshold(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0.8
+  }
+  return Math.min(0.8, value)
+}
+
+function clampOffsetGain(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_POINT_SIZING.offsetGain
+  }
+  return Math.max(DEFAULT_POINT_SIZING.offsetGain, value)
+}
+
+function resolvePointSizing(source: PointSizingValues): PointSizingValues {
+  const floor = DEFAULT_POINT_SIZING.minSize
+  const ceiling = DEFAULT_POINT_SIZING.maxSize
+  const safeMin = clampNumber(source.uMinSize ?? floor, floor, ceiling)
+  const safeMaxCandidate = clampNumber(source.uMaxSize ?? ceiling, floor, ceiling)
+  const minBound = Math.min(safeMin, safeMaxCandidate)
+  const maxBound = Math.max(minBound, safeMaxCandidate)
+  const base = clampNumber(source.uPointBaseSize ?? DEFAULT_POINT_SIZING.baseSize, minBound, maxBound)
+  const sizeGain = Math.max(
+    DEFAULT_POINT_SIZING.sizeGain,
+    Number.isFinite(source.uSizeGain) ? (source.uSizeGain as number) : DEFAULT_POINT_SIZING.sizeGain
+  )
+  const offsetGain = Math.max(
+    DEFAULT_POINT_SIZING.offsetGain,
+    Number.isFinite(source.uOffsetGain)
+      ? (source.uOffsetGain as number)
+      : DEFAULT_POINT_SIZING.offsetGain
+  )
+  return {
+    uPointBaseSize: base,
+    uMinSize: minBound,
+    uMaxSize: maxBound,
+    uSizeGain: sizeGain,
+    uOffsetGain: offsetGain,
+  }
+}
+
+function applyPointSizingUniformValue(
+  uniforms: DreamdustUniforms,
+  name: PointSizingUniformName,
+  rawValue: number
+): number {
+  const fallback: PointSizingValues = {
+    uPointBaseSize: DEFAULT_POINT_SIZING.baseSize,
+    uMinSize: DEFAULT_POINT_SIZING.minSize,
+    uMaxSize: DEFAULT_POINT_SIZING.maxSize,
+    uSizeGain: DEFAULT_POINT_SIZING.sizeGain,
+    uOffsetGain: DEFAULT_POINT_SIZING.offsetGain,
+  }
+
+  const current: PointSizingValues = { ...fallback }
+
+  for (const key of Object.keys(current) as PointSizingUniformName[]) {
+    const uniform = uniforms[key]
+    if (uniform && typeof uniform.value === 'number' && Number.isFinite(uniform.value)) {
+      current[key] = uniform.value as PointSizingValues[typeof key]
+    }
+  }
+
+  current[name] = Number.isFinite(rawValue) ? rawValue : current[name]
+
+  const resolved = resolvePointSizing(current)
+
+  for (const key of Object.keys(resolved) as PointSizingUniformName[]) {
+    const uniform = uniforms[key]
+    if (uniform) {
+      ;(uniform as typeof uniform).value = resolved[key] as typeof uniform.value
+    }
+  }
+
+  return resolved[name]
+}
+
 function cloneSimCurve(curve: DreamdustSimCurveUniforms): DreamdustSimCurveUniforms {
   return {
     fadeIn: curve.fadeIn,
@@ -166,27 +286,6 @@ function clamp01(value: number): number {
   if (value < 0) return 0
   if (value > 1) return 1
   return value
-}
-
-function clampAlphaFloor(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return 0.1
-  }
-  return Math.max(0.1, value)
-}
-
-function clampNoiseThreshold(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return 0.8
-  }
-  return Math.min(0.8, value)
-}
-
-function clampOffsetGain(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return 1
-  }
-  return Math.max(1, value)
 }
 
 function cubicEaseInOut(t: number): number {
@@ -654,6 +753,13 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const alphaFloorValue = clampAlphaFloor(defaults.uAlphaFloor)
     const noiseThresholdValue = clampNoiseThreshold(defaults.uNoiseThreshold)
     const offsetGainValue = clampOffsetGain(defaults.uOffsetGain)
+    const pointSizingDefaults = resolvePointSizing({
+      uPointBaseSize: defaults.uPointBaseSize,
+      uMinSize: defaults.uMinSize,
+      uMaxSize: defaults.uMaxSize,
+      uSizeGain: defaults.uSizeGain,
+      uOffsetGain: offsetGainValue,
+    })
 
     uniformsRef.current = {
       uTime: { value: defaults.uTime },
@@ -674,7 +780,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uAlphaFloor: { value: alphaFloorValue },
       uDriftAmp: { value: defaults.uDriftAmp },
       uCurlAmp: { value: defaults.uCurlAmp },
-      uPointBaseSize: { value: defaults.uPointBaseSize },
+      uPointBaseSize: { value: pointSizingDefaults.uPointBaseSize },
       uDepthMin: { value: defaults.uDepthMin },
       uDepthMax: { value: defaults.uDepthMax },
       uDepthBias: { value: defaults.uDepthBias },
@@ -682,23 +788,15 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uGamma: { value: defaults.uGamma },
       uRimGamma: { value: defaults.uRimGamma },
       uFocal: { value: defaults.uFocal },
-      uMinSize: { value: defaults.uMinSize },
-      uMaxSize: { value: defaults.uMaxSize },
-      uSizeGain: { value: defaults.uSizeGain },
-      uOffsetGain: { value: offsetGainValue },
+      uMinSize: { value: pointSizingDefaults.uMinSize },
+      uMaxSize: { value: pointSizingDefaults.uMaxSize },
+      uSizeGain: { value: pointSizingDefaults.uSizeGain },
+      uOffsetGain: { value: pointSizingDefaults.uOffsetGain },
       uInkOffsetBoost: { value: inkOffsetBoostValue },
       uInkSizeBoost: { value: inkSizeBoostValue },
       uTintGain: { value: defaults.uTintGain },
       uInkTintBoost: { value: inkTintBoostValue },
       uVertexInkOk: { value: defaults.uVertexInkOk },
-    }
-    if (process.env.NODE_ENV !== 'production') {
-      safeLog('[dreamdust] preset-debug', {
-        preset: presetState.id,
-        alphaFloor: Number(alphaFloorValue.toFixed(3)),
-        noiseThreshold: Number(noiseThresholdValue.toFixed(3)),
-        offsetGain: Number(offsetGainValue.toFixed(3)),
-      })
     }
   }
 
@@ -758,6 +856,13 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const inkTintValue = inkTintBase * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
     const alphaFloorValue = clampAlphaFloor(defaults.uAlphaFloor)
     const noiseThresholdValue = clampNoiseThreshold(defaults.uNoiseThreshold)
+    const resolvedPointSizing = resolvePointSizing({
+      uPointBaseSize: defaults.uPointBaseSize,
+      uMinSize: defaults.uMinSize,
+      uMaxSize: defaults.uMaxSize,
+      uSizeGain: defaults.uSizeGain,
+      uOffsetGain: clampOffsetGain(defaults.uOffsetGain),
+    })
 
     for (const key of Object.keys(defaults) as (keyof DreamdustUniformValueMap)[]) {
       if (!(key in uniforms)) {
@@ -775,6 +880,8 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
         nextValue = inkSizeValue as DreamdustUniformValueMap[typeof key]
       } else if (key === 'uInkTintBoost') {
         nextValue = inkTintValue as DreamdustUniformValueMap[typeof key]
+      } else if (isPointSizingUniformName(key)) {
+        nextValue = resolvedPointSizing[key] as DreamdustUniformValueMap[typeof key]
       } else if (key === 'uAlphaFloor') {
         nextValue = alphaFloorValue as DreamdustUniformValueMap[typeof key]
       } else if (key === 'uNoiseThreshold') {
@@ -995,6 +1102,13 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     <Name extends DreamdustUniformName>(name: Name, value: DreamdustUniformValue<Name>) => {
       const uniforms = uniformsRef.current
       if (!uniforms) return
+      if (isPointSizingUniformName(name) && typeof value === 'number') {
+        const uniform = uniforms[name]
+        if (!uniform) return
+        applyPointSizingUniformValue(uniforms, name, value)
+        return
+      }
+
       const uniform = uniforms[name]
       if (!uniform) return
       const current = uniform.value
