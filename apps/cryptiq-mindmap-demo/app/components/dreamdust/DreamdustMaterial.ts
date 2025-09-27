@@ -422,7 +422,6 @@ uniform float uTime;
 uniform float uNoiseSpeed;
 uniform float uEvolution;
 uniform float uNoiseThreshold;
-uniform float uReveal;
 uniform float uInkIntensity;
 uniform float uTintGain;
 uniform float uInkTintBoost;
@@ -464,9 +463,6 @@ void main() {
   float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
   float revealNoise = dd_noise2(vRevealCoord);
   float revealStrength = clamp(vRevealMix, 0.0, 1.0);
-  if (uReveal >= 0.999) {
-    revealStrength = 1.0;
-  }
   float w = 0.08;
   float baseReveal = smoothstep(threshold - w, threshold + w, revealNoise);
   float revealAlpha = max(baseReveal, revealStrength * 0.40);
