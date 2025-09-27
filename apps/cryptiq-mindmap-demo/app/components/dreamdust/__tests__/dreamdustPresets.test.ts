@@ -16,6 +16,14 @@ describe('dreamdust presets', () => {
     expect(preset.uniforms.uRimGamma).toBeCloseTo(2.2)
   })
 
+  it('preserves airy preset sizing and noise thresholds', () => {
+    const preset = loadDreamdustPreset('airy')
+    expect(preset.uniforms.uMinSize).toBeCloseTo(1)
+    expect(preset.uniforms.uPointBaseSize).toBeCloseTo(1)
+    expect(preset.uniforms.uNoiseThreshold).toBeCloseTo(0.92)
+    expect(preset.uniforms.uOffsetGain).toBeCloseTo(0)
+  })
+
   it('falls back to baseline for unknown preset ids', () => {
     const fallback = loadDreamdustPreset('unknown')
     expect(fallback.id).toBe(DEFAULT_DREAMDUST_PRESET_ID)
@@ -26,6 +34,14 @@ describe('dreamdust presets', () => {
     const vapor = loadDreamdustPreset('vapor')
     expect(vapor.id).toBe('cascade')
     expect(vapor.uniforms.uInkOffsetBoost).toBeGreaterThan(1)
+  })
+
+  it('preserves cascade sizing and noise thresholds', () => {
+    const preset = loadDreamdustPreset('cascade')
+    expect(preset.uniforms.uMinSize).toBeCloseTo(1)
+    expect(preset.uniforms.uPointBaseSize).toBeCloseTo(1)
+    expect(preset.uniforms.uNoiseThreshold).toBeCloseTo(0.92)
+    expect(preset.uniforms.uOffsetGain).toBeCloseTo(0)
   })
 
   it('returns clones for each preset request', () => {

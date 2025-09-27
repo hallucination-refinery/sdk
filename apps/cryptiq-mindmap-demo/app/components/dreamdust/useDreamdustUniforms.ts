@@ -145,35 +145,42 @@ function clampAlphaFloor(value: unknown): number {
 
 function clampNoiseThreshold(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return 0.8
+    return 0.6
   }
-  return Math.min(0.8, value)
+  return clampNumber(value, 0, 1)
 }
 
 function clampOffsetGain(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return DEFAULT_POINT_SIZING.offsetGain
   }
-  return Math.max(DEFAULT_POINT_SIZING.offsetGain, value)
+  return value >= 0 ? value : DEFAULT_POINT_SIZING.offsetGain
 }
 function resolvePointSizing(source: PointSizingValues): PointSizingValues {
-  const floor = DEFAULT_POINT_SIZING.minSize
-  const ceiling = DEFAULT_POINT_SIZING.maxSize
-  const safeMin = clampNumber(source.uMinSize ?? floor, floor, ceiling)
-  const safeMaxCandidate = clampNumber(source.uMaxSize ?? ceiling, floor, ceiling)
+  const requestedMin = Number.isFinite(source.uMinSize)
+    ? (source.uMinSize as number)
+    : DEFAULT_POINT_SIZING.minSize
+  const requestedMax = Number.isFinite(source.uMaxSize)
+    ? (source.uMaxSize as number)
+    : DEFAULT_POINT_SIZING.maxSize
+  const minFloor = Math.min(DEFAULT_POINT_SIZING.minSize, requestedMin)
+  const maxCeiling = Math.max(DEFAULT_POINT_SIZING.maxSize, requestedMax)
+  const safeMin = clampNumber(requestedMin, Math.max(0, minFloor), maxCeiling)
+  const safeMaxCandidate = clampNumber(requestedMax, safeMin, maxCeiling)
   const minBound = Math.min(safeMin, safeMaxCandidate)
   const maxBound = Math.max(minBound, safeMaxCandidate)
-  const base = clampNumber(source.uPointBaseSize ?? DEFAULT_POINT_SIZING.baseSize, minBound, maxBound)
-  const sizeGain = Math.max(
-    DEFAULT_POINT_SIZING.sizeGain,
-    Number.isFinite(source.uSizeGain) ? (source.uSizeGain as number) : DEFAULT_POINT_SIZING.sizeGain
-  )
-  const offsetGain = Math.max(
-    DEFAULT_POINT_SIZING.offsetGain,
-    Number.isFinite(source.uOffsetGain)
-      ? (source.uOffsetGain as number)
-      : DEFAULT_POINT_SIZING.offsetGain
-  )
+  const requestedBase = Number.isFinite(source.uPointBaseSize)
+    ? (source.uPointBaseSize as number)
+    : DEFAULT_POINT_SIZING.baseSize
+  const base = clampNumber(requestedBase, minBound, maxBound)
+  const requestedSizeGain = Number.isFinite(source.uSizeGain)
+    ? (source.uSizeGain as number)
+    : DEFAULT_POINT_SIZING.sizeGain
+  const sizeGain = requestedSizeGain > 0 ? requestedSizeGain : DEFAULT_POINT_SIZING.sizeGain
+  const requestedOffsetGain = Number.isFinite(source.uOffsetGain)
+    ? (source.uOffsetGain as number)
+    : DEFAULT_POINT_SIZING.offsetGain
+  const offsetGain = requestedOffsetGain >= 0 ? requestedOffsetGain : DEFAULT_POINT_SIZING.offsetGain
   return {
     uPointBaseSize: base,
     uMinSize: minBound,
@@ -976,9 +983,6 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
         return
       }
       revealClampLoggedRef.current = true
-      safeLog('[Dreamdust] reveal clamp', {
-        duration: Number(reveal.duration.toFixed(3)),
-      })
     }
     if (reveal.active) {
       reveal.elapsed = Math.min(reveal.elapsed + safeDelta, reveal.duration)

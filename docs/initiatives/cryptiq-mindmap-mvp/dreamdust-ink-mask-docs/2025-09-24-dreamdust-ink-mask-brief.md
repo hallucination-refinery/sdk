@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: 2025-09-24
-- Branch: `debug/batch0-baseline` (commit 9b371c8f)
+- Branch: `debug/batch0-baseline` (commit 857886bb)
 - Scope: Baseline render verification only; no new features merged.
 
 ## End Experience (aesthetic-only)
@@ -31,7 +31,7 @@
 [dreamdust] ink-tex bind …
 [Dreamdust] reveal start …
 [dreamdust] frame-percentiles { sampleCount: 240, p50Ms: 17, p90Ms: 58.4 }
-[Dreamdust] reveal end …
+[Dreamdust] reveal end …   ← no follow-up "reveal clamp" log (removed for prod parity)
 ```
 
 Screenshot: see `assets/2025-09-24-baseline-jitter.png` (white jittering cloud).
@@ -51,8 +51,6 @@ Screenshot: see `assets/2025-09-24-baseline-jitter.png` (white jittering cloud).
 [dreamdust] caps { vertexInkOk: true, floatOk: true, dprClamp: 1.8 }
 [dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }
 [dreamdust] ink-tex bind { … }
-[Dreamdust] ink-tex bind { … }
-[PC] attach controls to <canvas …>
 [Dreamdust] reveal start { duration: 2 }
 [dreamdust] bloom { enabled: true, strength: 0.2, radius: 0.4, threshold: 0.8 }
 [Dreamdust] reveal end { duration: 2 }
@@ -103,8 +101,15 @@ Screenshot: `assets/Screenshot 2025-09-25 at 6.26.43 PM.png` (probes enabled, ne
 - Notes: Visual regression persists despite probes linking; investigate alpha/size choke, zero ink intensity, and elevated frame/ink latency before next smoke.
 - Screenshot: `assets/2025-09-26-probes-smoke.png` (blank scene with HUD badges).
 
+## 2025-09-27 Clamp + Preset Update
+
+- Baseline preset now launches with `uNoiseThreshold = 0.6`, `uAlphaFloor = 0.15`, and point sizing `[base: 3, min: 2, max: 9]` to present a soft mist out of the box.
+- Preset sanitisation keeps values finite but **no longer raises** airy/cascade point sizes (`uMinSize = 1`, `uPointBaseSize = 1`, `uOffsetGain = 0`) or their higher reveal thresholds (`uNoiseThreshold = 0.92`).
+- Reveal clamp holds `uReveal = 1` silently; there is no `[Dreamdust] reveal clamp` console spam in prod builds.
+
 ## Status Summary
 
 - Render path technically initializes, but the sim-enabled run currently produces an almost blank canvas (just a tiny distant orb) rather than the intended cat silhouette.
 - Performance guardrails violated (p90 > 28 ms).
 - Interaction behaviour still unvalidated; ink strokes show no displacement.
+- QA expectations updated above: confirm mist defaults and absence of reveal clamp logs before proceeding to smoke.
