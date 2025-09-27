@@ -697,7 +697,13 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const inkOffsetBoostValue = inkOffsetBase * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
     const inkSizeBoostValue = inkSizeBase * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
     const inkTintBoostValue = inkTintBase * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
-    const pointSizingDefaults = resolvePointSizing(defaults)
+    const pointSizingDefaults = resolvePointSizing({
+      uPointBaseSize: defaults.uPointBaseSize,
+      uMinSize: defaults.uMinSize,
+      uMaxSize: defaults.uMaxSize,
+      uSizeGain: defaults.uSizeGain,
+      uOffsetGain: defaults.uOffsetGain,
+    })
 
     uniformsRef.current = {
       uTime: { value: defaults.uTime },
@@ -738,6 +744,20 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   }
 
   const tunablesRef = React.useRef(getDreamdustTunables())
+
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      return
+    }
+    const uniforms = uniformsRef.current
+    if (!uniforms) {
+      return
+    }
+    const base = uniforms.uPointBaseSize?.value ?? DEFAULT_POINT_SIZING.baseSize
+    const min = uniforms.uMinSize?.value ?? DEFAULT_POINT_SIZING.minSize
+    const max = uniforms.uMaxSize?.value ?? DEFAULT_POINT_SIZING.maxSize
+    safeLog('[dreamdust] point-size-debug', { base, min, max })
+  }, [])
 
   const resolveRevealDurationSeconds = React.useCallback(() => {
     if (presetAiryEnabled) {
@@ -791,7 +811,13 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const inkOffsetValue = inkOffsetBase * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
     const inkSizeValue = inkSizeBase * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
     const inkTintValue = inkTintBase * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
-    const resolvedPointSizing = resolvePointSizing(defaults)
+    const resolvedPointSizing = resolvePointSizing({
+      uPointBaseSize: defaults.uPointBaseSize,
+      uMinSize: defaults.uMinSize,
+      uMaxSize: defaults.uMaxSize,
+      uSizeGain: defaults.uSizeGain,
+      uOffsetGain: defaults.uOffsetGain,
+    })
 
     for (const key of Object.keys(defaults) as (keyof DreamdustUniformValueMap)[]) {
       if (!(key in uniforms)) {

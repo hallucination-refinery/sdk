@@ -1452,6 +1452,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     return `h:${h.toString(16)}`
   }, [])
+  const initialPointScale =
+    Number.isFinite(pointSize) && pointSize > 0 ? pointSize / DEFAULT_POINT_SIZING.baseSize : 1
+
   const [ui, setUi] = React.useState<{
     thickness: number
     pointSizeScale: number
@@ -1466,7 +1469,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     roll180?: boolean
   }>(() => ({
     thickness: 0.38,
-    pointSizeScale: 1,
+    pointSizeScale: initialPointScale,
     keepRatio: 1,
     bloom: true,
     fovDeg: defaultFovDeg,
@@ -1555,8 +1558,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [bloomActive, bloomGuardReady])
 
   React.useEffect(() => {
-    uniforms.uBaseSize.value = pointSize * pointSizeScale
-  }, [pointSize, pointSizeScale, uniforms, ui])
+    setUniform('uPointBaseSize', DEFAULT_POINT_SIZING.baseSize * pointSizeScale)
+  }, [pointSizeScale, setUniform])
 
   React.useEffect(() => {
     if (timelineSupported) return
