@@ -919,12 +919,6 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
         return
       }
       revealClampLoggedRef.current = true
-      if (process.env.NODE_ENV !== 'production') {
-        safeLog('[dreamdust] reveal clamp debug', {
-          duration: Number(reveal.duration.toFixed(3)),
-          value: Number(uniforms.uReveal.value.toFixed(3)),
-        })
-      }
       safeLog('[Dreamdust] reveal clamp', {
         duration: Number(reveal.duration.toFixed(3)),
       })
