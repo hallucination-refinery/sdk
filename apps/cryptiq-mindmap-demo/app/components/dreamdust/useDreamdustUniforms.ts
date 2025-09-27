@@ -27,6 +27,7 @@ export type DreamdustUniformValueMap = {
   uNoiseSpeed: number
   uEvolution: number
   uNoiseThreshold: number
+  uAlphaFloor?: number
   uDriftAmp: number
   uCurlAmp: number
   uPointBaseSize: number
@@ -135,6 +136,26 @@ function clampNumber(value: number, min: number, max: number): number {
   return value
 }
 
+function clampAlphaFloor(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0.1
+  }
+  return Math.max(0.1, value)
+}
+
+function clampNoiseThreshold(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0.8
+  }
+  return Math.min(0.8, value)
+}
+
+function clampOffsetGain(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_POINT_SIZING.offsetGain
+  }
+  return Math.max(DEFAULT_POINT_SIZING.offsetGain, value)
+}
 function resolvePointSizing(source: PointSizingValues): PointSizingValues {
   const floor = DEFAULT_POINT_SIZING.minSize
   const ceiling = DEFAULT_POINT_SIZING.maxSize
@@ -398,6 +419,7 @@ const PRESET_QUERY_KEY = 'preset'
 const PRESET_CASCADE_VALUE = 'cascade'
 const PRESET_AIRY_VALUE = 'airy'
 const PRESET_ENV_KEY = 'DD_PRESET'
+const PRESET_URI_ENV_KEYS = ['DD_PRESET_URI', 'NEXT_PUBLIC_DD_PRESET_URI'] as const
 const INK_BUMP_QUERY_KEY = 'inkBump'
 const INK_BUMP_ENV_KEY = 'DD_INK_BUMP'
 const INK_BUMP_SIZE_MULTIPLIER = 1.2
@@ -438,6 +460,16 @@ function readEnvValue(key: string): string | undefined {
   return env?.[key]
 }
 
+function detectPresetUri(): boolean {
+  for (const key of PRESET_URI_ENV_KEYS) {
+    const raw = readEnvValue(key)
+    if (typeof raw === 'string' && raw.trim()) {
+      return true
+    }
+  }
+  return false
+}
+
 function readSearchParam(name: string): string | null {
   if (typeof window === 'undefined') {
     return null
@@ -457,6 +489,15 @@ function detectSimEngine(): boolean {
   }
   const envValue = normalizeGateValue(readEnvValue(ENGINE_ENV_KEY))
   return envValue === ENGINE_SIM_VALUE
+}
+
+function isDebugPresetId(id: string): boolean {
+  const normalized = id.trim().toLowerCase()
+  if (!normalized.startsWith('debug')) {
+    return false
+  }
+  const next = normalized.charAt(5)
+  return next === '' || next === '/' || next === '-' || next === ':' || next === '_'
 }
 
 function readPresetCandidate(): string {
@@ -637,10 +678,21 @@ type CascadeTimelineState = {
 }
 
 export function useDreamdustUniforms(): UseDreamdustUniformsResult {
+  const allowDebugPresets = React.useMemo(detectPresetUri, [])
   const simEngineActive = React.useMemo(detectSimEngine, [])
   const resolvePresetCandidate = React.useCallback(readPresetCandidate, [])
+  const applyPresetGuards = React.useCallback(
+    (candidate?: string | null) => {
+      const next = loadDreamdustPreset(candidate)
+      if (!allowDebugPresets && isDebugPresetId(next.id)) {
+        return loadDreamdustPreset(DEFAULT_DREAMDUST_PRESET_ID)
+      }
+      return next
+    },
+    [allowDebugPresets],
+  )
   const [presetState, setPresetState] = React.useState(() =>
-    loadDreamdustPreset(resolvePresetCandidate())
+    applyPresetGuards(resolvePresetCandidate())
   )
   const presetIdRef = React.useRef(presetState.id)
 
@@ -661,7 +713,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
         frame = window.requestAnimationFrame(pollPreset)
         return
       }
-      const next = loadDreamdustPreset(candidate)
+      const next = applyPresetGuards(candidate)
       if (next.id !== presetIdRef.current) {
         presetIdRef.current = next.id
         setPresetState(next)
@@ -674,7 +726,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     return () => {
       window.cancelAnimationFrame(frame)
     }
-  }, [resolvePresetCandidate])
+  }, [applyPresetGuards, resolvePresetCandidate])
 
   const presetAiryEnabled = presetState.id === PRESET_AIRY_VALUE
   const presetCascadeEnabled = presetState.id === PRESET_CASCADE_VALUE
@@ -697,12 +749,15 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const inkOffsetBoostValue = inkOffsetBase * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
     const inkSizeBoostValue = inkSizeBase * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
     const inkTintBoostValue = inkTintBase * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
+    const alphaFloorValue = clampAlphaFloor(defaults.uAlphaFloor)
+    const noiseThresholdValue = clampNoiseThreshold(defaults.uNoiseThreshold)
+    const offsetGainValue = clampOffsetGain(defaults.uOffsetGain)
     const pointSizingDefaults = resolvePointSizing({
       uPointBaseSize: defaults.uPointBaseSize,
       uMinSize: defaults.uMinSize,
       uMaxSize: defaults.uMaxSize,
       uSizeGain: defaults.uSizeGain,
-      uOffsetGain: defaults.uOffsetGain,
+      uOffsetGain: offsetGainValue,
     })
 
     uniformsRef.current = {
@@ -720,7 +775,8 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uNoiseScale: { value: defaults.uNoiseScale },
       uNoiseSpeed: { value: defaults.uNoiseSpeed },
       uEvolution: { value: defaults.uEvolution },
-      uNoiseThreshold: { value: defaults.uNoiseThreshold },
+      uNoiseThreshold: { value: noiseThresholdValue },
+      uAlphaFloor: { value: alphaFloorValue },
       uDriftAmp: { value: defaults.uDriftAmp },
       uCurlAmp: { value: defaults.uCurlAmp },
       uPointBaseSize: { value: pointSizingDefaults.uPointBaseSize },
@@ -744,20 +800,6 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
   }
 
   const tunablesRef = React.useRef(getDreamdustTunables())
-
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
-      return
-    }
-    const uniforms = uniformsRef.current
-    if (!uniforms) {
-      return
-    }
-    const base = uniforms.uPointBaseSize?.value ?? DEFAULT_POINT_SIZING.baseSize
-    const min = uniforms.uMinSize?.value ?? DEFAULT_POINT_SIZING.minSize
-    const max = uniforms.uMaxSize?.value ?? DEFAULT_POINT_SIZING.maxSize
-    safeLog('[dreamdust] point-size-debug', { base, min, max })
-  }, [])
 
   const resolveRevealDurationSeconds = React.useCallback(() => {
     if (presetAiryEnabled) {
@@ -812,12 +854,14 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     const inkOffsetValue = inkOffsetBase * (inkBumpEnabled ? INK_BUMP_OFFSET_MULTIPLIER : 1)
     const inkSizeValue = inkSizeBase * (inkBumpEnabled ? INK_BUMP_SIZE_MULTIPLIER : 1)
     const inkTintValue = inkTintBase * (inkBumpEnabled ? INK_BUMP_TINT_MULTIPLIER : 1)
+    const alphaFloorValue = clampAlphaFloor(defaults.uAlphaFloor)
+    const noiseThresholdValue = clampNoiseThreshold(defaults.uNoiseThreshold)
     const resolvedPointSizing = resolvePointSizing({
       uPointBaseSize: defaults.uPointBaseSize,
       uMinSize: defaults.uMinSize,
       uMaxSize: defaults.uMaxSize,
       uSizeGain: defaults.uSizeGain,
-      uOffsetGain: defaults.uOffsetGain,
+      uOffsetGain: clampOffsetGain(defaults.uOffsetGain),
     })
 
     for (const key of Object.keys(defaults) as (keyof DreamdustUniformValueMap)[]) {
@@ -838,6 +882,10 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
         nextValue = inkTintValue as DreamdustUniformValueMap[typeof key]
       } else if (isPointSizingUniformName(key)) {
         nextValue = resolvedPointSizing[key] as DreamdustUniformValueMap[typeof key]
+      } else if (key === 'uAlphaFloor') {
+        nextValue = alphaFloorValue as DreamdustUniformValueMap[typeof key]
+      } else if (key === 'uNoiseThreshold') {
+        nextValue = noiseThresholdValue as DreamdustUniformValueMap[typeof key]
       }
 
       const uniform = uniforms[key]
@@ -853,6 +901,15 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       } else {
         ;(uniform as typeof uniform).value = nextValue as typeof uniform.value
       }
+    }
+
+    const alphaUniform = uniforms.uAlphaFloor
+    if (alphaUniform) {
+      alphaUniform.value = alphaFloorValue as typeof alphaUniform.value
+    }
+    const noiseUniform = uniforms.uNoiseThreshold
+    if (noiseUniform) {
+      noiseUniform.value = noiseThresholdValue as typeof noiseUniform.value
     }
 
     vertexInkOkPrevRef.current = defaults.uVertexInkOk
