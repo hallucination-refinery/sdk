@@ -30,7 +30,7 @@ import {
   type DreamdustTunables,
 } from './dreamdust/metrics'
 import InkSurface from './dreamdust/InkSurface'
-import { useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
+import { DEFAULT_POINT_SIZING, useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
 import { PresetAiry } from './dreamdust/presets'
 import {
   capInstances,
@@ -876,7 +876,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     colorUrl: colorUrlProp,
     depthUrl: depthUrlProp,
     depthRgUrl,
-    pointSize = 2.2,
+    pointSize = DEFAULT_POINT_SIZING.baseSize,
     stride = 1,
     // omit perspective in baseline
   } = props
@@ -1026,15 +1026,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const { curlFreq, curlAmp } = tunablesRef.current
     setUniform('uGamma', 0.82)
     setUniform('uFocal', 1600)
-    setUniform('uMinSize', 0.75)
-    setUniform('uMaxSize', 9.5)
+    setUniform('uPointBaseSize', DEFAULT_POINT_SIZING.baseSize)
+    setUniform('uMinSize', DEFAULT_POINT_SIZING.minSize)
+    setUniform('uMaxSize', DEFAULT_POINT_SIZING.maxSize)
     setUniform('uDepthBias', 0.14)
     setUniform('uNoiseScale', curlFreq)
     setUniform('uNoiseSpeed', 0.24)
     // Stronger contrast on first draw: halve base drift, boost ink gains
     setUniform('uDriftAmp', curlAmp)
-    setUniform('uSizeGain', 1.0)
-    setUniform('uOffsetGain', 5.0)
+    setUniform('uSizeGain', DEFAULT_POINT_SIZING.sizeGain)
+    setUniform('uOffsetGain', Math.max(DEFAULT_POINT_SIZING.offsetGain, 5.0))
     setUniform('uTintGain', 0.2)
   }, [setUniform])
 
@@ -1451,6 +1452,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     return `h:${h.toString(16)}`
   }, [])
+  const initialPointScale =
+    Number.isFinite(pointSize) && pointSize > 0 ? pointSize / DEFAULT_POINT_SIZING.baseSize : 1
+
   const [ui, setUi] = React.useState<{
     thickness: number
     pointSizeScale: number
@@ -1465,7 +1469,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     roll180?: boolean
   }>(() => ({
     thickness: 0.38,
-    pointSizeScale: 2.2,
+    pointSizeScale: initialPointScale,
     keepRatio: 1,
     bloom: true,
     fovDeg: defaultFovDeg,
@@ -1554,8 +1558,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [bloomActive, bloomGuardReady])
 
   React.useEffect(() => {
-    uniforms.uBaseSize.value = pointSize * pointSizeScale
-  }, [pointSize, pointSizeScale, uniforms, ui])
+    setUniform('uPointBaseSize', DEFAULT_POINT_SIZING.baseSize * pointSizeScale)
+  }, [pointSizeScale, setUniform])
 
   React.useEffect(() => {
     if (timelineSupported) return
