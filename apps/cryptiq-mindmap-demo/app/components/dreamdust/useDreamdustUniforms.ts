@@ -783,6 +783,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     duration: resolveRevealDurationSeconds(),
     didLogEnd: false,
   })
+  const revealClampLoggedRef = React.useRef(false)
   const cascadeTimelineRef = React.useRef<CascadeTimelineState>({
     active: false,
     elapsed: 0,
@@ -913,6 +914,21 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     uniforms.uBreath.value = clamp01(breathValue)
 
     const reveal = revealTimelineRef.current
+    const logRevealClamp = () => {
+      if (revealClampLoggedRef.current) {
+        return
+      }
+      revealClampLoggedRef.current = true
+      if (process.env.NODE_ENV !== 'production') {
+        safeLog('[dreamdust] reveal clamp debug', {
+          duration: Number(reveal.duration.toFixed(3)),
+          value: Number(uniforms.uReveal.value.toFixed(3)),
+        })
+      }
+      safeLog('[Dreamdust] reveal clamp', {
+        duration: Number(reveal.duration.toFixed(3)),
+      })
+    }
     if (reveal.active) {
       reveal.elapsed = Math.min(reveal.elapsed + safeDelta, reveal.duration)
       const progress = reveal.duration > 0 ? reveal.elapsed / reveal.duration : 1
@@ -927,7 +943,11 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
             duration: Number(reveal.duration.toFixed(3)),
           })
         }
+        logRevealClamp()
       }
+    } else if (reveal.elapsed >= reveal.duration && uniforms.uReveal.value < 1) {
+      uniforms.uReveal.value = 1
+      logRevealClamp()
     }
 
     const cascade = cascadeTimelineRef.current
@@ -981,6 +1001,7 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
     reveal.elapsed = 0
     reveal.duration = resolveRevealDurationSeconds()
     reveal.didLogEnd = false
+    revealClampLoggedRef.current = false
     if (uniforms) {
       uniforms.uReveal.value = 0
     }
