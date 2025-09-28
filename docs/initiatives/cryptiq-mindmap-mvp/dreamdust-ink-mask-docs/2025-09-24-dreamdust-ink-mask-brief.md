@@ -1,5 +1,23 @@
 # Dreamdust Ink — Mask Round Brief (v1)
 
+## Quick Index
+
+- [Metadata](#metadata)
+- [End Experience (aesthetic-only)](#end-experience-aesthetic-only)
+- [Test Route (canonical)](#test-route-canonical)
+- [Guardrails (baseline status)](#guardrails-baseline-status)
+- [Cross-Date Metrics](#cross-date-metrics)
+- [Current Evidence (2025-09-24 smoke)](#current-evidence-2025-09-24-smoke)
+- [2025-09-24 Post-Merge Smoke](#2025-09-24-post-merge-smoke)
+- [2025-09-25 Cover-Fit Dev Snapshot](#2025-09-25-cover-fit-dev-snapshot)
+- [2025-09-25 Sim Smoke](#2025-09-25-sim-smoke)
+- [2025-09-25 Probes Smoke (inkProbe=1, simProbe=1)](#2025-09-25-probes-smoke-inkprobe1-simprobe1)
+- [2025-09-26 Probes Smoke (post-probe fix)](#2025-09-26-probes-smoke-post-probe-fix)
+- [2025-09-27 Clamp + Preset Update](#2025-09-27-clamp--preset-update)
+- [Status Summary](#status-summary)
+
+Raw reference: [2025-09-28 smoke capture](2025-09-28-smoke-raw.md#4-console-objects-paste-the-expanded-payload-for-each).
+
 ## Metadata
 
 - Date: 2025-09-24
@@ -21,6 +39,17 @@
 - DPR clamp logged as 1.8 (desktop); point budget 89,441 instances.
 - Frame percentiles: single log `{ p50 ≈ 16.7 ms, p90 ≈ 58.4 ms }` with persistent rAF violations.
 - Ink worker disabled; fallback path active.
+
+## Cross-Date Metrics
+
+| Date / Run | Visual outcome snapshot | Sim avg / max | Frame p90 (ms) | Ink latency (ms) |
+| ---------- | ---------------------- | ------------- | -------------- | ---------------- |
+| 2025-09-24 baseline smoke | Bright white jittered swarm; silhouette lost. | — | 58.4 | — |
+| 2025-09-24 post-merge prod | Tighter cat silhouette with bloom, sits deep in frame. | — | 9.1 | 7.9 |
+| 2025-09-25 cover-fit dev | Cat fills viewport with crisp stipple, bloom on. | — | ≈9 | — |
+| 2025-09-25 sim smoke | Canvas nearly black; distant lone orb only. | — | 37.1 | — |
+| 2025-09-25 probes smoke | Probes linked but canvas blank with faint orb. | 1.02 / 1.55 | 41.8 | 40.1 |
+| 2025-09-28 probes smoke raw | HUD-only scene; faint orb, heavy rAF violations. | 1.02 / 1.55 | 60 | 2.3 |
 
 ## Current Evidence (2025-09-24 smoke)
 
