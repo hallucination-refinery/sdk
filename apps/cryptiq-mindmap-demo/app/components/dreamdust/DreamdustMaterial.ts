@@ -376,7 +376,7 @@ void main() {
   }
 #endif
 
-  float pointSizeClamped = max(0.0, pointSize);
+  float pointSizeClamped = 8.0; // TEMP: force large points for diagnostics
 
 #ifdef DEBUG_INK_PROBE
   pointSizeClamped *= mix(1.0, 4.0, inkProbe);
@@ -473,8 +473,11 @@ void main() {
 
   float alpha = spriteMix * revealAlpha * revealStrength;
   float depthNorm = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
-  alpha *= dreamdustDepthAlpha(depthNorm, uDepthBias);
-  if (alpha <= 0.001) discard;
+  float depthAlpha = dreamdustDepthAlpha(depthNorm, uDepthBias);
+
+  // TEMP diagnostics: output signer channels directly for visibility debugging.
+  gl_FragColor = vec4(depthAlpha, revealAlpha, spriteMix, 1.0);
+  return;
 
   vec3 color = vColor;
 
