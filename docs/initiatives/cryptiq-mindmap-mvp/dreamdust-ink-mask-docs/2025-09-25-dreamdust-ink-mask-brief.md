@@ -1,5 +1,27 @@
 # Dreamdust Ink - Probes Smoke Brief (2025-09-25)
 
+## Quick Index
+
+- [Metadata](#metadata)
+- [Goal](#goal)
+- [Artifacts (evidence)](#artifacts-evidence)
+- [Telemetry Evidence (AK-DD)](#telemetry-evidence-ak-dd)
+- [Cross-reference vs expectations](#cross-reference-vs-expectations)
+- [Interaction probe results](#interaction-probe-results)
+- [Diagnosis (why the failure happens)](#diagnosis-why-the-failure-happens)
+- [Desired aesthetic/interaction impact](#desired-aestheticinteraction-impact)
+- [Next actions (code-level)](#next-actions-code-level)
+- [Appendix: Run configuration](#appendix-run-configuration)
+
+Cross-date metrics: see [2025-09-24 brief](2025-09-24-dreamdust-ink-mask-brief.md#cross-date-metrics) for p90/latency rollup.
+
+Raw console payloads are archived in [2025-09-28 smoke capture §4](2025-09-28-smoke-raw.md#4-console-objects-paste-the-expanded-payload-for-each) — especially:
+
+- [`[dreamdust] caps`](2025-09-28-smoke-raw.md#41-dreamdust-caps)
+- [`[dreamdust] frame-percentiles`](2025-09-28-smoke-raw.md#49-dreamdust-frame-percentiles)
+- [`[dreamdust] ink-latency`](2025-09-28-smoke-raw.md#411-dreamdust-ink-latency-short-tap)
+- [`[sim] metrics` snapshots](2025-09-28-smoke-raw.md#412-sim-metrics-tap-adjacent-immediately-after-short-tap)
+
 ## Metadata
 
 - Branch: `debug/batch0-baseline`
