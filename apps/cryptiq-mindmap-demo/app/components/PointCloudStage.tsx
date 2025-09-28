@@ -1064,6 +1064,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const { simSnapshot, inkSnapshot } = useDebugControls(debugFlags)
   const debugInkProbe = debugFlags.inkProbe
   const debugSimProbe = debugFlags.simProbe
+  const debugForceAlpha = debugFlags.forceAlpha
   const uniformsWithReveal = uniforms as DreamdustStageUniformsWithReveal
   const hasRevealUniform = !!uniformsWithReveal.uReveal
   const timelineSupported = hasRevealUniform && typeof startReveal === 'function'
@@ -1108,6 +1109,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
       debugInkProbe,
       debugSimProbe,
+      debugForceAlpha,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1120,7 +1122,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
+  }, [debugForceAlpha, debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
   const prebakedMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
     const material = createDreamdustMaterial(uniforms, {
@@ -1128,6 +1130,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
       debugInkProbe,
       debugSimProbe,
+      debugForceAlpha,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1140,7 +1143,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
+  }, [debugForceAlpha, debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
 
   React.useEffect(() => {
     return () => {

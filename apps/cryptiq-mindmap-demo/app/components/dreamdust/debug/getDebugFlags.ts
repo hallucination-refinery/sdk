@@ -7,6 +7,7 @@ export type DebugFlags = {
   simProbe: boolean
   simStats: boolean
   inkStats: boolean
+  forceAlpha: boolean
 }
 
 const DEFAULT_FLAGS: DebugFlags = {
@@ -16,6 +17,7 @@ const DEFAULT_FLAGS: DebugFlags = {
   simProbe: false,
   simStats: false,
   inkStats: false,
+  forceAlpha: false,
 }
 let cachedSearch: string | null = null
 let cachedFlags: DebugFlags = DEFAULT_FLAGS
@@ -37,6 +39,7 @@ export function getDebugFlags(): DebugFlags {
       simProbe: toFlag(params.get('simProbe')),
       simStats: engineSim && toFlag(params.get('simStats')),
       inkStats: engineSim && toFlag(params.get('inkStats')),
+      forceAlpha: toFlag(params.get('forceAlpha')),
     }
   } catch {
     cachedFlags = DEFAULT_FLAGS
