@@ -2,7 +2,7 @@
 // @ts-ignore three types are optional in this workspace
 import * as THREE from 'three'
 
-import { createInkTelemetryCollector } from './telemetry'
+import { createInkTelemetryCollector, createVertexTelemetryCollector } from './telemetry'
 
 import {
   DD_CURL3,
@@ -21,6 +21,7 @@ type DreamdustMaterialOptions = {
   vertexInkOk: boolean
   debugInkProbe?: boolean
   debugSimProbe?: boolean
+  debugVertexLog?: boolean
 }
 
 type DreamdustMaterialOptionsInput = {
@@ -28,6 +29,7 @@ type DreamdustMaterialOptionsInput = {
   vertexInkOk?: boolean
   debugInkProbe?: boolean
   debugSimProbe?: boolean
+  debugVertexLog?: boolean
 }
 
 type DreamdustMaterialResolvedOptions = {
@@ -35,6 +37,7 @@ type DreamdustMaterialResolvedOptions = {
   vertexInkOk: boolean
   debugInkProbe: boolean
   debugSimProbe: boolean
+  debugVertexLog: boolean
 }
 
 const DEFAULT_UNIFORM_VALUES = {
@@ -164,6 +167,10 @@ function syncLegacyVertexInkDefine(defines: Record<string, unknown> | undefined)
 const VERTEX_SHADER = /* glsl */ `
 precision highp float;
 
+#if defined(DEBUG_VERTEX_LOG) && !defined(DEBUG_VERTEX_SLOT_COUNT)
+#define DEBUG_VERTEX_SLOT_COUNT 8
+#endif
+
 uniform float uTime;
 uniform float uReveal;
 uniform float uBreath;
@@ -197,6 +204,10 @@ uniform float uCascade;
 uniform float uCascadeSizeBoost;
 uniform float uVaporGain;
 
+#if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
+uniform float uDebugTelemetryMode;
+#endif
+
 uniform float uHasCapture;
 uniform float uZNearNdc;
 uniform float uZFarNdc;
@@ -219,6 +230,12 @@ uniform sampler2D uSimColorTex;
 attribute vec2 aUv;
 attribute float aDepth;
 attribute vec3 color;
+
+#if defined(DEBUG_VERTEX_LOG)
+varying vec3 vDebugRevealPos;
+varying vec4 vDebugClipPos;
+varying float vDebugSampleSlot;
+#endif
 
 varying vec3 vColor;
 varying vec3 vInkTint;
@@ -397,6 +414,35 @@ void main() {
   vInkMix = inkMix;
   // Screen-space UV from post-projection position
   vec4 clipPos = projectionMatrix * viewPos4;
+
+#if defined(DEBUG_VERTEX_LOG)
+  float debugSlot = -1.0;
+  float debugSlotCount = max(1.0, float(DEBUG_VERTEX_SLOT_COUNT));
+  float debugSeed = dd_hash13(vec3(aUv * 5773.0, aDepth * 233.0));
+  if (debugSeed > 0.995) {
+    float slotSeed = fract(debugSeed * 97.0);
+    debugSlot = floor(clamp(slotSeed * debugSlotCount, 0.0, debugSlotCount - 1.0));
+  }
+  vDebugSampleSlot = debugSlot;
+  vDebugRevealPos = revealPos;
+  vDebugClipPos = clipPos;
+
+#if defined(VERTEX_TELEMETRY_PASS)
+  if (vDebugSampleSlot < 0.0) {
+    gl_Position = vec4(-2.0, -2.0, 0.0, 1.0);
+    gl_PointSize = 0.0;
+    return;
+  }
+  float debugSlotNorm = (vDebugSampleSlot + 0.5) / debugSlotCount;
+  float debugClipX = debugSlotNorm * 2.0 - 1.0;
+  float debugClipY = mix(-1.0, 1.0, clamp(uDebugTelemetryMode, 0.0, 1.0));
+  gl_Position = vec4(debugClipX, debugClipY, 0.0, 1.0);
+  gl_PointSize = 1.0;
+  return;
+#endif
+
+#endif
+
   float invW = 1.0 / max(1e-6, clipPos.w);
   vec2 ndc = clipPos.xy * invW; // [-1,1]
   vec2 ss = ndc * 0.5 + 0.5;
@@ -436,6 +482,10 @@ uniform vec3 uCascadeColor;
 
 uniform sampler2D uInkTex;
 
+#if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
+uniform float uDebugTelemetryMode;
+#endif
+
 varying vec3 vColor;
 varying vec3 vInkTint;
 varying float vInkMix;
@@ -447,6 +497,11 @@ varying float vDepthView;
 #if defined(DEBUG_VTF_SANITY)
 varying float vSimProbe;
 #endif
+#if defined(DEBUG_VERTEX_LOG)
+varying vec3 vDebugRevealPos;
+varying vec4 vDebugClipPos;
+varying float vDebugSampleSlot;
+#endif
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_SOFT_SPRITE_CHUNK}
@@ -455,6 +510,18 @@ ${DREAMDUST_INK_SAMPLE_CHUNK}
 ${DREAMDUST_DEPTH_FADE_CHUNK}
 
 void main() {
+#if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
+  if (vDebugSampleSlot < 0.0) {
+    discard;
+  }
+  if (uDebugTelemetryMode < 0.5) {
+    gl_FragColor = vec4(vDebugRevealPos, vDebugClipPos.w);
+  } else {
+    vec3 clipNdc = vDebugClipPos.xyz / max(1e-6, vDebugClipPos.w);
+    gl_FragColor = vec4(clipNdc, vDebugClipPos.w);
+  }
+  return;
+#endif
   // Softer disc sprite for vapor look
   float sprite = dreamdustSoftSprite(gl_PointCoord);
   float spriteAlpha = pow(max(sprite, 0.0), 0.85);
@@ -553,6 +620,7 @@ export function makeDreamdustMaterial(
     vertexInkOk: opts.vertexInkOk ?? false,
     debugInkProbe: opts.debugInkProbe ?? false,
     debugSimProbe: opts.debugSimProbe ?? false,
+    debugVertexLog: opts.debugVertexLog ?? false,
   }
 
   const defines: Record<string, unknown> = {}
@@ -568,6 +636,9 @@ export function makeDreamdustMaterial(
   }
   if (resolved.debugSimProbe) {
     defines.DEBUG_VTF_SANITY = 1
+  }
+  if (resolved.debugVertexLog) {
+    defines.DEBUG_VERTEX_LOG = 1
   }
   syncLegacyVertexInkDefine(defines)
 
@@ -588,6 +659,7 @@ export function makeDreamdustMaterial(
   ;(material as any).defines = (material as any).defines ?? {}
   syncLegacyVertexInkDefine((material as any).defines)
   const inkTelemetry = createInkTelemetryCollector()
+  const vertexTelemetry = createVertexTelemetryCollector()
   const originalOnAfterRender = material.onAfterRender?.bind(material)
   material.onAfterRender = function onAfterRenderHook(
     renderer: THREE.WebGLRenderer,
@@ -598,6 +670,12 @@ export function makeDreamdustMaterial(
     group?: THREE.Group
   ) {
     inkTelemetry.capture(renderer, uniforms)
+    vertexTelemetry.capture({
+      renderer,
+      geometry,
+      object,
+      material: material as THREE.ShaderMaterial,
+    })
     if (originalOnAfterRender) {
       originalOnAfterRender(renderer, scene, camera, geometry, object, group)
     }
@@ -624,10 +702,16 @@ export function makeDreamdustMaterial(
   } else {
     delete (material as any).defines.DEBUG_VTF_SANITY
   }
+  if (resolved.debugVertexLog) {
+    ;(material as any).defines.DEBUG_VERTEX_LOG = 1
+  } else {
+    delete (material as any).defines.DEBUG_VERTEX_LOG
+  }
 
   const originalDispose = material.dispose.bind(material)
   material.dispose = function disposeWithTelemetry() {
     inkTelemetry.dispose()
+    vertexTelemetry.dispose()
     originalDispose()
   }
 
@@ -649,6 +733,12 @@ export function makeDreamdustMaterial(
       shader.defines.DEBUG_VTF_SANITY = 1
     } else if (shader.defines) {
       delete shader.defines.DEBUG_VTF_SANITY
+    }
+    if (resolved.debugVertexLog) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_VERTEX_LOG = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_VERTEX_LOG
     }
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)
