@@ -14,7 +14,6 @@ Run from repo root:
 
 ```bash
 # 1) Install (deterministic)
-corepack enable
 pnpm install --frozen-lockfile
 
 # 2) Typecheck (thin slice; prefer schema, fallback to app-only)
@@ -30,6 +29,8 @@ pnpm --filter cryptiq-mindmap-demo run build
 # 5) Smoke (plumbing only)
 pnpm run smoke
 ```
+
+Record the stdout/stderr from each step so the final PR body can cite the exact command outputs.
 
 ## Branch and PR etiquette
 
@@ -61,6 +62,17 @@ NEXT_PUBLIC_ENABLE_CONTROLS=0
 - PR passes the minimal CI pipeline.
 - Diff is limited to the requested scope; no incidental lockfile churn.
 - A brief verification note is included in the PR body.
+- When documentation or diagnostics are updated, paste verbatim evidence (console objects, telemetry tables, screenshot paths) so reviewers can trace every claim.
+
+## Documentation workflow (Dreamdust initiative)
+
+- Canonical files live under `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/`:
+  - Dated briefs (`2025-09-24-*.md`, `2025-09-25-*.md`, `2025-09-28-smoke-raw.md`, etc.).
+  - Raw dumps (`*-smoke-raw.md`) — keep console objects fully expanded; never summarize without the raw block.
+  - Pipeline notes (`2025-09-25-gpgpu-pipeline.md`) — append new findings; do not delete history.
+  - Screenshots in `assets/` using the `YYYY-MM-DD-...png` naming convention.
+- Preserve existing headings, dates, and chronology; add new sections instead of rewriting prior runs.
+- Cite paths when referencing evidence (e.g., `assets/2025-09-28-probes-smoke.png`).
 
 ## Codex Cloud Policy (Generic)
 
