@@ -14,3 +14,7 @@
 - **Next actions:**
   - **If successful:** Proceed to isolate alpha-handling paths (e.g., PMA blend config, framebuffer clears) in subsequent experiments, then gradually reintroduce simulation to pinpoint the minimum change that preserves stability.
   - **If failure:** Pivot to inspecting downstream consumers (post-processing passes, framebuffer swaps) and design Experiment 02 around instrumenting those stages, restoring original alpha/sim settings before testing.
+
+### Outcome — 2025-09-28
+- Forced alpha via `forceAlpha=1` restored the cat silhouette and dropped p90 to ~9 ms while sim metrics remained unchanged.
+- Experiment marked **success**; follow-up actions: instrument `spriteMix`, `revealAlpha`, `depthAlpha`, and identify which term drives alpha below threshold so we can restore visibility without the debug flag.
