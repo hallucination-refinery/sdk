@@ -21,6 +21,7 @@ type DreamdustMaterialOptions = {
   vertexInkOk: boolean
   debugInkProbe?: boolean
   debugSimProbe?: boolean
+  debugForceAlpha?: boolean
   debugVertexLog?: boolean
 }
 
@@ -29,6 +30,7 @@ type DreamdustMaterialOptionsInput = {
   vertexInkOk?: boolean
   debugInkProbe?: boolean
   debugSimProbe?: boolean
+  debugForceAlpha?: boolean
   debugVertexLog?: boolean
 }
 
@@ -37,6 +39,7 @@ type DreamdustMaterialResolvedOptions = {
   vertexInkOk: boolean
   debugInkProbe: boolean
   debugSimProbe: boolean
+  debugForceAlpha: boolean
   debugVertexLog: boolean
 }
 
@@ -620,6 +623,7 @@ export function makeDreamdustMaterial(
     vertexInkOk: opts.vertexInkOk ?? false,
     debugInkProbe: opts.debugInkProbe ?? false,
     debugSimProbe: opts.debugSimProbe ?? false,
+    debugForceAlpha: opts.debugForceAlpha ?? false,
     debugVertexLog: opts.debugVertexLog ?? false,
   }
 
@@ -636,6 +640,9 @@ export function makeDreamdustMaterial(
   }
   if (resolved.debugSimProbe) {
     defines.DEBUG_VTF_SANITY = 1
+  }
+  if (resolved.debugForceAlpha) {
+    defines.DEBUG_FORCE_ALPHA = 1
   }
   if (resolved.debugVertexLog) {
     defines.DEBUG_VERTEX_LOG = 1
@@ -659,7 +666,7 @@ export function makeDreamdustMaterial(
   ;(material as any).defines = (material as any).defines ?? {}
   syncLegacyVertexInkDefine((material as any).defines)
   const inkTelemetry = createInkTelemetryCollector()
-  const vertexTelemetry = createVertexTelemetryCollector()
+  const vertexTelemetry = resolved.debugVertexLog ? createVertexTelemetryCollector() : null
   const originalOnAfterRender = material.onAfterRender?.bind(material)
   material.onAfterRender = function onAfterRenderHook(
     renderer: THREE.WebGLRenderer,
@@ -670,7 +677,7 @@ export function makeDreamdustMaterial(
     group?: THREE.Group
   ) {
     inkTelemetry.capture(renderer, uniforms)
-    vertexTelemetry.capture({
+    vertexTelemetry?.capture({
       renderer,
       geometry,
       object,
@@ -702,6 +709,11 @@ export function makeDreamdustMaterial(
   } else {
     delete (material as any).defines.DEBUG_VTF_SANITY
   }
+  if (resolved.debugForceAlpha) {
+    ;(material as any).defines.DEBUG_FORCE_ALPHA = 1
+  } else {
+    delete (material as any).defines.DEBUG_FORCE_ALPHA
+  }
   if (resolved.debugVertexLog) {
     ;(material as any).defines.DEBUG_VERTEX_LOG = 1
   } else {
@@ -711,7 +723,7 @@ export function makeDreamdustMaterial(
   const originalDispose = material.dispose.bind(material)
   material.dispose = function disposeWithTelemetry() {
     inkTelemetry.dispose()
-    vertexTelemetry.dispose()
+    vertexTelemetry?.dispose()
     originalDispose()
   }
 
@@ -733,6 +745,12 @@ export function makeDreamdustMaterial(
       shader.defines.DEBUG_VTF_SANITY = 1
     } else if (shader.defines) {
       delete shader.defines.DEBUG_VTF_SANITY
+    }
+    if (resolved.debugForceAlpha) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_FORCE_ALPHA = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_FORCE_ALPHA
     }
     if (resolved.debugVertexLog) {
       shader.defines = shader.defines ?? {}

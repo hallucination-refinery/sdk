@@ -1064,6 +1064,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const { simSnapshot, inkSnapshot } = useDebugControls(debugFlags)
   const debugInkProbe = debugFlags.inkProbe
   const debugSimProbe = debugFlags.simProbe
+  const debugForceAlpha = debugFlags.forceAlpha
+  const debugVertexLog = debugFlags.vertexLog
   const uniformsWithReveal = uniforms as DreamdustStageUniformsWithReveal
   const hasRevealUniform = !!uniformsWithReveal.uReveal
   const timelineSupported = hasRevealUniform && typeof startReveal === 'function'
@@ -1108,6 +1110,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
       debugInkProbe,
       debugSimProbe,
+      debugForceAlpha,
+      debugVertexLog,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1120,7 +1124,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
+  }, [debugForceAlpha, debugInkProbe, debugSimProbe, debugVertexLog, runtimeCaps, uniforms])
   const prebakedMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
     const material = createDreamdustMaterial(uniforms, {
@@ -1128,6 +1132,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       vertexInkOk: runtimeCaps.vertexInkOk ?? false,
       debugInkProbe,
       debugSimProbe,
+      debugForceAlpha,
+      debugVertexLog,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1140,7 +1146,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugInkProbe, debugSimProbe, runtimeCaps, uniforms])
+  }, [debugForceAlpha, debugInkProbe, debugSimProbe, debugVertexLog, runtimeCaps, uniforms])
 
   React.useEffect(() => {
     return () => {
@@ -2461,7 +2467,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               />
               roll180 (rotate Z)
             </label>
-            {process.env.NODE_ENV !== 'production' && (debugFlags.simStats || debugFlags.inkStats) ? (
+            {process.env.NODE_ENV !== 'production' &&
+            (debugFlags.simStats || debugFlags.inkStats) ? (
               <DebugHud
                 simEnabled={debugFlags.simStats}
                 simSnapshot={simSnapshot}
