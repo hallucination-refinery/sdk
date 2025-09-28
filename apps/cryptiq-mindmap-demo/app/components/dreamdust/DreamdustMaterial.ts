@@ -21,6 +21,7 @@ type DreamdustMaterialOptions = {
   vertexInkOk: boolean
   debugInkProbe?: boolean
   debugSimProbe?: boolean
+  debugForceAlpha?: boolean
 }
 
 type DreamdustMaterialOptionsInput = {
@@ -28,6 +29,7 @@ type DreamdustMaterialOptionsInput = {
   vertexInkOk?: boolean
   debugInkProbe?: boolean
   debugSimProbe?: boolean
+  debugForceAlpha?: boolean
 }
 
 type DreamdustMaterialResolvedOptions = {
@@ -35,6 +37,7 @@ type DreamdustMaterialResolvedOptions = {
   vertexInkOk: boolean
   debugInkProbe: boolean
   debugSimProbe: boolean
+  debugForceAlpha: boolean
 }
 
 const DEFAULT_UNIFORM_VALUES = {
@@ -474,7 +477,9 @@ void main() {
   float alpha = spriteMix * revealAlpha * revealStrength;
   float depthNorm = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
   alpha *= dreamdustDepthAlpha(depthNorm, uDepthBias);
+#ifndef DEBUG_FORCE_ALPHA
   if (alpha <= 0.001) discard;
+#endif
 
   vec3 color = vColor;
 
@@ -506,6 +511,9 @@ void main() {
   float rim = dreamdustRimStrength(sprite);
   color = dreamdustApplyRimLight(color, rim);
   alpha = dreamdustApplyRimAlpha(alpha, rim);
+#ifdef DEBUG_FORCE_ALPHA
+  alpha = 1.0;
+#endif
 
 #ifdef DEBUG_INK_PROBE
   DreamdustInkSample debugInkSample = dreamdustSampleInk(uInkTex, vInkUv);
@@ -553,6 +561,7 @@ export function makeDreamdustMaterial(
     vertexInkOk: opts.vertexInkOk ?? false,
     debugInkProbe: opts.debugInkProbe ?? false,
     debugSimProbe: opts.debugSimProbe ?? false,
+    debugForceAlpha: opts.debugForceAlpha ?? false,
   }
 
   const defines: Record<string, unknown> = {}
@@ -568,6 +577,9 @@ export function makeDreamdustMaterial(
   }
   if (resolved.debugSimProbe) {
     defines.DEBUG_VTF_SANITY = 1
+  }
+  if (resolved.debugForceAlpha) {
+    defines.DEBUG_FORCE_ALPHA = 1
   }
   syncLegacyVertexInkDefine(defines)
 
@@ -624,6 +636,11 @@ export function makeDreamdustMaterial(
   } else {
     delete (material as any).defines.DEBUG_VTF_SANITY
   }
+  if (resolved.debugForceAlpha) {
+    ;(material as any).defines.DEBUG_FORCE_ALPHA = 1
+  } else {
+    delete (material as any).defines.DEBUG_FORCE_ALPHA
+  }
 
   const originalDispose = material.dispose.bind(material)
   material.dispose = function disposeWithTelemetry() {
@@ -649,6 +666,12 @@ export function makeDreamdustMaterial(
       shader.defines.DEBUG_VTF_SANITY = 1
     } else if (shader.defines) {
       delete shader.defines.DEBUG_VTF_SANITY
+    }
+    if (resolved.debugForceAlpha) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_FORCE_ALPHA = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_FORCE_ALPHA
     }
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)
