@@ -2261,6 +2261,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       })
       ;(points as any).userData = (points as any).userData ?? {}
       ;(points as any).userData.vertexTelemetry = collector
+      console.info('[vertex] capture attribute counts', {
+        geometryUuid: geometry.uuid,
+        position: geometry.getAttribute('position')?.count ?? 0,
+        color: geometry.getAttribute('color')?.count ?? 0,
+        aSimUv: geometry.getAttribute('aSimUv')?.count ?? 0,
+        aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
+        aUv: geometry.getAttribute('aUv')?.count ?? 0,
+      })
       collector.capture({
         renderer,
         geometry,
@@ -2276,11 +2284,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       if (points.onAfterRender === undefined) {
         return
       }
-    points.onAfterRender = original ?? undefined
-    if ((points as any).userData) {
-      delete (points as any).userData.vertexTelemetry
-    }
-    collector.dispose()
+      points.onAfterRender = original ?? undefined
+      if ((points as any).userData) {
+        delete (points as any).userData.vertexTelemetry
+      }
+      collector.dispose()
     }
     return stageTelemetryCleanupRef.current
   }, [
@@ -2451,57 +2459,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                       attach="attributes-position"
                       args={[stagePositionArray, 3]}
                     />
-                    {stageUvDepth && (
-                      <>
-                        {/* custom uv for ink/reveal */}
-                        {/** @ts-expect-error custom attribute binding */}
-                        <bufferAttribute
-                          key={`aUv:${stageAttributeVersion}`}
-                          attachObject={['attributes', 'aUv']}
-                          args={[stageUvDepth.uvs, 2]}
-                        />
-                        {/* also bind built-in uv for fragment-only path parity */}
-                        <bufferAttribute
-                          key={`uv:${stageAttributeVersion}`}
-                          attach="attributes-uv"
-                          args={[stageUvDepth.uvs, 2]}
-                        />
-                        {/* normalized depth across AABB */}
-                        {/** @ts-expect-error custom attribute binding */}
-                        <bufferAttribute
-                          key={`aDepth:${stageAttributeVersion}`}
-                          attachObject={['attributes', 'aDepth']}
-                          args={[stageUvDepth.depths01, 1]}
-                        />
-                        {simActive && simState && simState.stageUvs && (
-                          // @ts-expect-error telemetry sim UV binding
-                          <bufferAttribute
-                            key={`aSimUv:${simUvVersion}`}
-                            attachObject={['attributes', 'aSimUv']}
-                            args={[simState.stageUvs, 2]}
-                          />
-                        )}
-                      </>
-                    )}
-                    {(() => {
-                      if (simActive && simState) {
-                        return (
-                          <bufferAttribute
-                            attach="attributes-color"
-                            args={[simState.positions, 3]}
-                          />
-                        )
-                      }
-                      const src = renderBuffers?.colors ?? recolored ?? null
-                      const basePositions = renderBuffers?.positions ?? prebaked?.positions ?? null
-                      const posCount = basePositions ? Math.floor(basePositions.length / 3) : 0
-                      const ok = src && Math.floor(src.length / 3) === posCount
-                      return ok ? (
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore normalized byte colors
-                        <bufferAttribute attach="attributes-color" args={[src, 3, true]} />
-                      ) : null
-                    })()}
                   </bufferGeometry>
                   <primitive object={prebakedMaterial} attach="material" />
                 </points>
