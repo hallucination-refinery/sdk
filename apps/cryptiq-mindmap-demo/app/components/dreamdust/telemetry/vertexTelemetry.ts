@@ -239,20 +239,22 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
 
     const telemetryGeometry = points.geometry as BufferGeometry | undefined
     const geometryAttributes = readAttributeCounts(geometry)
+    const telemetryAttributes = readAttributeCounts(telemetryGeometry)
+    const telemetryGeometryUuid = telemetryGeometry?.uuid ?? null
     console.info('[vertex] capture-debug', {
       stage: 'attributes',
+      geometryUuid: geometry.uuid,
+      telemetryGeometryUuid,
       geometryAttributes,
       debugDefines: {
         material: Object.keys(material.defines ?? {}),
         telemetry: Object.keys(telemetryMaterial.defines ?? {}),
       },
     })
-
-    const telemetryAttributes = readAttributeCounts(telemetryGeometry)
     console.info('[vertex] capture-debug', {
       stage: 'telemetry-attributes',
       sourceGeometryUuid: geometry.uuid,
-      telemetryGeometryUuid: telemetryGeometry?.uuid ?? null,
+      telemetryGeometryUuid,
       sourceAttributes: geometryAttributes,
       telemetryAttributes,
     })
@@ -273,6 +275,7 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
         requiredAttributes: ['aSimUv', 'aDepth', 'aUv'],
         telemetry: telemetryAttributes,
       })
+      return
     }
 
     const prevTarget = renderer.getRenderTarget()
