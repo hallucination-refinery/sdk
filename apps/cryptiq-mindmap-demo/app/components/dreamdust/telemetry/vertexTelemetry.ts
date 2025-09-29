@@ -65,7 +65,7 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
   let lastSampleMs = 0
 
   const ensureResources = (
-    geometry: BufferGeometry,
+    sourceGeometry: BufferGeometry,
     object: Object3D | undefined,
     sourceMaterial: ShaderMaterial
   ) => {
@@ -111,12 +111,63 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
       ensureUniforms(sourceMaterial, telemetryMaterial.uniforms as UniformRecord, telemetryUniform)
       telemetryMaterial.uniformsNeedUpdate = true
     }
+    const telemetryGeometry = sourceGeometry.clone()
+    const cloneSummary = {
+      sourceUuid: sourceGeometry.uuid,
+      cloneUuid: telemetryGeometry.uuid,
+      sourceAttributes: {
+        position: sourceGeometry.getAttribute('position')?.count ?? 0,
+        color: sourceGeometry.getAttribute('color')?.count ?? 0,
+        aSimUv: sourceGeometry.getAttribute('aSimUv')?.count ?? 0,
+        aDepth: sourceGeometry.getAttribute('aDepth')?.count ?? 0,
+        aUv: sourceGeometry.getAttribute('aUv')?.count ?? 0,
+      },
+    }
+
+    const simAttribute = sourceGeometry.getAttribute('aSimUv') as THREE.BufferAttribute | undefined
+    if (simAttribute) {
+      telemetryGeometry.setAttribute(
+        'aSimUv',
+        simAttribute.clone() as unknown as THREE.BufferAttribute
+      )
+    }
+
+    const depthAttribute = sourceGeometry.getAttribute('aDepth') as THREE.BufferAttribute | undefined
+    if (depthAttribute) {
+      telemetryGeometry.setAttribute(
+        'aDepth',
+        depthAttribute.clone() as unknown as THREE.BufferAttribute
+      )
+    }
+
+    const debugAttribute = sourceGeometry.getAttribute('aUv') as THREE.BufferAttribute | undefined
+    if (debugAttribute) {
+      telemetryGeometry.setAttribute(
+        'aUv',
+        debugAttribute.clone() as unknown as THREE.BufferAttribute
+      )
+    }
+
+    const cloneCounts = {
+      position: telemetryGeometry.getAttribute('position')?.count ?? 0,
+      color: telemetryGeometry.getAttribute('color')?.count ?? 0,
+      aSimUv: telemetryGeometry.getAttribute('aSimUv')?.count ?? 0,
+      aDepth: telemetryGeometry.getAttribute('aDepth')?.count ?? 0,
+      aUv: telemetryGeometry.getAttribute('aUv')?.count ?? 0,
+    }
+
+    console.info('[vertex] telemetry clone summary', {
+      ...cloneSummary,
+      cloneAttributes: cloneCounts,
+    })
+
     if (!points) {
-      points = new THREE.Points(geometry, telemetryMaterial)
+      points = new THREE.Points(telemetryGeometry, telemetryMaterial)
       points.frustumCulled = false
       scene.add(points)
     } else {
-      points.geometry = geometry
+      points.geometry.dispose()
+      points.geometry = telemetryGeometry
       points.material = telemetryMaterial
     }
 
@@ -167,7 +218,7 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
       color: geometry.getAttribute ? (geometry.getAttribute('color')?.count ?? 0) : 0,
       aSimUv: geometry.getAttribute ? (geometry.getAttribute('aSimUv')?.count ?? 0) : 0,
       aDepth: geometry.getAttribute ? (geometry.getAttribute('aDepth')?.count ?? 0) : 0,
-      aUv: geometry.getAttribute ? (geometry.getAttribute('uv')?.count ?? 0) : 0,
+      aUv: geometry.getAttribute ? (geometry.getAttribute('aUv')?.count ?? 0) : 0,
     }
     console.info('[vertex] capture-debug', {
       stage: 'attributes',
