@@ -163,11 +163,11 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
     }
 
     const geometryAttributes = {
-      position: geometry.getAttribute ? geometry.getAttribute('position')?.count ?? 0 : 0,
-      color: geometry.getAttribute ? geometry.getAttribute('color')?.count ?? 0 : 0,
-      aSimUv: geometry.getAttribute ? geometry.getAttribute('aSimUv')?.count ?? 0 : 0,
-      aDepth: geometry.getAttribute ? geometry.getAttribute('aDepth')?.count ?? 0 : 0,
-      aUv: geometry.getAttribute ? geometry.getAttribute('uv')?.count ?? 0 : 0,
+      position: geometry.getAttribute ? (geometry.getAttribute('position')?.count ?? 0) : 0,
+      color: geometry.getAttribute ? (geometry.getAttribute('color')?.count ?? 0) : 0,
+      aSimUv: geometry.getAttribute ? (geometry.getAttribute('aSimUv')?.count ?? 0) : 0,
+      aDepth: geometry.getAttribute ? (geometry.getAttribute('aDepth')?.count ?? 0) : 0,
+      aUv: geometry.getAttribute ? (geometry.getAttribute('uv')?.count ?? 0) : 0,
     }
     console.info('[vertex] capture-debug', {
       stage: 'attributes',

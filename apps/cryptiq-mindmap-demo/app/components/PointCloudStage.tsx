@@ -2089,10 +2089,48 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     uniforms.uDepthNormScale.value = depthScale
   }, [cameraFitRadius, prebakedTransform, thicknessScale, uniforms, fitRequest])
 
-  const renderBuffersRef = React.useRef<RenderBuffers | null>(null)
-  const renderBuffersLoaded = React.useRef(false)
   const stagePointsRef = React.useRef<THREE.Points | null>(null)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
+
+  const stagePositionArray = React.useMemo(() => {
+    if (simActive && simState) {
+      return simState.positions
+    }
+    if (renderBuffers?.positions) {
+      return renderBuffers.positions
+    }
+    if (prebaked?.positions) {
+      return prebaked.positions
+    }
+    return new Float32Array(0)
+  }, [prebaked?.positions, renderBuffers?.positions, simActive, simState])
+
+  const stagePositionVersion = React.useMemo(() => {
+    const key = simActive ? simState?.key ?? 'sim' : 'pre'
+    const len = stagePositionArray.length
+    const hash = hashArraySample(stagePositionArray)
+    return `${key}:pos:${len}:${hash}`
+  }, [hashArraySample, simActive, simState?.key, stagePositionArray])
+
+  const stageAttributeVersion = React.useMemo(() => {
+    if (!stageUvDepth) {
+      return simActive ? `${simState?.key ?? 'sim'}:uv:none` : 'pre:uv:none'
+    }
+    const key = simActive ? simState?.key ?? 'sim' : 'pre'
+    const uvHash = hashArraySample(stageUvDepth.uvs)
+    const depthHash = hashArraySample(stageUvDepth.depths01)
+    const uvLen = stageUvDepth.uvs?.length ?? 0
+    const depthLen = stageUvDepth.depths01?.length ?? 0
+    return `${key}:uv:${uvLen}:${uvHash}:depth:${depthLen}:${depthHash}`
+  }, [hashArraySample, simActive, simState?.key, stageUvDepth])
+
+  const simUvVersion = React.useMemo(() => {
+    if (!simActive || !simState?.stageUvs) {
+      return 'inactive'
+    }
+    const hash = hashArraySample(simState.stageUvs)
+    return `${simState.key}:simUv:${simState.stageUvs.length}:${hash}`
+  }, [hashArraySample, simActive, simState])
 
   React.useEffect(() => {
     const points = stagePointsRef.current
@@ -2296,37 +2334,38 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             <group scale={mirrorScale}>
               <group scale={[1, 1, thicknessScale]}>
                 <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
-                  <bufferGeometry key={simActive ? simState?.key ?? 'sim' : 'prebaked'}>
+                  <bufferGeometry key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}>
                     <bufferAttribute
+                      key={`pos:${stagePositionVersion}`}
                       attach="attributes-position"
-                      args={[
-                        simActive && simState
-                          ? simState.positions
-                          : (renderBuffers?.positions ??
-                            prebaked?.positions ??
-                            new Float32Array(0)),
-                        3,
-                      ]}
+                      args={[stagePositionArray, 3]}
                     />
                     {stageUvDepth && (
                       <>
                         {/* custom uv for ink/reveal */}
                         {/** @ts-expect-error custom attribute binding */}
                         <bufferAttribute
+                          key={`aUv:${stageAttributeVersion}`}
                           attachObject={['attributes', 'aUv']}
                           args={[stageUvDepth.uvs, 2]}
                         />
                         {/* also bind built-in uv for fragment-only path parity */}
-                        <bufferAttribute attach="attributes-uv" args={[stageUvDepth.uvs, 2]} />
+                        <bufferAttribute
+                          key={`uv:${stageAttributeVersion}`}
+                          attach="attributes-uv"
+                          args={[stageUvDepth.uvs, 2]}
+                        />
                         {/* normalized depth across AABB */}
                         {/** @ts-expect-error custom attribute binding */}
                         <bufferAttribute
+                          key={`aDepth:${stageAttributeVersion}`}
                           attachObject={['attributes', 'aDepth']}
                           args={[stageUvDepth.depths01, 1]}
                         />
                         {simActive && simState && simState.stageUvs && (
                           // @ts-expect-error telemetry sim UV binding
                           <bufferAttribute
+                            key={`aSimUv:${simUvVersion}`}
                             attachObject={['attributes', 'aSimUv']}
                             args={[simState.stageUvs, 2]}
                           />
@@ -2343,9 +2382,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                         )
                       }
                       const src = renderBuffers?.colors ?? recolored ?? null
-                      const posCount = Math.floor(
-                        (renderBuffers?.positions ?? prebaked.positions).length / 3
-                      )
+                      const basePositions = renderBuffers?.positions ?? prebaked?.positions ?? null
+                      const posCount = basePositions ? Math.floor(basePositions.length / 3) : 0
                       const ok = src && Math.floor(src.length / 3) === posCount
                       return ok ? (
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
