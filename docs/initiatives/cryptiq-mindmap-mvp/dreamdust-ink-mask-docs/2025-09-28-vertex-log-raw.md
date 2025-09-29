@@ -143,6 +143,7 @@ _No `[vertex]` payload fired; the console never printed the expected sample arra
 4. The _same_ set of white specks/particles/cubes appear/disappear sequentially along a semi-circle down the lower left side of the viewport (_exactly_ like last time); however, I will note that the specks/particles/cubes _seem_ larger this time
 5. After the final particle appears, the sides of the viewport started to glitch in like pink and greenish/blue, then the entire HUD disappears/reappears (screenshot taken here.)
 6. Despite the flag and collector wiring, there were zero `[vertex]` console entries; telemetry still appears inactive.
+7. `[PC] ink debug` / `[dreamdust] ink-latency` never fired—no gestures landed during this capture so ink telemetry is still untested.
 
 - **Lag baseline:** The vertex logger run immediately before the perf trace did **not** include a successful tap/stroke due to FPS collapse.
 - **Perf trace:** Collected a Chrome profiling session (settle only) after the run above; file stored at `perf-traces/2025-09-26-2330-vertex-log-baseline.json` (same branch + code state).
@@ -246,4 +247,30 @@ page-9074fb2aef53556d.js:1 [dreamdust] ink-tex bind Objectheight: 256needsUpdate
 161.4128f57827ee7dda.js:83 [sim] metrics {min: 0, max: 1.5524, avg: 0.982, nanCount: 0, infCount: 0, …}
 161.4128f57827ee7dda.js:83 [sim] metrics {min: 0, max: 1.5524, avg: 0.982, nanCount: 0, infCount: 0, …}
 161.4128f57827ee7dda.js:83 [sim] metrics {min: 0, max: 1.5524, avg: 0.982, nanCount: 0, infCount: 0, …}avg: 0.982grid: 8infCount: 0max: 1.5524min: 0nanCount: 0samples: (64) [0.8177, 1.5493, 0.8177, 0.8235, 1.5524, 1.5524, 0.8177, 1.5524, 0.8235, 0.8177, 1.5524, 1.5493, 0.8177, 0.8235, 0.8235, 0.8235, 0.8177, 0.8235, 1.5524, 1.5493, 0.8235, 0.8235, 0.8177, 1.5493, 0.8177, 0.8235, 0.8177, 1.5524, 0.8177, 1.5524, 1.5524, 0.8177, 0.8235, 0.8177, 0.8177, 0.8235, 1.5524, 1.5493, 1.5493, 0.8177, 1.5524, 1.5493, 1.5524, 1.5524, 0.8177, 0.8235, 0.8177, 0.8235, 0.8235, 0.8235, 0.8235, 1.5493, 1.5493, 1.5493, 0.8177, 0.8235, 0.8235, 0, 0, 0, 0, 0, 0, 0]texSize: (2) [300, 299][[Prototype]]: Object
+```
+
+## 8. Perf Trace (settle-only)
+
+- File: `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/perf-traces/2025-09-26-2330-vertex-log-baseline.json`
+- Context: Captured immediately after this run while the scene sat idle with `vertexLog=1`; no gestures were executed during the trace.
+- Frame pacing: 140 `BeginMainThreadFrame` events with inter-frame median ≈ 51 ms, p90 ≈ 66 ms, and max ≈ 134 ms (computed via Node script in `/workspace`).
+- Long tasks: 431 main-thread slices exceeded 16 ms, dominated by `RunTask` → `FireAnimationFrame` → `PageAnimator::serviceScriptedAnimations` chains (~132 ms each), matching the DevTools `requestAnimationFrame` violation spam recorded above.
+
+```bash
+node - <<'NODE'
+const fs = require('fs');
+const data = JSON.parse(fs.readFileSync('docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/perf-traces/2025-09-26-2330-vertex-log-baseline.json', 'utf8'));
+const frames = data.traceEvents.filter(e => e.name === 'BeginMainThreadFrame').sort((a,b)=>a.ts-b.ts);
+const intervals = frames.slice(1).map((f,i)=> (f.ts - frames[i].ts)/1000);
+const sorted = [...intervals].sort((a,b)=>a-b);
+const p = q => sorted[Math.floor(sorted.length*q)];
+console.log({
+  frameCount: frames.length,
+  medianMs: sorted[Math.floor(sorted.length/2)],
+  p90Ms: p(0.9),
+  maxMs: sorted[sorted.length-1]
+});
+const long = data.traceEvents.filter(e => e.ph === 'X' && e.pid === 87534 && e.tid === 14359223 && e.dur > 16000);
+console.log({ longTasks: long.length, topSample: long[0]?.name, topDurMs: (long[0]?.dur||0)/1000 });
+NODE
 ```

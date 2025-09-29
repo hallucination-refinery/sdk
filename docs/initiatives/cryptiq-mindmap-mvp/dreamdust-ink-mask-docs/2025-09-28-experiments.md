@@ -18,7 +18,8 @@
 ## Experiment 02 — Vertex Telemetry Capture
 - **Goal:** Use the new `vertexLog=1` flag to sample `revealPos` and `gl_Position` pairs so we can confirm whether geometry collapses before the fragment stage.
 - **Probe run:** 22:47 ET capture on `codex/instrument-vertex-positions-for-debugging` with all probes enabled and forceAlpha retained for parity with prior smokes.【2025-09-28-vertex-log-raw.md:1-36】
-- **Observed outcome:** The collector returned an empty array—no `[vertex] samples` were emitted—while `[PC]` and `[sim]` telemetry matched the earlier collapse signature, leaving us blind on clip-space output.【2025-09-28-vertex-log-raw.md:37-127】
+- **Observed outcome:** The collector returned an empty array—no `[vertex] samples` were emitted—and the lag prevented the tap/stroke from firing, so `[PC] ink debug` / `[dreamdust] ink-latency` are also missing; `[PC]` and `[sim]` telemetry still match the collapse signature.【2025-09-28-vertex-log-raw.md:37-144】
+- **Perf trace:** Settled trace `perf-traces/2025-09-26-2330-vertex-log-baseline.json` reports median frame spacing ≈ 51 ms (max ≈ 134 ms) with 431 long `RunTask`/`FireAnimationFrame` slices (~132 ms), aligning with the rAF violation spam and indicating CPU-side stalls before telemetry capture.【2025-09-28-vertex-log-raw.md:148-162】
 - **Interpretation:** The shader define or material hook still fails to surface telemetry during the main pass; geometry data loads, but without slot captures we cannot isolate whether reveal or alpha stages are discarding points.
 - **Next actions:**
   - Audit `PointCloudStage` and `DreamdustMaterial` to confirm DEBUG_VERTEX_LOG survives recompiles (suspect R3F reuse or missing `vertexTelemetry.capture` invocation during the fallback path).
