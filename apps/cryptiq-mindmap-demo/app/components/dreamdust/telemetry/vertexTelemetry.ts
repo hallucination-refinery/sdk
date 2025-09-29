@@ -251,14 +251,16 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
     const telemetryAttributes = readAttributeCounts(telemetryGeometry)
     console.info('[vertex] capture-debug', {
       stage: 'telemetry-attributes',
-      geometryUuid: telemetryGeometry?.uuid ?? null,
+      sourceGeometryUuid: geometry.uuid,
+      telemetryGeometryUuid: telemetryGeometry?.uuid ?? null,
+      sourceAttributes: geometryAttributes,
       telemetryAttributes,
     })
 
-    if (geometryAttributes.aSimUv === 0 && telemetryAttributes.aSimUv > 0) {
+    if (geometryAttributes.aSimUv > 0 && telemetryAttributes.aSimUv === 0) {
       console.warn('[vertex] capture-debug', {
         stage: 'attributes-mismatch',
-        reason: 'source geometry missing aSimUv while telemetry clone has data',
+        reason: 'telemetry geometry dropped aSimUv that exists on source',
         source: geometryAttributes,
         telemetry: telemetryAttributes,
       })
