@@ -132,7 +132,9 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
       )
     }
 
-    const depthAttribute = sourceGeometry.getAttribute('aDepth') as THREE.BufferAttribute | undefined
+    const depthAttribute = sourceGeometry.getAttribute('aDepth') as
+      | THREE.BufferAttribute
+      | undefined
     if (depthAttribute) {
       telemetryGeometry.setAttribute(
         'aDepth',
@@ -180,6 +182,25 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
     }
   }
 
+  const readAttributeCounts = (g: BufferGeometry | null | undefined) => {
+    if (!g) {
+      return {
+        position: 0,
+        color: 0,
+        aSimUv: 0,
+        aDepth: 0,
+        aUv: 0,
+      }
+    }
+    return {
+      position: g.getAttribute ? g.getAttribute('position')?.count ?? 0 : 0,
+      color: g.getAttribute ? g.getAttribute('color')?.count ?? 0 : 0,
+      aSimUv: g.getAttribute ? g.getAttribute('aSimUv')?.count ?? 0 : 0,
+      aDepth: g.getAttribute ? g.getAttribute('aDepth')?.count ?? 0 : 0,
+      aUv: g.getAttribute ? g.getAttribute('aUv')?.count ?? 0 : 0,
+    }
+  }
+
   const capture = ({ renderer, geometry, object, material }: CaptureArgs) => {
     if (!material?.defines?.DEBUG_VERTEX_LOG) {
       console.info('[vertex] capture-debug', {
@@ -200,6 +221,9 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
     lastSampleMs = now
 
     ensureResources(geometry, object, material)
+    if (typeof window !== 'undefined') {
+      ;(window as any).vertexTelemetry = collector
+    }
     if (!renderTarget || !scene || !camera || !points || !telemetryMaterial) {
       console.warn('[vertex] capture-debug', {
         stage: 'ensureResources',
@@ -213,13 +237,8 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
       return
     }
 
-    const geometryAttributes = {
-      position: geometry.getAttribute ? (geometry.getAttribute('position')?.count ?? 0) : 0,
-      color: geometry.getAttribute ? (geometry.getAttribute('color')?.count ?? 0) : 0,
-      aSimUv: geometry.getAttribute ? (geometry.getAttribute('aSimUv')?.count ?? 0) : 0,
-      aDepth: geometry.getAttribute ? (geometry.getAttribute('aDepth')?.count ?? 0) : 0,
-      aUv: geometry.getAttribute ? (geometry.getAttribute('aUv')?.count ?? 0) : 0,
-    }
+    const telemetryGeometry = points.geometry as BufferGeometry | undefined
+    const geometryAttributes = readAttributeCounts(geometry)
     console.info('[vertex] capture-debug', {
       stage: 'attributes',
       geometryAttributes,
@@ -228,6 +247,31 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
         telemetry: Object.keys(telemetryMaterial.defines ?? {}),
       },
     })
+
+    const telemetryAttributes = readAttributeCounts(telemetryGeometry)
+    console.info('[vertex] capture-debug', {
+      stage: 'telemetry-attributes',
+      geometryUuid: telemetryGeometry?.uuid ?? null,
+      telemetryAttributes,
+    })
+
+    if (geometryAttributes.aSimUv === 0 && telemetryAttributes.aSimUv > 0) {
+      console.warn('[vertex] capture-debug', {
+        stage: 'attributes-mismatch',
+        reason: 'source geometry missing aSimUv while telemetry clone has data',
+        source: geometryAttributes,
+        telemetry: telemetryAttributes,
+      })
+    }
+
+    if (telemetryAttributes.aSimUv === 0) {
+      console.warn('[vertex] capture-debug', {
+        stage: 'missing-attribute',
+        reason: 'telemetry geometry has no aSimUv',
+        requiredAttributes: ['aSimUv', 'aDepth', 'aUv'],
+        telemetry: telemetryAttributes,
+      })
+    }
 
     const prevTarget = renderer.getRenderTarget()
     const prevViewport = new THREE.Vector4()
