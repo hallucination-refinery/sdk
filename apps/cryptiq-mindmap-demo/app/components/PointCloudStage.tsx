@@ -2298,23 +2298,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                     {stageUvDepth && (
                       <>
                         {/* custom uv for ink/reveal */}
-                        {/** @ts-expect-error attachObject is supported at runtime */}
-                        <bufferAttribute
-                          attachObject={['attributes', 'aUv']}
-                          args={[stageUvDepth.uvs, 2]}
-                        />
+                        <bufferAttribute attach="attributes-aUv" args={[stageUvDepth.uvs, 2]} />
                         {/* also bind built-in uv for fragment-only path parity */}
                         <bufferAttribute attach="attributes-uv" args={[stageUvDepth.uvs, 2]} />
                         {/* normalized depth across AABB */}
-                        {/** @ts-expect-error attachObject is supported at runtime */}
                         <bufferAttribute
-                          attachObject={['attributes', 'aDepth']}
+                          attach="attributes-aDepth"
                           args={[stageUvDepth.depths01, 1]}
                         />
                         {simActive && simState && (
-                          // @ts-expect-error aSimUv attribute binding
                           <bufferAttribute
-                            attachObject={['attributes', 'aSimUv']}
+                            attach="attributes-aSimUv"
                             args={[simState.simUvs, 2]}
                           />
                         )}
