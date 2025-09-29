@@ -30,9 +30,10 @@
 
 1. Load the URL above (flags ensure sim engine, forceAlpha, vertex logging, probes, stats).
 2. Allow settle (~5s) until the cloud steadies.
-3. Perform a short tap near the center.
-4. Drag a medium stroke across the canvas.
-5. Keep DevTools console open; [vertex] samples should emit roughly every 750 ms while the flag is on.
+3. **Attempted** short tap near the center → UI lag prevented the gesture from firing.
+4. **Attempted** medium stroke across the canvas → no visible reaction, likely same lag.
+5. Keep DevTools console open; `[vertex] samples` never emitted (no interaction captured).
+6. After the failed interaction, captured a Chrome Performance trace (settle-only) to understand the lag.
 
 ## 4. Console Objects — `[vertex] samples`
 
@@ -142,6 +143,9 @@ _No `[vertex]` payload fired; the console never printed the expected sample arra
 4. The _same_ set of white specks/particles/cubes appear/disappear sequentially along a semi-circle down the lower left side of the viewport (_exactly_ like last time); however, I will note that the specks/particles/cubes _seem_ larger this time
 5. After the final particle appears, the sides of the viewport started to glitch in like pink and greenish/blue, then the entire HUD disappears/reappears (screenshot taken here.)
 6. Despite the flag and collector wiring, there were zero `[vertex]` console entries; telemetry still appears inactive.
+
+- **Lag baseline:** The vertex logger run immediately before the perf trace did **not** include a successful tap/stroke due to FPS collapse.
+- **Perf trace:** Collected a Chrome profiling session (settle only) after the run above; file stored at `perf-traces/2025-09-26-2330-vertex-log-baseline.json` (same branch + code state).
 
 ## 6. Screenshot Notes
 
