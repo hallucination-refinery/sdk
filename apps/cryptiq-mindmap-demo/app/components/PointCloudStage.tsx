@@ -1861,14 +1861,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return prebakedUvDepth
   }, [prebakedUvDepth, simActive, simState])
 
-  const hasLoggedStageUvDepthRef = React.useRef(false)
+  const hasLoggedSimStageRef = React.useRef(false)
   React.useEffect(() => {
-    if (!stageUvDepth || hasLoggedStageUvDepthRef.current) return
-    const uvSample = Array.from(stageUvDepth.uvs.slice(0, 6))
-    const depthSample = Array.from(stageUvDepth.depths01.slice(0, 6))
-    console.info('[vertex] stageUvDepth preview', { uvSample, depthSample })
-    hasLoggedStageUvDepthRef.current = true
-  }, [stageUvDepth])
+    if (!simActive || !simState || hasLoggedSimStageRef.current) return
+    const uvSample = Array.from(simState.stageUvs?.slice(0, 6) ?? [])
+    const depthSample = Array.from(simState.stageDepths?.slice(0, 6) ?? [])
+    console.info('[vertex] sim stage preview', {
+      count: simState.stageDepths?.length ?? 0,
+      uvSample,
+      depthSample,
+    })
+    hasLoggedSimStageRef.current = true
+  }, [simActive, simState])
 
   React.useEffect(() => {
     const instance = simRef.current
@@ -2309,7 +2313,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                         {/* custom uv for ink/reveal */}
                         {/** @ts-expect-error custom attribute binding */}
                         <bufferAttribute
-                          attachObject={["attributes", "aUv"]}
+                          attachObject={['attributes', 'aUv']}
                           args={[stageUvDepth.uvs, 2]}
                         />
                         {/* also bind built-in uv for fragment-only path parity */}
@@ -2317,13 +2321,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                         {/* normalized depth across AABB */}
                         {/** @ts-expect-error custom attribute binding */}
                         <bufferAttribute
-                          attachObject={["attributes", "aDepth"]}
+                          attachObject={['attributes', 'aDepth']}
                           args={[stageUvDepth.depths01, 1]}
                         />
                         {simActive && simState && simState.stageUvs && (
                           // @ts-expect-error telemetry sim UV binding
                           <bufferAttribute
-                            attachObject={["attributes", "aSimUv"]}
+                            attachObject={['attributes', 'aSimUv']}
                             args={[simState.stageUvs, 2]}
                           />
                         )}
