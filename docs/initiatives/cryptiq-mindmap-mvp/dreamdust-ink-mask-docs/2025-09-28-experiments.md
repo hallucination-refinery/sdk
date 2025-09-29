@@ -14,3 +14,13 @@
 - **Next actions:**
   - **If successful:** Proceed to isolate alpha-handling paths (e.g., PMA blend config, framebuffer clears) in subsequent experiments, then gradually reintroduce simulation to pinpoint the minimum change that preserves stability.
   - **If failure:** Pivot to inspecting downstream consumers (post-processing passes, framebuffer swaps) and design Experiment 02 around instrumenting those stages, restoring original alpha/sim settings before testing.
+
+## Experiment 02 — Vertex Telemetry Capture
+- **Goal:** Use the new `vertexLog=1` flag to sample `revealPos` and `gl_Position` pairs so we can confirm whether geometry collapses before the fragment stage.
+- **Probe run:** 22:47 ET capture on `codex/instrument-vertex-positions-for-debugging` with all probes enabled and forceAlpha retained for parity with prior smokes.【2025-09-28-vertex-log-raw.md:1-36】
+- **Observed outcome:** The collector returned an empty array—no `[vertex] samples` were emitted—while `[PC]` and `[sim]` telemetry matched the earlier collapse signature, leaving us blind on clip-space output.【2025-09-28-vertex-log-raw.md:37-127】
+- **Interpretation:** The shader define or material hook still fails to surface telemetry during the main pass; geometry data loads, but without slot captures we cannot isolate whether reveal or alpha stages are discarding points.
+- **Next actions:**
+  - Audit `PointCloudStage` and `DreamdustMaterial` to confirm DEBUG_VERTEX_LOG survives recompiles (suspect R3F reuse or missing `vertexTelemetry.capture` invocation during the fallback path).
+  - Re-run once the console prints non-empty sample sets; capture at least two bursts (~750 ms cadence) and archive them in the raw log for synthesis.
+  - If telemetry continues to stay silent, consider a minimal reproduction with a static `Points` geometry to verify the collector independently of Dreamdust wiring.
