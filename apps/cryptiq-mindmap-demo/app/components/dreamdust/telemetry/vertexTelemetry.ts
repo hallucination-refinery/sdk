@@ -6,8 +6,7 @@ const SAMPLE_INTERVAL_MS = 750
 
 const getNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now())
 
-const formatNumber = (value: number) =>
-  Number.isFinite(value) ? Number(value.toFixed(4)) : value
+const formatNumber = (value: number) => (Number.isFinite(value) ? Number(value.toFixed(4)) : value)
 
 type UniformRecord = Record<string, { value: unknown } | undefined>
 
@@ -68,7 +67,7 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
   const ensureResources = (
     geometry: BufferGeometry,
     object: Object3D | undefined,
-    sourceMaterial: ShaderMaterial,
+    sourceMaterial: ShaderMaterial
   ) => {
     if (!renderTarget) {
       renderTarget = new THREE.WebGLRenderTarget(SLOT_COUNT, 1, {
@@ -132,18 +131,52 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
 
   const capture = ({ renderer, geometry, object, material }: CaptureArgs) => {
     if (!material?.defines?.DEBUG_VERTEX_LOG) {
+      console.info('[vertex] capture-debug', {
+        stage: 'skip',
+        reason: 'DEBUG_VERTEX_LOG missing',
+      })
       return
     }
     const now = getNow()
     if (now - lastSampleMs < SAMPLE_INTERVAL_MS) {
+      console.info('[vertex] capture-debug', {
+        stage: 'throttle',
+        reason: 'interval window',
+        elapsed: Number((now - lastSampleMs).toFixed(2)),
+      })
       return
     }
     lastSampleMs = now
 
     ensureResources(geometry, object, material)
     if (!renderTarget || !scene || !camera || !points || !telemetryMaterial) {
+      console.warn('[vertex] capture-debug', {
+        stage: 'ensureResources',
+        reason: 'resource allocation failed',
+        hasTarget: !!renderTarget,
+        hasScene: !!scene,
+        hasCamera: !!camera,
+        hasPoints: !!points,
+        hasMaterial: !!telemetryMaterial,
+      })
       return
     }
+
+    const geometryAttributes = {
+      position: geometry.getAttribute ? geometry.getAttribute('position')?.count ?? 0 : 0,
+      color: geometry.getAttribute ? geometry.getAttribute('color')?.count ?? 0 : 0,
+      aSimUv: geometry.getAttribute ? geometry.getAttribute('aSimUv')?.count ?? 0 : 0,
+      aDepth: geometry.getAttribute ? geometry.getAttribute('aDepth')?.count ?? 0 : 0,
+      aUv: geometry.getAttribute ? geometry.getAttribute('uv')?.count ?? 0 : 0,
+    }
+    console.info('[vertex] capture-debug', {
+      stage: 'attributes',
+      geometryAttributes,
+      debugDefines: {
+        material: Object.keys(material.defines ?? {}),
+        telemetry: Object.keys(telemetryMaterial.defines ?? {}),
+      },
+    })
 
     const prevTarget = renderer.getRenderTarget()
     const prevViewport = new THREE.Vector4()
@@ -183,10 +216,19 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
     renderer.setScissorTest(prevScissorTest)
     renderer.autoClear = prevAutoClear
 
+    console.info('[vertex] capture-debug', {
+      stage: 'buffers',
+      revealSample: Array.from(revealBuffer.slice(0, 8)),
+      clipSample: Array.from(clipBuffer.slice(0, 8)),
+    })
+
     const samples: Array<{
       slot: number
       revealPos: [number | typeof NaN, number | typeof NaN, number | typeof NaN]
-      clipPos: { ndc: [number | typeof NaN, number | typeof NaN, number | typeof NaN]; w: number | typeof NaN }
+      clipPos: {
+        ndc: [number | typeof NaN, number | typeof NaN, number | typeof NaN]
+        w: number | typeof NaN
+      }
     }> = []
 
     for (let slot = 0; slot < SLOT_COUNT; slot += 1) {
@@ -225,6 +267,13 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
 
     if (samples.length > 0) {
       console.info('[vertex] samples', samples)
+    } else {
+      console.info('[vertex] capture-debug', {
+        stage: 'samples',
+        reason: 'zero samples',
+        revealBufferZeroCount: revealBuffer.reduce((acc, value) => acc + (value === 0 ? 1 : 0), 0),
+        clipBufferZeroCount: clipBuffer.reduce((acc, value) => acc + (value === 0 ? 1 : 0), 0),
+      })
     }
   }
 
