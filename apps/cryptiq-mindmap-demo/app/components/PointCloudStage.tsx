@@ -41,6 +41,7 @@ import {
 } from './pointcloud/budget'
 import { ParticleSim } from './dreamdust/sim/ParticleSim'
 import DebugHud from './dreamdust/ui/DebugHud'
+import { createVertexTelemetryCollector } from './dreamdust/telemetry'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -2075,6 +2076,67 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     uniforms.uDepthNormScale.value = depthScale
   }, [cameraFitRadius, prebakedTransform, thicknessScale, uniforms, fitRequest])
 
+  const renderBuffersRef = React.useRef<RenderBuffers | null>(null)
+  const renderBuffersLoaded = React.useRef(false)
+  const stagePointsRef = React.useRef<THREE.Points | null>(null)
+  const stageTelemetryCleanupRef = React.useRef<() => void>()
+
+  React.useEffect(() => {
+    const points = stagePointsRef.current
+    if (!points || !(points.material instanceof THREE.ShaderMaterial)) {
+      return
+    }
+    if (!debugFlags.vertexLog) {
+      return
+    }
+    const shaderMat = points.material as THREE.ShaderMaterial
+    const collector = createVertexTelemetryCollector()
+    const original = points.onAfterRender?.bind(points)
+    points.onAfterRender = function onAfterRenderHook(
+      renderer: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera,
+      geometry: THREE.BufferGeometry,
+      object: THREE.Object3D,
+      group?: THREE.Group
+    ) {
+      console.info('[vertex] onAfterRender', {
+        debugVertexLog: true,
+        hasCollector: !!collector,
+      })
+      ;(points as any).userData = (points as any).userData ?? {}
+      ;(points as any).userData.vertexTelemetry = collector
+      collector.capture({
+        renderer,
+        geometry,
+        object,
+        material: shaderMat,
+      })
+      if (original) {
+        original(renderer, scene, camera, geometry, object, group)
+      }
+    }
+    stageTelemetryCleanupRef.current = () => {
+      if (points.onAfterRender === undefined) {
+        return
+      }
+      points.onAfterRender = original ?? undefined
+    }
+    return stageTelemetryCleanupRef.current
+  }, [
+    debugFlags.vertexLog,
+    renderBuffers,
+    prebaked,
+    simEnabled,
+    simState,
+    recolored,
+    stride,
+    pointBudget,
+    stageUvDepth,
+    prebakedTransform,
+    thicknessScale,
+  ])
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
@@ -2220,7 +2282,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           >
             <group scale={mirrorScale}>
               <group scale={[1, 1, thicknessScale]}>
-                <points frustumCulled={false} renderOrder={1}>
+                <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
                   <bufferGeometry>
                     <bufferAttribute
                       attach="attributes-position"
