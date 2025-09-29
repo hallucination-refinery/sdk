@@ -59,6 +59,8 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
   let camera: THREE.OrthographicCamera | null = null
   let points: THREE.Points<BufferGeometry, ShaderMaterial> | null = null
   let telemetryMaterial: ShaderMaterial | null = null
+  // Sticky flag to ignore pre-sim telemetry once a populated sim clone has been observed
+  let seenSimTelemetry = false
   const telemetryUniform = { value: 0 }
   const revealBuffer = new Float32Array(SLOT_COUNT * 4)
   const clipBuffer = new Float32Array(SLOT_COUNT * 4)
@@ -259,6 +261,17 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
       telemetryAttributes,
     })
 
+    // Promote sim telemetry once observed; thereafter ignore pre-sim entries in payload
+    if (!seenSimTelemetry && telemetryAttributes.aSimUv > 0) {
+      seenSimTelemetry = true
+      console.info('[vertex] capture-debug', {
+        stage: 'telemetry-promote',
+        reason: 'sim telemetry observed',
+        telemetryGeometryUuid,
+        aSimUv: telemetryAttributes.aSimUv,
+      })
+    }
+
     if (geometryAttributes.aSimUv > 0 && telemetryAttributes.aSimUv === 0) {
       console.warn('[vertex] capture-debug', {
         stage: 'attributes-mismatch',
@@ -268,10 +281,11 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
       })
     }
 
-    if (telemetryAttributes.aSimUv === 0) {
+    // If we've seen sim telemetry, suppress captures when the current telemetry entry lacks aSimUv
+    if (telemetryAttributes.aSimUv === 0 && seenSimTelemetry) {
       console.warn('[vertex] capture-debug', {
         stage: 'missing-attribute',
-        reason: 'telemetry geometry has no aSimUv',
+        reason: 'telemetry geometry has no aSimUv (sim already observed)',
         requiredAttributes: ['aSimUv', 'aDepth', 'aUv'],
         telemetry: telemetryAttributes,
       })
