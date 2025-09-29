@@ -2296,7 +2296,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             <group scale={mirrorScale}>
               <group scale={[1, 1, thicknessScale]}>
                 <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
-                  <bufferGeometry>
+                  <bufferGeometry key={simActive ? simState?.key ?? 'sim' : 'prebaked'}>
                     <bufferAttribute
                       attach="attributes-position"
                       args={[
