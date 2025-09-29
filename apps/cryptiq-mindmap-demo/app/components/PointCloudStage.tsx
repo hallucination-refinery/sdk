@@ -2141,12 +2141,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stageDataLogRef.current = versionKey
     console.info('[vertex] stage data snapshot', {
       simActive,
-      stageUvDepthCount: stageUvDepth ? stageUvDepth.depths01?.length ?? 0 : 0,
-      stageUvCount: stageUvDepth ? stageUvDepth.uvs?.length ?? 0 : 0,
+      stageUvDepthCount: stageUvDepth ? (stageUvDepth.depths01?.length ?? 0) : 0,
+      stageUvCount: stageUvDepth ? (stageUvDepth.uvs?.length ?? 0) : 0,
       simStageUvCount: simState?.stageUvs?.length ?? 0,
       simKey: simState?.key ?? null,
     })
-  }, [simActive, simState?.key, simState?.stageUvs, stageAttributeVersion, stageUvDepth, simUvVersion])
+  }, [
+    simActive,
+    simState?.key,
+    simState?.stageUvs,
+    stageAttributeVersion,
+    stageUvDepth,
+    simUvVersion,
+  ])
 
   const geometryBindLogRef = React.useRef<string | null>(null)
   React.useEffect(() => {
@@ -2205,6 +2212,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (geometryBindLogRef.current !== summaryKey) {
       geometryBindLogRef.current = summaryKey
       console.info('[vertex] geometry attribute summary', {
+        geometryUuid: geometry.uuid,
         position: geometry.getAttribute('position')?.count ?? 0,
         aUv: geometry.getAttribute('aUv')?.count ?? 0,
         uv: geometry.getAttribute('uv')?.count ?? 0,
@@ -2235,35 +2243,44 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const shaderMat = points.material as THREE.ShaderMaterial
     const collector = createVertexTelemetryCollector()
     const original = points.onAfterRender?.bind(points)
+    const pointsUuid = points.uuid
     points.onAfterRender = function onAfterRenderHook(
       renderer: THREE.WebGLRenderer,
       scene: THREE.Scene,
       camera: THREE.Camera,
       geometry: THREE.BufferGeometry,
-      object: THREE.Object3D,
+      material: THREE.Material,
       group?: THREE.Group
     ) {
       console.info('[vertex] onAfterRender', {
         debugVertexLog: true,
         hasCollector: !!collector,
+        geometryUuid: geometry.uuid,
+        pointsUuid,
+        materialUuid: material.uuid,
       })
       ;(points as any).userData = (points as any).userData ?? {}
       ;(points as any).userData.vertexTelemetry = collector
       collector.capture({
         renderer,
         geometry,
-        object,
+        object: points,
         material: shaderMat,
       })
       if (original) {
-        original(renderer, scene, camera, geometry, object, group)
+        // Pass through the material we received to preserve Three's expectations
+        original(renderer, scene, camera, geometry, material, group)
       }
     }
     stageTelemetryCleanupRef.current = () => {
       if (points.onAfterRender === undefined) {
         return
       }
-      points.onAfterRender = original ?? undefined
+    points.onAfterRender = original ?? undefined
+    if ((points as any).userData) {
+      delete (points as any).userData.vertexTelemetry
+    }
+    collector.dispose()
     }
     return stageTelemetryCleanupRef.current
   }, [
