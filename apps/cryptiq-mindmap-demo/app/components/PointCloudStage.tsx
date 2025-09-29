@@ -2106,7 +2106,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [prebaked?.positions, renderBuffers?.positions, simActive, simState])
 
   const stagePositionVersion = React.useMemo(() => {
-    const key = simActive ? simState?.key ?? 'sim' : 'pre'
+    const key = simActive ? (simState?.key ?? 'sim') : 'pre'
     const len = stagePositionArray.length
     const hash = hashArraySample(stagePositionArray)
     return `${key}:pos:${len}:${hash}`
@@ -2116,7 +2116,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!stageUvDepth) {
       return simActive ? `${simState?.key ?? 'sim'}:uv:none` : 'pre:uv:none'
     }
-    const key = simActive ? simState?.key ?? 'sim' : 'pre'
+    const key = simActive ? (simState?.key ?? 'sim') : 'pre'
     const uvHash = hashArraySample(stageUvDepth.uvs)
     const depthHash = hashArraySample(stageUvDepth.depths01)
     const uvLen = stageUvDepth.uvs?.length ?? 0
@@ -2334,7 +2334,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             <group scale={mirrorScale}>
               <group scale={[1, 1, thicknessScale]}>
                 <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
-                  <bufferGeometry key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}>
+                  <bufferGeometry
+                    key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}
+                  >
                     <bufferAttribute
                       key={`pos:${stagePositionVersion}`}
                       attach="attributes-position"
