@@ -426,40 +426,6 @@ void main() {
     float slotSeed = fract(debugSeed * 97.0);
     debugSlot = floor(clamp(slotSeed * debugSlotCount, 0.0, debugSlotCount - 1.0));
   }
-  bool debugSeedValid = debugSlot >= 0.0;
-#ifdef USE_SIM_POS
-  bool debugHasAttributes = true;
-#else
-  bool debugHasAttributes = aDepth > -0.5;
-#endif
-  vDebugSampleSlot = debugSeedValid && debugHasAttributes ? debugSlot : -1.0;
-  vDebugRevealPos = revealPos;
-  vDebugClipPos = clipPos;
-
-#if defined(VERTEX_TELEMETRY_PASS)
-  if (vDebugSampleSlot < 0.0) {
-    gl_Position = vec4(-2.0, -2.0, 0.0, 1.0);
-    gl_PointSize = 0.0;
-    return;
-  }
-  float debugSlotNorm = (vDebugSampleSlot + 0.5) / debugSlotCount;
-  float debugClipX = debugSlotNorm * 2.0 - 1.0;
-  float debugClipY = mix(-1.0, 1.0, clamp(uDebugTelemetryMode, 0.0, 1.0));
-  gl_Position = vec4(debugClipX, debugClipY, 0.0, 1.0);
-  gl_PointSize = 1.0;
-  return;
-#endif
-
-#endif
-
-#if defined(DEBUG_VERTEX_LOG)
-  float debugSlot = -1.0;
-  float debugSlotCount = max(1.0, float(DEBUG_VERTEX_SLOT_COUNT));
-  float debugSeed = dd_hash13(vec3(aUv * 5773.0, aDepth * 233.0));
-  if (debugSeed > 0.995) {
-    float slotSeed = fract(debugSeed * 97.0);
-    debugSlot = floor(clamp(slotSeed * debugSlotCount, 0.0, debugSlotCount - 1.0));
-  }
   vDebugSampleSlot = debugSlot;
   vDebugRevealPos = revealPos;
   vDebugClipPos = clipPos;
