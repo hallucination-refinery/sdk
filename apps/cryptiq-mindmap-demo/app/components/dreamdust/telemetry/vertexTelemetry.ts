@@ -67,7 +67,7 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
 
   const ensureResources = (
     geometry: BufferGeometry,
-    object: Object3D,
+    object: Object3D | undefined,
     sourceMaterial: ShaderMaterial,
   ) => {
     if (!renderTarget) {
@@ -120,8 +120,14 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
       points.geometry = geometry
       points.material = telemetryMaterial
     }
-    points.matrixWorld.copy(object.matrixWorld)
-    ;(points as unknown as { matrixWorldNeedsUpdate?: boolean }).matrixWorldNeedsUpdate = false
+
+    const sourceMatrix = object?.matrixWorld ?? points?.matrixWorld
+    if (sourceMatrix?.elements) {
+      points.matrixWorld.copy(sourceMatrix)
+      ;(points as unknown as { matrixWorldNeedsUpdate?: boolean }).matrixWorldNeedsUpdate = false
+    } else {
+      points.matrixWorld.identity()
+    }
   }
 
   const capture = ({ renderer, geometry, object, material }: CaptureArgs) => {
@@ -222,16 +228,29 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
     }
   }
 
-  const dispose = () => {
-    renderTarget?.dispose()
-    telemetryMaterial?.dispose()
-    if (scene && points) {
-      scene.remove(points)
-    }
-    renderTarget = null
-    telemetryMaterial = null
-    points = null
+  const collector: VertexTelemetryCollector = {
+    capture,
+    dispose: () => {
+      renderTarget?.dispose()
+      telemetryMaterial?.dispose()
+      if (scene && points) {
+        scene.remove(points)
+      }
+      renderTarget = null
+      telemetryMaterial = null
+      points = null
+      if (typeof window !== 'undefined') {
+        const global = window as any
+        if (global.vertexTelemetry === collector) {
+          global.vertexTelemetry = undefined
+        }
+      }
+    },
   }
 
-  return { capture, dispose }
+  if (typeof window !== 'undefined') {
+    ;(window as any).vertexTelemetry = collector
+  }
+
+  return collector
 }
