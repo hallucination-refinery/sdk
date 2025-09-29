@@ -2132,6 +2132,98 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return `${simState.key}:simUv:${simState.stageUvs.length}:${hash}`
   }, [hashArraySample, simActive, simState])
 
+  const stageDataLogRef = React.useRef<string | null>(null)
+  React.useEffect(() => {
+    const versionKey = `${stageAttributeVersion}:${simUvVersion}`
+    if (stageDataLogRef.current === versionKey) {
+      return
+    }
+    stageDataLogRef.current = versionKey
+    console.info('[vertex] stage data snapshot', {
+      simActive,
+      stageUvDepthCount: stageUvDepth ? stageUvDepth.depths01?.length ?? 0 : 0,
+      stageUvCount: stageUvDepth ? stageUvDepth.uvs?.length ?? 0 : 0,
+      simStageUvCount: simState?.stageUvs?.length ?? 0,
+      simKey: simState?.key ?? null,
+    })
+  }, [simActive, simState?.key, simState?.stageUvs, stageAttributeVersion, stageUvDepth, simUvVersion])
+
+  const geometryBindLogRef = React.useRef<string | null>(null)
+  React.useEffect(() => {
+    const points = stagePointsRef.current
+    if (!points) {
+      return
+    }
+
+    const geometry = points.geometry as THREE.BufferGeometry | undefined
+    if (!geometry) {
+      return
+    }
+
+    const setAttribute = (
+      name: string,
+      array: ArrayLike<number> | null | undefined,
+      itemSize: number,
+      normalized = false
+    ) => {
+      if (!array || !('length' in array) || array.length === 0) {
+        if (geometry.getAttribute(name)) {
+          geometry.deleteAttribute(name)
+        }
+        return
+      }
+
+      const typedArray = Array.isArray(array) ? Float32Array.from(array) : array
+      const attribute = new THREE.BufferAttribute(
+        typedArray as unknown as ArrayLike<number>,
+        itemSize,
+        normalized
+      )
+      attribute.setUsage(THREE.DynamicDrawUsage)
+      geometry.setAttribute(name, attribute)
+    }
+
+    setAttribute('position', stagePositionArray, 3)
+
+    if (stageUvDepth) {
+      setAttribute('aUv', stageUvDepth.uvs, 2)
+      setAttribute('uv', stageUvDepth.uvs, 2)
+      setAttribute('aDepth', stageUvDepth.depths01, 1)
+    } else {
+      geometry.deleteAttribute('aUv')
+      geometry.deleteAttribute('uv')
+      geometry.deleteAttribute('aDepth')
+    }
+
+    if (simActive && simState?.stageUvs) {
+      setAttribute('aSimUv', simState.stageUvs, 2)
+    } else {
+      geometry.deleteAttribute('aSimUv')
+    }
+
+    const summaryKey = `${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`
+    if (geometryBindLogRef.current !== summaryKey) {
+      geometryBindLogRef.current = summaryKey
+      console.info('[vertex] geometry attribute summary', {
+        position: geometry.getAttribute('position')?.count ?? 0,
+        aUv: geometry.getAttribute('aUv')?.count ?? 0,
+        uv: geometry.getAttribute('uv')?.count ?? 0,
+        aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
+        aSimUv: geometry.getAttribute('aSimUv')?.count ?? 0,
+        keys: summaryKey,
+      })
+    }
+  }, [
+    simActive,
+    simState?.stageUvs,
+    stageAttributeVersion,
+    stagePointsRef,
+    stagePositionArray,
+    stagePositionVersion,
+    stageUvDepth,
+    simUvVersion,
+  ])
+
   React.useEffect(() => {
     const points = stagePointsRef.current
     if (!points || !(points.material instanceof THREE.ShaderMaterial)) {
