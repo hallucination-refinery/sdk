@@ -137,6 +137,16 @@ Screenshot: `assets/Screenshot 2025-09-25 at 6.26.43 PM.png` (probes enabled, ne
 - Diagnostics: harness emitted `assets/2025-09-30-telemetry-console.jsonl` and `2025-09-30-vertex.log`; all gates remained `false` and the run reported `vertexTelemetry.capture not available`, confirming vertex capture never fires (no `[vertex] samples …`, buffer counts stay zero).
 - Status: automation path now works end-to-end, but visibility/reactivity regressions persist; next step is to restore the capture hook so shader tracing can move forward without manual runs.
 
+### 2025-09-30 Telemetry Iteration 2 (Blocked)
+
+- Branch: `codex/instrument-vertex-positions-for-debugging`, attempted automated telemetry run.
+- **Blocker**: Production build fails on ARM64 (aarch64) Linux environment with `Cannot find module '../lightningcss.linux-arm64-gnu.node'` error from `lightningcss@1.30.1` package used by Tailwind CSS v4.
+- Dev server starts but returns HTTP 500 errors on all routes, including `/debug/caps`, indicating the same underlying native module issue affects both build and runtime.
+- Environment: Node v20.19.3, pnpm 9.x, ARM64 architecture (Linux aarch64).
+- Impact: Cannot proceed with telemetry capture until native dependencies are compatible with ARM64 or environment is switched to x86_64.
+- Attempted remediation: Tried both production build (`pnpm build`) and dev mode (`pnpm dev --turbopack`); both fail due to missing ARM64 native binaries for `lightningcss`.
+- Recommendation: Either (1) run telemetry workflow on x86_64 host, (2) downgrade/replace Tailwind CSS v4 with compatible alternative, or (3) wait for `lightningcss` ARM64 support in upstream package.
+
 ## 2025-09-27 Clamp + Preset Update
 
 - Baseline preset now launches with `uNoiseThreshold = 0.6`, `uAlphaFloor = 0.15`, and point sizing `[base: 3, min: 2, max: 9]` to present a soft mist out of the box.
