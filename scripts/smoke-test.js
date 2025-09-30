@@ -5,6 +5,8 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { spawn } from 'node:child_process';
+import http from 'node:http';
 import puppeteer from 'puppeteer';
 
 const DEFAULT_BASE_URL = 'http://localhost:3000';
@@ -123,6 +125,36 @@ function sanitizeMode(mode) {
   return mode === 'visibility' ? 'visibility' : mode === 'telemetry' ? 'telemetry' : 'generic';
 }
 
+async function waitForServerReady(url, timeoutMs = 60000, intervalMs = 500) {
+  const start = Date.now();
+  // Prefer base root for liveness
+  const target = url.endsWith('/') ? url : `${url}/`;
+  let lastErr;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      const ok = await new Promise((resolve) => {
+        const req = http.get(target, (res) => {
+          resolve(res.statusCode >= 200 && res.statusCode < 500);
+        });
+        req.on('error', () => resolve(false));
+        req.setTimeout(3000, () => {
+          try { req.destroy(); } catch {}
+          resolve(false);
+        });
+      });
+      if (ok) return Date.now() - start;
+    } catch (err) {
+      lastErr = err;
+    }
+    if (Date.now() - start > timeoutMs) {
+      const reason = lastErr instanceof Error ? `${lastErr.message}` : 'timeout';
+      throw new Error(`Dev server not ready at ${target} within ${timeoutMs}ms (${reason})`);
+    }
+    await delay(intervalMs);
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const cwd = process.cwd();
@@ -161,6 +193,24 @@ async function main() {
   const vertexEntries = [];
   let captureResult;
   let captureError;
+  let devProc;
+
+  // Start dev server if requested (default true)
+  const autoDev = args.autoDev !== 'false' && args.autoDev !== false;
+  if (autoDev) {
+    devProc = spawn('pnpm', ['--filter', 'cryptiq-mindmap-demo', 'dev'], {
+      cwd,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env },
+    });
+    // Wait for server ready on base URL
+    try {
+      await waitForServerReady(baseUrl, 60000, 500);
+    } catch (err) {
+      try { devProc.kill('SIGTERM'); } catch {}
+      throw err;
+    }
+  }
 
   const browser = await puppeteer.launch({
     headless: 'shell',
@@ -279,6 +329,11 @@ async function main() {
     summary.error = error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
   } finally {
     await browser.close().catch(() => {});
+    if (devProc) {
+      try {
+        devProc.kill('SIGTERM');
+      } catch { /* noop */ }
+    }
   }
 
   const cwdRelative = relativize(outDir, cwd);
