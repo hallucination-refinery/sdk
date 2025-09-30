@@ -27,11 +27,10 @@
     "vggt:readme": "node -e \"require('fs').createReadStream('tools/vggt-cli/README.md').pipe(process.stdout)\"",
     "validate:formations": "node --import=tsx apps/cryptiq-mindmap-demo/scripts/formations/validate.ts",
     "build:demo": "pnpm --filter cryptiq-mindmap-demo run build",
-    "start:demo": "pnpm --filter cryptiq-mindmap-demo run start"
+    "start:demo": "pnpm --filter cryptiq-mindmap-demo run start",
+    "smoke:diag": "node scripts/smoke-test.js"
   },
   "devDependencies": {
-    "husky": "^9.1.7",
-    "lint-staged": "^15.2.10",
     "@playwright/test": "^1.45.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -42,9 +41,12 @@
     "@vitest/ui": "^2.1.8",
     "clsx": "^2.1.1",
     "eslint": "^9.17.0",
+    "husky": "^9.1.7",
     "immer": "^10.1.1",
+    "lint-staged": "^15.2.10",
     "playwright": "^1.55.0",
     "prettier": "^3.4.2",
+    "puppeteer": "^24.22.3",
     "sharp": "^0.34.3",
     "tailwind-merge": "^3.3.1",
     "tsx": "^4.20.3",
