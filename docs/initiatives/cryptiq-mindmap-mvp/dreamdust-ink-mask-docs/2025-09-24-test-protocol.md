@@ -14,6 +14,7 @@
 2. **Initial load**
    - Open the URL above in Chrome incognito (DevTools closed).
    - Wait ~5 seconds; observe the point cloud (post-merge shows a tighter silhouette roughly mid-frame, still distant and shimmering).
+   - Telemetry automation (2025-09-30) can substitute manual browsing: run `node scripts/smoke-test.js --autoDev=false --baseUrl "http://127.0.0.1:3000" --path "quiz/archetype-v1" --urlParams "pc=scene-02&debug=1&engine=sim&inkProbe=1&simProbe=1&simStats=1&inkStats=1&forceAlpha=1&vertexLog=1" --waitMs 30000 --out docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs --mode telemetry` after starting the prod server; the harness waits for settle time, captures logs/screenshots, and stores them under the dated assets.
 3. **Log capture**
    - Open DevTools console, copy entire log snapshot (with probes enabled):
      - `[PC] instances: 89441`
@@ -26,8 +27,9 @@
      - `[Dreamdust] reveal start …`
      - `[Dreamdust] reveal end …` ← expect **no** trailing `[Dreamdust] reveal clamp` message (log removed in prod).
      - If probes cause a compile failure, capture the shader error block (`vSimProbe redefinition`, `aSimUv undeclared`, etc.).
-4. **Screenshot**
-   - Save a screenshot of the probes run (`assets/2025-09-25-probes-smoke.png`).
+4. **Screenshot / Evidence bundle**
+   - Manual path: save a screenshot of the probes run (`assets/2025-09-25-probes-smoke.png`).
+   - Automated path (2025-09-30 harness): verify `assets/2025-09-30-telemetry-capture.png`, `assets/2025-09-30-telemetry-console.jsonl`, and `2025-09-30-vertex.log` were generated; note `vertexTelemetry.capture` status in the run JSON (`/tmp/dd-telemetry.json`).
 5. **Stop server**
    - `Ctrl+C` to terminate `next start`.
 

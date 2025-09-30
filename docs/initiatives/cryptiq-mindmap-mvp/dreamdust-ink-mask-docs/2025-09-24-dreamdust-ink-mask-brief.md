@@ -130,6 +130,13 @@ Screenshot: `assets/Screenshot 2025-09-25 at 6.26.43 PM.png` (probes enabled, ne
 - Notes: Visual regression persists despite probes linking; investigate alpha/size choke, zero ink intensity, and elevated frame/ink latency before next smoke.
 - Screenshot: `assets/2025-09-26-probes-smoke.png` (blank scene with HUD badges).
 
+### 2025-09-30 Telemetry
+
+- Branch: `codex/instrument-vertex-positions-for-debugging` (prod build) with `?engine=sim&inkProbe=1&simProbe=1&simStats=1&inkStats=1&forceAlpha=1&vertexLog=1`, executed through `scripts/smoke-test.js` against `http://127.0.0.1:3000`.
+- Visual: automatic screenshot `assets/2025-09-30-telemetry-capture.png` still shows a nearly black canvas with only HUD overlays—no cat silhouette, teal ink probe, or red VTF overlay.
+- Diagnostics: harness emitted `assets/2025-09-30-telemetry-console.jsonl` and `2025-09-30-vertex.log`; all gates remained `false` and the run reported `vertexTelemetry.capture not available`, confirming vertex capture never fires (no `[vertex] samples …`, buffer counts stay zero).
+- Status: automation path now works end-to-end, but visibility/reactivity regressions persist; next step is to restore the capture hook so shader tracing can move forward without manual runs.
+
 ## 2025-09-27 Clamp + Preset Update
 
 - Baseline preset now launches with `uNoiseThreshold = 0.6`, `uAlphaFloor = 0.15`, and point sizing `[base: 3, min: 2, max: 9]` to present a soft mist out of the box.
