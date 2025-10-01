@@ -1068,9 +1068,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const debugForceAlpha = debugFlags.forceAlpha
   const debugVertexLog = debugFlags.vertexLog
   // Create telemetry collector eagerly when vertexLog is enabled so window.vertexTelemetry
-  // is available immediately for harness checks
+  // is available immediately for harness checks (client-side only to avoid SSR crashes)
   const telemetryCollector = React.useMemo(() => {
-    if (debugVertexLog) {
+    if (debugVertexLog && typeof window !== 'undefined') {
       return createVertexTelemetryCollector()
     }
     return null
