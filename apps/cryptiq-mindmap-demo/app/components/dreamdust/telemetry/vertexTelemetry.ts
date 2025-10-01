@@ -19,6 +19,7 @@ type CaptureArgs = {
 
 export type VertexTelemetryCollector = {
   capture: (args: CaptureArgs) => void
+  captureFromGlobal: () => Promise<{ status: string; timestamp: number }>
   dispose: () => void
 }
 
@@ -391,8 +392,18 @@ export const createVertexTelemetryCollector = (): VertexTelemetryCollector => {
     }
   }
 
+  const captureFromGlobal = async () => {
+    const args = typeof window !== 'undefined' ? (window as any).__vertexCaptureArgs : null
+    if (!args) {
+      throw new Error('No render has occurred yet - capture args not available')
+    }
+    capture(args)
+    return { status: 'ok', timestamp: Date.now() }
+  }
+
   const collector: VertexTelemetryCollector = {
     capture,
+    captureFromGlobal,
     dispose: () => {
       renderTarget?.dispose()
       telemetryMaterial?.dispose()

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* eslint-env node */
-/* global document, window */
+/* global document, window, setTimeout */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -130,7 +130,7 @@ async function waitForServerReady(url, timeoutMs = 60000, intervalMs = 500) {
   // Prefer base root for liveness
   const target = url.endsWith('/') ? url : `${url}/`;
   let lastErr;
-  // eslint-disable-next-line no-constant-condition
+   
   while (true) {
     try {
       const ok = await new Promise((resolve) => {
@@ -139,7 +139,9 @@ async function waitForServerReady(url, timeoutMs = 60000, intervalMs = 500) {
         });
         req.on('error', () => resolve(false));
         req.setTimeout(3000, () => {
-          try { req.destroy(); } catch {}
+          try { req.destroy(); } catch {
+            // Ignore destroy errors
+          }
           resolve(false);
         });
       });
@@ -207,14 +209,23 @@ async function main() {
     try {
       await waitForServerReady(baseUrl, 60000, 500);
     } catch (err) {
-      try { devProc.kill('SIGTERM'); } catch {}
+      try { devProc.kill('SIGTERM'); } catch {
+        // Ignore kill errors if process already dead
+      }
       throw err;
     }
   }
 
   const browser = await puppeteer.launch({
     headless: 'shell',
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--enable-webgl',
+      '--use-gl=angle',
+      '--use-angle=swiftshader',
+    ],
   });
 
   try {
@@ -255,24 +266,24 @@ async function main() {
     await gotoWithRetry(page, url);
     await page.waitForFunction(() => document.readyState === 'complete', { timeout: 60000 }).catch(() => {});
     if (waitMs > 0) {
-      await page.waitForTimeout(waitMs);
+      await new Promise(resolve => setTimeout(resolve, waitMs));
     }
 
     const hasCapture = await page.evaluate(() => {
-      return typeof window.vertexTelemetry?.capture === 'function';
+      return typeof window.vertexTelemetry?.captureFromGlobal === 'function';
     });
 
     if (hasCapture) {
       try {
         captureResult = await page.evaluate(async () => {
-          const result = await window.vertexTelemetry.capture();
+          const result = await window.vertexTelemetry.captureFromGlobal();
           return result;
         });
       } catch (error) {
         captureError = error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
       }
     } else {
-      summary.notes.push('vertexTelemetry.capture not available');
+      summary.notes.push('vertexTelemetry.captureFromGlobal not available');
     }
 
     if (captureResult) {

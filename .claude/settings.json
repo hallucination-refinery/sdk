@@ -76,8 +76,25 @@
       "TodoWrite",
       "Bash(git status:*)",
       "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git fetch:*)",
       "Bash(pnpm:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(rm -f:*)",
+      "Bash(rm -rf:*)",
+      "Bash(curl:*)",
+      "Bash(sleep:*)",
+      "Bash(export:*)",
+      "Bash(* & echo:*)",
+      "Bash(node scripts/*:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(jq:*)"
     ],
     "deny": [
       "Read(./.env)",
@@ -87,8 +104,7 @@
       "Write(./.env.*)",
       "Write(./secrets/**)",
       "WebFetch",
-      "WebSearch",
-      "Bash(curl:*)"
+      "WebSearch"
     ]
   }
 }

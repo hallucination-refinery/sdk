@@ -1067,6 +1067,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const debugSimProbe = debugFlags.simProbe
   const debugForceAlpha = debugFlags.forceAlpha
   const debugVertexLog = debugFlags.vertexLog
+  // Create telemetry collector eagerly when vertexLog is enabled so window.vertexTelemetry
+  // is available immediately for harness checks
+  const telemetryCollector = React.useMemo(() => {
+    if (debugVertexLog) {
+      return createVertexTelemetryCollector()
+    }
+    return null
+  }, [debugVertexLog])
   const uniformsWithReveal = uniforms as DreamdustStageUniformsWithReveal
   const hasRevealUniform = !!uniformsWithReveal.uReveal
   const timelineSupported = hasRevealUniform && typeof startReveal === 'function'
@@ -2237,11 +2245,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!points || !(points.material instanceof THREE.ShaderMaterial)) {
       return
     }
-    if (!debugFlags.vertexLog) {
+    if (!telemetryCollector) {
       return
     }
     const shaderMat = points.material as THREE.ShaderMaterial
-    const collector = createVertexTelemetryCollector()
+    const collector = telemetryCollector
     const original = points.onAfterRender?.bind(points)
     const pointsUuid = points.uuid
     points.onAfterRender = function onAfterRenderHook(
@@ -2269,12 +2277,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
         aUv: geometry.getAttribute('aUv')?.count ?? 0,
       })
-      collector.capture({
-        renderer,
-        geometry,
-        object: points,
-        material: shaderMat,
-      })
+      // Store capture args globally for harness access via captureFromGlobal
+      if (typeof window !== 'undefined') {
+        ;(window as any).__vertexCaptureArgs = { renderer, geometry, object: points, material: shaderMat }
+      }
+      collector.capture({ renderer, geometry, object: points, material: shaderMat })
       if (original) {
         // Pass through the material we received to preserve Three's expectations
         original(renderer, scene, camera, geometry, material, group)
@@ -2292,7 +2299,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     return stageTelemetryCleanupRef.current
   }, [
-    debugFlags.vertexLog,
+    telemetryCollector,
     renderBuffers,
     prebaked,
     simEnabled,

@@ -1,2 +1,1073 @@
-[2025-09-30T16:02:01.226Z] [vertex] stage data snapshot JSHandle@object
-[2025-09-30T16:02:01.297Z] [vertex] stage data snapshot JSHandle@object
+[2025-09-30T17:29:35.031Z] [vertex] stage data snapshot JSHandle@object
+[2025-09-30T17:29:35.079Z] [vertex] stage data snapshot JSHandle@object
+[2025-09-30T17:29:36.651Z] [vertex] sim stage preview JSHandle@object
+[2025-09-30T17:29:36.651Z] [vertex] stage data snapshot JSHandle@object
+[2025-09-30T17:29:36.652Z] [vertex] geometry attribute summary JSHandle@object
+[2025-09-30T17:29:37.205Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:37.205Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:37.206Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:37.206Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:37.206Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:37.206Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:37.857Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:37.857Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:37.863Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:37.863Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:37.863Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:37.974Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:37.974Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:37.975Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:37.976Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:37.976Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.287Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.287Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:38.299Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.299Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.299Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.363Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.363Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.363Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.489Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.489Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.490Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.577Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.578Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.578Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.665Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.665Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.665Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.755Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.755Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.756Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:38.756Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.756Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.885Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.885Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:38.888Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.888Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.888Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:38.954Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:38.954Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:38.954Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.063Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.063Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.063Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.169Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.169Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.170Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.276Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.276Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.276Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.375Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.375Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.375Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.464Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.464Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.465Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.560Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.560Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.560Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:39.561Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.561Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.685Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.686Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:39.691Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.691Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.692Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.809Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.810Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.810Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:39.909Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:39.909Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:39.909Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.007Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.007Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.008Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.097Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.097Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.098Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.189Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.189Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.189Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.276Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.276Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.276Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.364Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.365Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.365Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:40.365Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.365Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.467Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.467Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:40.479Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.479Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.479Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.538Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.538Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.538Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.622Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.623Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.623Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.728Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.728Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.728Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.833Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.833Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.833Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:40.937Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:40.937Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:40.937Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.023Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.023Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.023Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.108Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.108Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.108Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.192Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.192Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.193Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:41.193Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.193Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.295Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.295Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:41.298Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.298Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.299Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.354Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.355Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.355Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.439Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.439Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.439Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.603Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.603Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.604Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.831Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.832Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.832Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:41.936Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:41.936Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:41.936Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.043Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.043Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.043Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:42.044Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.044Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.145Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.145Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:42.148Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.148Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.148Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.204Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.204Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.204Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.290Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.291Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.291Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.376Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.376Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.376Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.466Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.466Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.466Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.606Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.606Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.607Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.695Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.695Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.695Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.786Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.786Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.786Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.873Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.874Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.874Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:42.874Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.874Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.981Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:42.981Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:42.984Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:42.984Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:42.984Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.044Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.045Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.045Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.129Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.129Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.130Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.233Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.233Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.233Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.318Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.318Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.319Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.405Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.406Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.406Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.492Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.492Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.492Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.578Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.578Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.578Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.670Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.670Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.671Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:43.671Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.671Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.776Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.776Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:43.779Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.779Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.780Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.847Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.847Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.847Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:43.932Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:43.933Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:43.933Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.016Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.017Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.017Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.100Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.100Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.100Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.185Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.186Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.186Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.268Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.268Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.268Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.352Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.352Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.352Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.455Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.455Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.455Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:44.456Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.456Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.588Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.588Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:44.590Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.590Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.590Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.670Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.670Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.670Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.772Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.772Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.772Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.873Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.873Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.873Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:44.975Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:44.975Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:44.975Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.057Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.057Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.057Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.143Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.143Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.143Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.225Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.225Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.226Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:45.226Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.226Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.325Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.325Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:45.329Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.329Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.329Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.391Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.391Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.392Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.475Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.475Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.475Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.563Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.563Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.564Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.652Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.652Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.652Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.757Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.757Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.757Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.850Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.850Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.851Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:45.939Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:45.939Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:45.939Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.032Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.032Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.032Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:46.032Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.033Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.142Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.142Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:46.146Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.146Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.146Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.215Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.215Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.215Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.301Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.302Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.302Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.391Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.391Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.391Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.483Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.484Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.484Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.573Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.573Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.573Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.661Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.662Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.662Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.744Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.745Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.745Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.854Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.854Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.854Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:46.855Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.855Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.970Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:46.970Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:46.973Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:46.973Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:46.973Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.031Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.031Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.031Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.133Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.133Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.133Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.239Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.239Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.239Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.347Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.347Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.347Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.428Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.429Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.429Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.507Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.508Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.508Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.589Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.589Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.590Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.673Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.673Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.673Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:47.673Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.674Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.774Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.774Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:47.777Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.777Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.778Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.831Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.831Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.831Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:47.923Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:47.923Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:47.923Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.004Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.004Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.005Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.087Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.087Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.087Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.170Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.170Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.170Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.252Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.252Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.252Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.335Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.335Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.335Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.418Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.418Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.418Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.501Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.501Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.501Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:48.501Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.501Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.599Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.599Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:48.601Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.602Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.602Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.655Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.656Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.656Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.737Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.737Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.737Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.838Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.838Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.838Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:48.960Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:48.960Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:48.960Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.065Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.065Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.065Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.170Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.170Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.170Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.284Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.284Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.285Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:49.285Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.285Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.396Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.397Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:49.400Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.400Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.401Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.470Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.471Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.471Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.576Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.576Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.576Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.677Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.678Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.678Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.781Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.781Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.782Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:49.892Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:49.892Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:49.893Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.006Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.006Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.006Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.114Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.114Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.115Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:50.115Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.115Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.217Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.217Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:50.219Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.219Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.220Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.277Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.277Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.277Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.363Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.363Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.363Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.448Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.448Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.449Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.535Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.535Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.535Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.620Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.620Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.620Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.705Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.705Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.705Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.790Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.790Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.790Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.881Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.881Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.881Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:50.881Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.881Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.980Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:50.980Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:50.983Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:50.983Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:50.984Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.052Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.052Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.052Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.138Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.138Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.138Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.224Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.224Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.225Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.312Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.312Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.312Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.401Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.402Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.402Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.491Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.491Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.491Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.747Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.747Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.747Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:51.747Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.747Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.858Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.858Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:51.862Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.862Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.862Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:51.921Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:51.921Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:51.921Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.006Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.006Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.006Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.100Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.100Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.101Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.185Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.185Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.185Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.271Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.271Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.271Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.355Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.355Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.355Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.439Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.439Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.439Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.525Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.525Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.526Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:52.526Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.526Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.643Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.643Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:52.646Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.646Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.647Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.706Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.706Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.706Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.792Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.792Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.792Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.879Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.879Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.879Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:52.964Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:52.964Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:52.965Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.049Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.049Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.050Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.141Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.141Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.142Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.244Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.244Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.244Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.350Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.350Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.350Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:53.350Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.350Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.469Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.469Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:53.471Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.471Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.471Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.528Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.528Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.528Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.632Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.633Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.633Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.737Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.737Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.737Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.822Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.822Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.823Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:53.916Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:53.916Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:53.916Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.000Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.000Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.000Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.084Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.084Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.084Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.196Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.196Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.196Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:54.197Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.197Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.313Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.313Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:54.316Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.316Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.316Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.374Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.374Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.374Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.476Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.476Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.477Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.579Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.579Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.579Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.682Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.682Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.682Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.788Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.788Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.788Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.891Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.891Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.891Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.996Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:54.996Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:54.996Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:54.997Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:54.997Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.116Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.116Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:55.119Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.120Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.120Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.175Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.175Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.175Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.285Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.286Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.286Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.388Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.389Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.389Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.473Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.473Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.473Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.573Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.573Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.573Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.656Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.656Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.656Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.739Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.740Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.740Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.824Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.824Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.824Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:55.824Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.824Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.925Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.926Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:55.929Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.929Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.929Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:55.987Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:55.987Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:55.987Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.072Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.073Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.073Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.155Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.155Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.155Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.239Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.239Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.239Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.331Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.331Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.331Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.414Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.414Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.414Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.496Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.497Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.497Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.580Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.580Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.581Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:56.581Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.581Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.679Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.679Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:56.682Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.682Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.682Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.736Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.736Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.736Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.819Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.820Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.820Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:56.906Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:56.907Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:56.907Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.010Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.010Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.011Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.113Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.113Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.113Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.201Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.202Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.202Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.285Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.286Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.286Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.377Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.377Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.378Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:57.378Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.378Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.478Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.478Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:57.481Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.481Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.481Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.539Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.540Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.540Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.627Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.627Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.628Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.715Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.715Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.716Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.802Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.802Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.803Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.895Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.896Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.896Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:57.991Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:57.991Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:57.991Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.087Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.087Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.087Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.179Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.179Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.179Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:58.179Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.179Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.289Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.289Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:58.292Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.293Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.293Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.351Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.351Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.352Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.454Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.454Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.454Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.545Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.546Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.546Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.641Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.641Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.641Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.732Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.732Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.732Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.829Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.829Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.829Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.932Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:58.932Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:58.933Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:58.933Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:58.933Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.050Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.050Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:59.053Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.053Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.053Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.115Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.115Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.115Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.209Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.209Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.209Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.299Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.299Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.299Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.388Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.388Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.388Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.485Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.485Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.485Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.573Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.574Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.574Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.664Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.664Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.664Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.753Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.753Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.753Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:29:59.754Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.754Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.858Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.858Z] [vertex] samples JSHandle@array
+[2025-09-30T17:29:59.861Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.861Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.862Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:29:59.925Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:29:59.925Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:29:59.925Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.015Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.016Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.016Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.107Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.107Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.108Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.197Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.197Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.197Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.283Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.283Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.284Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.371Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.371Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.372Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.459Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.460Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.460Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.553Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.553Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.554Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:00.554Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.554Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.657Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.657Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:00.660Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.660Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.660Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.721Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.721Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.722Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.808Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.808Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.808Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.895Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.895Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.895Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:00.983Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:00.983Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:00.983Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.068Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.068Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.068Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.157Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.157Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.157Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.244Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.244Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.244Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.332Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.332Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.333Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:01.333Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.333Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.434Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.434Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:01.437Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.437Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.437Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.522Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.523Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.523Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.775Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.775Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.775Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.872Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.872Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.872Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:01.961Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:01.961Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:01.961Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.050Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.051Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.051Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.141Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.141Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.141Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:02.142Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.142Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.242Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.243Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:02.246Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.246Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.246Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.301Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.301Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.301Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.387Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.387Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.387Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.474Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.475Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.475Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.572Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.572Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.572Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.666Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.666Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.666Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.792Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.792Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.792Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.895Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:02.895Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:02.895Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:02.895Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:02.896Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.012Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.012Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:03.015Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.015Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.015Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.071Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.071Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.071Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.157Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.157Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.157Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.240Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.241Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.241Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.337Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.337Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.337Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.421Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.421Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.421Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.505Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.505Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.505Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.592Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.592Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.592Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.678Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.679Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.679Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:03.679Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.679Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.780Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.780Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:03.790Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.790Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.790Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.844Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.845Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.845Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:03.934Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:03.935Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:03.935Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.021Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.021Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.021Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.109Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.109Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.110Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.212Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.213Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.213Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.314Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.314Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.314Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.414Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.415Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.415Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.503Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.503Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.503Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:04.504Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.504Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.602Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.602Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:04.605Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.605Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.605Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.662Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.662Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.662Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.747Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.747Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.747Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.838Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.838Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.838Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:04.922Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:04.922Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:04.922Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.007Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.007Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.008Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.092Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.092Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.092Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.180Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.181Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.181Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.264Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.264Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.265Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:05.265Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.265Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.362Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.362Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:05.365Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.365Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.365Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.425Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.425Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.425Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.511Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.511Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.511Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.596Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.596Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.597Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.681Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.681Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.682Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.766Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.766Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.766Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.767Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.860Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.860Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.860Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:05.946Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:05.946Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:05.946Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:06.034Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:06.034Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:06.035Z] [vertex] telemetry clone summary JSHandle@object
+[2025-09-30T17:30:06.035Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:06.035Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:06.135Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:06.135Z] [vertex] samples JSHandle@array
+[2025-09-30T17:30:06.150Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:06.150Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:06.150Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:06.204Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:06.204Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:06.204Z] [vertex] capture-debug JSHandle@object
+[2025-09-30T17:30:06.292Z] [vertex] onAfterRender JSHandle@object
+[2025-09-30T17:30:06.292Z] [vertex] capture attribute counts JSHandle@object
+[2025-09-30T17:30:06.292Z] [vertex] capture-debug JSHandle@object

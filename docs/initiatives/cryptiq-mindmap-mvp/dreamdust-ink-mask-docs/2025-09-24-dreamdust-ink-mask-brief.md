@@ -147,6 +147,22 @@ Screenshot: `assets/Screenshot 2025-09-25 at 6.26.43 PM.png` (probes enabled, ne
 - Attempted remediation: Tried both production build (`pnpm build`) and dev mode (`pnpm dev --turbopack`); both fail due to missing ARM64 native binaries for `lightningcss`.
 - Recommendation: Either (1) run telemetry workflow on x86_64 host, (2) downgrade/replace Tailwind CSS v4 with compatible alternative, or (3) wait for `lightningcss` ARM64 support in upstream package.
 
+### 2025-09-30 Telemetry Iteration 3 (Success — Capture Unblocked)
+
+- Branch: `codex/instrument-vertex-positions-for-debugging`, automated telemetry run on macOS (Darwin 24.4.0, x86_64).
+- **Fixes applied**:
+  1. Fixed Puppeteer `page.waitForTimeout` deprecation (replaced with `setTimeout` promise).
+  2. Enabled WebGL in headless Chromium by removing `--disable-gpu` flag and adding `--enable-webgl`, `--use-gl=angle`, `--use-angle=swiftshader`.
+  3. Created `telemetryCollector` eagerly via `useMemo` when `debugVertexLog` enabled, ensuring `window.vertexTelemetry` available immediately.
+  4. Stored capture args globally via `window.__vertexCaptureArgs` in `onAfterRender` hook.
+  5. Added `captureFromGlobal()` method to `VertexTelemetryCollector` to enable parameterless harness invocation.
+  6. Updated harness to call `window.vertexTelemetry.captureFromGlobal()` instead of `capture(args)`.
+- **Telemetry results**: Capture succeeded without error; harness generated all three artifacts (`2025-09-30-telemetry-capture.png`, `2025-09-30-telemetry-console.jsonl`, `2025-09-30-vertex.log`).
+- **Vertex samples**: 37 `[vertex] samples` entries logged across 1073 total telemetry log lines; `onAfterRender` hook fired 308 times, confirming active rendering with working WebGL context.
+- **Visual state**: Screenshot shows dark canvas with single faint orb and HUD overlays (prebaked: 89,441 / 95,000, thickness: 0.38, pointSize: 0.80, reveal: 1.00, bloom enabled); consistent with prior sim-enabled regression where cat silhouette missing.
+- **Gates status**: All gates (`promotionObserved`, `aSimUv89441`, `buffersNonZero`, `samplesNonZero`) remain `false` because harness text-based matching doesn't parse `JSHandle@object` / `JSHandle@array` refs in console logs; gates are not blocker—vertex capture is functional.
+- **Next step**: Instrument sim texture contents and shader fetch paths to diagnose why sim output produces near-zero positions instead of cat silhouette geometry.
+
 ## 2025-09-27 Clamp + Preset Update
 
 - Baseline preset now launches with `uNoiseThreshold = 0.6`, `uAlphaFloor = 0.15`, and point sizing `[base: 3, min: 2, max: 9]` to present a soft mist out of the box.
