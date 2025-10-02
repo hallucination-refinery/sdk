@@ -31,6 +31,7 @@ import {
 } from './dreamdust/metrics'
 import InkSurface from './dreamdust/InkSurface'
 import { DEFAULT_POINT_SIZING, useDreamdustUniforms } from './dreamdust/useDreamdustUniforms'
+import type { VertexTelemetryCollector } from './dreamdust/telemetry/vertexTelemetry'
 import { PresetAiry } from './dreamdust/presets'
 import {
   capInstances,
@@ -1067,14 +1068,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const debugSimProbe = debugFlags.simProbe
   const debugForceAlpha = debugFlags.forceAlpha
   const debugVertexLog = debugFlags.vertexLog
-  // Create telemetry collector eagerly when vertexLog is enabled so window.vertexTelemetry
-  // is available immediately for harness checks (client-side only to avoid SSR crashes)
-  const telemetryCollector = React.useMemo(() => {
-    if (debugVertexLog && typeof window !== 'undefined') {
-      return createVertexTelemetryCollector()
-    }
-    return null
-  }, [debugVertexLog])
+  const telemetryCollectorRef = React.useRef<VertexTelemetryCollector | null>(null)
   const uniformsWithReveal = uniforms as DreamdustStageUniformsWithReveal
   const hasRevealUniform = !!uniformsWithReveal.uReveal
   const timelineSupported = hasRevealUniform && typeof startReveal === 'function'
@@ -2241,15 +2235,35 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   ])
 
   React.useEffect(() => {
+    const cleanup = stageTelemetryCleanupRef.current
+    if (cleanup) {
+      cleanup()
+      stageTelemetryCleanupRef.current = null
+    }
+
     const points = stagePointsRef.current
     if (!points || !(points.material instanceof THREE.ShaderMaterial)) {
+      if (typeof window !== 'undefined') {
+        delete (window as any).vertexTelemetry
+      }
+      telemetryCollectorRef.current = null
       return
     }
-    if (!telemetryCollector) {
+
+    if (!debugVertexLog) {
+      if (typeof window !== 'undefined') {
+        delete (window as any).vertexTelemetry
+      }
+      telemetryCollectorRef.current = null
       return
+    }
+
+    const collector = createVertexTelemetryCollector()
+    telemetryCollectorRef.current = collector
+    if (typeof window !== 'undefined') {
+      ;(window as any).vertexTelemetry = collector
     }
     const shaderMat = points.material as THREE.ShaderMaterial
-    const collector = telemetryCollector
     const original = points.onAfterRender?.bind(points)
     const pointsUuid = points.uuid
     points.onAfterRender = function onAfterRenderHook(
@@ -2296,10 +2310,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         delete (points as any).userData.vertexTelemetry
       }
       collector.dispose()
+      if (telemetryCollectorRef.current === collector) {
+        telemetryCollectorRef.current = null
+      }
+      if (typeof window !== 'undefined' && (window as any).vertexTelemetry === collector) {
+        delete (window as any).vertexTelemetry
+      }
     }
     return stageTelemetryCleanupRef.current
   }, [
-    telemetryCollector,
+    debugVertexLog,
     renderBuffers,
     prebaked,
     simEnabled,
