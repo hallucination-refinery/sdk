@@ -88,7 +88,7 @@
       "Bash(curl:*)",
       "Bash(sleep:*)",
       "Bash(export:*)",
-      "Bash(* & echo:*)",
+      "Bash(:* & echo::*)",
       "Bash(node scripts/*:*)",
       "Bash(grep:*)",
       "Bash(wc:*)",
