@@ -49,7 +49,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uBreath: 0.5,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
-  uNoiseThreshold: 0.92,
+  uNoiseThreshold: 0.35,
   uDriftAmp: 0.55,
   uCurlFreq: 1,
   uCurlAmp: 0.55,
