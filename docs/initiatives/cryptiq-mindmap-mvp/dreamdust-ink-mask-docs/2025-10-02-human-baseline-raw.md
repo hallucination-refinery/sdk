@@ -127,6 +127,12 @@ williambarron@Williams-MacBook-Pro refinery-sdk %
 6. Save those console lines to:
    `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-02-human-baseline-console.txt`
 
+   6.1 `[engine]` --> Lines 1-2
+   6.2 `[sim]` --> Lines 6-34
+   6.3 `[dreamdust]` --> Lines 38-45
+   6.4 [vertex] --> Line 49-2424
+   6.5 [PC] --> Line 2428-2433
+
 ---
 
 ## 5) Spector.js capture — produce the GPU evidence
