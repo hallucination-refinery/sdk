@@ -1,5 +1,13 @@
 # Dreamdust Aesthetic Implementation Plan — 2025-10-05
 
+Revision R1 (post-critique corrections):
+- Use shader `#define` to switch kernels (no runtime string splicing)
+- Add additive blending depthTest A/B (B1/B2 and D1/D2)
+- Fix `dd_saturate` usage (use clamp or include chunk)
+- Control reveal gating during captures to avoid cellular voids
+- Add color-attribute first-paint guard before testing
+- Note premultiplied-alpha considerations for additive
+
 ## Goal
 
 Implement a 4-preset test matrix (A/B/C/D) to empirically determine the minimal set of changes needed to achieve "ethereal dust" quality matching the Fojcik reference frames. Use objective acceptance criteria and stop conditions to avoid over-engineering.
@@ -19,9 +27,11 @@ Current state: Iteration 04 params applied, color attribute bug persists on firs
 | Preset | Kernel | Blending | Bloom (thresh/strength) | Purpose |
 |--------|--------|----------|-------------------------|---------|
 | **A** | Disc | Alpha | 0.8 / 0.2 | Baseline (current) |
-| **B** | Disc | Additive | 0.6 / 0.5-0.8 | Test blending hypothesis |
+| **B1** | Disc | Additive (depthTest=true) | 0.6 / 0.5-0.8 | Test additive with occlusion |
+| **B2** | Disc | Additive (depthTest=false) | 0.6 / 0.5-0.8 | Test additive without occlusion |
 | **C** | Gaussian | Alpha | 0.7 / 0.35-0.6 | Test kernel hypothesis |
-| **D** | Gaussian | Additive | 0.6 / 0.5 | Combined approach |
+| **D1** | Gaussian | Additive (depthTest=true) | 0.6 / 0.5 | Combined with occlusion |
+| **D2** | Gaussian | Additive (depthTest=false) | 0.6 / 0.5 | Combined without occlusion |
 
 ## Acceptance Criteria (Per Preset)
 
@@ -38,9 +48,9 @@ Evaluate at 100% zoom on:
 
 ## Stop Conditions
 
-- If **B (Additive+Disc)** passes all 4 checks → Skip Gaussian kernel, apply B + depth desat
-- If **B** fails pellet/donut but **C (Gaussian+Alpha)** passes → Apply Gaussian kernel
-- If only **D (Additive+Gaussian)** passes → Full implementation required
+- If any of **B1/B2 (Additive+Disc)** passes all 4 checks → Skip Gaussian kernel, apply that additive variant + depth desat
+- If both B1 and B2 fail pellet/donut but **C (Gaussian+Alpha)** passes → Apply Gaussian kernel
+- If only one of **D1/D2 (Additive+Gaussian)** passes → Adopt that variant (occluding or non‑occluding)
 - If none pass → Reassess assumptions, consult assessment unknowns
 
 ---
@@ -48,6 +58,22 @@ Evaluate at 100% zoom on:
 ## Implementation Steps
 
 ### Phase 1: Setup Test Infrastructure (Est. 30-45 min)
+
+#### Step 1.0: One‑shot Color Attribute Guard
+
+Add a diagnostic in the stage/component that attaches attributes to ensure color is present and normalized before first render. This prevents false negatives in A/B captures.
+
+**File:** `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx` (where geometry is built)
+
+**Add (one‑shot log):**
+```ts
+const col = geometry.getAttribute('color') as THREE.BufferAttribute | undefined
+if (!col || col.count !== positionAttribute.count || col.normalized !== true) {
+  console.warn('[dreamdust] color attribute missing or not normalized', {
+    present: !!col, count: col?.count, normalized: col?.normalized,
+  })
+}
+```
 
 #### Step 1.1: Add Preset Selector to Debug Panel
 
@@ -132,7 +158,7 @@ Evaluate at 100% zoom on:
 
 ### Phase 2: Implement Kernel Options (Est. 45-60 min)
 
-#### Step 2.1: Add Gaussian Kernel Chunk
+#### Step 2.1: Add Gaussian Kernel Chunk (static)
 
 **File:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts`
 
@@ -181,7 +207,7 @@ Evaluate at 100% zoom on:
 
 ---
 
-#### Step 2.3: Conditional Kernel Selection
+#### Step 2.3: Conditional Kernel Selection via `#define`
 
 **File:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts`
 
@@ -194,40 +220,30 @@ Evaluate at 100% zoom on:
    } from './glsl/chunks'
    ```
 
-2. Add kernel chunk based on preset (~line 480, before fragment shader assembly):
-   ```typescript
-   const useGaussianKernel = preset === 'C' || preset === 'D'
-   const spriteChunk = useGaussianKernel
-     ? DREAMDUST_GAUSSIAN_SPRITE_CHUNK
-     : '' // Existing disc sprite already in base chunks
-   ```
-
-3. Update fragment shader to use selected kernel (~line 530, in sprite calculation):
+2. Keep both sprite functions compiled and switch with a define:
+   - In fragment shader (sprite calc site):
    ```glsl
-   // REPLACE existing dreamdustSoftSprite call with:
-   ${useGaussianKernel ? `
-     float sprite = dreamdustGaussianSprite(gl_PointCoord, uSpriteSharpness);
-   ` : `
-     float sprite = dreamdustSoftSprite(gl_PointCoord);
-   `}
+   float sprite = dreamdustSoftSprite(gl_PointCoord);
+   #ifdef USE_GAUSSIAN
+     sprite = dreamdustGaussianSprite(gl_PointCoord, uSpriteSharpness);
+   #endif
    ```
 
-4. Include chunk in shader string (~line 470):
-   ```typescript
-   fragmentShader: /* glsl */ `
-     ${DREAMDUST_BASE_CHUNKS}
-     ${spriteChunk}
-     // ... rest of shader
+3. Toggle define in material based on preset:
+   ```ts
+   const useGaussian = preset === 'C' || preset === 'D1' || preset === 'D2'
+   if (useGaussian) material.defines.USE_GAUSSIAN = 1; else delete material.defines.USE_GAUSSIAN
+   material.needsUpdate = true
    ```
 
 **Validation:**
-- Preset A/B: Disc sprite (existing behavior)
-- Preset C/D: Gaussian sprite (softer particles)
-- No shader compile errors
+- Preset A/B1/B2: Disc sprite (existing behavior)
+- Preset C/D1/D2: Gaussian sprite (softer particles)
+- No shader compile errors; no dynamic string splicing
 
 ---
 
-### Phase 3: Implement Blending Mode Toggle (Est. 15 min)
+### Phase 3: Implement Blending Mode Toggle (Est. 15–20 min)
 
 #### Step 3.1: Apply Blending Based on Preset
 
@@ -241,10 +257,13 @@ Evaluate at 100% zoom on:
    })
 
    // Apply preset-specific blending
-   const useAdditive = preset === 'B' || preset === 'D'
+   const useAdditive = preset === 'B1' || preset === 'B2' || preset === 'D1' || preset === 'D2'
    if (useAdditive) {
      material.blending = THREE.AdditiveBlending
-     material.depthTest = false
+     // Keep premultipliedAlpha=true; additive ignores dest alpha but it’s fine
+     // A/B occlusion policy via depthTest
+     const occluding = preset === 'B1' || preset === 'D1'
+     material.depthTest = occluding
    } else {
      material.blending = THREE.NormalBlending
      material.transparent = true
@@ -252,13 +271,15 @@ Evaluate at 100% zoom on:
    }
    ```
 
+2. Note on premultiplied alpha: our fragment outputs premultiplied alpha; keep `premultipliedAlpha: true` consistent across presets.
+
 **Validation:**
 - Preset A/C: Alpha blending (current behavior)
 - Preset B/D: Additive blending (brighter overlaps, no depth sorting)
 
 ---
 
-### Phase 4: Implement Bloom Tuning (Est. 10 min)
+### Phase 4: Implement Bloom Tuning (Est. 10–15 min)
 
 **File:** `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`
 
@@ -269,12 +290,16 @@ Evaluate at 100% zoom on:
      switch (ui.aestheticPreset) {
        case 'A':
          return { strength: 0.2, radius: 0.4, threshold: 0.8 } // Current baseline
-       case 'B':
+       case 'B1':
          return { strength: 0.65, radius: 0.4, threshold: 0.6 } // Aggressive for additive
+       case 'B2':
+         return { strength: 0.65, radius: 0.4, threshold: 0.6 }
        case 'C':
-         return { strength: 0.45, radius: 0.4, threshold: 0.7 } // Moderate for Gaussian
-       case 'D':
-         return { strength: 0.5, radius: 0.4, threshold: 0.6 } // Balanced combined
+         return { strength: 0.45, radius: 0.5, threshold: 0.7 } // Slightly larger radius for Gaussian tails
+       case 'D1':
+         return { strength: 0.5, radius: 0.5, threshold: 0.6 }
+       case 'D2':
+         return { strength: 0.5, radius: 0.5, threshold: 0.6 }
        default:
          return { strength: 0.2, radius: 0.4, threshold: 0.8 } // Current iteration 04
      }
@@ -308,7 +333,7 @@ Evaluate at 100% zoom on:
    ```glsl
    // Depth-based desaturation/darkening
    float dn = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
-   float dAmt = clamp(dd_saturate(dn * 0.25), 0.0, 1.0);
+   float dAmt = clamp(dn * 0.25, 0.0, 1.0); // use clamp; or include DD_SAT chunk explicitly
    float luma = dot(color, vec3(0.299, 0.587, 0.114));
    vec3 gray = vec3(luma);
    color = mix(color, gray, dAmt);
@@ -341,7 +366,7 @@ Evaluate at 100% zoom on:
 
 ---
 
-### Phase 6: Testing Protocol (Est. 60 min)
+### Phase 6: Testing Protocol (Est. 60–75 min)
 
 #### Step 6.1: Prepare Test Environment
 
@@ -375,7 +400,7 @@ Evaluate at 100% zoom on:
 
 #### Step 6.2: Capture Screenshots for Each Preset
 
-**For each preset (A, B, C, D):**
+**For each preset (A, B1, B2, C, D1, D2):**
 
 1. Select preset from dropdown
 2. Wait 3 seconds for render to stabilize
@@ -392,7 +417,9 @@ Evaluate at 100% zoom on:
 
 7. Reset zoom, next preset
 
-**Total artifacts:** 12 screenshots (4 presets × 3 views each)
+Optional quantitative check: For ROI crops, derive a radial intensity profile (64×64 crop) to visualize edge monotonicity (pellet vs Gaussian tail).
+
+**Total artifacts:** 18 screenshots (6 presets × 3 views each)
 
 ---
 
@@ -534,3 +561,6 @@ If all presets fail or introduce regressions:
 2. Update aesthetic iteration documentation with winning approach
 3. If aesthetics achieved: Move to interactive implementation (tap/stroke)
 4. If aesthetics not achieved: Reassess with user, consider alternative techniques
+6. **Freeze reveal and gating for captures:**
+   - Force `uReveal=1.0` during captures.
+   - Either widen reveal transition `w` from 0.08 → 0.14 or bypass noise gating when `uReveal>=0.999` to avoid imprinted cellular voids.
