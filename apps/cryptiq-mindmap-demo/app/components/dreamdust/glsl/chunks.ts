@@ -169,7 +169,7 @@ float dreamdustRimStrength(float sprite) {
 }
 
 vec3 dreamdustApplyRimLight(vec3 color, float rimStrength) {
-  return mix(color, vec3(1.0), rimStrength * 0.2);
+  return mix(color, vec3(1.0), rimStrength * 0.05);
 }
 
 float dreamdustApplyRimAlpha(float alpha, float rimStrength) {

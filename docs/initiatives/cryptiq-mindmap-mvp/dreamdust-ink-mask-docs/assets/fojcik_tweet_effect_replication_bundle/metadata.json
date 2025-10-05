@@ -1,0 +1,34 @@
+{
+  "bundle_version": "v2",
+  "created_utc": "2025-10-05T19:27:21.324739Z",
+  "source_frames_zip": "fojcik_frames.zip",
+  "source_reported": {
+    "gif_fps": 10,
+    "selection_stride_frames": 7,
+    "intended_count": 24
+  },
+  "media": {
+    "width": 720,
+    "height": 720,
+    "frame_count": 24
+  },
+  "effect_replication": {
+    "tweet_text": "Midjourney \u2192 Particle magic with @threejs. I generate an image with Midjourney, reconstruct a point cloud with AI from it, then render it with Threejs. TSL handles the math.",
+    "depth_model": "VGGT (Visual Geometry Grounded Transformer)",
+    "goal": "Replicate the aesthetic and particle point\u2011cloud effect only."
+  },
+  "unknowns": [
+    "Exact prompt/seed and upscaler",
+    "VGGT config and preprocessing",
+    "Point sampling kernel and density function",
+    "TSL shader constants, blending, fog, tonemapping",
+    "Post stack parameters (bloom, vignette, grain)"
+  ],
+  "educated_guesses": [
+    "Particles 80k\u2013250k; edge\u2011biased sampling",
+    "Point size ~ 1/(a*depth+b), jitter \u00b110\u201320%",
+    "Alpha decreases with depth; far points desaturate",
+    "Additive or alpha blending; ACES/Reinhard tonemapping",
+    "Bilateral depth smoothing; hole fill by NN/inpaint"
+  ]
+}

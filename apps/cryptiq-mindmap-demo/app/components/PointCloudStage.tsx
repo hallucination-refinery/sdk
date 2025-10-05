@@ -2107,6 +2107,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return new Float32Array(0)
   }, [prebaked?.positions, renderBuffers?.positions, simActive, simState])
 
+  const stageColorArray = React.useMemo(() => {
+    if (simActive && simState) {
+      return simState.colors
+    }
+    if (renderBuffers?.colors) {
+      return renderBuffers.colors
+    }
+    if (prebaked?.colors) {
+      return prebaked.colors
+    }
+    return null
+  }, [prebaked?.colors, renderBuffers?.colors, simActive, simState])
+
   const stagePositionVersion = React.useMemo(() => {
     const key = simActive ? (simState?.key ?? 'sim') : 'pre'
     const len = stagePositionArray.length
@@ -2189,10 +2202,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         normalized
       )
       attribute.setUsage(THREE.DynamicDrawUsage)
+      attribute.needsUpdate = true
       geometry.setAttribute(name, attribute)
     }
 
     setAttribute('position', stagePositionArray, 3)
+    setAttribute('color', stageColorArray, 3, true)
 
     if (stageUvDepth) {
       setAttribute('aUv', stageUvDepth.uvs, 2)
@@ -2216,6 +2231,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       console.info('[vertex] geometry attribute summary', {
         geometryUuid: geometry.uuid,
         position: geometry.getAttribute('position')?.count ?? 0,
+        color: geometry.getAttribute('color')?.count ?? 0,
         aUv: geometry.getAttribute('aUv')?.count ?? 0,
         uv: geometry.getAttribute('uv')?.count ?? 0,
         aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
@@ -2227,6 +2243,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     simActive,
     simState?.stageUvs,
     stageAttributeVersion,
+    stageColorArray,
     stagePointsRef,
     stagePositionArray,
     stagePositionVersion,

@@ -101,9 +101,9 @@ const DEFAULT_SIM_CURVE: DreamdustSimCurveUniforms = Object.freeze({
 })
 
 export const DEFAULT_POINT_SIZING = Object.freeze({
-  baseSize: 12,
-  minSize: 8,
-  maxSize: 24,
+  baseSize: 1.8,
+  minSize: 0.35,
+  maxSize: 2.6,
   sizeGain: 1,
   offsetGain: 1,
 }) as const
