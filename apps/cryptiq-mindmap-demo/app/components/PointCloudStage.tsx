@@ -105,7 +105,7 @@ const BLOOM_PRESET_SETTINGS: Record<DreamdustAestheticPreset, BloomSettings> = {
   B1: { strength: 0.65, radius: 0.4, threshold: 0.6 },
   B2: { strength: 0.65, radius: 0.4, threshold: 0.6 },
   C: { strength: 0.45, radius: 0.5, threshold: 0.7 },
-  D1: { strength: 1.2, radius: 2.0, threshold: 0.5 },  // Aggressive bloom for soft halos
+  D1: { strength: 0.35, radius: 0.5, threshold: 0.55 },  // Mild bloom per tweet recipe
   D2: { strength: 0.5, radius: 0.5, threshold: 0.6 },
 }
 

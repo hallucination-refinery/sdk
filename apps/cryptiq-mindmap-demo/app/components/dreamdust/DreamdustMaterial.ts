@@ -7,6 +7,7 @@ import { createInkTelemetryCollector, createVertexTelemetryCollector } from './t
 import {
   DD_CURL3,
   DD_FBM3,
+  DREAMDUST_ACES_TONEMAP_CHUNK,
   DREAMDUST_COLOR_CHUNK,
   DREAMDUST_DEPTH_FADE_CHUNK,
   DREAMDUST_GAUSSIAN_SPRITE_CHUNK,
@@ -53,7 +54,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uBreath: 0.5,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
-  uNoiseThreshold: 0.30,
+  uNoiseThreshold: 0.45,
   uDriftAmp: 0.28,
   uCurlFreq: 1,
   uCurlAmp: 0.35,
@@ -515,6 +516,7 @@ varying float vDebugSampleSlot;
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_SOFT_SPRITE_CHUNK}
 ${DREAMDUST_GAUSSIAN_SPRITE_CHUNK}
+${DREAMDUST_ACES_TONEMAP_CHUNK}
 ${DREAMDUST_COLOR_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
 ${DREAMDUST_DEPTH_FADE_CHUNK}
@@ -620,6 +622,9 @@ void main() {
     alpha = -abs(alpha);
   }
 #endif
+
+  // Apply ACES tonemapping to prevent white blowout with additive blending
+  color = dreamdustACESFilmic(color);
 
   color = dreamdustApplyGamma(color, uGamma);
 

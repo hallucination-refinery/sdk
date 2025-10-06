@@ -104,9 +104,9 @@ const DEFAULT_SIM_CURVE: DreamdustSimCurveUniforms = Object.freeze({
 const DEFAULT_SPRITE_SHARPNESS = 4
 
 export const DEFAULT_POINT_SIZING = Object.freeze({
-  baseSize: 6.0,   // Medium particles for density balance
-  minSize: 1.2,    // Scaled proportionally
-  maxSize: 9.0,    // Scaled proportionally
+  baseSize: 5.0,   // Moderate size per tweet recipe (2-6px range)
+  minSize: 1.0,    // Scaled proportionally
+  maxSize: 7.5,    // Scaled proportionally
   sizeGain: 1,
   offsetGain: 1,
 }) as const
