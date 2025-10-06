@@ -53,7 +53,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uBreath: 0.5,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
-  uNoiseThreshold: 0.50,
+  uNoiseThreshold: 0.30,
   uDriftAmp: 0.28,
   uCurlFreq: 1,
   uCurlAmp: 0.35,
@@ -594,6 +594,9 @@ void main() {
   vec3 depthGray = vec3(depthLuma);
   color = mix(color, depthGray, depthAmount);
   color *= (1.0 - 0.25 * depthAmount);
+
+  // Boost color saturation to match reference vibrance
+  color = color * 1.6;
 
   float rim = dreamdustRimStrength(sprite);
   color = dreamdustApplyRimLight(color, rim);
