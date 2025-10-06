@@ -25,7 +25,16 @@
       "Bash(bash -l -c '. $HOME/.nvm/nvm.sh && nvm use 20.19.5 && pnpm --filter cryptiq-mindmap-demo run build')",
       "Bash(nvm use:*)",
       "Bash(/dev/null)",
-      "Bash(. /Users/williambarron/.nvm/nvm.sh)"
+      "Bash(. /Users/williambarron/.nvm/nvm.sh)",
+      "Bash(bash -l -c '. $HOME/.nvm/nvm.sh && nvm use 20.19.5 && pnpm --filter cryptiq-mindmap-demo dev')",
+      "Bash(ffprobe:*)",
+      "Bash(mkdir:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(git cat-file:*)",
+      "Bash(git rev-list:*)",
+      "Bash(awk:*)",
+      "Bash(git reset:*)",
+      "Bash(git restore:*)"
     ]
   },
   "notes": "Local settings intentionally minimal; project-level permissions apply."
