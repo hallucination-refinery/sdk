@@ -832,3 +832,195 @@ git revert [COMMIT_HASH]
 2. Try multi-scale Gaussian (two-term mix)
 3. THEN consider screen-space density composite
 4. Reassess with user if fundamental approach wrong
+
+
+---
+
+## Phase 1 Validation Results
+
+  **Date:** 2025-10-06 9:05 AM
+  **Commit:** cdf7ae92 (shader cache + color binding + uniform
+  override fixes)
+  **Branch:** codex/implement-dreamdust-aesthetic-plan
+
+  ### Observations 
+1. Here's the **terminal log**:
+```
+williambarron@Williams-MacBook-Pro refinery-sdk %  lsof -ti:3000 | xargs kill 2>/dev/null || true
+williambarron@Williams-MacBook-Pro refinery-sdk % rm -rf apps/cryptiq-mindmap-demo/.next
+williambarron@Williams-MacBook-Pro refinery-sdk %  bash -l -c '. $HOME/.nvm/nvm.sh && nvm use 20.19.5 && pnpm --filter
+  cryptiq-mindmap-demo dev'
+bash: line 1: cryptiq-mindmap-demo: command not found
+williambarron@Williams-MacBook-Pro refinery-sdk %  bash -l -c '. $HOME/.nvm/nvm.sh && nvm use 20.19.5 && pnpm --filter cryptiq-mindmap-demo dev'
+williambarron@Williams-MacBook-Pro refinery-sdk % nvm exec 20.19.5 bash -c 'PORT=3000 npx -y pnpm --filter cryptiq-mindmap-demo run dev'
+Running node v20.19.5 (npm v10.8.2)
+
+> cryptiq-mindmap-demo@0.1.0 dev /Users/williambarron/hallucination-refinery/refinery-sdk/apps/cryptiq-mindmap-demo
+> next dev --turbopack
+
+   ▲ Next.js 15.3.5 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.248.60.219:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 986ms
+ ○ Compiling /quiz/[slug] ...
+ ✓ Compiled /quiz/[slug] in 1807ms
+ HEAD /quiz/archetype-v1 200 in 2477ms
+ GET /quiz/archetype-v1?pc=scene-02&debug=1 200 in 61ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 996ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 1053ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1026ms
+```
+2. I then load the following URL in my Incognito Chrome tab and wait for the countdown overlay + canvas to settle: `http://localhost:3000/quiz/archetype-v1?pc=scene-02&debug=1`
+3. I use the dropdown in the debug panel to switch presets from `Current (iteration 04)` *to* `D1: Additive + Gaussian (depth)`:
+3.1 The particles noticeably get *smaller*, *less bright*, and (though it's hard to exactly describe) *softer/sparser*. 
+3.2 The following **browser logs** fire:
+```
+[preset] 
+{
+    "preset": "D1",
+    "blending": 2,
+    "blendingName": "AdditiveBlending",
+    "depthTest": true,
+    "hasGaussian": true,
+    "cacheKey": "dreamdust-gauss-1"
+}
+[preset] 
+{
+    "preset": "D1",
+    "blending": 2,
+    "blendingName": "AdditiveBlending",
+    "depthTest": true,
+    "hasGaussian": true,
+    "cacheKey": "dreamdust-gauss-1"
+}
+[preset] 
+{
+    "preset": "D1",
+    "blending": 2,
+    "blendingName": "AdditiveBlending",
+    "depthTest": true,
+    "hasGaussian": true,
+    "cacheKey": "dreamdust-gauss-1"
+}
+[preset] 
+{
+    "preset": "D1",
+    "blending": 2,
+    "blendingName": "AdditiveBlending",
+    "depthTest": true,
+    "hasGaussian": true,
+    "cacheKey": "dreamdust-gauss-1"
+}
+[dreamdust] bloom { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.6, preset: 'D1' }
+```
+4. I then proceed to switch presets to `A: Alpha + Disk`:
+4.1 *While* the cloud/image/particles does look noticeably *brighter*, not much else seems to visually different. 
+4.2  The following **browser logs** fire:
+```
+[preset] 
+{
+    "preset": "A",
+    "blending": 1,
+    "blendingName": "NormalBlending",
+    "depthTest": true,
+    "hasGaussian": false,
+    "cacheKey": "dreamdust-gauss-0"
+}
+[preset] 
+{
+    "preset": "A",
+    "blending": 1,
+    "blendingName": "NormalBlending",
+    "depthTest": true,
+    "hasGaussian": false,
+    "cacheKey": "dreamdust-gauss-0"
+}
+[preset] 
+{
+    "preset": "A",
+    "blending": 1,
+    "blendingName": "NormalBlending",
+    "depthTest": true,
+    "hasGaussian": false,
+    "cacheKey": "dreamdust-gauss-0"
+}
+[preset] 
+{
+    "preset": "A",
+    "blending": 1,
+    "blendingName": "NormalBlending",
+    "depthTest": true,
+    "hasGaussian": false,
+    "cacheKey": "dreamdust-gauss-0"
+}
+[dreamdust] bloom { enabled: true, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'A' }
+```
+
+---
+
+### NOTES
+**Perhaps** there's something that is *resetting* the particle size in that initial switch from `Current (iteration 04)` *to* `D1: Additive + Gaussian (depth)` (see item 3. above) that is making it harder to discern the visual differences between the presets.
+
+  ### Decision
+  - [ ] PASS → Proceed to Phase 2
+  - [ ] FAIL → Debug shader cache issue
+
+  ### Next Steps
+  [what you'll do based on results]
+
+---
+
+## Phase 2+3+4 Combined Test Results
+
+**Date:** 2025-10-06 [TIME]
+**Commit:** [CURRENT COMMIT]
+**Branch:** codex/implement-dreamdust-aesthetic-plan
+
+**Changes Applied:**
+- ✅ Bloom: D1 preset now 1.2/2.0/0.5 (was 0.5/0.5/0.6)
+- ✅ Color saturation: ×1.6 multiplier in fragment shader
+- ✅ Particle size: 3.0px base (was 8.0px)
+
+### Visual Observations (Preset D1)
+
+[Paste detailed observations here]
+
+**Comparison to reference video:**
+- Similarity percentage: [estimate %]
+- What's matching: [list aspects that look good]
+- What's still missing: [list gaps]
+
+### Specific Questions
+
+**1. Soft edges / halos:**
+- [ ] Particles have large soft halos (2-3× core size)?
+- [ ] Dense regions show bright glowing overlaps?
+- [ ] Mid-density areas look like continuous haze (not dots)?
+
+**2. Color quality:**
+- [ ] Browns/beiges look vibrant (not muted)?
+- [ ] Colors glow in overlaps?
+- [ ] Similar saturation to reference frames?
+
+**3. Motion / flow feeling:**
+- [ ] Does it feel static or flowing?
+- [ ] On scale 1-10 (1=static, 10=flowing): [NUMBER]
+- [ ] Specific description: [what you see/feel]
+
+### Decision
+
+**If 70%+ match to reference:**
+- [ ] Close enough, just needs gentle drift → Proceed to add curl noise (5-15 px/s)
+
+**If 40-70% match:**
+- [ ] Rendering improved but still significant gaps → Investigate [specific aspect]
+
+**If <40% match:**
+- [ ] Still way off, fundamental approach wrong → Pivot to [alternative]
+
+### Next Actions
+[Based on test results, what should we do next?]
