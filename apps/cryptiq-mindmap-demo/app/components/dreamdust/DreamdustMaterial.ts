@@ -710,6 +710,23 @@ export function makeDreamdustMaterial(
     material.depthTest = true
   }
   material.needsUpdate = true
+
+  // CRITICAL FIX: Force shader recompile when USE_GAUSSIAN define changes
+  // THREE.js program cache doesn't key by defines alone, so we add explicit cache key
+  material.customProgramCacheKey = function customProgramCacheKey() {
+    return material.defines?.USE_GAUSSIAN ? 'dreamdust-gauss-1' : 'dreamdust-gauss-0'
+  }
+
+  // DEBUG: Log material state per preset
+  console.info('[preset]', {
+    preset,
+    blending: material.blending,
+    blendingName: material.blending === 2 ? 'AdditiveBlending' : material.blending === 1 ? 'NormalBlending' : `Unknown(${material.blending})`,
+    depthTest: material.depthTest,
+    hasGaussian: !!material.defines?.USE_GAUSSIAN,
+    cacheKey: material.customProgramCacheKey(),
+  })
+
   const inkTelemetry = createInkTelemetryCollector()
   const vertexTelemetry = resolved.debugVertexLog ? createVertexTelemetryCollector() : null
   const originalOnAfterRender = material.onAfterRender?.bind(material)

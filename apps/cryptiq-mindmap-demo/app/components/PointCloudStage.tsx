@@ -1042,12 +1042,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   React.useEffect(() => {
     const { curlFreq, curlAmp } = tunablesRef.current
-    setUniform('uGamma', 0.82)
+    // REMOVED: setUniform('uGamma', 0.82) - now using defaults from DreamdustMaterial
     setUniform('uFocal', 1600)
     setUniform('uPointBaseSize', DEFAULT_POINT_SIZING.baseSize)
     setUniform('uMinSize', DEFAULT_POINT_SIZING.minSize)
     setUniform('uMaxSize', DEFAULT_POINT_SIZING.maxSize)
-    setUniform('uDepthBias', 0.14)
+    // REMOVED: setUniform('uDepthBias', 0.14) - now using defaults from DreamdustMaterial
     setUniform('uNoiseScale', curlFreq)
     setUniform('uNoiseSpeed', 0.24)
     // Stronger contrast on first draw: halve base drift, boost ink gains
@@ -2595,8 +2595,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                       attach="attributes-position"
                       args={[stagePositionArray, 3]}
                     />
+                    {stageColorArray && (
+                      <bufferAttribute
+                        key={`color:${stagePositionVersion}`}
+                        attach="attributes-color"
+                        args={[stageColorArray, 3, true]}
+                      />
+                    )}
                   </bufferGeometry>
-                  <primitive object={prebakedMaterial} attach="material" />
+                  <primitive
+                    key={`material:${aestheticPreset}`}
+                    object={prebakedMaterial}
+                    attach="material"
+                  />
                 </points>
               </group>
             </group>
