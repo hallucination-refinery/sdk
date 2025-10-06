@@ -564,3 +564,9 @@ If all presets fail or introduce regressions:
 6. **Freeze reveal and gating for captures:**
    - Force `uReveal=1.0` during captures.
    - Either widen reveal transition `w` from 0.08 → 0.14 or bypass noise gating when `uReveal>=0.999` to avoid imprinted cellular voids.
+
+## R1 Implementation Status — 2025-10-05
+
+- Shader toggles for Gaussian sprites, additive blending, and depth desaturation are implemented (`DreamdustMaterial.ts`, `glsl/chunks.ts`).
+- Debug preset selector and bloom preset plumbing land in `PointCloudStage.tsx`, `useDebugControls.ts`, and `DebugHud.tsx`.
+- Evaluation template (`2025-10-05-preset-evaluation.md`) created; screenshot capture pending due to non-interactive environment.

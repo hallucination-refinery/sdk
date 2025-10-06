@@ -24,10 +24,21 @@ const parseInk = (payload: unknown): InkTelemetrySnapshot | null => {
   return { size: num(r.size), alpha: num(r.alpha), reveal: num(r.reveal) }
 }
 
-export function useDebugControls(initialFlags?: DebugFlags) {
+export type DreamdustAestheticPreset = 'current' | 'A' | 'B1' | 'B2' | 'C' | 'D1' | 'D2'
+
+type DebugControlState = {
+  flags: DebugFlags
+  simSnapshot: SimTelemetrySnapshot | null
+  inkSnapshot: InkTelemetrySnapshot | null
+  aestheticPreset: DreamdustAestheticPreset
+  setAestheticPreset: React.Dispatch<React.SetStateAction<DreamdustAestheticPreset>>
+}
+
+export function useDebugControls(initialFlags?: DebugFlags): DebugControlState {
   const flags = React.useMemo(() => initialFlags ?? getDebugFlags(), [initialFlags])
   const [simSnapshot, setSimSnapshot] = React.useState<SimTelemetrySnapshot | null>(null)
   const [inkSnapshot, setInkSnapshot] = React.useState<InkTelemetrySnapshot | null>(null)
+  const [aestheticPreset, setAestheticPreset] = React.useState<DreamdustAestheticPreset>('current')
 
   React.useEffect(() => {
     if (!flags.simStats) setSimSnapshot(null)
@@ -57,7 +68,7 @@ export function useDebugControls(initialFlags?: DebugFlags) {
   }, [flags.inkStats, flags.simStats])
 
   if (process.env.NODE_ENV === 'production' || (!flags.simStats && !flags.inkStats)) {
-    return { flags, simSnapshot: null, inkSnapshot: null }
+    return { flags, simSnapshot: null, inkSnapshot: null, aestheticPreset, setAestheticPreset }
   }
-  return { flags, simSnapshot, inkSnapshot }
+  return { flags, simSnapshot, inkSnapshot, aestheticPreset, setAestheticPreset }
 }

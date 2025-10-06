@@ -19,7 +19,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { applyPerspectiveCover, applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { getDebugFlags } from './dreamdust/debug/getDebugFlags'
-import { useDebugControls } from './dreamdust/debug/useDebugControls'
+import { useDebugControls, type DreamdustAestheticPreset } from './dreamdust/debug/useDebugControls'
 import { getDreamdustCaps, type DreamdustRuntimeCaps } from './dreamdust/capabilities'
 import { useDreamdustCtx } from './dreamdust/context'
 import {
@@ -87,11 +87,27 @@ type StageSimState = {
   bounds: { center: THREE.Vector3; radius: number }
 }
 
-const BLOOM_SETTINGS = {
+type BloomSettings = {
+  strength: number
+  radius: number
+  threshold: number
+}
+
+const DEFAULT_BLOOM_SETTINGS: BloomSettings = {
   strength: 0.2,
   radius: 0.4,
   threshold: 0.8,
-} as const
+}
+
+const BLOOM_PRESET_SETTINGS: Record<DreamdustAestheticPreset, BloomSettings> = {
+  current: DEFAULT_BLOOM_SETTINGS,
+  A: { ...DEFAULT_BLOOM_SETTINGS },
+  B1: { strength: 0.65, radius: 0.4, threshold: 0.6 },
+  B2: { strength: 0.65, radius: 0.4, threshold: 0.6 },
+  C: { strength: 0.45, radius: 0.5, threshold: 0.7 },
+  D1: { strength: 0.5, radius: 0.5, threshold: 0.6 },
+  D2: { strength: 0.5, radius: 0.5, threshold: 0.6 },
+}
 
 type NavigatorWithPowerHints = Navigator & {
   deviceMemory?: number
@@ -1062,8 +1078,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const inkTex = dreamdustCtx?.inkTex ?? null
   const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
   const vertexInkOk = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
-  const debugFlags = React.useMemo(() => getDebugFlags(), [])
-  const { simSnapshot, inkSnapshot } = useDebugControls(debugFlags)
+  const debugFlagDefaults = React.useMemo(() => getDebugFlags(), [])
+  const { flags: debugFlags, simSnapshot, inkSnapshot, aestheticPreset, setAestheticPreset } =
+    useDebugControls(debugFlagDefaults)
   const debugInkProbe = debugFlags.inkProbe
   const debugSimProbe = debugFlags.simProbe
   const debugForceAlpha = debugFlags.forceAlpha
@@ -1115,6 +1132,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       debugSimProbe,
       debugForceAlpha,
       debugVertexLog,
+      aestheticPreset,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1127,7 +1145,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugForceAlpha, debugInkProbe, debugSimProbe, debugVertexLog, runtimeCaps, uniforms])
+  }, [
+    aestheticPreset,
+    debugForceAlpha,
+    debugInkProbe,
+    debugSimProbe,
+    debugVertexLog,
+    runtimeCaps,
+    uniforms,
+  ])
   const prebakedMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
     const material = createDreamdustMaterial(uniforms, {
@@ -1137,6 +1163,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       debugSimProbe,
       debugForceAlpha,
       debugVertexLog,
+      aestheticPreset,
     })
     const defines = material.defines ?? {}
     const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
@@ -1149,7 +1176,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     material.defines = defines
     material.needsUpdate = true
     return material
-  }, [debugForceAlpha, debugInkProbe, debugSimProbe, debugVertexLog, runtimeCaps, uniforms])
+  }, [
+    aestheticPreset,
+    debugForceAlpha,
+    debugInkProbe,
+    debugSimProbe,
+    debugVertexLog,
+    runtimeCaps,
+    uniforms,
+  ])
 
   React.useEffect(() => {
     return () => {
@@ -1494,6 +1529,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const bloomActive =
     !simEnabled && bloom && !noBloomOverride && (forceBloomOverride || bloomEligible)
   const thicknessScale = React.useMemo(() => Math.max(0.05, Math.min(1.0, thickness)), [thickness])
+  const bloomSettings = React.useMemo(() => {
+    const preset = BLOOM_PRESET_SETTINGS[aestheticPreset]
+    return preset ?? DEFAULT_BLOOM_SETTINGS
+  }, [aestheticPreset])
+  const freezeRevealParam = readSearchParamSafe('freezeReveal')
+  const captureModeParam = readSearchParamSafe('capture')
+  const screenshotMode = process.env.NEXT_PUBLIC_SCREENSHOT_MODE === '1'
+  const freezeReveal = screenshotMode || freezeRevealParam === '1' || captureModeParam === '1'
   React.useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -1552,38 +1595,55 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
   }, [bloomGuardReady, devicePixelRatioRaw, dprClampValue, forceBloomOverride, instanceCount])
 
-  const bloomLogRef = React.useRef(false)
+  const bloomLogRef = React.useRef<string | null>(null)
   React.useEffect(() => {
-    if (!bloomGuardReady || bloomLogRef.current) return
+    bloomLogRef.current = null
+  }, [aestheticPreset])
+  React.useEffect(() => {
+    if (!bloomGuardReady) return
+    const key = `${aestheticPreset}:${bloomSettings.strength}:${bloomSettings.radius}:${bloomSettings.threshold}`
+    if (bloomLogRef.current === key) return
     const enabled = bloomActive
     try {
       console.info(
-        `[dreamdust] bloom { enabled: ${enabled}, strength: ${BLOOM_SETTINGS.strength}, radius: ${BLOOM_SETTINGS.radius}, threshold: ${BLOOM_SETTINGS.threshold} }`
+        `[dreamdust] bloom { enabled: ${enabled}, strength: ${bloomSettings.strength}, radius: ${bloomSettings.radius}, threshold: ${bloomSettings.threshold}, preset: '${aestheticPreset}' }`
       )
     } catch {
       /* noop */
     }
-    bloomLogRef.current = true
-  }, [bloomActive, bloomGuardReady])
+    bloomLogRef.current = key
+  }, [aestheticPreset, bloomActive, bloomGuardReady, bloomSettings])
 
   React.useEffect(() => {
     setUniform('uPointBaseSize', DEFAULT_POINT_SIZING.baseSize * pointSizeScale)
   }, [pointSizeScale, setUniform])
 
   React.useEffect(() => {
-    if (timelineSupported) return
     const clamped = Math.min(1, Math.max(0, reveal))
+    const targetReveal = freezeReveal ? 1 : clamped
     if (hasRevealUniform && uniformsWithReveal.uReveal) {
-      uniformsWithReveal.uReveal.value = clamped
+      uniformsWithReveal.uReveal.value = targetReveal
+      if (timelineSupported) {
+        return
+      }
+    } else if (timelineSupported) {
       return
     }
-    const threshold = 1 - clamped
+    const threshold = 1 - targetReveal
     if (uniforms.uNoiseThreshold) {
       uniforms.uNoiseThreshold.value = threshold
     } else {
       setUniform('uNoiseThreshold', threshold)
     }
-  }, [hasRevealUniform, reveal, setUniform, timelineSupported, uniforms, uniformsWithReveal])
+  }, [
+    freezeReveal,
+    hasRevealUniform,
+    reveal,
+    setUniform,
+    timelineSupported,
+    uniforms,
+    uniformsWithReveal,
+  ])
 
   // Derive reduced, matched buffers for prebaked positions/colors
   const renderBuffers = React.useMemo(() => {
@@ -2092,6 +2152,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [cameraFitRadius, prebakedTransform, thicknessScale, uniforms, fitRequest])
 
   const stagePointsRef = React.useRef<THREE.Points | null>(null)
+  const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
 
   const stagePositionArray = React.useMemo(() => {
@@ -2171,6 +2232,37 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   ])
 
   const geometryBindLogRef = React.useRef<string | null>(null)
+  const stagePoints = stagePointsRef.current
+  React.useEffect(() => {
+    if (colorGuardLoggedRef.current) {
+      return
+    }
+    const points = stagePoints
+    if (!points) {
+      return
+    }
+    const geometry = points.geometry as THREE.BufferGeometry | undefined
+    if (!geometry) {
+      return
+    }
+    const positionAttr = geometry.getAttribute('position') as THREE.BufferAttribute | undefined
+    if (!positionAttr) {
+      return
+    }
+    const colorAttr = geometry.getAttribute('color') as THREE.BufferAttribute | undefined
+    colorGuardLoggedRef.current = true
+    if (!colorAttr || colorAttr.count !== positionAttr.count || colorAttr.normalized !== true) {
+      try {
+        console.warn('[dreamdust] color attribute missing or not normalized', {
+          present: !!colorAttr,
+          count: colorAttr?.count ?? null,
+          normalized: colorAttr?.normalized ?? null,
+        })
+      } catch {
+        /* noop */
+      }
+    }
+  }, [stageAttributeVersion, stagePoints, stagePositionVersion, simUvVersion])
   React.useEffect(() => {
     const points = stagePointsRef.current
     if (!points) {
@@ -2540,9 +2632,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         />
         {bloomEnabled && !simEnabled && (
           <BloomPass
-            strength={BLOOM_SETTINGS.strength}
-            radius={BLOOM_SETTINGS.radius}
-            threshold={BLOOM_SETTINGS.threshold}
+            strength={bloomSettings.strength}
+            radius={bloomSettings.radius}
+            threshold={bloomSettings.threshold}
           />
         )}
       </Canvas>
@@ -2692,13 +2784,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               />
               roll180 (rotate Z)
             </label>
-            {process.env.NODE_ENV !== 'production' &&
-            (debugFlags.simStats || debugFlags.inkStats) ? (
+            {process.env.NODE_ENV !== 'production' ? (
               <DebugHud
                 simEnabled={debugFlags.simStats}
                 simSnapshot={simSnapshot}
                 inkEnabled={debugFlags.inkStats}
                 inkSnapshot={inkSnapshot}
+                aestheticPreset={aestheticPreset}
+                onPresetChange={setAestheticPreset}
               />
             ) : null}
           </div>
