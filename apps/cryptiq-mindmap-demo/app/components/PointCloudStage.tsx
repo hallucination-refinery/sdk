@@ -1960,8 +1960,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       const qZ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI)
       flipWorld.multiply(qZ)
     }
-    return flipWorld.multiply(base.clone())
-  }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp, ui.roll180])
+
+    let result = flipWorld.multiply(base.clone())
+
+    // When controls override is active, remove roll component to level horizon
+    if (controlsOverride) {
+      // Decompose quaternion to euler angles
+      const euler = new THREE.Euler().setFromQuaternion(result, 'YXZ')
+      // Zero out Z rotation (roll) but keep pitch (X) and yaw (Y)
+      euler.z = 0
+      // Reconstruct quaternion without roll
+      result = new THREE.Quaternion().setFromEuler(euler)
+      console.log('[PC] Quaternion roll neutralized for level horizon')
+    }
+
+    return result
+  }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp, ui.roll180, controlsOverride])
 
   // Recolor fallback: if colors missing or mismatched, synthesize from source image
   const recolored = React.useMemo(() => {
