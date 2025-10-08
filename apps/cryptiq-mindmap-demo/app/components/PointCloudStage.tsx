@@ -1707,7 +1707,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     thickness: 0.38,
     pointSizeScale: 1.5,
     keepRatio: 1,
-    bloom: true,
+    // When controls override is active, bloom OFF by default
+    bloom: controlsOverride ? false : true,
     // When controls override is active, use iteration 6 preset FOV
     fovDeg: controlsOverride ? 60 : defaultFovDeg,
     reveal: 1,
@@ -2686,7 +2687,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         orthographic={false}
         camera={{
           position: controlsOverride
-            ? [-90.614, 137.449, -888.601] // Iteration 6 preset
+            ? [-65.737, 103.054, -681.379] // Iteration 6 preset (final)
             : [0, 0, 1200],
           fov: ui.fovDeg,
           near: 0.1,
@@ -2889,17 +2890,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           drawing={drawing}
-          target={controlsOverride ? [-64.814, 145.642, -657.435] : cameraFitTarget}
+          target={controlsOverride ? [-62.924, 103.948, -656.168] : cameraFitTarget}
           controlsOverride={controlsOverride}
         />
         <CameraLogger trigger={logCameraTrigger} fitTarget={cameraFitTarget} />
         <CameraPositionDebugger
-          expectedPosition={controlsOverride ? [-90.614, 137.449, -888.601] : undefined}
+          expectedPosition={controlsOverride ? [-65.737, 103.054, -681.379] : undefined}
         />
         {controlsOverride && (
           <CameraPresetApplier
-            position={[-90.614, 137.449, -888.601]}
-            target={[-64.814, 145.642, -657.435]}
+            position={[-65.737, 103.054, -681.379]}
+            target={[-62.924, 103.948, -656.168]}
           />
         )}
         <CameraUpEnforcer />
