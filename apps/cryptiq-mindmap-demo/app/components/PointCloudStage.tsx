@@ -17,6 +17,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import { applyPerspectiveCover, applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
+import { getR3FStateOrNull } from './anim/r3fSafe'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { getDebugFlags } from './dreamdust/debug/getDebugFlags'
 import { useDebugControls, type DreamdustAestheticPreset } from './dreamdust/debug/useDebugControls'
@@ -53,6 +54,7 @@ type PointCloudStageProps = {
   pointSize?: number
   stride?: number
   perspective?: boolean
+  controlsOverride?: boolean
 }
 
 type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'] & {
@@ -105,7 +107,7 @@ const BLOOM_PRESET_SETTINGS: Record<DreamdustAestheticPreset, BloomSettings> = {
   B1: { strength: 0.65, radius: 0.4, threshold: 0.6 },
   B2: { strength: 0.65, radius: 0.4, threshold: 0.6 },
   C: { strength: 0.45, radius: 0.5, threshold: 0.7 },
-  D1: { strength: 0.35, radius: 0.5, threshold: 0.55 },  // Mild bloom per tweet recipe
+  D1: { strength: 0.35, radius: 0.5, threshold: 0.3 },  // Moderate threshold for selective bloom
   D2: { strength: 0.5, radius: 0.5, threshold: 0.6 },
 }
 
@@ -830,7 +832,17 @@ function SimDriver({
   return null
 }
 
-function SceneControls({ radius, drawing = false }: { radius?: number; drawing?: boolean }) {
+function SceneControls({
+  radius,
+  drawing = false,
+  target = [0, 0, 0],
+  controlsOverride = false,
+}: {
+  radius?: number
+  drawing?: boolean
+  target?: [number, number, number]
+  controlsOverride?: boolean
+}) {
   const controlsRef = React.useRef(null)
   const { gl } = useThree()
   React.useEffect(() => {
@@ -840,14 +852,14 @@ function SceneControls({ radius, drawing = false }: { radius?: number; drawing?:
     <OrbitControls
       ref={controlsRef}
       makeDefault
-      enableRotate={!drawing}
-      enableZoom={!drawing}
-      enablePan={!drawing}
+      enableRotate={controlsOverride ? true : !drawing}
+      enableZoom={controlsOverride ? true : !drawing}
+      enablePan={controlsOverride ? true : !drawing}
       enableDamping
       dampingFactor={0.1}
       minDistance={Math.max(0.1, radius ? radius * 0.02 : 100)}
       maxDistance={radius ? Math.max(500, radius * 10) : 5000}
-      target={[0, 0, 0]}
+      target={target}
       rotateSpeed={0.8}
       zoomSpeed={0.6}
       mouseButtons={{
@@ -896,6 +908,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     depthRgUrl,
     pointSize = DEFAULT_POINT_SIZING.baseSize,
     stride = 1,
+    controlsOverride = false,
     // omit perspective in baseline
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
@@ -1044,7 +1057,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const { curlFreq, curlAmp } = tunablesRef.current
     // REMOVED: setUniform('uGamma', 0.82) - now using defaults from DreamdustMaterial
     setUniform('uFocal', 1600)
-    setUniform('uPointBaseSize', DEFAULT_POINT_SIZING.baseSize)
+    // REMOVED: setUniform('uPointBaseSize', ...) - now handled by pointSizeScale effect at line 1618
     setUniform('uMinSize', DEFAULT_POINT_SIZING.minSize)
     setUniform('uMaxSize', DEFAULT_POINT_SIZING.maxSize)
     // REMOVED: setUniform('uDepthBias', 0.14) - now using defaults from DreamdustMaterial
@@ -1513,7 +1526,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     roll180?: boolean
   }>(() => ({
     thickness: 0.38,
-    pointSizeScale: initialPointScale,
+    pointSizeScale: 1.5,
     keepRatio: 1,
     bloom: true,
     fovDeg: defaultFovDeg,
@@ -2071,6 +2084,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
       return [center.x, center.y, center.z]
     }
+    // Prebaked path: the geometry group is translated by -center*scale,
+    // which places the cloud's center at world origin. Orbit around [0,0,0].
+    if (prebakedTransform) {
+      return [0, 0, 0]
+    }
     return [0, 0, 0]
   }, [appliedQuaternion, mirrorScale, prebakedTransform, simActive, simBounds, thicknessScale])
   const cameraFitRadius = React.useMemo(() => {
@@ -2094,10 +2112,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       const scale = prebakedTransform?.scale ?? 1
       return Math.max(1e-3, simBounds.radius * scale)
     }
+    // For prebaked mode, use the already-computed scaled radius
+    if (prebakedTransform?.radius) {
+      return prebakedTransform.radius
+    }
     const srcPos = renderBuffers?.positions ?? prebaked?.positions ?? null
     if (!srcPos) return cameraFitRadius
     const count = Math.floor(srcPos.length / 3)
     if (count <= 0) return cameraFitRadius
+    const scale = prebakedTransform?.scale ?? 1
     const q = appliedQuaternion
     let minX = Infinity,
       minY = Infinity,
@@ -2114,7 +2137,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     const dx = Math.max(1e-6, maxX - minX)
     const dy = Math.max(1e-6, maxY - minY)
-    return 0.5 * Math.hypot(dx, dy)
+    return 0.5 * Math.hypot(dx, dy) * scale
   }, [
     appliedQuaternion,
     cameraFitRadius,
@@ -2143,6 +2166,25 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       simFitLoggedKeyRef.current = simState.key
     }
   }, [simActive, simBounds, simState, setFitRequest])
+
+  // Trigger auto-fit for prebaked (static) point clouds
+  const prebakedFitRequestKeyRef = React.useRef<string | null>(null)
+  React.useEffect(() => {
+    if (simActive) return // Only for prebaked mode, not sim
+    if (!prebaked || !prebakedTransform) return
+
+    // Use count as key to detect new point cloud load
+    const key = `prebaked-${prebaked.count}-${prebakedTransform.radius}`
+    if (prebakedFitRequestKeyRef.current !== key) {
+      setFitRequest((v) => v + 1)
+      prebakedFitRequestKeyRef.current = key
+      console.log('[PC] prebaked fit triggered', {
+        count: prebaked.count,
+        radius: prebakedTransform.radius,
+        center: prebakedTransform.center,
+      })
+    }
+  }, [simActive, prebaked, prebakedTransform, setFitRequest])
 
   React.useEffect(() => {
     if (!uniforms.uDepthNormScale) return
@@ -2517,36 +2559,39 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }}
       >
         {/* no FitOrtho in perspective baseline */}
-        <InkSurface
-          mirrorLR={!!ui.mirrorLR}
-          mirrorUD={!!ui.mirrorUD}
-          onStart={() => {
-            inkUpdateLoggedRef.current = false
-            setDrawing(true)
-          }}
-          onTexture={(tex) => {
-            try {
-              updateInkTexture(tex)
-              if (drawing && !inkUpdateLoggedRef.current) {
-                console.log('[PC] ink tex updated')
-                inkUpdateLoggedRef.current = true
-              }
-            } catch {
-              // Ignore uniform update failures to keep drawing resilient
-            }
-          }}
-          onEnd={(info) => {
-            setDrawing(false)
-            inkUpdateLoggedRef.current = false
-            if (info.type === 'stroke') {
+        {/* InkSurface disabled when controls override is active */}
+        {!controlsOverride && (
+          <InkSurface
+            mirrorLR={!!ui.mirrorLR}
+            mirrorUD={!!ui.mirrorUD}
+            onStart={() => {
+              inkUpdateLoggedRef.current = false
+              setDrawing(true)
+            }}
+            onTexture={(tex) => {
               try {
-                startCascade?.([1, 1, 1])
+                updateInkTexture(tex)
+                if (drawing && !inkUpdateLoggedRef.current) {
+                  console.log('[PC] ink tex updated')
+                  inkUpdateLoggedRef.current = true
+                }
               } catch {
-                // Ignore cascade trigger failures
+                // Ignore uniform update failures to keep drawing resilient
               }
-            }
-          }}
-        />
+            }}
+            onEnd={(info) => {
+              setDrawing(false)
+              inkUpdateLoggedRef.current = false
+              if (info.type === 'stroke') {
+                try {
+                  startCascade?.([1, 1, 1])
+                } catch {
+                  // Ignore cascade trigger failures
+                }
+              }
+            }}
+          />
+        )}
         <CameraSync
           fovDeg={ui.fovDeg}
           fitRequest={fitRequest}
@@ -2640,6 +2685,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           drawing={drawing}
+          target={cameraFitTarget}
+          controlsOverride={controlsOverride}
         />
         {bloomEnabled && !simEnabled && (
           <BloomPass
@@ -2667,6 +2714,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           }}
         >
           <div style={{ fontWeight: 700, marginBottom: 6 }}>PC Debug</div>
+          {controlsOverride && (
+            <div
+              style={{
+                background: 'rgba(255, 165, 0, 0.25)',
+                border: '1px solid rgba(255, 165, 0, 0.6)',
+                color: '#ffa500',
+                padding: '6px 8px',
+                borderRadius: 6,
+                marginBottom: 8,
+                fontWeight: 600,
+                textAlign: 'center',
+              }}
+            >
+              CONTROLS OVERRIDE ACTIVE
+            </div>
+          )}
           <div style={{ display: 'grid', rowGap: 8 }}>
             <div>
               prebaked:{' '}
@@ -2724,6 +2787,63 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               }}
             >
               Fit
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                // Structured, copy/paste-ready camera logging
+                try {
+                  const state = getR3FStateOrNull()
+                  const cam = state?.camera as THREE.PerspectiveCamera | undefined
+                  const controls = state?.controls as { target?: THREE.Vector3 } | undefined
+                  const posArr = cam
+                    ? [cam.position.x, cam.position.y, cam.position.z]
+                    : [0, 0, 0]
+                  const tgtVec = controls?.target
+                    ? new THREE.Vector3(controls.target.x, controls.target.y, controls.target.z)
+                    : (cam?.userData?.target as THREE.Vector3 | undefined) || new THREE.Vector3()
+                  const tgtArr = [tgtVec.x, tgtVec.y, tgtVec.z]
+                  const fovVal = cam?.fov ?? ui.fovDeg
+
+                  const round = (n: number) => Number(n.toFixed(3))
+                  const P = posArr.map(round) as [number, number, number]
+                  const T = tgtArr.map(round) as [number, number, number]
+                  const F = Number(Number(fovVal).toFixed(3))
+
+                  const preset = {
+                    position: P,
+                    target: T,
+                    fov: F,
+                  } as const
+
+                  const inline = `{"position":[${P.join(',')}],"target":[${T.join(',')}],"fov":${F}}`
+
+                  console.log('[PC] Camera preset', preset)
+                  console.log('[PC] Camera preset (inline):', inline)
+                  console.log('[PC] Fit target currently:', cameraFitTarget)
+                  try {
+                    void navigator.clipboard?.writeText?.(inline)
+                    console.log('[PC] Copied to clipboard')
+                  } catch {
+                    // clipboard may be unavailable; ignore
+                  }
+                } catch (err) {
+                  console.warn('[PC] Camera logging failed', err)
+                }
+              }}
+              style={{
+                padding: '6px 8px',
+                borderRadius: 6,
+                border: '1px solid rgba(255,255,255,0.25)',
+                background: 'rgba(255,255,255,0.08)',
+                color: '#fff',
+                fontWeight: 600,
+                cursor: 'pointer',
+                width: '100%',
+                marginTop: 4,
+              }}
+            >
+              Log Camera
             </button>
             <label>
               fov: {Math.round(ui.fovDeg)}°
@@ -2840,10 +2960,15 @@ function CameraSync({
   React.useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera
     if (distance && isFinite(distance)) {
-      cam.position.set(0, 0, distance)
+      // Position camera relative to target for straight-on view
+      if (fitTarget) {
+        cam.position.set(fitTarget[0], fitTarget[1], fitTarget[2] + distance)
+      } else {
+        cam.position.set(0, 0, distance)
+      }
       cam.updateProjectionMatrix()
     }
-  }, [camera, distance, fitMargin, fitRadius])
+  }, [camera, distance, fitMargin, fitRadius, fitTarget])
   React.useEffect(() => {
     if (!fitTarget) return
     const cam = camera as THREE.PerspectiveCamera
