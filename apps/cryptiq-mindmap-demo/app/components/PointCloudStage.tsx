@@ -879,7 +879,9 @@ function CameraPresetApplier({
 }) {
   const { camera, controls } = useThree()
   const appliedRef = React.useRef(false)
+  const frameCountRef = React.useRef(0)
 
+  // Apply preset immediately in useEffect
   React.useEffect(() => {
     if (appliedRef.current) return
 
@@ -897,7 +899,7 @@ function CameraPresetApplier({
 
     cam.updateProjectionMatrix()
 
-    console.log('[PC] Preset applied:', {
+    console.log('[PC] Preset applied (initial):', {
       position,
       target,
       actualPosition: [cam.position.x, cam.position.y, cam.position.z],
@@ -906,6 +908,45 @@ function CameraPresetApplier({
 
     appliedRef.current = true
   }, [camera, controls, position, target])
+
+  // Monitor camera position for first 60 frames and log if it changes
+  useFrame(() => {
+    if (frameCountRef.current >= 60) return
+    frameCountRef.current++
+
+    const cam = camera as THREE.PerspectiveCamera
+    const orbitControls = controls as any
+    const actualPos = [cam.position.x, cam.position.y, cam.position.z]
+    const actualTgt = orbitControls?.target
+      ? [orbitControls.target.x, orbitControls.target.y, orbitControls.target.z]
+      : null
+
+    const positionMatch =
+      Math.abs(actualPos[0] - position[0]) < 1 &&
+      Math.abs(actualPos[1] - position[1]) < 1 &&
+      Math.abs(actualPos[2] - position[2]) < 1
+
+    const targetMatch = actualTgt
+      ? Math.abs(actualTgt[0] - target[0]) < 1 &&
+        Math.abs(actualTgt[1] - target[1]) < 1 &&
+        Math.abs(actualTgt[2] - target[2]) < 1
+      : false
+
+    if (!positionMatch || !targetMatch) {
+      console.warn(`[PC] Preset drifted at frame ${frameCountRef.current}:`, {
+        expected: { position, target },
+        actual: { position: actualPos, target: actualTgt },
+      })
+
+      // Re-apply preset
+      cam.position.set(position[0], position[1], position[2])
+      if (orbitControls?.target) {
+        orbitControls.target.set(target[0], target[1], target[2])
+        orbitControls.update()
+      }
+      cam.updateProjectionMatrix()
+    }
+  })
 
   return null
 }
