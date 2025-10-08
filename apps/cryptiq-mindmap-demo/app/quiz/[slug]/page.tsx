@@ -35,6 +35,7 @@ export default function QuizPage() {
   // const [focusedOption, setFocusedOption] = useState(-1) // retained for future rounds UI
   const [sceneId, setSceneId] = useState<string | null>(null)
   const [controlsOverride, setControlsOverride] = useState(false)
+  const [cinematicMode, setCinematicMode] = useState(false)
   const [showCountdown, setShowCountdown] = useState(true)
   const [autoOn] = useState(true) // placeholder toggle for now
   const [showProgress] = useState(false)
@@ -55,13 +56,16 @@ export default function QuizPage() {
 
   // Optional: render a point cloud instead of mask via ?pc
   // Also parse ?controls to override draw system and enable full orbital controls
+  // Parse ?cinematic to enable cinematic mode (pure canvas, no UI overlays)
   useEffect(() => {
     if (typeof window === 'undefined') return
     const url = new URL(window.location.href)
     const pc = url.searchParams.get('pc')
     const controls = url.searchParams.get('controls')
+    const cinematic = url.searchParams.get('cinematic')
     setSceneId(pc)
     setControlsOverride(controls === '1')
+    setCinematicMode(cinematic === '1')
   }, [])
 
   const masks = useMemo<MaskItem[]>(() => (Array.isArray(pack?.masks) ? pack!.masks : []), [pack])
@@ -137,6 +141,7 @@ export default function QuizPage() {
             stride={2}
             perspective={true}
             controlsOverride={controlsOverride}
+            cinematicMode={cinematicMode}
           />
         ) : (
           current && (
@@ -155,78 +160,84 @@ export default function QuizPage() {
       {!controlsOverride && <InkFieldHost />}
 
       {/* Top overlay: progress + prompt */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 24,
-          left: 24,
-          right: 24,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 8,
-          pointerEvents: 'none',
-          zIndex: 3,
-        }}
-      >
+      {!cinematicMode && (
         <div
           style={{
-            color: '#F5F5F5',
-            fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
-            fontSize: 14,
-            letterSpacing: 0.24,
+            position: 'absolute',
+            top: 24,
+            left: 24,
+            right: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+            pointerEvents: 'none',
+            zIndex: 3,
           }}
         >
-          {`MASK ${currentIndex + 1}/${total}`}
+          <div
+            style={{
+              color: '#F5F5F5',
+              fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace',
+              fontSize: 14,
+              letterSpacing: 0.24,
+            }}
+          >
+            {`MASK ${currentIndex + 1}/${total}`}
+          </div>
+          <div
+            style={{
+              color: '#FFFFFF',
+              fontFamily: 'var(--font-display), Anton, sans-serif',
+              fontSize: 48,
+              lineHeight: '1',
+              textAlign: 'center',
+            }}
+          >
+            DRAW THE FIRST THING YOU SEE
+          </div>
+          <div
+            style={{ color: '#FAFAFA', fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace' }}
+          >
+            (House)
+          </div>
         </div>
-        <div
-          style={{
-            color: '#FFFFFF',
-            fontFamily: 'var(--font-display), Anton, sans-serif',
-            fontSize: 48,
-            lineHeight: '1',
-            textAlign: 'center',
-          }}
-        >
-          DRAW THE FIRST THING YOU SEE
-        </div>
-        <div
-          style={{ color: '#FAFAFA', fontFamily: 'var(--font-mono), "IBM Plex Mono", monospace' }}
-        >
-          (House)
-        </div>
-      </div>
+      )}
 
       {/* Bottom overlay: minimal controls (placeholders) */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 24,
-          left: 24,
-          right: 24,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 16,
-          zIndex: 3,
-        }}
-      >
-        <button style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }} disabled>
-          Clear
-        </button>
-        <button style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }} disabled>
-          Undo
-        </button>
-        <span style={{ color: '#9ab', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-          Auto: {autoOn ? 'On' : 'Off'}
-        </span>
-      </div>
+      {!cinematicMode && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 24,
+            left: 24,
+            right: 24,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 16,
+            zIndex: 3,
+          }}
+        >
+          <button style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }} disabled>
+            Clear
+          </button>
+          <button style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }} disabled>
+            Undo
+          </button>
+          <span style={{ color: '#9ab', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+            Auto: {autoOn ? 'On' : 'Off'}
+          </span>
+        </div>
+      )}
 
       {/* Progress after morph */}
       <ProgressPill show={showProgress} />
 
       {/* Countdown overlay */}
-      {showCountdown && <RoundCountdown seconds={3} onDone={() => setShowCountdown(false)} />}
+      {showCountdown && !cinematicMode && (
+        <RoundCountdown seconds={3} onDone={() => setShowCountdown(false)} />
+      )}
     </main>
   )
 

@@ -55,6 +55,7 @@ type PointCloudStageProps = {
   stride?: number
   perspective?: boolean
   controlsOverride?: boolean
+  cinematicMode?: boolean
 }
 
 type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'] & {
@@ -1087,6 +1088,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     pointSize = DEFAULT_POINT_SIZING.baseSize,
     stride = 1,
     controlsOverride = false,
+    cinematicMode = false,
     // omit perspective in baseline
   } = props
   const [bloomEnabled, setBloomEnabled] = React.useState(false)
@@ -1705,7 +1707,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     roll180?: boolean
   }>(() => ({
     thickness: 0.38,
-    pointSizeScale: 1.5,
+    pointSizeScale: 0.75,
     keepRatio: 1,
     // When controls override is active, bloom OFF by default
     bloom: controlsOverride ? false : true,
@@ -2912,7 +2914,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           />
         )}
       </Canvas>
-      {debugVisible && (
+      {debugVisible && !cinematicMode && (
         <div
           style={{
             position: 'absolute',
@@ -2929,7 +2931,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             width: 220,
           }}
         >
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>PC Debug</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            {/* <div style={{ fontWeight: 700 }}>PC Debug</div> */}
+            <div />
+            <button
+              onClick={() => setDebugVisible(false)}
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '2px 8px',
+                borderRadius: 4,
+                fontSize: 11,
+              }}
+            >
+              Hide
+            </button>
+          </div>
           {controlsOverride && (
             <div
               style={{
@@ -2970,7 +2989,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               pointSize: {ui.pointSizeScale.toFixed(2)}
               <input
                 type="range"
-                min={0.8}
+                min={0.3}
                 max={3}
                 step={0.01}
                 value={ui.pointSizeScale}
@@ -3106,6 +3125,28 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             ) : null}
           </div>
         </div>
+      )}
+      {!debugVisible && !cinematicMode && (
+        <button
+          onClick={() => setDebugVisible(true)}
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            background: 'rgba(0,0,0,0.55)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            color: '#fff',
+            cursor: 'pointer',
+            padding: '6px 12px',
+            borderRadius: 6,
+            fontSize: 12,
+            fontWeight: 600,
+            pointerEvents: 'auto',
+            zIndex: 4,
+          }}
+        >
+          Show Debug
+        </button>
       )}
     </div>
   )
