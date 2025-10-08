@@ -34,6 +34,7 @@ export default function QuizPage() {
   const [activeIndex, setActiveIndex] = useState(0)
   // const [focusedOption, setFocusedOption] = useState(-1) // retained for future rounds UI
   const [sceneId, setSceneId] = useState<string | null>(null)
+  const [controlsOverride, setControlsOverride] = useState(false)
   const [showCountdown, setShowCountdown] = useState(true)
   const [autoOn] = useState(true) // placeholder toggle for now
   const [showProgress] = useState(false)
@@ -53,11 +54,14 @@ export default function QuizPage() {
   }, [])
 
   // Optional: render a point cloud instead of mask via ?pc
+  // Also parse ?controls to override draw system and enable full orbital controls
   useEffect(() => {
     if (typeof window === 'undefined') return
     const url = new URL(window.location.href)
     const pc = url.searchParams.get('pc')
+    const controls = url.searchParams.get('controls')
     setSceneId(pc)
+    setControlsOverride(controls === '1')
   }, [])
 
   const masks = useMemo<MaskItem[]>(() => (Array.isArray(pack?.masks) ? pack!.masks : []), [pack])
@@ -132,6 +136,7 @@ export default function QuizPage() {
             pointSize={2.4}
             stride={2}
             perspective={true}
+            controlsOverride={controlsOverride}
           />
         ) : (
           current && (
@@ -146,7 +151,8 @@ export default function QuizPage() {
       </div>
       */}
 
-      <InkFieldHost />
+      {/* InkFieldHost disabled when controls override is active */}
+      {!controlsOverride && <InkFieldHost />}
 
       {/* Top overlay: progress + prompt */}
       <div
