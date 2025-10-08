@@ -2245,8 +2245,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [simActive, simBounds, simState, setFitRequest])
 
   // Trigger auto-fit for prebaked (static) point clouds
+  // Skip auto-fit when controlsOverride is active (use hardcoded preset instead)
   const prebakedFitRequestKeyRef = React.useRef<string | null>(null)
   React.useEffect(() => {
+    if (controlsOverride) return // Skip auto-fit, use hardcoded preset
     if (simActive) return // Only for prebaked mode, not sim
     if (!prebaked || !prebakedTransform) return
 
@@ -2261,7 +2263,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         center: prebakedTransform.center,
       })
     }
-  }, [simActive, prebaked, prebakedTransform, setFitRequest])
+  }, [controlsOverride, simActive, prebaked, prebakedTransform, setFitRequest])
 
   React.useEffect(() => {
     if (!uniforms.uDepthNormScale) return
