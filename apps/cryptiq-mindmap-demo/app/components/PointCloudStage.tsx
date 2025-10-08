@@ -832,6 +832,29 @@ function SimDriver({
   return null
 }
 
+function CameraPositionDebugger({ expectedPosition }: { expectedPosition?: [number, number, number] }) {
+  const { camera } = useThree()
+  const loggedRef = React.useRef(false)
+
+  React.useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera
+    if (!loggedRef.current && expectedPosition) {
+      const actual = [cam.position.x, cam.position.y, cam.position.z]
+      console.log('[DEBUG] Camera position check:')
+      console.log('  Expected:', expectedPosition)
+      console.log('  Actual:', actual)
+      console.log('  Match:',
+        Math.abs(actual[0] - expectedPosition[0]) < 1 &&
+        Math.abs(actual[1] - expectedPosition[1]) < 1 &&
+        Math.abs(actual[2] - expectedPosition[2]) < 1
+      )
+      loggedRef.current = true
+    }
+  }, [camera, expectedPosition])
+
+  return null
+}
+
 function CameraUpEnforcer() {
   const { camera } = useThree()
 
@@ -2775,6 +2798,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           controlsOverride={controlsOverride}
         />
         <CameraLogger trigger={logCameraTrigger} fitTarget={cameraFitTarget} />
+        <CameraPositionDebugger
+          expectedPosition={controlsOverride ? [-90.614, 137.449, -888.601] : undefined}
+        />
         <CameraUpEnforcer />
         {bloomEnabled && !simEnabled && (
           <BloomPass
