@@ -832,6 +832,21 @@ function SimDriver({
   return null
 }
 
+function CameraUpEnforcer() {
+  const { camera } = useThree()
+
+  // Enforce camera up vector to prevent roll and keep horizon level
+  useFrame(() => {
+    const cam = camera as THREE.PerspectiveCamera
+    if (cam.up.x !== 0 || cam.up.y !== 1 || cam.up.z !== 0) {
+      cam.up.set(0, 1, 0)
+      cam.updateProjectionMatrix()
+    }
+  })
+
+  return null
+}
+
 function CameraLogger({ trigger, fitTarget }: { trigger: number; fitTarget: [number, number, number] }) {
   const { camera, controls } = useThree()
 
@@ -1589,11 +1604,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     pointSizeScale: 1.5,
     keepRatio: 1,
     bloom: true,
-    fovDeg: defaultFovDeg,
+    // When controls override is active, use iteration 6 preset FOV
+    fovDeg: controlsOverride ? 60 : defaultFovDeg,
     reveal: 1,
     flipUp: false,
     flipNormal: false,
-    mirrorLR: false,
+    // When controls override is active, use iteration 6 preset mirrors
+    mirrorLR: controlsOverride ? true : false,
     mirrorUD: true,
     roll180: false,
   }))
@@ -2547,7 +2564,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
         orthographic={false}
-        camera={{ position: [0, 0, 1200], fov: ui.fovDeg, near: 0.1, far: 5000 }}
+        camera={{
+          position: controlsOverride
+            ? [-90.614, 137.449, -888.601] // Iteration 6 preset
+            : [0, 0, 1200],
+          fov: ui.fovDeg,
+          near: 0.1,
+          far: 5000,
+        }}
         gl={{ antialias: true, alpha: true }}
         style={{ width: '100%', height: '100%', pointerEvents: 'auto', cursor: 'grab' }}
         onContextMenu={(e) => e.preventDefault()}
@@ -2745,10 +2769,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           drawing={drawing}
-          target={cameraFitTarget}
+          target={controlsOverride ? [-64.814, 145.642, -657.435] : cameraFitTarget}
           controlsOverride={controlsOverride}
         />
         <CameraLogger trigger={logCameraTrigger} fitTarget={cameraFitTarget} />
+        <CameraUpEnforcer />
         {bloomEnabled && !simEnabled && (
           <BloomPass
             strength={bloomSettings.strength}
