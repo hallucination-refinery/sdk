@@ -832,6 +832,65 @@ function SimDriver({
   return null
 }
 
+function CameraLogger({ trigger, fitTarget }: { trigger: number; fitTarget: [number, number, number] }) {
+  const { camera, controls } = useThree()
+
+  React.useEffect(() => {
+    if (trigger === 0) return // Skip initial render
+
+    try {
+      const cam = camera as THREE.PerspectiveCamera
+      const orbitControls = controls as any
+
+      // Get position from camera
+      const posArr = [cam.position.x, cam.position.y, cam.position.z]
+
+      // Get target from OrbitControls if available, otherwise from camera userData
+      let tgtArr: number[]
+      if (orbitControls?.target) {
+        tgtArr = [orbitControls.target.x, orbitControls.target.y, orbitControls.target.z]
+      } else if (cam.userData?.target) {
+        const t = cam.userData.target as THREE.Vector3
+        tgtArr = [t.x, t.y, t.z]
+      } else {
+        tgtArr = [0, 0, 0]
+      }
+
+      const fovVal = cam.fov
+
+      const round = (n: number) => Number(n.toFixed(3))
+      const P = posArr.map(round) as [number, number, number]
+      const T = tgtArr.map(round) as [number, number, number]
+      const F = Number(fovVal.toFixed(3))
+
+      const preset = {
+        position: P,
+        target: T,
+        fov: F,
+      } as const
+
+      const inline = `{"position":[${P.join(',')}],"target":[${T.join(',')}],"fov":${F}}`
+
+      console.log('[PC] Camera preset', preset)
+      console.log('[PC] Camera preset (inline):', inline)
+      console.log('[PC] Fit target currently:', fitTarget)
+      console.log('[PC] Camera object:', cam)
+      console.log('[PC] Controls object:', orbitControls)
+
+      try {
+        void navigator.clipboard?.writeText?.(inline)
+        console.log('[PC] Copied to clipboard')
+      } catch {
+        // clipboard may be unavailable; ignore
+      }
+    } catch (err) {
+      console.warn('[PC] Camera logging failed', err)
+    }
+  }, [trigger, camera, controls, fitTarget])
+
+  return null
+}
+
 function SceneControls({
   radius,
   drawing = false,
@@ -944,6 +1003,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [devicePixelRatioRaw, setDevicePixelRatioRaw] = React.useState<number | null>(null)
   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [drawing, setDrawing] = React.useState(false)
+  const [logCameraTrigger, setLogCameraTrigger] = React.useState(0)
   const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
   const colorUrl = colorUrlProp ?? (base ? `${base}/color.png` : null)
@@ -2688,6 +2748,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           target={cameraFitTarget}
           controlsOverride={controlsOverride}
         />
+        <CameraLogger trigger={logCameraTrigger} fitTarget={cameraFitTarget} />
         {bloomEnabled && !simEnabled && (
           <BloomPass
             strength={bloomSettings.strength}
@@ -2791,45 +2852,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             <button
               type="button"
               onClick={() => {
-                // Structured, copy/paste-ready camera logging
-                try {
-                  const state = getR3FStateOrNull()
-                  const cam = state?.camera as THREE.PerspectiveCamera | undefined
-                  const controls = state?.controls as { target?: THREE.Vector3 } | undefined
-                  const posArr = cam
-                    ? [cam.position.x, cam.position.y, cam.position.z]
-                    : [0, 0, 0]
-                  const tgtVec = controls?.target
-                    ? new THREE.Vector3(controls.target.x, controls.target.y, controls.target.z)
-                    : (cam?.userData?.target as THREE.Vector3 | undefined) || new THREE.Vector3()
-                  const tgtArr = [tgtVec.x, tgtVec.y, tgtVec.z]
-                  const fovVal = cam?.fov ?? ui.fovDeg
-
-                  const round = (n: number) => Number(n.toFixed(3))
-                  const P = posArr.map(round) as [number, number, number]
-                  const T = tgtArr.map(round) as [number, number, number]
-                  const F = Number(Number(fovVal).toFixed(3))
-
-                  const preset = {
-                    position: P,
-                    target: T,
-                    fov: F,
-                  } as const
-
-                  const inline = `{"position":[${P.join(',')}],"target":[${T.join(',')}],"fov":${F}}`
-
-                  console.log('[PC] Camera preset', preset)
-                  console.log('[PC] Camera preset (inline):', inline)
-                  console.log('[PC] Fit target currently:', cameraFitTarget)
-                  try {
-                    void navigator.clipboard?.writeText?.(inline)
-                    console.log('[PC] Copied to clipboard')
-                  } catch {
-                    // clipboard may be unavailable; ignore
-                  }
-                } catch (err) {
-                  console.warn('[PC] Camera logging failed', err)
-                }
+                // Trigger camera logging from inside Canvas (via CameraLogger component)
+                setLogCameraTrigger((n) => n + 1)
               }}
               style={{
                 padding: '6px 8px',
