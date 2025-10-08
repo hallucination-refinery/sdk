@@ -547,7 +547,18 @@ fov: 60
    - Eliminates tilt visible in Part B screenshot
 
 3. **Commits:**
-   - [TO BE ADDED after commit]
+   - `69fddff2` - feat(camera): hardcode iteration 6 preset and fix horizontal alignment
+   - `81d4f9fb` - fix(camera): disable auto-fit when controls override active
+
+**Issue Found & Fixed:**
+User spot check revealed auto-fit was overwriting hardcoded camera position:
+- Expected position: `[-90.614, 137.449, -888.601]`
+- Actual position after load: `[-42.332, 64.211, -415.123]`
+- Target was correct: `[-64.814, 145.642, -657.435]` ✅
+
+Root cause: Prebaked auto-fit effect ran after Canvas initialization and recalculated camera position via `applyPerspectiveCover`, ignoring the hardcoded preset.
+
+Fix: Added early return `if (controlsOverride) return` to skip auto-fit when preset is active.
 
 ---
 
