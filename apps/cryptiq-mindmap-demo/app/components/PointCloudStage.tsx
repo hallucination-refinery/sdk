@@ -870,6 +870,46 @@ function CameraUpEnforcer() {
   return null
 }
 
+function CameraPresetApplier({
+  position,
+  target,
+}: {
+  position: [number, number, number]
+  target: [number, number, number]
+}) {
+  const { camera, controls } = useThree()
+  const appliedRef = React.useRef(false)
+
+  React.useEffect(() => {
+    if (appliedRef.current) return
+
+    const cam = camera as THREE.PerspectiveCamera
+    const orbitControls = controls as any
+
+    // Explicitly set camera position
+    cam.position.set(position[0], position[1], position[2])
+
+    // Set OrbitControls target if available
+    if (orbitControls?.target) {
+      orbitControls.target.set(target[0], target[1], target[2])
+      orbitControls.update()
+    }
+
+    cam.updateProjectionMatrix()
+
+    console.log('[PC] Preset applied:', {
+      position,
+      target,
+      actualPosition: [cam.position.x, cam.position.y, cam.position.z],
+      actualTarget: orbitControls?.target ? [orbitControls.target.x, orbitControls.target.y, orbitControls.target.z] : null,
+    })
+
+    appliedRef.current = true
+  }, [camera, controls, position, target])
+
+  return null
+}
+
 function CameraLogger({ trigger, fitTarget }: { trigger: number; fitTarget: [number, number, number] }) {
   const { camera, controls } = useThree()
 
@@ -2801,6 +2841,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         <CameraPositionDebugger
           expectedPosition={controlsOverride ? [-90.614, 137.449, -888.601] : undefined}
         />
+        {controlsOverride && (
+          <CameraPresetApplier
+            position={[-90.614, 137.449, -888.601]}
+            target={[-64.814, 145.642, -657.435]}
+          />
+        )}
         <CameraUpEnforcer />
         {bloomEnabled && !simEnabled && (
           <BloomPass

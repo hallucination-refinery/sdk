@@ -272,6 +272,121 @@ Fewer but larger particles, more overlap.
 
 ---
 
+## Manual Slider Test — Default Values Investigation
+
+**Issue discovered:** After committing density fix (threshold 0.35, baseSize 6.0), user reported no visual change despite server restart + .next cache clear.
+
+**Hypothesis:** `DEFAULT_POINT_SIZING.baseSize` may not connect to `uPointBaseSize` uniform that debug panel controls.
+
+### Debug Panel Slider Behavior
+
+**Initial load (D1 preset):**
+- Slider shows `0.4` when countdown finishes
+- Once adjusted, range becomes `0.8 – 3.0` (min 0.8, max 3.0)
+- Manual slider adjustment DOES work - particles visibly grow
+
+**Test captures:**
+1. **Slider at 2.5:** `Screenshot 2025-10-06 at 2.18.19 PM.png`
+   - Cat structure VISIBLE (progress vs sparse baseline)
+   - But very grainy/static appearance (pointillist texture)
+   - No soft ethereal quality - discrete dots clearly visible
+   - Bloom IS working per user confirmation
+
+2. **Slider at 3.0:** `Screenshot 2025-10-06 at 2.32.08 PM.png`
+   - Similar to 2.5, slightly larger dots
+   - Cat visible but still grainy/TV static aesthetic
+   - Not matching reference's "ethereal smoke" quality
+
+### Analysis
+
+**What this proves:**
+- ✅ Debug panel slider mechanism works
+- ✅ Larger particles DO restore cat structure visibility
+- ✅ Bloom IS rendering (user confirmed)
+- ✅ ACES tonemapping working (no white blowout even at size 3.0)
+
+**What's broken:**
+- ❌ `DEFAULT_POINT_SIZING.baseSize: 6.0` change did NOT apply
+- ❌ Slider shows 0.4 default, not 6.0 (suggests different variable)
+- ❌ Aesthetic at larger sizes still wrong (grainy vs ethereal)
+
+**Root cause hypothesis:**
+- `DEFAULT_POINT_SIZING.baseSize` (useDreamdustUniforms.ts) may not connect to `uPointBaseSize` uniform
+- Debug panel likely reads/writes `uPointBaseSize` directly from `DEFAULT_UNIFORM_VALUES` in DreamdustMaterial.ts:
+  ```typescript
+  uPointBaseSize: 2.2  // <-- This is what slider controls
+  ```
+- Changing `DEFAULT_POINT_SIZING.baseSize` doesn't affect `uPointBaseSize` uniform
+
+**Next investigation needed:**
+- Trace how `DEFAULT_POINT_SIZING.baseSize` connects (or doesn't) to `uPointBaseSize` uniform
+- Consider changing `uPointBaseSize: 2.2` directly in `DEFAULT_UNIFORM_VALUES` instead
+
+### Aesthetic Gap Analysis
+
+Even with manually increased size (2.5-3.0), the rendering doesn't match reference:
+
+**Current state (size 3.0):**
+- Grainy/static texture (like TV noise or pointillism)
+- Individual dots clearly discrete
+- Cat visible but not smooth/ethereal
+- Bloom working but not creating haze/continuity
+
+**Reference state (from flow field analysis):**
+- Smooth ethereal smoke quality
+- Particles blend into continuous haze
+- Gentle drift motion (5-15 px/s measured)
+- Soft halos 2-3× particle core size
+
+**Key differences identified:**
+
+1. **Motion missing:** Reference has curl-noise flow field creating gentle drift; ours are static
+2. **Bloom parameters:** Reference uses `0.12/0.05/0.25` (strength/threshold/radius); ours `0.35/0.55/0.5`
+3. **Particle rendering:** Even at 3.0px, our particles look too "hard" - may need different Gaussian sharpness
+4. **Coverage pattern:** Reference might use different density distribution (edge-biased sampling mentioned in tweet)
+
+**Insight from WebGPU reference:**
+- Gentle baseline drift (`wanderingSpeed: 0.003`) crucial to aesthetic
+- Curl noise 4D (with time) creates coherent swirling motion
+- Life-based particle cycling prevents stagnation
+- Our particles sit completely still, creating "frozen static" look
+
+### Bloom Contribution Test
+
+**User captured D1 at size 3.0 with bloom OFF:** `Screenshot 2025-10-06 at 2.47.58 PM.png`
+
+**Comparison (bloom ON vs OFF):**
+
+| Aspect | Bloom OFF | Bloom ON (0.35/0.5/0.55) |
+|--------|-----------|--------------------------|
+| **Cat clarity** | Sharp, clean silhouette | Slightly softer edges |
+| **Particle rendering** | Very discrete sharp dots | Soft halos around dots |
+| **Background** | Clear particle field texture | Milkier, some haze |
+| **Contrast** | High (dark darks, bright brights) | Lower (washed out) |
+| **Continuity** | Fully discrete particles | Slight haze between particles |
+| **Overall** | Pointillist/dotted | Pointillist + soft glow |
+
+**What this proves:**
+- ✅ Bloom IS rendering (clear visual difference)
+- ✅ Bloom adds soft halos around particles
+- ✅ Bloom creates SOME haze/continuity
+- ❌ But current bloom params (0.35/0.55/0.5) not enough to create ethereal smoke quality
+
+**Key insight:** Bloom is working, but insufficient to transform discrete static particles into flowing ethereal smoke.
+
+**WebGPU reference bloom:** `0.12 strength, 0.05 threshold, 0.25 radius`
+- MUCH lower threshold (0.05 vs our 0.55) = bloom affects dimmer particles
+- Lower strength (0.12 vs our 0.35) but with lower threshold = more particles blooming
+- Different balance: bloom more particles less intensely vs bloom fewer particles more intensely
+
+**Hypothesis:** Reference achieves continuity through combination of:
+1. Stronger bloom with lower threshold (blooms more of the particle field)
+2. Gentle drift motion (particles flow, not static)
+3. Softer Gaussian kernel (larger halos relative to core)
+4. Possibly different particle density distribution
+
+---
+
 ### If SUCCESS (70%+ match to reference):
 **Next steps:**
 1. Test other presets (B1, B2, C, D2) to verify tonemapping works across board

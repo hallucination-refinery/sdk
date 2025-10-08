@@ -198,14 +198,7 @@ export function applyPerspectiveCover(
   else if (isVector3(data?.target)) target = data.target.clone()
   else target = new THREE.Vector3()
 
-  const direction = target.clone().sub(camera.position)
-  if (direction.lengthSq() < FIT_EPSILON) {
-    camera.getWorldDirection(direction)
-    if (direction.lengthSq() < FIT_EPSILON) direction.set(0, 0, -1)
-    target = camera.position.clone().add(direction)
-  } else {
-    direction.normalize()
-  }
+  const direction = new THREE.Vector3().subVectors(camera.position, target).normalize()
 
   const offset = direction.clone().multiplyScalar(distance)
   const newPosition = target.clone().sub(offset)

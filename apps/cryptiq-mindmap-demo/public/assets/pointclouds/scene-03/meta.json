@@ -1,0 +1,25 @@
+{
+  "image": "docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/scene-03-candidates/slim-aarons-catch-up-by-the-pool.jpg",
+  "width": 518,
+  "height": 350,
+  "positions_f32": "positions.f32",
+  "num_points": 181300,
+  "post_processing": {
+    "gamma_remap": 0.7,
+    "bilateral_filter": {
+      "d": 5,
+      "sigmaColor": 25,
+      "sigmaSpace": 25
+    },
+    "depth_clamp": {
+      "min": 0.01,
+      "max": 0.99
+    },
+    "depth_range": {
+      "min": 0.22299014031887054,
+      "max": 2.7727997303009033
+    }
+  },
+  "depth_processed_png": "depth_processed.png",
+  "colors_u8": "colors.u8"
+}
