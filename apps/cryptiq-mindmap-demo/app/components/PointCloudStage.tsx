@@ -1247,8 +1247,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     // Stronger contrast on first draw: halve base drift, boost ink gains
     setUniform('uDriftAmp', curlAmp)
     setUniform('uSizeGain', DEFAULT_POINT_SIZING.sizeGain)
-    setUniform('uOffsetGain', Math.max(DEFAULT_POINT_SIZING.offsetGain, 5.0))
-    setUniform('uTintGain', 0.2)
+    setUniform('uOffsetGain', Math.max(DEFAULT_POINT_SIZING.offsetGain, 7.0))
+    // Make ink tinting clearly visible during validation
+    setUniform('uTintGain', 1.0)
+    // Increase curl amplitude so ink modulation is obvious
+    setUniform('uCurlAmp', 0.6)
   }, [setUniform])
 
   React.useEffect(() => {
@@ -2911,9 +2914,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         ) : null}
         <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
-          drawing={drawing}
-          target={sceneId === 'scene-03' ? [-62.924, 103.948, -656.168] : (controlsOverride ? [-62.924, 103.948, -656.168] : cameraFitTarget)}
-          controlsOverride={sceneId === 'scene-03' ? false : controlsOverride}
+          // For scene-03, disable controls by default; allow opt-in via ?controls=1
+          drawing={sceneId === 'scene-03' && !controlsOverride ? true : drawing}
+          target={sceneId === 'scene-03'
+            ? [-62.924, 103.948, -656.168]
+            : (controlsOverride ? [-62.924, 103.948, -656.168] : cameraFitTarget)}
+          controlsOverride={controlsOverride}
         />
         <CameraLogger trigger={logCameraTrigger} fitTarget={cameraFitTarget} />
         <CameraPositionDebugger
