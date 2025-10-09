@@ -462,3 +462,76 @@ git commit -m "test: smoke test results - ink interaction broken"
 **Status:** Awaiting user approval to proceed with Phase 1 investigation
 
 **Next Action:** Add debug logging to InkSurface.tsx to verify component mounting and event capture
+
+---
+
+# GPT-5 Audit — 2025-10-09
+
+## Independent Analysis (Before Reading Claude's Conclusions)
+
+### Primary Hypothesis
+StrokeCaptureCanvas inside `InkFieldHost` sits above the WebGL canvas and consumes all pointer input, so `InkSurface` never receives pointerdown/up events and its heatmap texture stays unchanged.
+
+### Supporting Evidence
+- Smoke test logs confirm `[PC] draw start` and `[PC] draw end` never fire during tap or stroke attempts, proving the `InkSurface` handlers are silent.【docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-09-ink-interaction-smoke-test.md:342】
+- `InkSurface` would emit `[PC] draw start` immediately inside its pointerdown handler; the absence of that log means the handler is not reached.【apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx:295】
+- The overlay wrapper renders an absolutely positioned layer with `pointerEvents: 'auto'` and houses `StrokeCaptureCanvas`, which calls `event.preventDefault()`, captures the pointer, and handles all pointerdown/move/up events itself, preventing the underlying WebGL canvas from seeing them.【apps/cryptiq-mindmap-demo/app/components/dreamdust/InkFieldHost.tsx:602】【apps/cryptiq-mindmap-demo/app/components/dreamdust/StrokeCaptureCanvas.tsx:217】
+- The lingering `[dreamdust] ink-latency` telemetry is explained by `InkFieldHost` calling `markInkPenDown()` on stroke start even though the stage never receives the gesture, matching the observed console output.【apps/cryptiq-mindmap-demo/app/components/dreamdust/InkFieldHost.tsx:177】
+
+### Alternative Hypotheses
+1. `InkSurface` fails to mount because `PointCloudStage` skips it under some runtime flag despite expectations for scene-03 (low probability).【apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2758】
+2. `InkFieldHost` updates context state, but `updateInkTexture` disregards the supplied texture, leaving the shader sampling an empty surface even if events fired (medium probability, worth confirming after restoring input).【apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1284】
+3. Shader uniforms downstream of the ink texture suppress the effect (e.g., intensity clamps) so even valid textures appear inert (low probability while input is still broken).
+
+### Recommended Investigation Steps
+1. Temporarily disable input capture on `InkFieldHost` (e.g., set its wrapper and `StrokeCaptureCanvas` to `pointer-events: none`) and re-run the smoke test to confirm `[PC] draw start/end` logs return, proving the interception theory.
+2. If confirmed, decide whether to forward the overlay’s stroke data into the R3F pipeline or to let `InkSurface` own input again; instrument `updateInkTexture` to verify the selected path actually updates uniforms.
+3. Re-enable the overlay with an explicit delegation strategy (forwarded events or unified stroke handler) and validate that both the metrics (`ink-latency`, `ink debug`) and visuals respond to taps and strokes.
+
+### Expected Fix Approach
+Either remove the competing pointer capture by letting `InkSurface` own input or have `StrokeCaptureCanvas` feed the same heatmap pipeline (calling `updateInkTexture` directly) while keeping the overlay visible; in both cases ensure only one component grabs pointer events and that the resulting texture is wired into the shader uniforms.
+
+---
+
+## Critique of Claude's Analysis
+
+### Points of Agreement
+- We both conclude the core failure is the missing `[PC] draw start/end` events, meaning the interaction loop never begins.
+- The ambiguity around `[dreamdust] ink-latency` warrants tracing because it signals some other path is acknowledging input.
+- Their suggested instrumentation would make the root cause visible once the competing input layer is suspected.
+
+### Points of Disagreement
+- Claude focuses on conditional rendering and canvas CSS as primary suspects, but the code shows the overlay layer actively intercepts events; tweaking the conditional or z-index alone will not restore input.
+- They treat `InkSurface` as the only input path, overlooking the newer `InkFieldHost` overlay that already captures strokes and is responsible for the observed telemetry.
+
+### Gaps in Claude's Analysis
+- No mention of `StrokeCaptureCanvas` or the overlay wrapper that sets `pointerEvents: 'auto'`, missing the key architectural change blocking input.
+- They do not connect the `[dreamdust] ink-latency` log to `markInkPenDown()` in `InkFieldHost`, so the log’s presence is left unexplained.
+- The plan skips validating that only one component should own pointer capture, risking redundant fixes.
+
+### Assessment of Investigation Plan
+- Instrumenting `InkSurface` is useful but should come after checking the overlay; otherwise the plan spends time validating symptoms without isolating the interceptor.
+- The plan lacks a DOM layering inspection or mention of the overlay’s pointer policy, so it may miss the actual conflict even after additional logging.
+
+### Assessment of Recommended Fix
+- Forcing the conditional to render `InkSurface` or bumping its z-index would not resolve the pointer conflict; the overlay would still swallow events.
+- Their CSS adjustments risk masking the deeper architectural duplication between `InkSurface` and `InkFieldHost`, potentially leading to future regressions.
+
+---
+
+## Final Recommendations
+
+### Recommended Next Action
+Disable `InkFieldHost` input capture long enough to confirm `InkSurface` logs reappear, then refactor so only one component owns pointer events while still updating the ink texture.
+
+### Confidence Level
+Medium-High – the code shows the overlay intercepting input and the telemetry aligns with that interception, but we still need a quick runtime confirmation.
+
+### Estimated Time to Resolution
+60–90 minutes once input ownership is clarified (includes verifying the fix with tap and stroke smoke tests).
+
+### Alternative Path (If Recommended Fix Fails)
+If logs remain absent after disabling the overlay, inspect the `PointCloudStage` conditional and `updateInkTexture` wiring to rule out a mounting or uniform propagation failure.
+
+### Additional Notes
+When consolidating input handling, ensure the metrics pipeline still fires `markInkPenDown`/`markInkFrameCandidate` so telemetry remains consistent with prior reports.

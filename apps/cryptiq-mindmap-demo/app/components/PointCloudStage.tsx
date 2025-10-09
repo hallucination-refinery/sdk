@@ -1710,14 +1710,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     pointSizeScale: 0.75,
     keepRatio: 1,
     // When controls override is active, bloom OFF by default
-    bloom: controlsOverride ? false : true,
-    // When controls override is active, use iteration 6 preset FOV
-    fovDeg: controlsOverride ? 60 : defaultFovDeg,
+    bloom: sceneId === 'scene-03' ? false : (controlsOverride ? false : true),
+    // scene-03 uses iteration 6 preset FOV by default
+    fovDeg: sceneId === 'scene-03' ? 60 : (controlsOverride ? 60 : defaultFovDeg),
     reveal: 1,
     flipUp: false,
     flipNormal: false,
-    // When controls override is active, use iteration 6 preset mirrors
-    mirrorLR: controlsOverride ? true : false,
+    // scene-03 uses iteration 6 preset mirrors by default
+    mirrorLR: sceneId === 'scene-03' ? true : (controlsOverride ? true : false),
     mirrorUD: true,
     roll180: false,
   }))
@@ -1966,8 +1966,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
     let result = flipWorld.multiply(base.clone())
 
-    // When controls override is active, remove roll component to level horizon
-    if (controlsOverride) {
+    // For scene-03 or when controls override is active, remove roll component to level horizon
+    if (sceneId === 'scene-03' || controlsOverride) {
       // Decompose quaternion to euler angles
       const euler = new THREE.Euler().setFromQuaternion(result, 'YXZ')
       // Zero out Z rotation (roll) but keep pitch (X) and yaw (Y)
@@ -1978,7 +1978,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
 
     return result
-  }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp, ui.roll180, controlsOverride])
+  }, [prebakedTransform?.rotationQuat, ui.flipNormal, ui.flipUp, ui.roll180, sceneId, controlsOverride])
 
   // Recolor fallback: if colors missing or mismatched, synthesize from source image
   const recolored = React.useMemo(() => {
@@ -2366,10 +2366,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [simActive, simBounds, simState, setFitRequest])
 
   // Trigger auto-fit for prebaked (static) point clouds
-  // Skip auto-fit when controlsOverride is active (use hardcoded preset instead)
+  // Skip auto-fit for scene-03 or when controlsOverride is active (use hardcoded preset instead)
   const prebakedFitRequestKeyRef = React.useRef<string | null>(null)
   React.useEffect(() => {
-    if (controlsOverride) return // Skip auto-fit, use hardcoded preset
+    if (sceneId === 'scene-03' || controlsOverride) return // Skip auto-fit, use hardcoded preset
     if (simActive) return // Only for prebaked mode, not sim
     if (!prebaked || !prebakedTransform) return
 
@@ -2384,7 +2384,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         center: prebakedTransform.center,
       })
     }
-  }, [controlsOverride, simActive, prebaked, prebakedTransform, setFitRequest])
+  }, [sceneId, controlsOverride, simActive, prebaked, prebakedTransform, setFitRequest])
 
   React.useEffect(() => {
     if (!uniforms.uDepthNormScale) return
@@ -2688,7 +2688,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       <Canvas
         orthographic={false}
         camera={{
-          position: controlsOverride
+          position: sceneId === 'scene-03'
+            ? [-65.737, 103.054, -681.379] // Iteration 6 preset for scene-03
+            : controlsOverride
             ? [-65.737, 103.054, -681.379] // Iteration 6 preset (final)
             : [0, 0, 1200],
           fov: ui.fovDeg,
@@ -2766,8 +2768,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }}
       >
         {/* no FitOrtho in perspective baseline */}
-        {/* InkSurface disabled when controls override is active */}
-        {!controlsOverride && (
+        {/* InkSurface always enabled for scene-03, disabled only when controls override is active on other scenes */}
+        {(sceneId === 'scene-03' || !controlsOverride) && (
           <InkSurface
             mirrorLR={!!ui.mirrorLR}
             mirrorUD={!!ui.mirrorUD}
@@ -2892,14 +2894,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           drawing={drawing}
-          target={controlsOverride ? [-62.924, 103.948, -656.168] : cameraFitTarget}
-          controlsOverride={controlsOverride}
+          target={sceneId === 'scene-03' ? [-62.924, 103.948, -656.168] : (controlsOverride ? [-62.924, 103.948, -656.168] : cameraFitTarget)}
+          controlsOverride={sceneId === 'scene-03' ? false : controlsOverride}
         />
         <CameraLogger trigger={logCameraTrigger} fitTarget={cameraFitTarget} />
         <CameraPositionDebugger
-          expectedPosition={controlsOverride ? [-65.737, 103.054, -681.379] : undefined}
+          expectedPosition={(sceneId === 'scene-03' || controlsOverride) ? [-65.737, 103.054, -681.379] : undefined}
         />
-        {controlsOverride && (
+        {(sceneId === 'scene-03' || controlsOverride) && (
           <CameraPresetApplier
             position={[-65.737, 103.054, -681.379]}
             target={[-62.924, 103.948, -656.168]}

@@ -512,3 +512,34 @@ If implementation causes issues:
 **Plan created:** 2025-10-08
 **Next session:** Implement Phase 1 (dd_curl4 + uWanderSpeed)
 **Estimated time:** Phase 1: 30min, Phase 2: 45min, Phase 3: 1-2hr tuning
+
+---
+
+## 2025-10-08 Plan Audit — Dreamdust Wispy Motion
+**Validation Status**
+- ⚠️ PROCEED WITH CAUTION: The current dd_curl4 proposal mirrors today’s 3D curl flow, drops normalization, and omits several wiring steps, so shipping it as-is risks regressions without guaranteeing the targeted wispy drift.
+**File Structure Verification**
+- apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:366 still defines DD_CURL3 immediately before the helper block; dd_curl4 can land here and be registered beside curl3 at apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:426.
+- apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:51 retains the default uniform block cited in the plan, with uDriftSpeed already reduced to 0.05 by commit eaeb102d.
+- apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:183 opens the VERTEX_SHADER uniforms; insert uWanderSpeed/uWanderFreq/uWanderAmp next to uDriftSpeed at apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:193 to keep grouping intact.
+- apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:264 currently embeds ${DD_CURL3}; this slot can import ${DD_CURL4} once exported.
+- apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:363 and apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:375 still house the curl and vapor sections the plan targets, so replacements can stay localized.
+**Risk Assessment**
+- Critical – Switching to an unnormalized dd_curl4 will multiply offsets by raw gradient length while curlMix at apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:367 is tuned for unit vectors, risking runaway displacements across cascade modes.
+- Critical – The drafted dd_curl4 simply adds a time offset to spatial samples (apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:366), identical to today’s vec3(uTime * uDriftSpeed) feed (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:363), so Phase 1 would not deliver the promised 4D curl behavior.
+- Medium – Phase 2’s wander snippet (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-08-wispy-motion-implementation-plan.md:256) passes raw uTime, bypassing the proposed uWanderSpeed and likely running ~16× hotter than the 0.003 target.
+- Medium – Evaluating dd_curl4 twice doubles dd_fbm3Field work per vertex (apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:346), so GPU profiling is required to ensure 60 fps at 100k–500k particles.
+- Medium – Replacing curlSample with driftSample must update the downstream vaporSample usage at apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:375; skipping this breaks compilation.
+- Low – The draft keeps unused helpers (dd_t_eps at docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-08-wispy-motion-implementation-plan.md:171) and needs glslChunks wiring; leaving either behind will surface GLSL warnings and tooling gaps.
+**Recommended Modifications to Plan**
+- Replace dd_curl4 with an implementation that genuinely samples a time dimension (vec4 noise and finite-difference t) or keep curl3’s normalization semantics so drift tuning stays predictable (apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:366).
+- Retain dd_curl3 for the cascade/tap-driven drift path while routing the gentle wander through any new helper, then migrate once tuning proves stable (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:363).
+- Revise Phase 2 to call dd_curl4 with uTime * uWanderSpeed, and add the new uniforms beside the existing drift controls in both DEFAULT_UNIFORM_VALUES and VERTEX_SHADER (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:51, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:193; docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-08-wispy-motion-implementation-plan.md:256).
+- Keep curlSample (or alias driftSample) alive for vapor flow so the cascade boost at apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:375 continues to function.
+- Extend glslChunks with a curl4 key while preserving curl3 (apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:426) and plan for debug toggles that let wander/drift be isolated during tuning.
+**Pre-Implementation Checklist**
+- Capture current curlOffset magnitudes and motion references before edits to anchor tuning baselines (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:367).
+- Land Phase 1 in isolation, run the project’s smoke/build commands, and confirm shader compilation before layering Phase 2 to simplify blame.
+- Add temporary uniforms or debug toggles so wander and drift can be switched independently for A/B and quick rollback (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:364).
+- Profile GPU cost (Spector, Chrome tracing) after adding the second curl evaluation to ensure frame time budgets survive at 100k–500k points.
+- Keep a guarded dd_curl3 code path or flag so reverting to today’s behavior is a one-line switch if the wispy motion fails validation.
