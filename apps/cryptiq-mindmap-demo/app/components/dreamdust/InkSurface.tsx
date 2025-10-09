@@ -268,8 +268,15 @@ export function InkSurface({
       const offsetY = client.y - rect.top
       const rawU = width > 0 ? offsetX / width : Number.NaN
       const rawV = height > 0 ? offsetY / height : Number.NaN
-      const u = clamp01(rawU)
-      const v = clamp01(rawV)
+      let u = clamp01(rawU)
+      let v = clamp01(rawV)
+      const mirror = mirrorRef.current
+      if (mirror.lr) {
+        u = 1 - u
+      }
+      if (mirror.ud) {
+        v = 1 - v
+      }
       logInkGuard(rawU, rawV, u, v)
       if (width <= 0 || height <= 0) {
         return
