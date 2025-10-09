@@ -156,8 +156,8 @@ export default function QuizPage() {
       </div>
       */}
 
-      {/* InkFieldHost disabled when controls override is active */}
-      {!controlsOverride && <InkFieldHost />}
+      {/* InkFieldHost disabled when controls override is active or scene-03 requires InkSurface input */}
+      {!controlsOverride && sceneId !== 'scene-03' && <InkFieldHost />}
 
       {/* Top overlay: progress + prompt */}
       {!cinematicMode && (

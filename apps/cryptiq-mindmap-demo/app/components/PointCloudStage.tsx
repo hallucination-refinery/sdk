@@ -2776,6 +2776,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             onStart={() => {
               inkUpdateLoggedRef.current = false
               setDrawing(true)
+              // Ensure vertex ink is enabled on first interaction
+              try {
+                if (runtimeCaps?.vertexInkOk) setUniform('uVertexInkOk', 1)
+              } catch {
+                // ignore
+              }
+              // Provide a simple intensity pulse while drawing (overlay disabled on scene-03)
+              try {
+                if (dreamdustCtx) dreamdustCtx.setInkIntensity(0.85)
+              } catch {
+                // ignore
+              }
             }}
             onTexture={(tex) => {
               try {
@@ -2791,6 +2803,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             onEnd={(info) => {
               setDrawing(false)
               inkUpdateLoggedRef.current = false
+              // Decay/reset intensity now that drawing has ended
+              try {
+                if (dreamdustCtx) dreamdustCtx.setInkIntensity(0)
+              } catch {
+                // ignore
+              }
               if (info.type === 'stroke') {
                 try {
                   startCascade?.([1, 1, 1])
