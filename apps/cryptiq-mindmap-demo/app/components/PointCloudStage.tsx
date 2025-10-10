@@ -1274,7 +1274,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const startCascade = dreamdustCtx?.startCascade
   const inkTex = dreamdustCtx?.inkTex ?? null
   const inkIntensity = dreamdustCtx?.inkIntensity ?? 1
-  const vertexInkOk = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
+  // Hardware capability for vertex texture fetch
+  const vertexInkCaps = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
+  // For scene-03, force fragment screen-space ink sampling for alignment with screen-space painter
+  const vertexInkEnabled = sceneId === 'scene-03' ? false : vertexInkCaps
   const debugFlagDefaults = React.useMemo(() => getDebugFlags(), [])
   const { flags: debugFlags, simSnapshot, inkSnapshot, aestheticPreset, setAestheticPreset } =
     useDebugControls(debugFlagDefaults)
@@ -1317,14 +1320,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [setUniform])
 
   React.useEffect(() => {
-    setUniform('uVertexInkOk', vertexInkOk ? 1 : 0)
-  }, [setUniform, vertexInkOk])
+    setUniform('uVertexInkOk', vertexInkEnabled ? 1 : 0)
+  }, [setUniform, vertexInkEnabled])
 
   const fallbackMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
     const material = createDreamdustMaterial(uniforms, {
       unproject: true,
-      vertexInkOk: runtimeCaps.vertexInkOk ?? false,
+      vertexInkOk: vertexInkEnabled,
       debugInkProbe,
       debugSimProbe,
       debugForceAlpha,
@@ -1355,7 +1358,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!runtimeCaps) return null
     const material = createDreamdustMaterial(uniforms, {
       unproject: false,
-      vertexInkOk: runtimeCaps.vertexInkOk ?? false,
+      vertexInkOk: vertexInkEnabled,
       debugInkProbe,
       debugSimProbe,
       debugForceAlpha,
