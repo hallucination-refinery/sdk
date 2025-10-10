@@ -10,3 +10,9 @@ Acceptance Criteria
 - Stroke: advects points along the path with a “vapor” feel; no input lag; no camera interference.
 - Cascade: final hue chosen from a curated palette and applied across all particles in a timed roll; scene looks “congealed.”
 
+Cascade Triggers (Intent Thresholds)
+- Tiny tap → local ripple or mini‑cascade only; no full commit.
+- Brief stroke → localized wash; still reversible; builds intent but does not lock the scene.
+- Committed stroke (sufficient time + travel) → trigger full cascade across the cloud.
+- Multi‑stroke drawings accumulate intent within a short window; escalate from mini → partial → full cascade when the gesture feels decided.
+- Palette is sampled at the first meaningful stroke start; subsequent strokes may bias slightly before the full cascade locks in.
