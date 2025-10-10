@@ -4,15 +4,16 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
 - Goal: visible particle motion under the finger with a single tap and a 2–3s stroke; no overlays; camera/framing unchanged.
 - Steps (files to touch)
   - Phase A (scaffolding; dev-only):
-    - In `PointCloudStage.tsx`, inject a temporary uniform (`uTempForce`) and add a quick vertex offset that simply pushes points along the latest pointer delta (scale down to avoid explosion).
-    - Update this uniform directly from InkSurface on each pointer event; decay by multiplying with 0.9 every frame when idle.
-    - No new structs yet—goal is to see motion in minutes. Guardrails still apply (mirror, controls lock).
+    - In `PointCloudStage.tsx`, inject temporary uniforms (`uTempForce` vec2, `uTempIntensity` float). Apply a quick vertex offset that pushes points along the latest pointer delta (keep scale modest).
+    - Update these uniforms from `InkSurface` on each pointer event / frame (`useFrame` ~60 fps). When idle, multiply both by 0.9–0.98 per frame to decay; log values for debugging.
+    - No new structs yet—goal is to see motion in minutes. Guardrails still apply (mirror handling, OrbitControls lock, camera/framing untouched).
   - Phase B (productionize after motion is confirmed):
     - Replace the temporary uniform with structured ones `uForceVector`, `uForceIntensity`, `uForceDecay`, `uForceActive` in DreamdustMaterial.ts. Optionally adopt the Codrops “uTouch” approach: draw pointer trail into an off-screen canvas texture (Raycaster → UV → canvas) and sample it in the vertex shader for parallel displacement (see 06-reference-notes.md).
     - Feed the new uniforms from the InkSurface loop; when input stops, set `uForceActive=0` and rely on `uForceDecay` (or decay the touch texture radius) to fade.
     - Move displacement logic into a dedicated helper inside the vertex shader (mirror-aware) using either direct vector math or the sampled `uTouch` texture. Ensure `material.needsUpdate = true` when toggling active state.
     - Remove Phase A scaffolding once Phase B works (record commit/tag before removal).
   - Guardrails: maintain mirror rules when mapping force vector; disable OrbitControls while drawing; keep camera fit untouched; limit force to active viewport area to protect perf.
+  - Scaffolding teardown: once Phase B passes runbook, tag the commit and remove all Phase A code paths (document file paths/lines in PR description).
 - Pass/Fail
   - Pass: tap near viewport center produces ≥5 px displacement within ≤2 frames; 2–3 s stroke advects particles along the path; motion decays smoothly when input stops; camera remains fixed.
   - Fail: no motion, motion lagging/past pointer, or camera interference.

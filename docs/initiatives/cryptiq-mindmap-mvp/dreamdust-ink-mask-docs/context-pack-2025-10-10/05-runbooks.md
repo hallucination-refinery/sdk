@@ -10,6 +10,7 @@ M1 — Force‑Field Prototype
   - Console: `[PC] draw start/end`, `[PC] ink tex updated`, frame percentile log after interaction.
   - Screenshots: before tap, during stroke (mid-motion), after decay.
   - Optional: capture `uForceVector` or `uTouch` (if adopted) via DevTools to confirm active force/texture.
+- Phase B add-on: repeat after swapping to `uForceVector`/`uTouch`; log the new uniform values and confirm the temporary `uTempForce` path is removed (note commit/tag).
 - Note: during Phase A scaffolding, `uTempForce` may be used instead of final uniforms; record that value in console before removing scaffolding.
 
 M2 — Palette Cascade

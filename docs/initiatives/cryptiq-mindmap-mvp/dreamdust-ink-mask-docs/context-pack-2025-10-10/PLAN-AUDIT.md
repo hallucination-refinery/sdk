@@ -3,259 +3,147 @@
 
 ## Findings & Recommendations
 
-1. **Direction Alignment Strong** - 00-overview's "Right Direction" correctly emphasizes particles as ink with immediate force-field motion, palette cascade, and camera stability - this matches M1/M2 outcomes well.
-
-2. **M1 Implementation Gap** - Current plan lacks concrete shader/material changes; no specification of uniforms (uForceVector, uForceDecay), position offset application, or decay cadence.
-
-3. **M2 Cascade Missing** - No palette source definition, nearest-color logic, cascade timing parameters, or single commit toggle location specified.
-
-4. **Runbooks Too Abstract** - Testing procedures lack specific URLs, gesture coordinates, expected visual outcomes, and console evidence capture.
-
-5. **Risk Assessment Needed** - No identification of OrbitControls lock requirements, mirror flag propagation, or material recompilation triggers.
-
-6. **Evidence Plan Incomplete** - Missing screenshot specifications and raw console block requirements for each milestone.
-
-7. **M3/M4 Under-specified** - Gain defaults and baseline commands need explicit file paths and expected outputs.
+1. **Direction aligned with goals** — `00-overview.md` prioritizes “particles are the ink,” immediate force-field motion, palette cascade, fixed camera, no overlays. `03-implementation-plan.md` M1/M2 reflect this and keep orbit controls out of the way.
+2. **Minimal prototype first is preserved** — M1 Phase A is dev‑only scaffolding to see undeniable motion in minutes, then Phase B hardens it. This matches “ship minimal prototype first.”
+3. **Make M1 uniforms explicit** — Name temporary vs final uniforms and the decay/update cadence to avoid ambiguity; call out `material.needsUpdate` when toggling active state.
+4. **Codify mirror/controls guardrails** — Plan references mirror and controls lock; add explicit callouts for propagation and when to lock/unlock during draw.
+5. **Palette cascade details** — Specify curated palette location, nearest‑color helper signature, and single source to toggle commit; define progress/easing and duration.
+6. **Evidence-first runbooks** — Provide precise URLs, gesture coordinates, expected visuals, and raw console keys per milestone (Phase A vs Phase B differentiated).
+7. **Baseline commands verbatim** — Include exact repo commands and require pasting stdout for CI parity; avoid docs‑build runs per repo policy.
+8. **Scaffolding teardown** — Require tagging commit before removing Phase A and list files to touch/remove to keep diffs minimal and reversible.
 
 ## Issues (Ranked)
 
-### BLOCKER: M1 Force-Field Implementation Details Missing
+### BLOCKER: M1 force-field specifics could be missed by contributors
 **Severity:** Blocker
-**Files:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts`, `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`
-**Why:** Without specific uniforms, transforms, and decay mechanics, M1 cannot deliver "undeniable motion" within 1-2 frames.
-**Fix:** Add to 03-implementation-plan.md: "Add uForceVector (vec2), uForceDecay (float), uForceIntensity uniforms. Apply force to aOffset or aPosition in vertex shader with exponential decay. Update cadence: 60fps, decay rate 0.95 per frame."
+**Files:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts`, `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`, `apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx`
+**Why:** Without explicit uniform names, update cadence, and decay semantics, Phase A may stall or ship tint‑only visuals.
+**Fix:** In `03-implementation-plan.md` name `uTempForce` (Phase A) and the Phase B set: `uForceVector`, `uForceIntensity`, `uForceDecay`, `uForceActive`. State update at 60 fps from `InkSurface` pointer delta; decay multiply each frame when idle; set `material.needsUpdate = true` when toggling active.
 
-### MAJOR: M2 Palette Cascade Logic Undefined
+### MAJOR: Palette cascade lacks single source of truth
 **Severity:** Major
-**Files:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts`
-**Why:** No palette source, nearest-color algorithm, or cascade timing prevents "hue rolls across all particles smoothly."
-**Fix:** Add to 03-implementation-plan.md: "Define curated palette array [vec3[]]. Implement nearest-hue selection from gesture start color. Add uCascadeProgress (0-1), uCascadeColor uniforms with 2-3s lerp timing. Single commit flag: uCascadeCommit boolean."
+**Files:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts` (or shared util)
+**Why:** No curated palette constant, nearest‑color helper, or commit switch leads to inconsistent hue selection.
+**Fix:** Add `CASCADE_PALETTE` constant and `findNearestPaletteColor(rgb)` helper; add `uCascadeProgress`, `uCascadeColor`, `uCascadeSizeBoost`, `uCascadeCommit`, `uCascadeDuration` uniforms and one toggle site in `InkSurface.tsx` on stroke end.
 
-### MINOR: Runbook Evidence Capture Insufficient
-**Severity:** Minor
-**Files:** `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/05-runbooks.md`
-**Why:** Abstract procedures cannot verify "undeniable motion" or cascade without specific coordinates and expected visuals.
-**Fix:** Update 05-runbooks.md with: "M1: Draw circle at viewport center (x: 512, y: 384). Expect particle displacement ≥5px within 2 frames. Screenshot before/after + `[PC] draw start/end` logs."
+### MAJOR: Evidence capture not gated by Phase A vs Phase B
+**Severity:** Major
+**Files:** `05-runbooks.md`
+**Why:** Testers need to know whether temporary `uTempForce` or final uniforms/`uTouch` are in play to record correct evidence.
+**Fix:** Add callouts to log and screenshot the active path (Phase A temp uniform vs Phase B final/`uTouch`) and include sample console strings.
 
-### MINOR: M3 Gain Tuning Not Actionable
+### MINOR: Gain targets not actionable for M3
 **Severity:** Minor
 **Files:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/useDreamdustUniforms.ts`
-**Why:** "Tune uTintGain/uOffsetGain/uCurlAmp defaults" lacks current values and target ranges.
-**Fix:** Add to 03-implementation-plan.md: "Current defaults: uTintGain=0.3, uOffsetGain=0.1, uCurlAmp=0.05. Target: increase uOffsetGain to 0.3-0.5 for visible motion, reduce uTintGain to 0.1-0.2 to emphasize displacement over tint."
+**Why:** “Tune gains” lacks numeric targets to quickly converge on the “ink in air” feel.
+**Fix:** Document target ranges for `uOffsetGain` (0.3–0.5), `uTintGain` (0.1–0.2), `uCurlAmp` (0.05–0.1); tie ripple impulse to tap.
 
-### MINOR: M4 Baseline Commands Incomplete
+### MINOR: Baseline command list should be explicit
 **Severity:** Minor
-**Files:** `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/03-implementation-plan.md`
-**Why:** "install → typecheck → lint → build → smoke" doesn't specify exact commands or expected outputs per repo conventions.
-**Fix:** Update M4 steps: "Run: `pnpm install --frozen-lockfile`, `pnpm --filter @refinery/schema exec tsc -p tsconfig.json --noEmit`, `pnpm --filter cryptiq-mindmap-demo run lint`, `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm run smoke`. Paste verbatim stdout."
+**Files:** `03-implementation-plan.md`, `05-runbooks.md`
+**Why:** Contributors may run non‑deterministic flows.
+**Fix:** Include the repo’s baseline sequence exactly and require verbatim stdout pasted into docs.
 
 ## Redlined 03-implementation-plan.md
 
-### Original M1 Steps (lines 5-8):
-```
-- Add a small per‑point displacement/velocity field in the stage/material (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx, DreamdustMaterial.ts).
-- Feed a screen‑space force vector (from the existing input field) into the shader/uniforms; apply to positions (or offsets) with decay.
-- Guardrails: maintain current mirror rules; ensure controls lock while drawing.
-```
+> M1 — Phase A (scaffolding; dev‑only)
 
-**Proposed Edits:**
-```
-- Add uniforms: `uForceVector` (vec2, screen-space direction), `uForceIntensity` (float, 0-1), `uForceDecay` (float, 0.9-0.99 per frame decay rate) in DreamdustMaterial.ts.
-- Implement force application in vertex shader: `displacement += uForceVector * uForceIntensity * (1.0 - decay)`. Apply to `aOffset` or derived position.
-- Update mechanism: set uForceVector from InkSurface pointer delta each frame; exponential decay when input stops.
-- Guardrails: maintain current mirror rules; ensure controls lock while drawing; trigger material.needsUpdate on uniform changes.
-```
+Replace
+"In `PointCloudStage.tsx`, inject a temporary uniform and add a quick vertex offset; update it directly from `InkSurface`."
 
-### Original M2 Steps (lines 16-18):
-```
-- Add palette and nearest‑color selection util; expose palette editing in code.
-- Implement timed cascade uniform(s): cascade mix, color, size/alpha boost; apply across all particles.
-```
+With
+"Add `uTempForce` (vec2) and `uTempIntensity` (float) with per‑frame decay (multiply by 0.9–0.98 when idle). Set from `InkSurface` pointer delta at ~60 fps; apply screen‑space offset in the vertex path. Keep camera unchanged; disable OrbitControls while drawing; flip vector for mirror flags."
 
-**Proposed Edits:**
-```
-- Define curated palette: `const CASCADE_PALETTE = [[1,0,0],[0,1,0],[0,0,1],[1,1,0],[1,0,1],[0,1,1],[0.5,0,0.5],[1,0.5,0]]` in DreamdustMaterial.ts.
-- Add nearest-color util: find closest palette entry by RGB distance from gesture start color.
-- Add uniforms: `uCascadeProgress` (0-1), `uCascadeColor` (vec3), `uCascadeSizeBoost` (float), `uCascadeCommit` (bool).
-- Cascade timing: 2-3s lerp from current → target color; trigger on stroke end when `uCascadeCommit` set.
-- Single commit location: InkSurface.tsx `onEnd` callback sets `uCascadeCommit = true` for strokes >2s duration.
-```
+> M1 — Phase B (harden)
 
-### Original M3 Steps (lines 25-27):
-```
-- Tune uTintGain/uOffsetGain/uCurlAmp defaults; add soft ripple on tap.
-- Rate‑limit or gate recurring logs; keep essential telemetry only.
-```
+Replace
+"Replace the temporary uniform with structured ones; optionally adopt `uTouch`."
 
-**Proposed Edits:**
-```
-- Tune force-field gains: increase `uOffsetGain` from 0.1 to 0.3-0.5; reduce `uTintGain` from 0.3 to 0.1-0.2; set `uCurlAmp` to 0.05-0.1 for gentle ripple.
-- Add tap ripple: on tap, apply radial force burst with 0.2s decay; scale radius by tap duration.
-- Console cleanup: gate `[PC]` logs to 30fps max; remove HMR warnings; keep only `[PC] draw start/end` and frame stats.
-- Devtools pitfall: run production build to verify no console noise masks visual issues.
-```
+With
+"Introduce `uForceVector` (vec2), `uForceIntensity` (float), `uForceDecay` (float), `uForceActive` (bool). If adopting `uTouch`, render a trail canvas (Codrops style) and sample in vertex. Move displacement math into a helper; set `material.needsUpdate = true` when toggling `uForceActive`. Tag commit, then remove Phase A scaffolding."
+
+> M2 — Palette cascade
+
+Replace
+"Add palette and nearest‑color util; implement cascade uniforms."
+
+With
+"Define `CASCADE_PALETTE` in `DreamdustMaterial.ts` (or shared); implement `findNearestPaletteColor(rgb)`. Add uniforms `uCascadeProgress`, `uCascadeColor`, `uCascadeSizeBoost`, `uCascadeCommit`, `uCascadeDuration`. Trigger commit in `InkSurface.tsx` on stroke end (duration/length threshold). Use smoothstep over 2–3s."
+
+> M3 — Polish
+
+Replace
+"Tune gains; rate‑limit logs."
+
+With
+"Set `uOffsetGain` target 0.3–0.5, `uTintGain` 0.1–0.2, `uCurlAmp` 0.05–0.1. Add a short‑tau tap ripple. Gate `[PC]` logs to ≤30 fps; keep `[PC] draw start/end`, cascade commit, frame stats only."
+
+> M4 — Verification
+
+Append
+"Run baseline commands from repo root and paste stdout verbatim."
 
 ## M1 Implementation Blueprint
 
-### Files to Touch
-- `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts` (uniforms, shader logic)
-- `apps/cryptiq-mindmap-demo/app/components/dreamdust/useDreamdustUniforms.ts` (uniform updates)
-- `apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx` (force vector input)
-- `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx` (controls lock, mirror propagation)
+### Phase A — Scaffolding (dev‑only)
+- Uniforms: `uTempForce` (vec2), `uTempIntensity` (float), implicit decay 0.9–0.98/frame
+- Touchpoints: `PointCloudStage.tsx` (inject temp uniforms; lock controls), `InkSurface.tsx` (pointer→delta→uniform), `DreamdustMaterial.ts` (apply simple vertex offset)
+- Update cadence: set uniforms on pointer events/frame loop; decay when idle
+- Guardrails: mirror propagation; `material.needsUpdate` if shader define toggles; camera/framing intact
+- Pass/Fail: visible motion in ≤2 frames; ≥5px displacement; decay resumes on end
 
-### Data Flow
-```
-Pointer Event → InkSurface.tsx (deltaX, deltaY) → uForceVector uniform (screen-space) → Vertex Shader (displacement += uForceVector * intensity) → Position offset with decay → Visible particle motion
-```
-
-### Minimal Shader/Material Changes
-**New Uniforms (add to DreamdustMaterial.ts lines 80-85):**
-```typescript
-uForceVector: [0, 0] as [number, number],      // Screen-space force direction
-uForceIntensity: 1.0,                          // Force strength multiplier
-uForceDecay: 0.95,                             // Per-frame decay rate
-```
-
-**Vertex Shader Logic (add after line 339 in DreamdustMaterial.ts):**
-```glsl
-#ifdef USE_VERTEX_INK
-  // Force-field displacement (after ink sampling)
-  vec2 forceDisplacement = uForceVector * uForceIntensity * uInkIntensity;
-  displacement += forceDisplacement;
-
-  // Exponential decay when no input
-  if (uForceIntensity < 0.01) {
-    displacement *= uForceDecay;
-  }
-#endif
-```
-
-**Material Update Cadence:**
-- Update `uForceVector` from InkSurface pointer delta each frame (60fps target)
-- Set `uForceIntensity` based on input pressure/speed
-- Trigger `material.needsUpdate = true` on uniform changes
-
-### Guardrails
-- **Controls Lock:** Disable OrbitControls during drawing (`setEnabled(false)`)
-- **Mirror Correctness:** Ensure `uForceVector` respects current mirror flags
-- **NeedsUpdate:** Set `material.needsUpdate = true` after uniform changes
-- **Performance:** Limit force application to active ink regions only
-
-### Pass/Fail Acceptance
-**Pass Criteria:**
-- One tap at viewport center (x: 512, y: 384) causes visible particle displacement ≥5px within 2 frames
-- One 2-3s stroke along horizontal line shows continuous advection with "vapor" feel
-- Effect decays gracefully when input stops
-- Camera/framing unchanged during interaction
-
-**Fail Criteria:**
-- No visible motion within 2 frames
-- Motion offset from pointer position
-- Camera drift or orbit interference
-- Performance degradation below 50fps
+### Phase B — Hardened
+- Final uniforms: `uForceVector`, `uForceIntensity`, `uForceDecay`, `uForceActive`
+- Optional `uTouch`: off‑screen trail canvas sampled in vertex for parallel displacement
+- Shader: helper function for force application; mirror‑aware; respect pixel scale
+- Teardown: tag commit; remove Phase A code (list files/lines in PR description)
 
 ## M2 Cascade Blueprint
 
-### Palette Source
-**Curated Palette (add to DreamdustMaterial.ts):**
-```typescript
-const CASCADE_PALETTE: [number, number, number][] = [
-  [1.0, 0.0, 0.0],    // Red
-  [0.0, 1.0, 0.0],    // Green
-  [0.0, 0.0, 1.0],    // Blue
-  [1.0, 1.0, 0.0],    // Yellow
-  [1.0, 0.0, 1.0],    // Magenta
-  [0.0, 1.0, 1.0],    // Cyan
-  [0.5, 0.0, 0.5],    // Purple
-  [1.0, 0.5, 0.0],    // Orange
-];
-```
+### Palette Source & Helper
+- Add `CASCADE_PALETTE` constant in `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts` (or shared util)
+- Helper signature: `findNearestPaletteColor(rgb: [number,number,number]): [number,number,number]`
 
-### Nearest-Hue Logic
-**Implementation (add utility function):**
-```typescript
-function findNearestPaletteColor(targetRgb: [number, number, number]): [number, number, number] {
-  let nearest = CASCADE_PALETTE[0];
-  let minDistance = Infinity;
-
-  for (const paletteColor of CASCADE_PALETTE) {
-    const distance = rgbDistance(targetRgb, paletteColor);
-    if (distance < minDistance) {
-      minDistance = distance;
-      nearest = paletteColor;
-    }
-  }
-
-  return nearest;
-}
-
-function rgbDistance(a: [number, number, number], b: [number, number, number]): number {
-  return Math.sqrt(
-    Math.pow(a[0] - b[0], 2) +
-    Math.pow(a[1] - b[1], 2) +
-    Math.pow(a[2] - b[2], 2)
-  );
-}
-```
-
-### Cascade Timing Parameters
-**Uniforms (add to DreamdustMaterial.ts):**
-```typescript
-uCascadeProgress: 0.0,           // 0-1 lerp progress
-uCascadeColor: [1, 1, 1],       // Target palette color
-uCascadeSizeBoost: 0.0,          // Size/alpha boost during cascade
-uCascadeCommit: false,           // Trigger flag
-```
-
-**Timing Logic:**
-- Cascade duration: 2-3 seconds (configurable via `uCascadeDuration`)
-- Easing: smoothstep(0, 1, progress) for natural feel
-- Trigger: `uCascadeCommit = true` on stroke end for strokes >2s
-
-### Single Place to Toggle "Full Commit"
-**Location:** `InkSurface.tsx` onEnd callback (lines ~200-220)
-```typescript
-onEnd={(info) => {
-  if (info.type === 'stroke' && info.durationMs > 2000) {
-    // Set cascade commit for full palette lock
-    material.uniforms.uCascadeCommit.value = true;
-    material.needsUpdate = true;
-  }
-}}
-```
+### Uniforms & Timing
+- Uniforms: `uCascadeProgress` (0–1), `uCascadeColor` (vec3), `uCascadeSizeBoost` (float), `uCascadeCommit` (bool), `uCascadeDuration` (float)
+- Timing: 2–3s smoothstep from current→target; progress advanced in render loop once `uCascadeCommit` is set
+- Single commit site: `InkSurface.tsx` `onEnd` for strokes above duration/length threshold; log `[PC] cascade commit: <color>`
 
 ### Test Procedure
-1. **Setup:** `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1`
-2. **Gesture:** Draw 2-3s stroke from left to right across viewport center
-3. **Expected:** 
-   - Console: `"[PC] cascade commit: true"` + chosen palette color
-   - Visual: Hue smoothly transitions across all particles to single saturated color
-   - Duration: 2-3s complete transition
-4. **Screenshots:** Before stroke (neutral), during cascade (mid-transition), after (saturated)
+- URL: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1`
+- Gestures: 2–3s stroke across center; repeat in different hue regions
+- Expected: hue rolls across particles to nearest palette color within duration; size boost visible; camera unchanged
+- Evidence: screenshots (before/mid/after), console logs, optional `uTouch` snapshot
 
 ## 60–90 Minute Runbook
 
-### M1 Force-Field (20 minutes)
-- **URL:** `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1&inkProbe=1`
-- **Test 1:** Tap center (x: 512, y: 384) → expect particle ripple ≥5px within 2 frames
-- **Test 2:** 2s horizontal stroke → expect continuous advection along path
-- **Evidence:** Screenshot + `[PC] draw start/end` + frame timing logs
+### Phase A (M1) — 20–30 min
+- URL: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1`
+- Steps: tap center (512,384); 2s stroke (256→768 @ y=384)
+- Expect: ≥5px displacement within ≤2 frames; smooth decay on end; camera static
+- Evidence: `[PC] draw start/end`, `[PC] ink tex updated`, frame percentile log; screenshots x3
 
-### M2 Palette Cascade (30 minutes)
-- **URL:** Same as M1
-- **Test 1:** Red-dominant stroke → expect cascade to nearest red palette color
-- **Test 2:** Blue-dominant stroke → expect cascade to nearest blue palette color  
-- **Test 3:** Toggle `uCascadeCommit` via console → verify single-color lock
-- **Evidence:** 3 screenshots (before/during/after) + console cascade logs
+### Phase B (M1) — 20–30 min
+- Switch uniforms to final set or `uTouch`; verify `material.needsUpdate` on toggle
+- Expect: same visuals; improved persistence if `uTouch` enabled
+- Evidence: log active path (Phase B vs `uTouch`); screenshot of canvas/texture if applicable
 
-### M3 Polish (20 minutes)
-- **URL:** Same as M1
-- **Test 1:** Tap + stroke with tuned gains → verify "ink in air" feel
-- **Test 2:** Production build → confirm no console noise during interaction
-- **Evidence:** Performance logs + production smoke test
+### M2 Cascade — 20–30 min
+- Trigger commit on stroke end; log chosen palette color; verify 2–3s roll
+- Evidence: console `[PC] cascade commit: <color>`, screenshots x3, duration noted
 
-### M4 Verification (20 minutes)
-- **Commands:** `pnpm install --frozen-lockfile && pnpm --filter @refinery/schema exec tsc -p tsconfig.json --noEmit && pnpm --filter cryptiq-mindmap-demo run lint && pnpm --filter cryptiq-mindmap-demo run build && pnpm run smoke`
-- **Evidence:** Verbatim stdout from each command + git tag for rollback
+### M4 Baseline — 10–15 min
+- Commands (repo root):
+  1. `pnpm install --frozen-lockfile`
+  2. `pnpm --filter @refinery/schema exec tsc -p tsconfig.json --noEmit` || app typecheck fallback
+  3. `pnpm --filter cryptiq-mindmap-demo run lint || true`
+  4. `pnpm --filter cryptiq-mindmap-demo run build`
+  5. `pnpm run smoke`
+- Paste stdout verbatim into docs; attach screenshots; create rollback tag
 
-**Total:** 90 minutes for complete M1→M2 verification with evidence capture.
+—
+
+References
+- `00-overview.md`, `01-current-state.md`, `02-decisions.md`, `06-reference-notes.md`
+- Mirror audit: `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-10-ink-mirroring-pipeline-audit.md`
+- Key files: `InkSurface.tsx`, `DreamdustMaterial.ts`, `PointCloudStage.tsx`
