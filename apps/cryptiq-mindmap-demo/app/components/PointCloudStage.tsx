@@ -45,6 +45,10 @@ import { ParticleSim } from './dreamdust/sim/ParticleSim'
 import DebugHud from './dreamdust/ui/DebugHud'
 import { createVertexTelemetryCollector } from './dreamdust/telemetry'
 
+const TEMP_FORCE_DECAY = 0.92
+const TEMP_FORCE_SCALE = 180
+const TEMP_FORCE_CLAMP = 12
+
 type PointCloudStageProps = {
   sceneId?: string
   colorUrl?: string
@@ -1278,6 +1282,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const vertexInkCaps = dreamdustCtx?.vertexInkOk ?? runtimeCaps?.vertexInkOk ?? false
   // For scene-03, force fragment screen-space ink sampling for alignment with screen-space painter
   const vertexInkEnabled = sceneId === 'scene-03' ? false : vertexInkCaps
+  const tempForceRef = React.useRef<[number, number]>([0, 0])
+  const tempIntensityRef = React.useRef(0)
   const debugFlagDefaults = React.useMemo(() => getDebugFlags(), [])
   const { flags: debugFlags, simSnapshot, inkSnapshot, aestheticPreset, setAestheticPreset } =
     useDebugControls(debugFlagDefaults)
@@ -1318,6 +1324,55 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     // TEMP: force non-zero ink intensity to validate visibility regression.
     setUniform('uInkIntensity', 0.75)
   }, [setUniform])
+
+  React.useEffect(() => {
+    setUniform('uTempForce', tempForceRef.current)
+    setUniform('uTempIntensity', 0)
+  }, [setUniform])
+
+  const applyTempForce = React.useCallback(
+    (delta: [number, number]) => {
+      const [dx, dy] = delta
+      if (!Number.isFinite(dx) || !Number.isFinite(dy)) {
+        return
+      }
+      const clampForce = (value: number) =>
+        Math.max(-TEMP_FORCE_CLAMP, Math.min(TEMP_FORCE_CLAMP, value))
+      const fx = clampForce(dx * TEMP_FORCE_SCALE)
+      const fy = clampForce(-dy * TEMP_FORCE_SCALE)
+      const magnitude = Math.hypot(fx, fy)
+      if (magnitude <= 1e-6) {
+        return
+      }
+      tempForceRef.current = [fx, fy]
+      const intensity = Math.min(1, magnitude / TEMP_FORCE_CLAMP)
+      tempIntensityRef.current = Math.max(intensity, tempIntensityRef.current * 0.5)
+      setUniform('uTempForce', tempForceRef.current)
+      setUniform('uTempIntensity', tempIntensityRef.current)
+    },
+    [setUniform],
+  )
+
+  useFrame((_, delta) => {
+    const current = tempIntensityRef.current
+    if (current <= 1e-4) {
+      if (current !== 0) {
+        tempIntensityRef.current = 0
+        setUniform('uTempIntensity', 0)
+      }
+      return
+    }
+    const frameDecay = Math.pow(TEMP_FORCE_DECAY, delta * 60)
+    const next = current * frameDecay
+    if (next <= 1e-4) {
+      tempIntensityRef.current = 0
+      setUniform('uTempIntensity', 0)
+      return
+    }
+    tempIntensityRef.current = next
+    setUniform('uTempForce', tempForceRef.current)
+    setUniform('uTempIntensity', next)
+  })
 
   React.useEffect(() => {
     setUniform('uVertexInkOk', vertexInkEnabled ? 1 : 0)
@@ -2779,6 +2834,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           <InkSurface
             mirrorLR={!!ui.mirrorLR}
             mirrorUD={!!ui.mirrorUD}
+            onForceSample={applyTempForce}
             onStart={() => {
               inkUpdateLoggedRef.current = false
               setDrawing(true)

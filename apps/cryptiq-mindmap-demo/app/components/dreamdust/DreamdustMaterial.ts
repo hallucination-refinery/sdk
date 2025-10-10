@@ -91,6 +91,8 @@ const DEFAULT_UNIFORM_VALUES = {
   uInkTintBoost: 1,
   uVertexInkOk: 0,
   uViewport: [1, 1] as [number, number],
+  uTempForce: [0, 0] as [number, number],
+  uTempIntensity: 0,
   uSimPositionTex: null,
   uSimColorTex: null,
   uAlphaFloor: 0.00,
@@ -212,6 +214,8 @@ uniform float uVertexInkOk;
 uniform float uCascade;
 uniform float uCascadeSizeBoost;
 uniform float uVaporGain;
+uniform vec2 uTempForce;
+uniform float uTempIntensity;
 
 #if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
 uniform float uDebugTelemetryMode;
@@ -323,6 +327,11 @@ void main() {
   mistPos += mistDir * (breathPhase * breathAmp * (1.0 - 0.7 * settle));
 
   vec3 revealPos = mix(mistPos, basePos, settle);
+
+  if (uTempIntensity > 1e-4) {
+    vec2 tempForce = uTempForce * uTempIntensity;
+    revealPos.xy += tempForce;
+  }
 
   float tapImpulse = 0.0;
   vec2 inkSampleOffset = vec2(0.0);
