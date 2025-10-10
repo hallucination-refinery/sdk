@@ -4,6 +4,7 @@ Primary Docs
 - Mirror audit: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-10-ink-mirroring-pipeline-audit.md
 - Smoke tests: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-09-ink-interaction-smoke-test.md
 - Analysis: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-09-ink-interaction-analysis.md
+- Plan audit: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/PLAN-AUDIT.md
 
 Key Files
 - InkSurface: apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx
@@ -16,4 +17,3 @@ Assets
 
 Checkpoint
 - Tag: checkpoint/scene-03-screen-space-ink-2025-10-10 (git checkout tags/checkpoint/scene-03-screen-space-ink-2025-10-10)
-
