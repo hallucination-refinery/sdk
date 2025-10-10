@@ -10,6 +10,7 @@ M1 — Force‑Field Prototype
   - Console: `[PC] draw start/end`, `[PC] ink tex updated`, frame percentile log after interaction.
   - Screenshots: before tap, during stroke (mid-motion), after decay.
   - Optional: capture `uForceVector` uniform via DevTools to confirm active force.
+- Note: during Phase A scaffolding, `uTempForce` may be used instead of final uniforms; record that value in console before removing scaffolding.
 
 M2 — Palette Cascade
 - URL: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1`

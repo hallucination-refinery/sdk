@@ -3,12 +3,16 @@
 Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
 - Goal: visible particle motion under the finger with a single tap and a 2–3s stroke; no overlays; camera/framing unchanged.
 - Steps (files to touch)
-  - Stage/material plumbing (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts):
-    - Introduce uniforms `uForceVector` (vec2 screen-space delta), `uForceIntensity` (float 0–1), `uForceDecay` (float decay per frame), `uForceActive` (bool/int flag).
+  - Phase A (scaffolding; dev-only):
+    - In `PointCloudStage.tsx`, inject a temporary uniform (`uTempForce`) and add a quick vertex offset that simply pushes points along the latest pointer delta (scale down to avoid explosion).
+    - Update this uniform directly from InkSurface on each pointer event; decay by multiplying with 0.9 every frame when idle.
+    - No new structs yet—goal is to see motion in minutes. Guardrails still apply (mirror, controls lock).
+  - Phase B (productionize after motion is confirmed):
+    - Replace the temporary uniform with structured ones `uForceVector`, `uForceIntensity`, `uForceDecay`, `uForceActive` in DreamdustMaterial.ts.
     - Feed `uForceVector` from InkSurface pointer deltas each frame; when input stops, set `uForceActive=0` and rely on `uForceDecay` to fade.
-  - Shader logic (DreamdustMaterial.ts): add displacement accumulation in the vertex shader using the current mirror-aware screen-space vector, e.g. `displacedPosition += uForceVector * uForceIntensity * forceWeight`; decay existing offset by multiplying with `uForceDecay`.
-  - Update cadence: uniform updates tied to the 60 fps render loop (`useFrame`); ensure `material.needsUpdate = true` when toggling active state.
-  - Guardrails: maintain mirror rules when mapping force vector; disable OrbitControls while drawing; keep camera fit untouched.
+    - Move displacement logic into a dedicated helper inside the vertex shader (mirror-aware). Ensure `material.needsUpdate = true` when toggling active state.
+    - Remove Phase A scaffolding once Phase B works (record commit/tag before removal).
+  - Guardrails: maintain mirror rules when mapping force vector; disable OrbitControls while drawing; keep camera fit untouched; limit force to active viewport area to protect perf.
 - Pass/Fail
   - Pass: tap near viewport center produces ≥5 px displacement within ≤2 frames; 2–3 s stroke advects particles along the path; motion decays smoothly when input stops; camera remains fixed.
   - Fail: no motion, motion lagging/past pointer, or camera interference.
@@ -22,7 +26,7 @@ Milestone M2 — Palette‑Mapped Cascade
   - Add uniforms `uCascadeProgress`, `uCascadeColor`, `uCascadeSizeBoost`, `uCascadeCommit`, `uCascadeDuration`. Animate progress (2–3 s smoothstep) once `uCascadeCommit` flips true on stroke end (duration > threshold).
   - Apply cascade in shader: lerp particle tint, size/alpha boosts, and optionally curl intensity based on `uCascadeProgress`.
 - Pass/Fail
-  - Pass: cascade visibly rolls hue across all particles to the chosen palette color within configured duration; timing adjustable; camera unchanged.
+  - Pass: cascade visibly rolls hue across all particles to the chosen palette color within configured duration; timing adjustable; camera unchanged; temporary scaffolding removed.
 - Runbook: 05-runbooks.md#M2
 
 Milestone M3 — Polish (Feel & Stability)

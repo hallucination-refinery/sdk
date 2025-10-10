@@ -9,5 +9,4 @@ Root Cause of “Nothing Happens”
 - The prior pipeline emphasized tint/alpha modulation without particle motion. Even with perfect mapping and strong ink data, the effect can be imperceptible without visible displacement/advection.
 
 Directional Decision
-- Pivot to particle dynamics: implement a minimal force‑field response first (tap ripple + drag advection), then add palette‑mapped cascade; keep camera/framing intact; remove overlays.
-
+- Pivot to particle dynamics: implement a minimal force‑field response first (tap ripple + drag advection) using lightweight scaffolding we can rip out; once the feel is proven, solidify the plumbing and add palette‑mapped cascade; keep camera/framing intact; remove overlays.

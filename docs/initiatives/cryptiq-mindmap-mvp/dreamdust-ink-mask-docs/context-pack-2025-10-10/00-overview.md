@@ -4,6 +4,7 @@ Right Direction
 - Particles are the ink. Touch must cause immediate, undeniable particle motion under the finger (tap ripple + drag advection), not a 2D paint mask.
 - Palette‑mapped cascade: sample hue at gesture start → snap to curated palette → roll through every particle to a saturated end state.
 - Keep camera/framing intact; no orbit fight while drawing; zero overlays in the main experience.
+- Ship iteratively: get a minimal, obviously reactive prototype running first; polish and cascade ride on top of that scaffolding.
 
 Acceptance Criteria
 - Tap: visible response in ≤2 frames exactly under the pointer; decays gracefully.
