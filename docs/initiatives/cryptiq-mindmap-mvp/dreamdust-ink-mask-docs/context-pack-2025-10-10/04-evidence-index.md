@@ -5,6 +5,7 @@ Primary Docs
 - Smoke tests: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-09-ink-interaction-smoke-test.md
 - Analysis: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-09-ink-interaction-analysis.md
 - Plan audit: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/PLAN-AUDIT.md
+- Reference notes (Codrops interactive particles): docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/06-reference-notes.md
 
 Key Files
 - InkSurface: apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx

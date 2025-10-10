@@ -9,7 +9,7 @@ M1 — Force‑Field Prototype
 - Evidence to capture:
   - Console: `[PC] draw start/end`, `[PC] ink tex updated`, frame percentile log after interaction.
   - Screenshots: before tap, during stroke (mid-motion), after decay.
-  - Optional: capture `uForceVector` uniform via DevTools to confirm active force.
+  - Optional: capture `uForceVector` or `uTouch` (if adopted) via DevTools to confirm active force/texture.
 - Note: during Phase A scaffolding, `uTempForce` may be used instead of final uniforms; record that value in console before removing scaffolding.
 
 M2 — Palette Cascade
@@ -19,6 +19,7 @@ M2 — Palette Cascade
   2. Repeat in a blue-dominant region within 10 s (tests multi-stroke escalation).
 - Expected visuals: palette sample logged (`[PC] cascade commit: <color>`); hue rolls across all particles to nearest palette color within 2–3 s; full saturation when `uCascadeProgress` reaches 1.
 - Evidence: console log of palette selection and commit, screenshots (before stroke, mid-cascade, post-cascade).
+- Optional: if using `uTouch`, capture a snapshot of the trail canvas for debugging.
 
 M3 — Polish
 - URL: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03`
