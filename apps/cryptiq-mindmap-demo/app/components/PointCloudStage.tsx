@@ -79,8 +79,41 @@ type DreamdustStageUniforms = ReturnType<typeof useDreamdustUniforms>['uniforms'
   uSimColorTex?: { value: THREE.DataTexture | null }
 }
 
+type SetUniformFn = ReturnType<typeof useDreamdustUniforms>['setUniform']
+
 type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
   uReveal?: { value: number }
+}
+
+type TempForceDriverProps = {
+  tempForceRef: React.MutableRefObject<[number, number]>
+  tempIntensityRef: React.MutableRefObject<number>
+  setUniform: SetUniformFn
+}
+
+function TempForceDriver({ tempForceRef, tempIntensityRef, setUniform }: TempForceDriverProps) {
+  useFrame((_, delta) => {
+    const current = tempIntensityRef.current
+    if (current <= 1e-4) {
+      if (current !== 0) {
+        tempIntensityRef.current = 0
+        setUniform('uTempIntensity', 0)
+      }
+      return
+    }
+    const frameDecay = Math.pow(TEMP_FORCE_DECAY, delta * 60)
+    const next = current * frameDecay
+    if (next <= 1e-4) {
+      tempIntensityRef.current = 0
+      setUniform('uTempIntensity', 0)
+      return
+    }
+    tempIntensityRef.current = next
+    setUniform('uTempForce', tempForceRef.current)
+    setUniform('uTempIntensity', next)
+  })
+
+  return null
 }
 
 type StageSimState = {
@@ -1352,27 +1385,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     },
     [setUniform],
   )
-
-  useFrame((_, delta) => {
-    const current = tempIntensityRef.current
-    if (current <= 1e-4) {
-      if (current !== 0) {
-        tempIntensityRef.current = 0
-        setUniform('uTempIntensity', 0)
-      }
-      return
-    }
-    const frameDecay = Math.pow(TEMP_FORCE_DECAY, delta * 60)
-    const next = current * frameDecay
-    if (next <= 1e-4) {
-      tempIntensityRef.current = 0
-      setUniform('uTempIntensity', 0)
-      return
-    }
-    tempIntensityRef.current = next
-    setUniform('uTempForce', tempForceRef.current)
-    setUniform('uTempIntensity', next)
-  })
 
   React.useEffect(() => {
     setUniform('uVertexInkOk', vertexInkEnabled ? 1 : 0)
@@ -2881,6 +2893,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             }}
           />
         )}
+        <TempForceDriver
+          tempForceRef={tempForceRef}
+          tempIntensityRef={tempIntensityRef}
+          setUniform={setUniform}
+        />
         <CameraSync
           fovDeg={ui.fovDeg}
           fitRequest={fitRequest}
