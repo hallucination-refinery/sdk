@@ -12,6 +12,10 @@ Key Files
 - Material/Shader: apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
 - Stage: apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
 
+Run Artifacts — 2025-10-11
+- Terminal: clean install/build/start with Node v22; prod server on :3000 (logs pasted in task).
+- Console: scene init OK; strokes logged; uniform probe via `window.__vertexCaptureArgs?.material` returned `{}` (capture unavailable). See runbook “Regression triage” and “Iteration result”.
+
 Assets
 - Initial load screenshot: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-09-Test-1-Initial-Load.png
 - Camera framing: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-08-iteration-06-part-A-initial-camera-framing.png

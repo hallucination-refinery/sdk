@@ -15,6 +15,7 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
   - Guardrails: maintain mirror rules when mapping force vector; disable OrbitControls while drawing; keep camera fit untouched; limit force to active viewport area to protect perf.
   - Scaffolding teardown: once Phase B passes runbook, tag the commit and remove all Phase A code paths (document file paths/lines in PR description).
   - Phase A troubleshooting (2025-10-11): If no motion is visible in Scene‑03 while uniforms update, check pixel scaling: the ink offset path multiplies by `pxScale = viewDist / uFocal` before adding to `viewPos.xy`. Consider applying a similar scale to the temporary force to ensure perceptible screen‑space motion at current camera distances, or defer to Phase B’s structured path.
+  - Revert path (2025-10-11): If Phase A falls back to “no visible motion” in production despite successful init and stroke logs, temporarily revert to the last commit that yielded visible displacement to satisfy M1’s “undeniable prototype” constraint, then re‑introduce falloff with correct pixel scaling as a small forward change.
 - Pass/Fail
   - Pass: tap near viewport center produces ≥5 px displacement within ≤2 frames; 2–3 s stroke advects particles along the path; motion decays smoothly when input stops; camera remains fixed.
   - Fail: no motion, motion lagging/past pointer, or camera interference.

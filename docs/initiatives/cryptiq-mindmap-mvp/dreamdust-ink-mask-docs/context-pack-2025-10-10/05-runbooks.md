@@ -24,6 +24,23 @@ Regression triage (2025-10-11)
   - Environment: verify URL is exactly `.../quiz/archetype-v1?pc=scene-03&debug=1` and the scene has finished reveal (look for `[Dreamdust] reveal end`).
   - Evidence: paste one short console block showing the four uniform values while dragging.
 
+Iteration result (2025-10-11, same server session)
+- Action: cleared console, emptied cache + hard reloaded, dragged a long stroke, then ran the uniform snapshot snippet.
+- Snippet:
+  ```js
+  const m = window.__vertexCaptureArgs?.material;
+  ({ force: m?.uniforms?.uTempForce?.value,
+    intensity: m?.uniforms?.uTempIntensity?.value,
+    center: m?.uniforms?.uTempCenter?.value,
+    radius: m?.uniforms?.uTempRadius?.value })
+  ```
+- Output: `{}` (uniform snapshot undefined) — indicates the capture handle is not available in this build/session; treat as “no material probe” rather than proof of zero values.
+- Next: proceed with “Revert recommendation” below unless you prefer to instrument via a tooling capture (e.g., Spector.js) first.
+
+Revert recommendation (Phase A, minimal prototype priority)
+- Goal is visible motion now; if the probe is unavailable and motion remains absent, revert to the last iteration with visible (global) displacement to satisfy M1 pass/fail, then re‑apply falloff with pixel scaling in a follow‑up.
+- Record the revert commit hash and tag in `04-evidence-index.md` when executed.
+
 M2 — Palette Cascade
 - URL: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1`
 - Gestures:
