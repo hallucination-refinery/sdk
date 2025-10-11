@@ -10,6 +10,8 @@ M1 — Force‑Field Prototype
   - Console: `[PC] draw start/end`, `[PC] ink tex updated`, frame percentile log after interaction.
   - Screenshots: before tap, during stroke (mid-motion), after decay.
   - Optional: capture `uForceVector` or `uTouch` (if adopted) via DevTools to confirm active force/texture.
+- Current status (2025-10-11): dragging with Phase A scaffolding pushes the entire cloud; no local falloff yet. Console log (2025-10-11) shows repeated `[PC] draw start/end` entries with long stroke distances and no localized decay. Screenshot or screen recording recommended before modifying uniforms.
+- Follow-up (before Phase B): add temporary uniforms for pointer UV + radius, apply smoothstep falloff in vertex shader, then re-run this test to confirm only the stroke neighborhood moves.
 - Phase B add-on: repeat after swapping to `uForceVector`/`uTouch`; log the new uniform values and confirm the temporary `uTempForce` path is removed (note commit/tag).
 - Note: during Phase A scaffolding, `uTempForce` may be used instead of final uniforms; record that value in console before removing scaffolding.
 
