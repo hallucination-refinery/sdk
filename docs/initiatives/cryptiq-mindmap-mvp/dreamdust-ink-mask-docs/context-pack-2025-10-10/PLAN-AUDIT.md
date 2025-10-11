@@ -91,7 +91,7 @@ Append
 - Update cadence: set uniforms on pointer events/frame loop; decay when idle
 - Guardrails: mirror propagation; `material.needsUpdate` if shader define toggles; camera/framing intact
 - Observed issue (2025-10-11): Dragging with Phase A scaffolding displaces the entire particle cloud uniformly. Need to add local falloff (per-particle influence) before hardening.
-- Next action: add temporary uniforms for pointer UV + radius, gate force with smoothstep falloff in vertex shader, then repeat M1 runbook to confirm only the stroke neighborhood moves.
+- Next action: add temporary uniforms for pointer UV (`uTempCenter`) + radius (`uTempRadius`), gate force with smoothstep falloff in vertex shader, then repeat M1 runbook to confirm only the stroke neighborhood moves (≈10–20% of points).
 - Pass/Fail: visible motion in ≤2 frames; ≥5px displacement; decay resumes on end
 
 ### Phase B — Hardened
