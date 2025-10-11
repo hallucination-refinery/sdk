@@ -88,18 +88,10 @@ type DreamdustStageUniformsWithReveal = DreamdustStageUniforms & {
 type TempForceDriverProps = {
   tempForceRef: React.MutableRefObject<[number, number]>
   tempIntensityRef: React.MutableRefObject<number>
-  tempCenterRef: React.MutableRefObject<[number, number]>
-  tempRadiusRef: React.MutableRefObject<number>
   setUniform: SetUniformFn
 }
 
-function TempForceDriver({
-  tempForceRef,
-  tempIntensityRef,
-  tempCenterRef,
-  tempRadiusRef,
-  setUniform,
-}: TempForceDriverProps) {
+function TempForceDriver({ tempForceRef, tempIntensityRef, setUniform }: TempForceDriverProps) {
   useFrame((_, delta) => {
     const current = tempIntensityRef.current
     if (current <= 1e-4) {
@@ -119,8 +111,6 @@ function TempForceDriver({
     tempIntensityRef.current = next
     setUniform('uTempForce', tempForceRef.current)
     setUniform('uTempIntensity', next)
-    setUniform('uTempCenter', tempCenterRef.current)
-    setUniform('uTempRadius', tempRadiusRef.current)
   })
 
   return null
@@ -1327,8 +1317,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const vertexInkEnabled = sceneId === 'scene-03' ? false : vertexInkCaps
   const tempForceRef = React.useRef<[number, number]>([0, 0])
   const tempIntensityRef = React.useRef(0)
-  const tempCenterRef = React.useRef<[number, number]>([0.5, 0.5])
-  const tempRadiusRef = React.useRef(0.1)
+  // Reverted: remove temp center/radius for Phase A global offset
   const debugFlagDefaults = React.useMemo(() => getDebugFlags(), [])
   const { flags: debugFlags, simSnapshot, inkSnapshot, aestheticPreset, setAestheticPreset } =
     useDebugControls(debugFlagDefaults)
@@ -1373,13 +1362,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     setUniform('uTempForce', tempForceRef.current)
     setUniform('uTempIntensity', 0)
-    setUniform('uTempCenter', tempCenterRef.current)
-    setUniform('uTempRadius', tempRadiusRef.current)
   }, [setUniform])
 
   const applyTempForce = React.useCallback(
-    (sample: { delta: [number, number]; uv: [number, number] }) => {
-      const { delta, uv } = sample
+    (delta: [number, number]) => {
       const [dx, dy] = delta
       if (!Number.isFinite(dx) || !Number.isFinite(dy)) {
         return
@@ -1395,11 +1381,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       tempForceRef.current = [fx, fy]
       const intensity = Math.min(1, magnitude / TEMP_FORCE_CLAMP)
       tempIntensityRef.current = Math.max(intensity, tempIntensityRef.current * 0.5)
-      tempCenterRef.current = [uv[0], uv[1]]
       setUniform('uTempForce', tempForceRef.current)
       setUniform('uTempIntensity', tempIntensityRef.current)
-      setUniform('uTempCenter', tempCenterRef.current)
-      setUniform('uTempRadius', tempRadiusRef.current)
     },
     [setUniform],
   )
@@ -2914,8 +2897,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         <TempForceDriver
           tempForceRef={tempForceRef}
           tempIntensityRef={tempIntensityRef}
-          tempCenterRef={tempCenterRef}
-          tempRadiusRef={tempRadiusRef}
           setUniform={setUniform}
         />
         <CameraSync

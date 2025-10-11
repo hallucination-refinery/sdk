@@ -37,7 +37,7 @@ export type InkSurfaceProps = {
     distancePx: number
   }) => void
   onTexture?: (texture: AnyDataTexture) => void
-  onForceSample?: (sample: { delta: [number, number]; uv: [number, number] }) => void
+  onForceSample?: (delta: [number, number]) => void
   mirrorLR?: boolean
   mirrorUD?: boolean
 }
@@ -292,7 +292,7 @@ export function InkSurface({
         if (typeof cb === 'function' && width > 0 && height > 0) {
           const dxNorm = (client.x - lastClient.x) / width
           const dyNorm = (client.y - lastClient.y) / height
-          cb({ delta: [dxNorm, dyNorm], uv: [u, v] })
+          cb([dxNorm, dyNorm])
         }
       }
       lastClientRef.current = { x: client.x, y: client.y }

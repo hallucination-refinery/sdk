@@ -93,8 +93,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uViewport: [1, 1] as [number, number],
   uTempForce: [0, 0] as [number, number],
   uTempIntensity: 0,
-  uTempCenter: [0.5, 0.5] as [number, number],
-  uTempRadius: 0.1,
+  // Reverted: uTempCenter/uTempRadius removed for global offset Phase A
   uSimPositionTex: null,
   uSimColorTex: null,
   uAlphaFloor: 0.00,
@@ -218,8 +217,6 @@ uniform float uCascadeSizeBoost;
 uniform float uVaporGain;
 uniform vec2 uTempForce;
 uniform float uTempIntensity;
-uniform vec2 uTempCenter;
-uniform float uTempRadius;
 
 #if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
 uniform float uDebugTelemetryMode;
@@ -333,8 +330,7 @@ void main() {
   vec3 revealPos = mix(mistPos, basePos, settle);
 
   if (uTempIntensity > 1e-4) {
-    float influence = smoothstep(uTempRadius, 0.0, distance(vInkUv, uTempCenter));
-    vec2 tempForce = uTempForce * uTempIntensity * influence;
+    vec2 tempForce = uTempForce * uTempIntensity;
     revealPos.xy += tempForce;
   }
 
