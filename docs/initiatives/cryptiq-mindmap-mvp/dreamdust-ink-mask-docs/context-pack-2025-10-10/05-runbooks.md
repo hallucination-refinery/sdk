@@ -2,6 +2,18 @@ Phase A restored (2025-10-11)
 - Quick smoke passed: global motion visible again on stroke; camera fixed; controls locked.
 - Dev flag for localized trial: append `&falloff=1` to enable temporary falloff (`uTempFalloffOn=1`, `uTempCenter`, `uTempRadius`). Use `window.dreamdust.dumpUniforms()` to log values.
 - Expectation: with `falloff=1`, only a neighborhood (≈10–20%) should move; without it, global displacement remains for baseline comparisons.
+
+Falloff trial result (2025-10-11)
+- URL used: `...?pc=scene-03&debug=1&falloff=1`. Observed: whole cloud still jitters; `dumpUniforms()` shows `uTempFalloffOn: 0` while `uTempIntensity` rises during the stroke.
+- Interpretation: the falloff flag is not applying in this prod session (timing of uniform set vs material readiness, or URL parse not taking). This explains global motion despite the flag.
+- Verify (console, one-shot while drawing):
+  ```js
+  (m => { m.uniforms.uTempFalloffOn.value = 1; m.uniforms.uTempRadius.value = 0.12; })((window.__vertexCaptureArgs||{}).material || (window.dreamdust||{}).material)
+  ```
+  If local plume appears, the shader path is correct and only the flag application timing needs fixing.
+- Next run checklist (no code yet):
+  - Confirm reveal ended, then log `dumpUniforms()` while starting a stroke; capture 3 lines (start/mid/end).
+  - If `uTempFalloffOn` is still 0 with `&falloff=1`, set it via console as above to confirm behavior.
 # Runbooks — One‑Screen Tests
 
 M1 — Force‑Field Prototype

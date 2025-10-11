@@ -16,6 +16,8 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
   - Scaffolding teardown: once Phase B passes runbook, tag the commit and remove all Phase A code paths (document file paths/lines in PR description).
   - Phase A troubleshooting (2025-10-11): If no motion is visible in Scene‑03 while uniforms update, check pixel scaling: the ink offset path multiplies by `pxScale = viewDist / uFocal` before adding to `viewPos.xy`. Consider applying a similar scale to the temporary force to ensure perceptible screen‑space motion at current camera distances, or defer to Phase B’s structured path.
   - Revert path (2025-10-11): If Phase A falls back to “no visible motion” in production despite successful init and stroke logs, temporarily revert to the last commit that yielded visible displacement to satisfy M1’s “undeniable prototype” constraint, then re‑introduce falloff with correct pixel scaling as a small forward change.
+  - Falloff flag application (2025-10-11): Observed `uTempFalloffOn` remained 0 in prod with `&falloff=1`. Plan: move falloff flag set to a post-material-ready hook (after material is attached), and add a single-shot console guard (if flag is requested and unset after reveal, set to 1).
+  - Pixel scaling (pre‑B): When enabling falloff, multiply the temp force by `pxScale = viewDist / uFocal` to ensure screen‑space displacement remains perceptible at Scene‑03 distances.
 - Pass/Fail
   - Pass: tap near viewport center produces ≥5 px displacement within ≤2 frames; 2–3 s stroke advects particles along the path; motion decays smoothly when input stops; camera remains fixed.
   - Fail: no motion, motion lagging/past pointer, or camera interference.

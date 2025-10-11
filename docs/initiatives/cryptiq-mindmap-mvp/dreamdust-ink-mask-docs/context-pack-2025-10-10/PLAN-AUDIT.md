@@ -95,6 +95,7 @@ Append
  - Regression note (2025-10-11): Post‑cleanup prod run showed no visible response to strokes despite `[PC] draw start/end` and `ink tex updated`. Hypothesis: Phase‑A displacement lacks pixel scaling (ink path scales by `pxScale = viewDist / uFocal`), so the added offset may be imperceptible at Scene‑03 camera distances. Action: document console checks in runbook; if confirmed, add view‑space scale in Phase A or queue for Phase B hardening.
  - Same‑run probe (2025-10-11): The devtools snapshot of `uTemp*` uniforms returned `{}` via `window.__vertexCaptureArgs?.material`, implying the capture hook was not present in this session/build. This does not prove zero values; it only shows the probe path was unavailable. Runbook updated to note this and to recommend revert → re‑apply falloff if motion remains absent.
  - Phase A restored + falloff flag (2025-10-11): Global motion reinstated; added `uTempFalloffOn` (+ center/radius) behind `&falloff=1` for A/B without jeopardizing the baseline. Next: add pixel scaling if the localized feel is too subtle at Scene‑03 camera distances.
+  - Falloff flag not active in prod (2025-10-11): Uniform logs during a stroke show `uTempFalloffOn: 0` despite `&falloff=1`, and `uTempIntensity` rising as expected. Action: set the flag post‑material ready and/or after reveal; add a one‑time runtime guard for requested flag.
 - Pass/Fail: visible motion in ≤2 frames; ≥5px displacement; decay resumes on end
 
 ### Phase B — Hardened
