@@ -92,6 +92,7 @@ Append
 - Guardrails: mirror propagation; `material.needsUpdate` if shader define toggles; camera/framing intact
 - Observed issue (2025-10-11): Dragging with Phase A scaffolding displaces the entire particle cloud uniformly. Need to add local falloff (per-particle influence) before hardening.
 - Next action: add temporary uniforms for pointer UV (`uTempCenter`) + radius (`uTempRadius`), gate force with smoothstep falloff in vertex shader, then repeat M1 runbook to confirm only the stroke neighborhood moves (≈10–20% of points).
+ - Regression note (2025-10-11): Post‑cleanup prod run showed no visible response to strokes despite `[PC] draw start/end` and `ink tex updated`. Hypothesis: Phase‑A displacement lacks pixel scaling (ink path scales by `pxScale = viewDist / uFocal`), so the added offset may be imperceptible at Scene‑03 camera distances. Action: document console checks in runbook; if confirmed, add view‑space scale in Phase A or queue for Phase B hardening.
 - Pass/Fail: visible motion in ≤2 frames; ≥5px displacement; decay resumes on end
 
 ### Phase B — Hardened

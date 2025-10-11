@@ -15,6 +15,15 @@ M1 — Force‑Field Prototype
 - Phase B add-on: repeat after swapping to `uForceVector`/`uTouch`; log the new uniform values and confirm the temporary `uTempForce` path is removed (note commit/tag).
 - Note: during Phase A scaffolding, `uTempForce` may be used instead of final uniforms; record that value in console before removing scaffolding.
 
+Regression triage (2025-10-11)
+- Observation: After clean install/build/start and visiting `?pc=scene-03&debug=1` in an incognito tab, multiple strokes produced no visible motion (cloud unreactive). Console shows: caps fanout OK, prebaked present, repeated `[PC] draw start/end`, `[PC] ink tex updated`, and `ink-uv guard ok` per stroke.
+- Quick checks (no code edits; for console-only triage):
+  - Verify uniform values during a drag: read `material.uniforms.uTempIntensity.value`, `uTempForce.value`, `uTempCenter.value`, `uTempRadius.value` while pointer moves. Expect `uTempIntensity>0` and force/center changing.
+  - Confirm shader path executes: temporarily set `uTempRadius=0.5` and `uTempIntensity=0.25` in DevTools and see if any displacement appears. If still none, the displacement likely needs view-space scaling.
+  - Pixel scaling sanity: compare with the ink offset path which applies `pxScale = viewDist / uFocal` before adding to `viewPos.xy`. If `uTemp*` displacement is added in world space, the apparent screen motion can vanish.
+  - Environment: verify URL is exactly `.../quiz/archetype-v1?pc=scene-03&debug=1` and the scene has finished reveal (look for `[Dreamdust] reveal end`).
+  - Evidence: paste one short console block showing the four uniform values while dragging.
+
 M2 — Palette Cascade
 - URL: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1`
 - Gestures:
