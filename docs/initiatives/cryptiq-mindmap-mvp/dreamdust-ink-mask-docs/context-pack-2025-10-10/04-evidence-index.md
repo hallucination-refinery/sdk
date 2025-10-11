@@ -15,6 +15,7 @@ Key Files
 Run Artifacts — 2025-10-11
 - Terminal: clean install/build/start with Node v22; prod server on :3000 (logs pasted in task).
 - Console: scene init OK; strokes logged; uniform probe via `window.__vertexCaptureArgs?.material` returned `{}` (capture unavailable). See runbook “Regression triage” and “Iteration result”.
+ - Follow-up: Phase A restored (global motion visible). Dev flag `&falloff=1` added for localized test; use `window.dreamdust.dumpUniforms()` to capture uniform values during strokes.
 
 Assets
 - Initial load screenshot: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-09-Test-1-Initial-Load.png

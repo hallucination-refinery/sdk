@@ -1,3 +1,7 @@
+Phase A restored (2025-10-11)
+- Quick smoke passed: global motion visible again on stroke; camera fixed; controls locked.
+- Dev flag for localized trial: append `&falloff=1` to enable temporary falloff (`uTempFalloffOn=1`, `uTempCenter`, `uTempRadius`). Use `window.dreamdust.dumpUniforms()` to log values.
+- Expectation: with `falloff=1`, only a neighborhood (≈10–20%) should move; without it, global displacement remains for baseline comparisons.
 # Runbooks — One‑Screen Tests
 
 M1 — Force‑Field Prototype

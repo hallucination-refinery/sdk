@@ -1359,10 +1359,47 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     setUniform('uInkIntensity', 0.75)
   }, [setUniform])
 
+  // Dev flag: enable temp falloff from URL (?falloff=1)
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const falloff = params.get('falloff') === '1' ? 1 : 0
+      setUniform('uTempFalloffOn', falloff)
+      if (falloff === 1) {
+        setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
+        setUniform('uTempRadius', 0.12 as unknown as any)
+      }
+    } catch {
+      /* noop */
+    }
+  }, [setUniform])
+
   React.useEffect(() => {
     setUniform('uTempForce', tempForceRef.current)
     setUniform('uTempIntensity', 0)
   }, [setUniform])
+
+  // Debug: expose a lightweight uniform dump helper (window.dreamdust.dumpUniforms())
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const w = window as any
+    w.dreamdust = w.dreamdust || {}
+    w.dreamdust.dumpUniforms = () => {
+      const u: any = uniforms
+      try {
+        console.log('[dreamdust uniforms]', {
+          uTempForce: u?.uTempForce?.value,
+          uTempIntensity: u?.uTempIntensity?.value,
+          uTempCenter: u?.uTempCenter?.value,
+          uTempRadius: u?.uTempRadius?.value,
+          uTempFalloffOn: u?.uTempFalloffOn?.value,
+        })
+      } catch {
+        /* noop */
+      }
+    }
+  }, [uniforms])
 
   const applyTempForce = React.useCallback(
     (delta: [number, number]) => {
