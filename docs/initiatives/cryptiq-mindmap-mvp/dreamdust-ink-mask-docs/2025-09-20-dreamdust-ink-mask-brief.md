@@ -8,7 +8,7 @@
 
 **NOTE:** This is, by far, the _most_ important thing; I **do not** care about anything but the beauty of the end experience.
 
-- Cinematic countdown → prompt → on your first paint, a misty point cloud eases into the image over 1–3 seconds and then holds as a calm, “breathy” silhouette with soft falloff.
+- On your first paint (I think **no** overlay/countdown), a misty point cloud eases into the image over 1–3 seconds and then holds as a calm, “breathy” silhouette with soft falloff.
 - The look is ethereal: wispy tendrils, feathered edges, luminous dots (not harsh sprites), steady brightness, and only subtle breathing—no jitter or visual noise.
 - Feel is immediate: taps/strokes respond within 1–2 frames and decay gracefully; everything reads like “ink in air,” never laggy or blotchy.
 - Short tap/brief hold: gentle, local buoyant curls and ripples with a light size/tint nudge, settling back to the held shape in ~1–2 seconds.

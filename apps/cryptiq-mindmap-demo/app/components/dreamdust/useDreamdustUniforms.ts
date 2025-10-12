@@ -47,6 +47,7 @@ export type DreamdustUniformValueMap = {
   uTintGain: number
   uInkTintBoost: number
   uVertexInkOk: number
+  uSpriteSharpness: number
 }
 
 export type DreamdustUniforms = {
@@ -100,10 +101,12 @@ const DEFAULT_SIM_CURVE: DreamdustSimCurveUniforms = Object.freeze({
   solidAlpha: 0.6,
 })
 
+const DEFAULT_SPRITE_SHARPNESS = 4
+
 export const DEFAULT_POINT_SIZING = Object.freeze({
-  baseSize: 1.8,
-  minSize: 0.35,
-  maxSize: 2.6,
+  baseSize: 6.0,   // Restore density with larger particles
+  minSize: 1.2,    // Scaled proportionally
+  maxSize: 9.0,    // Scaled proportionally
   sizeGain: 1,
   offsetGain: 1,
 }) as const
@@ -803,6 +806,11 @@ export function useDreamdustUniforms(): UseDreamdustUniformsResult {
       uTintGain: { value: defaults.uTintGain },
       uInkTintBoost: { value: inkTintBoostValue },
       uVertexInkOk: { value: defaults.uVertexInkOk },
+      uSpriteSharpness: {
+        value: Number.isFinite(defaults.uSpriteSharpness)
+          ? (defaults.uSpriteSharpness as number)
+          : DEFAULT_SPRITE_SHARPNESS,
+      },
     }
   }
 

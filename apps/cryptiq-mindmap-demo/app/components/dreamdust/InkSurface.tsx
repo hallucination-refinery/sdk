@@ -37,6 +37,7 @@ export type InkSurfaceProps = {
     distancePx: number
   }) => void
   onTexture?: (texture: AnyDataTexture) => void
+  onForceSample?: (sample: { delta: [number, number]; uv: [number, number] }) => void
   mirrorLR?: boolean
   mirrorUD?: boolean
 }
@@ -64,6 +65,7 @@ export function InkSurface({
   onStart,
   onEnd,
   onTexture,
+  onForceSample,
   mirrorLR = false,
   mirrorUD = false,
 }: InkSurfaceProps) {
@@ -80,6 +82,7 @@ export function InkSurface({
   const onStartRef = React.useRef(onStart)
   const onEndRef = React.useRef(onEnd)
   const onTextureRef = React.useRef(onTexture)
+  const onForceSampleRef = React.useRef(onForceSample)
   const mirrorRef = React.useRef({ lr: !!mirrorLR, ud: !!mirrorUD })
   const guardLoggedRef = React.useRef(true)
   const guardWatchdogRef = React.useRef<number | null>(null)
@@ -96,6 +99,10 @@ export function InkSurface({
   React.useEffect(() => {
     onTextureRef.current = onTexture
   }, [onTexture])
+
+  React.useEffect(() => {
+    onForceSampleRef.current = onForceSample
+  }, [onForceSample])
 
   React.useEffect(() => {
     mirrorRef.current = { lr: !!mirrorLR, ud: !!mirrorUD }
@@ -269,7 +276,9 @@ export function InkSurface({
       const rawU = width > 0 ? offsetX / width : Number.NaN
       const rawV = height > 0 ? offsetY / height : Number.NaN
       const u = clamp01(rawU)
-      const v = clamp01(rawV)
+      const vRaw = clamp01(rawV)
+      const mirror = mirrorRef.current
+      const v = mirror.ud ? 1 - vRaw : vRaw
       logInkGuard(rawU, rawV, u, v)
       if (width <= 0 || height <= 0) {
         return
@@ -279,6 +288,12 @@ export function InkSurface({
       const lastClient = lastClientRef.current
       if (lastClient) {
         distanceRef.current += Math.hypot(client.x - lastClient.x, client.y - lastClient.y) || 0
+        const cb = onForceSampleRef.current
+        if (typeof cb === 'function' && width > 0 && height > 0) {
+          const dxNorm = (client.x - lastClient.x) / width
+          const dyNorm = (client.y - lastClient.y) / height
+          cb({ delta: [dxNorm, dyNorm], uv: [u, v] })
+        }
       }
       lastClientRef.current = { x: client.x, y: client.y }
       const lastCanvas = lastCanvasRef.current

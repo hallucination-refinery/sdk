@@ -7,8 +7,10 @@ import { createInkTelemetryCollector, createVertexTelemetryCollector } from './t
 import {
   DD_CURL3,
   DD_FBM3,
+  DREAMDUST_ACES_TONEMAP_CHUNK,
   DREAMDUST_COLOR_CHUNK,
   DREAMDUST_DEPTH_FADE_CHUNK,
+  DREAMDUST_GAUSSIAN_SPRITE_CHUNK,
   DREAMDUST_INK_SAMPLE_CHUNK,
   DREAMDUST_NOISE_CHUNK,
   DREAMDUST_SOFT_SPRITE_CHUNK,
@@ -23,6 +25,7 @@ type DreamdustMaterialOptions = {
   debugSimProbe?: boolean
   debugForceAlpha?: boolean
   debugVertexLog?: boolean
+  aestheticPreset?: 'current' | 'A' | 'B1' | 'B2' | 'C' | 'D1' | 'D2'
 }
 
 type DreamdustMaterialOptionsInput = {
@@ -32,6 +35,7 @@ type DreamdustMaterialOptionsInput = {
   debugSimProbe?: boolean
   debugForceAlpha?: boolean
   debugVertexLog?: boolean
+  aestheticPreset?: 'current' | 'A' | 'B1' | 'B2' | 'C' | 'D1' | 'D2'
 }
 
 type DreamdustMaterialResolvedOptions = {
@@ -41,6 +45,7 @@ type DreamdustMaterialResolvedOptions = {
   debugSimProbe: boolean
   debugForceAlpha: boolean
   debugVertexLog: boolean
+  aestheticPreset: 'current' | 'A' | 'B1' | 'B2' | 'C' | 'D1' | 'D2'
 }
 
 const DEFAULT_UNIFORM_VALUES = {
@@ -49,14 +54,14 @@ const DEFAULT_UNIFORM_VALUES = {
   uBreath: 0.5,
   uNoiseScale: 1,
   uNoiseSpeed: 1,
-  uNoiseThreshold: 0.50,
+  uNoiseThreshold: 0.25,
   uDriftAmp: 0.28,
   uCurlFreq: 1,
   uCurlAmp: 0.35,
-  uDriftSpeed: 0.28,
+  uDriftSpeed: 0.05,
   uTapGain: 0.5,
   uTapTau: 2,
-  uPointBaseSize: 2.2,
+  uPointBaseSize: 3.0,
   uFocal: 1,
   uMinSize: 1,
   uMaxSize: 1,
@@ -67,8 +72,8 @@ const DEFAULT_UNIFORM_VALUES = {
   uDepthMin: 0,
   uDepthMax: 1,
   uGamma: 1.10,
-  uRimGamma: 8.0,
-  uDepthBias: 1.1,
+  uRimGamma: 10.0,
+  uDepthBias: 0.4,
   uDepthNormScale: 0.003,
   uHasCapture: 0,
   uZNearNdc: -0.85,
@@ -86,9 +91,15 @@ const DEFAULT_UNIFORM_VALUES = {
   uInkTintBoost: 1,
   uVertexInkOk: 0,
   uViewport: [1, 1] as [number, number],
+  uTempForce: [0, 0] as [number, number],
+  uTempIntensity: 0,
+  uTempCenter: [0.5, 0.5] as [number, number],
+  uTempRadius: 0.16,
+  uTempFalloffOn: 0,
   uSimPositionTex: null,
   uSimColorTex: null,
   uAlphaFloor: 0.00,
+  uSpriteSharpness: 2.5,
 } as const
 
 type DefaultUniformKey = keyof typeof DEFAULT_UNIFORM_VALUES
@@ -206,6 +217,11 @@ uniform float uVertexInkOk;
 uniform float uCascade;
 uniform float uCascadeSizeBoost;
 uniform float uVaporGain;
+uniform vec2 uTempForce;
+uniform float uTempIntensity;
+uniform vec2 uTempCenter;
+uniform float uTempRadius;
+uniform float uTempFalloffOn;
 
 #if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
 uniform float uDebugTelemetryMode;
@@ -376,6 +392,21 @@ void main() {
   vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0);
   vec3 viewPos = viewPos4.xyz;
   float viewDist = max(1e-3, -viewPos.z);
+
+  if (uTempIntensity > 1e-4) {
+    vec2 tempForce = uTempForce * uTempIntensity;
+    if (uTempFalloffOn > 0.5) {
+      float influence = smoothstep(uTempRadius, 0.0, distance(vInkUv, uTempCenter));
+      tempForce *= influence;
+      float pxScale = viewDist / max(uFocal, 1e-3);
+      tempForce *= pxScale;
+    }
+    revealPos.xy += tempForce;
+    viewPos4 = viewMatrix * vec4(revealPos, 1.0);
+    viewPos = viewPos4.xyz;
+    viewDist = max(1e-3, -viewPos.z);
+  }
+
   float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
   float breathScale = 1.0 + breathPhase * 0.06;
   float cascadeSize = mix(0.0, max(uCascadeSizeBoost, 0.0), cascadeMix);
@@ -482,6 +513,7 @@ uniform float uRimGamma;
 uniform float uAlphaFloor;
 uniform float uCascade;
 uniform vec3 uCascadeColor;
+uniform float uSpriteSharpness;
 
 uniform sampler2D uInkTex;
 
@@ -508,6 +540,8 @@ varying float vDebugSampleSlot;
 
 ${DREAMDUST_NOISE_CHUNK}
 ${DREAMDUST_SOFT_SPRITE_CHUNK}
+${DREAMDUST_GAUSSIAN_SPRITE_CHUNK}
+${DREAMDUST_ACES_TONEMAP_CHUNK}
 ${DREAMDUST_COLOR_CHUNK}
 ${DREAMDUST_INK_SAMPLE_CHUNK}
 ${DREAMDUST_DEPTH_FADE_CHUNK}
@@ -527,6 +561,9 @@ void main() {
 #endif
   // Softer disc sprite for vapor look
   float sprite = dreamdustSoftSprite(gl_PointCoord);
+#ifdef USE_GAUSSIAN
+  sprite = dreamdustGaussianSprite(gl_PointCoord, max(0.1, uSpriteSharpness));
+#endif
   float spriteAlpha = pow(max(sprite, 0.0), 0.85);
   float alphaFloor = clamp(uAlphaFloor, 0.0, 1.0);
   float spriteMix = mix(alphaFloor, 1.0, spriteAlpha);
@@ -538,7 +575,13 @@ void main() {
     revealStrength = 1.0;
   }
   float w = 0.08;
+  if (uReveal >= 0.999) {
+    w = 0.14;
+  }
   float baseReveal = smoothstep(threshold - w, threshold + w, revealNoise);
+  if (uReveal >= 0.999) {
+    baseReveal = 1.0;
+  }
   float revealAlpha = max(baseReveal, revealStrength * 0.40);
 
   float alpha = spriteMix * revealAlpha * revealStrength;
@@ -573,6 +616,15 @@ void main() {
     color = mix(baseRgb, uCascadeColor, cascadeStrength);
   }
 
+  float depthAmount = clamp(depthNorm * 0.25, 0.0, 1.0);
+  float depthLuma = dot(color, vec3(0.299, 0.587, 0.114));
+  vec3 depthGray = vec3(depthLuma);
+  color = mix(color, depthGray, depthAmount);
+  color *= (1.0 - 0.25 * depthAmount);
+
+  // Boost color saturation to match reference vibrance
+  color = color * 1.6;
+
   float rim = dreamdustRimStrength(sprite);
   color = dreamdustApplyRimLight(color, rim);
   alpha = dreamdustApplyRimAlpha(alpha, rim);
@@ -595,6 +647,9 @@ void main() {
     alpha = -abs(alpha);
   }
 #endif
+
+  // Apply ACES tonemapping to prevent white blowout with additive blending
+  color = dreamdustACESFilmic(color);
 
   color = dreamdustApplyGamma(color, uGamma);
 
@@ -625,7 +680,10 @@ export function makeDreamdustMaterial(
     debugSimProbe: opts.debugSimProbe ?? false,
     debugForceAlpha: opts.debugForceAlpha ?? false,
     debugVertexLog: opts.debugVertexLog ?? false,
+    aestheticPreset: opts.aestheticPreset ?? 'current',
   }
+
+  const preset = resolved.aestheticPreset
 
   const defines: Record<string, unknown> = {}
   if (resolved.unproject) {
@@ -647,6 +705,10 @@ export function makeDreamdustMaterial(
   if (resolved.debugVertexLog) {
     defines.DEBUG_VERTEX_LOG = 1
   }
+  const useGaussian = preset === 'C' || preset === 'D1' || preset === 'D2'
+  if (useGaussian) {
+    defines.USE_GAUSSIAN = 1
+  }
   syncLegacyVertexInkDefine(defines)
 
   const params: any = {
@@ -665,6 +727,39 @@ export function makeDreamdustMaterial(
   ;(material as any).uniforms = uniforms
   ;(material as any).defines = (material as any).defines ?? {}
   syncLegacyVertexInkDefine((material as any).defines)
+  if (useGaussian) {
+    ;(material as any).defines.USE_GAUSSIAN = 1
+  } else {
+    delete (material as any).defines.USE_GAUSSIAN
+  }
+  const useAdditive =
+    preset === 'B1' || preset === 'B2' || preset === 'D1' || preset === 'D2'
+  if (useAdditive) {
+    material.blending = (THREE as any).AdditiveBlending
+    const occluding = preset === 'B1' || preset === 'D1'
+    material.depthTest = occluding
+  } else {
+    material.blending = (THREE as any).NormalBlending
+    material.depthTest = true
+  }
+  material.needsUpdate = true
+
+  // CRITICAL FIX: Force shader recompile when USE_GAUSSIAN define changes
+  // THREE.js program cache doesn't key by defines alone, so we add explicit cache key
+  material.customProgramCacheKey = function customProgramCacheKey() {
+    return material.defines?.USE_GAUSSIAN ? 'dreamdust-gauss-1' : 'dreamdust-gauss-0'
+  }
+
+  // DEBUG: Log material state per preset
+  console.info('[preset]', {
+    preset,
+    blending: material.blending,
+    blendingName: material.blending === 2 ? 'AdditiveBlending' : material.blending === 1 ? 'NormalBlending' : `Unknown(${material.blending})`,
+    depthTest: material.depthTest,
+    hasGaussian: !!material.defines?.USE_GAUSSIAN,
+    cacheKey: material.customProgramCacheKey(),
+  })
+
   const inkTelemetry = createInkTelemetryCollector()
   const vertexTelemetry = resolved.debugVertexLog ? createVertexTelemetryCollector() : null
   const originalOnAfterRender = material.onAfterRender?.bind(material)
@@ -757,6 +852,12 @@ export function makeDreamdustMaterial(
       shader.defines.DEBUG_VERTEX_LOG = 1
     } else if (shader.defines) {
       delete shader.defines.DEBUG_VERTEX_LOG
+    }
+    if (useGaussian) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.USE_GAUSSIAN = 1
+    } else if (shader.defines) {
+      delete shader.defines.USE_GAUSSIAN
     }
     if (originalOnBeforeCompile) {
       originalOnBeforeCompile(shader, renderer)

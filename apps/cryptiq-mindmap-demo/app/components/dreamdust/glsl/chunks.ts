@@ -150,6 +150,25 @@ float dreamdustSoftSpriteRim(vec2 uv, float rimGamma) {
 }
 `
 
+export const DREAMDUST_GAUSSIAN_SPRITE_CHUNK = /* glsl */ `
+float dreamdustGaussianSprite(vec2 uv, float sharpness) {
+  vec2 c = uv * 2.0 - 1.0;
+  float r2 = dot(c, c);
+  return exp(-r2 * sharpness);
+}
+`
+
+export const DREAMDUST_ACES_TONEMAP_CHUNK = /* glsl */ `
+vec3 dreamdustACESFilmic(vec3 x) {
+  float a = 2.51;
+  float b = 0.03;
+  float c = 2.43;
+  float d = 0.59;
+  float e = 0.14;
+  return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+`
+
 export const DREAMDUST_COLOR_CHUNK = /* glsl */ `
 vec3 dreamdustApplyInkTint(vec3 baseColor, vec3 tintColor, float amount) {
   float mixAmt = clamp(amount, 0.0, 1.0);
@@ -169,7 +188,7 @@ float dreamdustRimStrength(float sprite) {
 }
 
 vec3 dreamdustApplyRimLight(vec3 color, float rimStrength) {
-  return mix(color, vec3(1.0), rimStrength * 0.05);
+  return mix(color, vec3(1.0), rimStrength * 0.01);
 }
 
 float dreamdustApplyRimAlpha(float alpha, float rimStrength) {

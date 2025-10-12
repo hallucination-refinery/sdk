@@ -1,6 +1,10 @@
 'use client'
 
-import type { InkTelemetrySnapshot, SimTelemetrySnapshot } from '../debug/useDebugControls'
+import type {
+  DreamdustAestheticPreset,
+  InkTelemetrySnapshot,
+  SimTelemetrySnapshot,
+} from '../debug/useDebugControls'
 
 type Severity = 'ok' | 'warn' | 'error'
 
@@ -9,6 +13,8 @@ type Props = {
   simSnapshot: SimTelemetrySnapshot | null
   inkEnabled: boolean
   inkSnapshot: InkTelemetrySnapshot | null
+  aestheticPreset: DreamdustAestheticPreset
+  onPresetChange: (preset: DreamdustAestheticPreset) => void
 }
 
 const COLORS: Record<Severity, string> = { ok: '#2fdf84', warn: '#fbbf24', error: '#ff6b6b' }
@@ -18,8 +24,15 @@ const simSeverity = (snapshot: SimTelemetrySnapshot | null): Severity =>
 const inkSeverity = (snapshot: InkTelemetrySnapshot | null): Severity =>
   !snapshot ? 'warn' : snapshot.reveal <= 0.05 ? 'error' : snapshot.alpha <= 0.1 ? 'warn' : 'ok'
 
-export default function DebugHud({ simEnabled, simSnapshot, inkEnabled, inkSnapshot }: Props) {
-  if (process.env.NODE_ENV === 'production' || (!simEnabled && !inkEnabled)) return null
+export default function DebugHud({
+  simEnabled,
+  simSnapshot,
+  inkEnabled,
+  inkSnapshot,
+  aestheticPreset,
+  onPresetChange,
+}: Props) {
+  if (process.env.NODE_ENV === 'production') return null
   return (
     <div
       style={{
@@ -30,6 +43,31 @@ export default function DebugHud({ simEnabled, simSnapshot, inkEnabled, inkSnaps
         rowGap: 10,
       }}
     >
+      <section>
+        <header style={{ fontWeight: 600, marginBottom: 4 }}>Dreamdust preset</header>
+        <label style={{ display: 'grid', rowGap: 4, fontSize: 11 }}>
+          <span style={{ opacity: 0.8 }}>Test preset:</span>
+          <select
+            value={aestheticPreset}
+            onChange={(event) => onPresetChange(event.target.value as DreamdustAestheticPreset)}
+            style={{
+              padding: '4px 6px',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.3)',
+              background: 'rgba(0,0,0,0.35)',
+              color: '#fff',
+            }}
+          >
+            <option value="current">Current (Iteration 04)</option>
+            <option value="A">A: Alpha + Disc</option>
+            <option value="B1">B1: Additive + Disc (depth)</option>
+            <option value="B2">B2: Additive + Disc (no depth)</option>
+            <option value="C">C: Alpha + Gaussian</option>
+            <option value="D1">D1: Additive + Gaussian (depth)</option>
+            <option value="D2">D2: Additive + Gaussian (no depth)</option>
+          </select>
+        </label>
+      </section>
       {simEnabled && (
         <section>
           <header style={{ fontWeight: 600, marginBottom: 4, color: COLORS[simSeverity(simSnapshot)] }}>
