@@ -14,6 +14,11 @@ Falloff trial result (2025-10-11)
 - Next run checklist (no code yet):
   - Confirm reveal ended, then log `dumpUniforms()` while starting a stroke; capture 3 lines (start/mid/end).
   - If `uTempFalloffOn` is still 0 with `&falloff=1`, set it via console as above to confirm behavior.
+
+Blank canvas triage (2025-10-11)
+- Symptom: no point cloud visible; console shows vertex shader compile error `viewPos : undeclared identifier` at the localized px-scaling block.
+- Why: `pxScale` calculation referenced `viewPos` before it’s defined in the shader; any compile error invalidates the program → nothing renders.
+- Verify: open Console, look for `THREE.WebGLProgram: Shader Error` and the line number; if present, skip localized mode for this run and fall back to baseline URL without `&falloff=1`.
 # Runbooks — One‑Screen Tests
 
 M1 — Force‑Field Prototype

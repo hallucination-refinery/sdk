@@ -1,6 +1,7 @@
 Adaptation notes (2025-10-11)
 - Our desired state differs (no overlays, camera fixed, particles-as-ink), but Codrops’ localized trail via a texture uniform is relevant. If we adopt a `uTouch` canvas, the falloff gating becomes texture-driven and independent of per-frame uniform toggles.
 - Key lift: set the localized influence texture (or uniform flag) only after material is ready (post-reveal) to avoid race conditions; then sample in vertex and apply pixel scaling for screen-space displacement.
+ - Shader ordering: ensure any view-dependent scale (e.g., `viewDist / uFocal`) is computed after view-space variables (`viewPos` / `viewPos4`) are defined to avoid compile errors.
 How the Codrops “Interactive Particles with Three.js” interaction works
 
 Interactive particles are rendered with GPU instancing and are displaced by a cursor-driven texture. CPU does not touch particles per frame. The shader does the work.  ￼
