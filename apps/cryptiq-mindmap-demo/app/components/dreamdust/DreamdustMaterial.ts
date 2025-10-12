@@ -96,7 +96,6 @@ const DEFAULT_UNIFORM_VALUES = {
   uTempCenter: [0.5, 0.5] as [number, number],
   uTempRadius: 0.12,
   uTempFalloffOn: 0,
-  // Reverted: uTempCenter/uTempRadius removed for global offset Phase A
   uSimPositionTex: null,
   uSimColorTex: null,
   uAlphaFloor: 0.00,
@@ -340,6 +339,9 @@ void main() {
     if (uTempFalloffOn > 0.5) {
       float influence = smoothstep(uTempRadius, 0.0, distance(vInkUv, uTempCenter));
       tempForce *= influence;
+      float viewDist = length(viewPos);
+      float pxScale = viewDist / max(uFocal, 1e-3);
+      tempForce *= pxScale;
     }
     revealPos.xy += tempForce;
   }

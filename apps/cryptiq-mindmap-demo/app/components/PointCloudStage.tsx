@@ -1359,14 +1359,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     setUniform('uInkIntensity', 0.75)
   }, [setUniform])
 
+  const falloffRequestedRef = React.useRef(false)
   // Dev flag: enable temp falloff from URL (?falloff=1)
   React.useEffect(() => {
     if (typeof window === 'undefined') return
     try {
       const params = new URLSearchParams(window.location.search)
-      const falloff = params.get('falloff') === '1' ? 1 : 0
-      setUniform('uTempFalloffOn', falloff)
-      if (falloff === 1) {
+      const falloffRequested = params.get('falloff') === '1'
+      falloffRequestedRef.current = falloffRequested
+      if (falloffRequested) {
         setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
         setUniform('uTempRadius', 0.12 as unknown as any)
       }
@@ -1375,10 +1376,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
   }, [setUniform])
 
+  const applyFalloffFlagIfRequested = React.useCallback(() => {
+    if (!falloffRequestedRef.current) return
+    try {
+      const uniformsAny = uniforms as any
+      const flag = uniformsAny?.uTempFalloffOn?.value ?? 0
+      if (flag < 0.5) {
+        setUniform('uTempFalloffOn', 1)
+      }
+      setUniform('uTempCenter', uniformsAny?.uTempCenter?.value ?? [0.5, 0.5])
+      setUniform('uTempRadius', uniformsAny?.uTempRadius?.value ?? 0.12)
+    } catch {
+      /* noop */
+    }
+  }, [setUniform, uniforms])
+
   React.useEffect(() => {
     setUniform('uTempForce', tempForceRef.current)
     setUniform('uTempIntensity', 0)
-  }, [setUniform])
+    applyFalloffFlagIfRequested()
+  }, [setUniform, applyFalloffFlagIfRequested])
 
   // Debug: expose a lightweight uniform dump helper (window.dreamdust.dumpUniforms())
   React.useEffect(() => {
@@ -1399,7 +1416,23 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         /* noop */
       }
     }
-  }, [uniforms])
+    w.dreamdust.ensureFalloff = () => {
+      const u: any = uniforms
+      try {
+        if (u?.uTempFalloffOn?.value < 0.5) {
+          setUniform('uTempFalloffOn', 1)
+        }
+        if (!u?.uTempRadius?.value) {
+          setUniform('uTempRadius', 0.12 as unknown as any)
+        }
+        if (!u?.uTempCenter?.value) {
+          setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
+        }
+      } catch {
+        /* noop */
+      }
+    }
+  }, [setUniform, uniforms])
 
   const applyTempForce = React.useCallback(
     (delta: [number, number]) => {
