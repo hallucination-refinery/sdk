@@ -20,6 +20,10 @@ Run Artifacts — 2025-10-11
  - New failure (2025-10-11): Blank canvas with shader compile error: `THREE.WebGLProgram: Shader Error ... VERTEX ... 'viewPos' : undeclared identifier` at px-scaling block. See full console log in task.
  - New observation (2025-10-12): Scene renders; during long stroke, `uTempIntensity` increases but `uTempFalloffOn: 0` across samples; no local plume; slight global jitter may be perceptible. Full console + uniform logs pasted in task.
 
+Run Artifacts — 2025-10-12
+- Raw dump: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-inactive-smoke-raw.md
+- Summary: Whole-cloud jitter persists; `uTempFalloffOn` stays 0 while drawing; prebaked path active; likely flag latch before material/uniforms exist.
+
 Assets
 - Initial load screenshot: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-09-Test-1-Initial-Load.png
 - Camera framing: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-08-iteration-06-part-A-initial-camera-framing.png

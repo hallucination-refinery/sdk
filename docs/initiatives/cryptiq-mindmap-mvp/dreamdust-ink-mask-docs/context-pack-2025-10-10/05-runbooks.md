@@ -25,6 +25,14 @@ Localized falloff inactive (2025-10-12)
 - Evidence: long-stroke logs show `uTempFalloffOn: 0` throughout, with `uTempIntensity` > 0 during stroke; matches slight global offset path.
 - Likely causes: (1) falloff flag not latching post‑reveal; (2) `uTempCenter` not updated from pointer UV (stuck at default ~[0.5,0.5]); (3) radius too small for the current camera setup.
 - Next checks (no code): capture 3 lines of `dumpUniforms()` mid‑stroke to confirm `uTempFalloffOn` stays 0; note whether any jitter is global vs local.
+
+Verification escape hatch (2025-10-12)
+- While drawing, run:
+  ```js
+  window.dreamdust.ensureFalloff();
+  window.dreamdust.dumpUniforms();
+  ```
+  Expect `uTempFalloffOn: 1` and a visible localized plume. If so, the shader path works and the bug is timing: we latch the flag before uniforms exist in the prebaked path.
 # Runbooks — One‑Screen Tests
 
 M1 — Force‑Field Prototype
@@ -38,6 +46,7 @@ M1 — Force‑Field Prototype
   - Screenshots: before tap, during stroke (mid-motion), after decay.
 - Optional: capture `uTempCenter` / `uTempRadius` via DevTools to confirm the falloff footprint. If `uTouch` is adopted later, capture that texture instead.
 - Current status (2025-10-11): dragging with Phase A scaffolding pushes the entire cloud; no local falloff yet. Console log (2025-10-11) shows repeated `[PC] draw start/end` entries with long stroke distances and no localized decay. Screenshot or screen recording recommended before modifying uniforms.
+  - Update (2025-10-12): `uTempIntensity` rises during strokes but `uTempFalloffOn` remains 0 with `&falloff=1`. Whole‑cloud jitter persists; prebaked path is active (no `onMaterialValid` hook), so initial flag set likely ran too early.
 - Follow-up (before Phase B): add temporary uniforms for pointer UV (`uTempCenter`) + radius (`uTempRadius`), apply smoothstep falloff in the vertex shader, then re-run this test to confirm only the stroke neighborhood (≈10–20% of the cloud) moves.
 - Phase B add-on: repeat after swapping to `uForceVector`/`uTouch`; log the new uniform values and confirm the temporary `uTempForce` path is removed (note commit/tag).
 - Note: during Phase A scaffolding, `uTempForce` may be used instead of final uniforms; record that value in console before removing scaffolding.

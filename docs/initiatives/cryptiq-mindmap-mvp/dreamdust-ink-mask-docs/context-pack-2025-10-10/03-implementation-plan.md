@@ -20,6 +20,7 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
   - Pixel scaling (pre‑B): When enabling falloff, multiply the temp force by `pxScale = viewDist / uFocal` to ensure screen‑space displacement remains perceptible at Scene‑03 distances.
   - Shader ordering guard (2025-10-11): Compute `pxScale` only after `viewPos`/`viewPos4` is defined in the vertex shader. Recommended placement: after `vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0); vec3 viewPos = viewPos4.xyz;` and `viewDist` derivation; then apply localized offset.
   - Falloff activation (2025-10-12): Ensure `uTempFalloffOn` is set after material attach and reveal end; re-check once on first uniform init to avoid missed latch. If still 0 in prod, allow a one-shot `window.dreamdust.ensureFalloff()` as a verification escape hatch.
+  - Prebaked readiness guard (2025-10-12): In the prebaked path (no `onMaterialValid`), add a short RAF loop to wait for `points.material.program.glProgram` to exist, then call the falloff latch once. Log a guard message and capture uniforms (`dumpUniforms()`).
   - Pointer UV feed (2025-10-12): Update `uTempCenter` per pointer sample (screen-space UV), not a static default; guard/mirror UV as done in `InkSurface` logs.
   - Radius visibility (2025-10-12): If localized feel is subtle at Scene‑03, bump `uTempRadius` slightly (e.g., 0.14–0.18) for validation; then tune down.
 - Pass/Fail

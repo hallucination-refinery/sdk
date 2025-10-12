@@ -18,7 +18,7 @@
 **Severity:** Blocker
 **Files:** `DreamdustMaterial.ts` (pxScale after viewPos is fixed), `PointCloudStage.tsx` (flag timing after material/reveal), `InkSurface.tsx` (pointer UV → `uTempCenter`).
 **Why:** Logs show `uTempIntensity > 0` during stroke but `uTempFalloffOn: 0`. Result: either no motion or faint global jitter; localized branch never runs.
-**Fix:** Ensure `uTempFalloffOn` latches post‑reveal; update `uTempCenter` from pointer UV; consider increasing `uTempRadius` slightly for Scene‑03; pxScale already computed after view space.
+**Fix:** Ensure `uTempFalloffOn` latches post‑reveal and post‑material attach (prebaked path has no `onMaterialValid`, so add a program‑ready RAF check); update `uTempCenter` from pointer UV; consider increasing `uTempRadius` slightly for Scene‑03; pxScale already computed after view space.
 
 ### MAJOR: Palette cascade lacks single source of truth
 **Severity:** Major
