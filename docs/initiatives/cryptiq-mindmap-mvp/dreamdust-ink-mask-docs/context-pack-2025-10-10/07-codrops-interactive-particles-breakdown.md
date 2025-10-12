@@ -3,7 +3,8 @@ Adaptation notes (2025-10-11)
 - Key lift: set the localized influence texture (or uniform flag) only after material is ready (post-reveal) to avoid race conditions; then sample in vertex and apply pixel scaling for screen-space displacement.
  - Shader ordering: ensure any view-dependent scale (e.g., `viewDist / uFocal`) is computed after view-space variables (`viewPos` / `viewPos4`) are defined to avoid compile errors.
 - Flag latching: in production, post‑material/reveal timing is critical. If adopting a `uTouch` texture approach, the localized influence comes from the texture and avoids the risk of a forgotten boolean; still, initialize the texture only after material binding to avoid null uniforms.
- - Race avoidance (2025-10-12): Our prebaked path attaches the material directly to `<points>` without an `onMaterialValid` hook; a one-shot falloff write before attach is a no-op. Add a program-ready guard (RAF) or migrate to texture‑driven gating (`uTouch`) to eliminate boolean timing risk.
+- Race avoidance (2025-10-12): Our prebaked path attaches the material directly to `<points>` without an `onMaterialValid` hook; a one-shot falloff write before attach is a no-op. Add a program-ready guard (RAF) or migrate to texture‑driven gating (`uTouch`) to eliminate boolean timing risk.
+ - Screen-UV ordering (same session, 2025-10-12): When localizing in the vertex shader, compute a temporary screen-space UV from `clipPos` before sampling influence; don’t use `vInkUv` before it’s assigned (it’s a varying set later for the fragment).
 How the Codrops “Interactive Particles with Three.js” interaction works
 
 Interactive particles are rendered with GPU instancing and are displaced by a cursor-driven texture. CPU does not touch particles per frame. The shader does the work.  ￼

@@ -23,6 +23,8 @@ Run Artifacts — 2025-10-11
 Run Artifacts — 2025-10-12
 - Raw dump: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-inactive-smoke-raw.md
 - Summary: Whole-cloud jitter persists; `uTempFalloffOn` stays 0 while drawing; prebaked path active; likely flag latch before material/uniforms exist.
+ - Raw dump (same session): docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-interval-smoke-raw.md
+ - Summary: Falloff forced ON via interval; `uTempIntensity` rises, `uTempFalloffOn: 1`, yet no motion at all. Points to shader order bug: influence uses `vInkUv` before it’s assigned, yielding ~0 influence and zero displacement.
 
 Assets
 - Initial load screenshot: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-09-Test-1-Initial-Load.png

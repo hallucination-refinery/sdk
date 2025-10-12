@@ -20,6 +20,13 @@
 **Why:** Logs show `uTempIntensity > 0` during stroke but `uTempFalloffOn: 0`. Result: either no motion or faint global jitter; localized branch never runs.
 **Fix:** Ensure `uTempFalloffOn` latches post‑reveal and post‑material attach (prebaked path has no `onMaterialValid`, so add a program‑ready RAF check); update `uTempCenter` from pointer UV; consider increasing `uTempRadius` slightly for Scene‑03; pxScale already computed after view space.
 
+### BLOCKER: Falloff ON yields zero motion (same session)
+**Severity:** Blocker
+**Files:** `DreamdustMaterial.ts` (vertex shader main)
+**Why:** With `uTempFalloffOn: 1` and rising `uTempIntensity`, no displacement occurred. The falloff influence uses `vInkUv` before it is assigned; influence ≈ 0 → `tempForce` ≈ 0.
+**Fix:** Compute a local screen UV immediately before influence:
+`vec4 clip = projectionMatrix * viewPos4; vec2 ndc = clip.xy / max(1e-6, clip.w); vec2 ssUv = ndc * 0.5 + 0.5;` and use `distance(ssUv, uTempCenter)`; keep assigning `vInkUv` later for fragment needs.
+
 ### MAJOR: Palette cascade lacks single source of truth
 **Severity:** Major
 **Files:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts` (or shared util)

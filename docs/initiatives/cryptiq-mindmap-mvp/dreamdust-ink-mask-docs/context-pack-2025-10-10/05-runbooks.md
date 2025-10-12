@@ -33,6 +33,11 @@ Verification escape hatch (2025-10-12)
   window.dreamdust.dumpUniforms();
   ```
   Expect `uTempFalloffOn: 1` and a visible localized plume. If so, the shader path works and the bug is timing: we latch the flag before uniforms exist in the prebaked path.
+
+Same-session forced-falloff result (2025-10-12)
+- Interval `ensureFalloff()` set `uTempFalloffOn: 1` reliably; `uTempIntensity` rose during strokes; yet there was no motion at all.
+- Interpretation: with falloff enabled, the vertex path multiplies by an influence computed from `vInkUv` before `vInkUv` is set, making influence ~0 → zero displacement.
+- Next edit (for plan): compute a local `ssUv` from `clipPos` before influence, and use `distance(ssUv, uTempCenter)`.
 # Runbooks — One‑Screen Tests
 
 M1 — Force‑Field Prototype
@@ -44,7 +49,8 @@ M1 — Force‑Field Prototype
 - Evidence to capture:
   - Console: `[PC] draw start/end`, `[PC] ink tex updated`, frame percentile log after interaction.
   - Screenshots: before tap, during stroke (mid-motion), after decay.
-- Optional: capture `uTempCenter` / `uTempRadius` via DevTools to confirm the falloff footprint. If `uTouch` is adopted later, capture that texture instead.
+  - Optional: capture `uTempCenter` / `uTempRadius` via DevTools to confirm the falloff footprint. If `uTouch` is adopted later, capture that texture instead.
+  - Regression clause (same session): If forcing falloff ON yields no motion, validate shader ordering (vInkUv assignment vs influence) before further tuning.
 - Current status (2025-10-11): dragging with Phase A scaffolding pushes the entire cloud; no local falloff yet. Console log (2025-10-11) shows repeated `[PC] draw start/end` entries with long stroke distances and no localized decay. Screenshot or screen recording recommended before modifying uniforms.
   - Update (2025-10-12): `uTempIntensity` rises during strokes but `uTempFalloffOn` remains 0 with `&falloff=1`. Whole‑cloud jitter persists; prebaked path is active (no `onMaterialValid` hook), so initial flag set likely ran too early.
 - Follow-up (before Phase B): add temporary uniforms for pointer UV (`uTempCenter`) + radius (`uTempRadius`), apply smoothstep falloff in the vertex shader, then re-run this test to confirm only the stroke neighborhood (≈10–20% of the cloud) moves.

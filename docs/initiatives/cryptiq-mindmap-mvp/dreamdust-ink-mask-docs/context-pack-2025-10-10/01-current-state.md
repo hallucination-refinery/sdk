@@ -11,6 +11,7 @@ Gaps
 - Fragment vs vertex sampling mismatch previously obscured results; we now force screen‑space sampling for scene‑03, but motion still needs to be implemented.
 - Console noise (dev‑tool warnings, HMR churn) can distract from key signals.
 - Localized falloff remains inactive in prod: during long strokes `uTempIntensity > 0` but `uTempFalloffOn` stays 0 (see raw dump). Result is whole‑cloud jitter instead of a local plume. Prebaked path is in use, so the one‑shot falloff latch likely ran before material/uniforms were attached.
+- New (same session, 2025‑10‑12): Forcing falloff ON via interval (`ensureFalloff()`) eliminated global jitter but produced no motion at all, despite `uTempIntensity` rising. This strongly indicates a shader order bug: the falloff influence uses `vInkUv` before `vInkUv` is assigned, making influence ~0.
 
 Relevant Files
 - InkSurface pipeline: apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx
@@ -18,3 +19,4 @@ Relevant Files
 - Stage orchestration: apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
 - Mirror audit: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-10-ink-mirroring-pipeline-audit.md
 - Raw smoke dump (2025‑10‑12): docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-inactive-smoke-raw.md
+ - Raw smoke dump (same session, forced falloff): docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-interval-smoke-raw.md

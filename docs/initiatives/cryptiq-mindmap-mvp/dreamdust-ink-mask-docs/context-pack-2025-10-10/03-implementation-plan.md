@@ -23,9 +23,13 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
   - Prebaked readiness guard (2025-10-12): In the prebaked path (no `onMaterialValid`), add a short RAF loop to wait for `points.material.program.glProgram` to exist, then call the falloff latch once. Log a guard message and capture uniforms (`dumpUniforms()`).
   - Pointer UV feed (2025-10-12): Update `uTempCenter` per pointer sample (screen-space UV), not a static default; guard/mirror UV as done in `InkSurface` logs.
   - Radius visibility (2025-10-12): If localized feel is subtle at Scene‑03, bump `uTempRadius` slightly (e.g., 0.14–0.18) for validation; then tune down.
+  - Shader ordering (same session, 2025-10-12): Compute a local screen-space UV immediately before the falloff calculation and use it for influence:
+    - `vec4 clip = projectionMatrix * viewPos4; vec2 ndc = clip.xy / max(1e-6, clip.w); vec2 ssUv = ndc * 0.5 + 0.5;`
+    - Replace `distance(vInkUv, uTempCenter)` with `distance(ssUv, uTempCenter)` in the vertex path. Keep assigning `vInkUv` later for the fragment.
 - Pass/Fail
   - Pass: tap near viewport center produces ≥5 px displacement within ≤2 frames; 2–3 s stroke advects particles along the path; motion decays smoothly when input stops; camera remains fixed.
   - Fail: no motion, motion lagging/past pointer, or camera interference.
+  - Regression guard (same session): If `uTempFalloffOn: 1` with rising `uTempIntensity` yields zero motion, suspect influence computed before `vInkUv` assignment; apply the shader ordering fix above.
 - Runbook: see 05-runbooks.md#M1
 
 Milestone M2 — Palette‑Mapped Cascade
