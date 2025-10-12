@@ -1385,7 +1385,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         setUniform('uTempFalloffOn', 1)
       }
       setUniform('uTempCenter', uniformsAny?.uTempCenter?.value ?? [0.5, 0.5])
-      setUniform('uTempRadius', uniformsAny?.uTempRadius?.value ?? 0.12)
+      setUniform('uTempRadius', uniformsAny?.uTempRadius?.value ?? 0.16)
     } catch {
       /* noop */
     }
@@ -1435,7 +1435,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [setUniform, uniforms])
 
   const applyTempForce = React.useCallback(
-    (delta: [number, number]) => {
+    (sample: { delta: [number, number]; uv: [number, number] }) => {
+      const { delta, uv } = sample
+      const [u, v] = uv
       const [dx, dy] = delta
       if (!Number.isFinite(dx) || !Number.isFinite(dy)) {
         return
@@ -1453,6 +1455,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       tempIntensityRef.current = Math.max(intensity, tempIntensityRef.current * 0.5)
       setUniform('uTempForce', tempForceRef.current)
       setUniform('uTempIntensity', tempIntensityRef.current)
+      setUniform('uTempCenter', [u, v] as unknown as any)
     },
     [setUniform],
   )

@@ -94,7 +94,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uTempForce: [0, 0] as [number, number],
   uTempIntensity: 0,
   uTempCenter: [0.5, 0.5] as [number, number],
-  uTempRadius: 0.12,
+  uTempRadius: 0.16,
   uTempFalloffOn: 0,
   uSimPositionTex: null,
   uSimColorTex: null,
