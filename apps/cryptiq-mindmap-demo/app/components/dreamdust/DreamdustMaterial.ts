@@ -334,18 +334,6 @@ void main() {
 
   vec3 revealPos = mix(mistPos, basePos, settle);
 
-  if (uTempIntensity > 1e-4) {
-    vec2 tempForce = uTempForce * uTempIntensity;
-    if (uTempFalloffOn > 0.5) {
-      float influence = smoothstep(uTempRadius, 0.0, distance(vInkUv, uTempCenter));
-      tempForce *= influence;
-      float viewDist = length(viewPos);
-      float pxScale = viewDist / max(uFocal, 1e-3);
-      tempForce *= pxScale;
-    }
-    revealPos.xy += tempForce;
-  }
-
   float tapImpulse = 0.0;
   vec2 inkSampleOffset = vec2(0.0);
   float inkSampleSwell = 0.0;
@@ -404,6 +392,21 @@ void main() {
   vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0);
   vec3 viewPos = viewPos4.xyz;
   float viewDist = max(1e-3, -viewPos.z);
+
+  if (uTempIntensity > 1e-4) {
+    vec2 tempForce = uTempForce * uTempIntensity;
+    if (uTempFalloffOn > 0.5) {
+      float influence = smoothstep(uTempRadius, 0.0, distance(vInkUv, uTempCenter));
+      tempForce *= influence;
+      float pxScale = viewDist / max(uFocal, 1e-3);
+      tempForce *= pxScale;
+    }
+    revealPos.xy += tempForce;
+    viewPos4 = viewMatrix * vec4(revealPos, 1.0);
+    viewPos = viewPos4.xyz;
+    viewDist = max(1e-3, -viewPos.z);
+  }
+
   float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
   float breathScale = 1.0 + breathPhase * 0.06;
   float cascadeSize = mix(0.0, max(uCascadeSizeBoost, 0.0), cascadeMix);
