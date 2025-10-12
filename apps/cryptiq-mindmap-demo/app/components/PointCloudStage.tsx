@@ -17,7 +17,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // @ts-ignore
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import { applyPerspectiveCover, applyPerspectiveFit, depthNormScaleFromRadius } from './anim/camera'
-import { getR3FStateOrNull } from './anim/r3fSafe'
+// import { getR3FStateOrNull } from './anim/r3fSafe'
 import { createDreamdustMaterial } from './dreamdust/DreamdustMaterial'
 import { getDebugFlags } from './dreamdust/debug/getDebugFlags'
 import { useDebugControls, type DreamdustAestheticPreset } from './dreamdust/debug/useDebugControls'
@@ -1317,6 +1317,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const vertexInkEnabled = sceneId === 'scene-03' ? false : vertexInkCaps
   const tempForceRef = React.useRef<[number, number]>([0, 0])
   const tempIntensityRef = React.useRef(0)
+  // Dev-only visibility boost for temp force, gated by URL (?inkboost=1 or a number like 1.8)
+  const inkBoostRef = React.useRef(1)
   // Reverted: remove temp center/radius for Phase A global offset
   const debugFlagDefaults = React.useMemo(() => getDebugFlags(), [])
   const { flags: debugFlags, simSnapshot, inkSnapshot, aestheticPreset, setAestheticPreset } =
@@ -1372,6 +1374,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         falloffLatchAppliedRef.current = false
         setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
         setUniform('uTempRadius', 0.16 as unknown as any)
+      }
+      const boostParam = params.get('inkboost')
+      if (boostParam) {
+        const parsed = Number(boostParam)
+        if (Number.isFinite(parsed) && parsed > 0) {
+          inkBoostRef.current = parsed
+        } else {
+          // default boost when present but not numeric
+          inkBoostRef.current = 1.8
+        }
+      } else {
+        inkBoostRef.current = 1
       }
     } catch {
       /* noop */
@@ -1446,8 +1460,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
       const clampForce = (value: number) =>
         Math.max(-TEMP_FORCE_CLAMP, Math.min(TEMP_FORCE_CLAMP, value))
-      const fx = clampForce(dx * TEMP_FORCE_SCALE)
-      const fy = clampForce(-dy * TEMP_FORCE_SCALE)
+      const scale = TEMP_FORCE_SCALE * (inkBoostRef.current || 1)
+      const fx = clampForce(dx * scale)
+      const fy = clampForce(-dy * scale)
       const magnitude = Math.hypot(fx, fy)
       if (magnitude <= 1e-6) {
         return
@@ -1569,6 +1584,42 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       if (raf) cancelAnimationFrame(raf)
     }
   }, [prebakedMaterial, applyFalloffFlagIfRequested])
+
+  // One-shot recheck a couple of frames after first render to eliminate rare timing races
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!falloffRequestedRef.current) return
+    let cancelled = false
+    let raf1 = 0
+    let raf2 = 0
+    const recheck = () => {
+      if (cancelled) return
+      const u: any = uniforms
+      try {
+        const flag = u?.uTempFalloffOn?.value ?? 0
+        if (flag < 0.5) {
+          setUniform('uTempFalloffOn', 1)
+          setUniform('uTempCenter', u?.uTempCenter?.value ?? [0.5, 0.5])
+          setUniform('uTempRadius', u?.uTempRadius?.value ?? 0.16)
+          try {
+            console.info('[PC] falloff latch recheck applied')
+          } catch {
+            /* noop */
+          }
+        }
+      } catch {
+        /* noop */
+      }
+    }
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(recheck)
+    })
+    return () => {
+      cancelled = true
+      if (raf1) cancelAnimationFrame(raf1)
+      if (raf2) cancelAnimationFrame(raf2)
+    }
+  }, [setUniform, uniforms])
 
   // Prebaked positions path (VGGT exporter). If positions.f32 exists for the scene, prefer it.
   React.useEffect(() => {
@@ -1869,8 +1920,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     return `h:${h.toString(16)}`
   }, [])
-  const initialPointScale =
-    Number.isFinite(pointSize) && pointSize > 0 ? pointSize / DEFAULT_POINT_SIZING.baseSize : 1
+  // const initialPointScale =
+  //   Number.isFinite(pointSize) && pointSize > 0 ? pointSize / DEFAULT_POINT_SIZING.baseSize : 1
 
   const [ui, setUi] = React.useState<{
     thickness: number
