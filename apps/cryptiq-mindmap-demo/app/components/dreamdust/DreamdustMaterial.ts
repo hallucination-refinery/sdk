@@ -396,7 +396,10 @@ void main() {
   if (uTempIntensity > 1e-4) {
     vec2 tempForce = uTempForce * uTempIntensity;
     if (uTempFalloffOn > 0.5) {
-      float influence = smoothstep(uTempRadius, 0.0, distance(vInkUv, uTempCenter));
+      vec4 tempClip = projectionMatrix * viewPos4;
+      vec2 tempNdc = tempClip.xy / max(1e-6, tempClip.w);
+      vec2 tempSsUv = tempNdc * 0.5 + 0.5;
+      float influence = smoothstep(uTempRadius, 0.0, distance(tempSsUv, uTempCenter));
       tempForce *= influence;
       float pxScale = viewDist / max(uFocal, 1e-3);
       tempForce *= pxScale;

@@ -1360,6 +1360,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [setUniform])
 
   const falloffRequestedRef = React.useRef(false)
+  const falloffLatchAppliedRef = React.useRef(false)
   // Dev flag: enable temp falloff from URL (?falloff=1)
   React.useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1368,8 +1369,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       const falloffRequested = params.get('falloff') === '1'
       falloffRequestedRef.current = falloffRequested
       if (falloffRequested) {
+        falloffLatchAppliedRef.current = false
         setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
-        setUniform('uTempRadius', 0.12 as unknown as any)
+        setUniform('uTempRadius', 0.16 as unknown as any)
       }
     } catch {
       /* noop */
@@ -1423,7 +1425,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           setUniform('uTempFalloffOn', 1)
         }
         if (!u?.uTempRadius?.value) {
-          setUniform('uTempRadius', 0.12 as unknown as any)
+          setUniform('uTempRadius', 0.16 as unknown as any)
         }
         if (!u?.uTempCenter?.value) {
           setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
@@ -1537,6 +1539,36 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       prebakedMaterial?.dispose()
     }
   }, [prebakedMaterial])
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!falloffRequestedRef.current) return
+    if (falloffLatchAppliedRef.current) return
+    const material = prebakedMaterial
+    if (!material) return
+    let cancelled = false
+    let raf = 0
+    const latch = () => {
+      if (cancelled || falloffLatchAppliedRef.current) return
+      const program = (material as any).program
+      if (program && program.glProgram) {
+        applyFalloffFlagIfRequested()
+        falloffLatchAppliedRef.current = true
+        try {
+          console.info('[PC] falloff latch (prebaked) applied')
+        } catch {
+          /* noop */
+        }
+        return
+      }
+      raf = requestAnimationFrame(latch)
+    }
+    raf = requestAnimationFrame(latch)
+    return () => {
+      cancelled = true
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [prebakedMaterial, applyFalloffFlagIfRequested])
 
   // Prebaked positions path (VGGT exporter). If positions.f32 exists for the scene, prefer it.
   React.useEffect(() => {
