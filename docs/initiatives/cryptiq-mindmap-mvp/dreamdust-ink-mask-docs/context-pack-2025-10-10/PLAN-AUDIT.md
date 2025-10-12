@@ -157,3 +157,26 @@ References
 - `00-overview.md`, `01-current-state.md`, `02-decisions.md`, `06-reference-notes.md`
 - Mirror audit: `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-10-ink-mirroring-pipeline-audit.md`
 - Key files: `InkSurface.tsx`, `DreamdustMaterial.ts`, `PointCloudStage.tsx`
+
+—
+
+## Audit Update — 2025-10-12
+
+What changed in code
+- Vertex shader now derives screen‑space UV from current clip position before applying falloff influence for localized displacement. This addresses the prior “falloff ON → zero influence” failure.
+- Prebaked mode now includes a one‑shot latch that waits for a compiled program before setting `uTempFalloffOn` and seeding center/radius.
+
+What we observed in the run
+- With `?falloff=1`, `uTempIntensity` pulsed during strokes but `uTempFalloffOn` stayed 0; visual remained a faint whole‑cloud jitter; no localized plume. This suggests the latch did not execute in this prod session.
+
+Conclusion
+- The shader‑ordering fix likely resolves the zero‑influence path once falloff is actually ON. The immediate blocker is ensuring the falloff latch reliably engages in prebaked mode.
+
+Next code edits to recommend (do not implement in this step)
+1) Harden the latch timing in prebaked mode
+   - After reveal, schedule a short RAF loop that checks `material.program?.glProgram` and applies the latch exactly once, logging `[PC] falloff latch (prebaked) applied`. Keep the loop bounded (≤1s) and idempotent.
+   - On first `onAfterRender`, re‑verify the flag and center/radius in case the initial attempt raced.
+2) Verify localized influence is perceptible at current camera distances
+   - Retain `pxScale = viewDist / uFocal` in the localized branch; optionally expose a dev knob to temporarily boost perceived motion for validation, then dial back.
+3) Evidence hooks
+   - Maintain `window.dreamdust.ensureFalloff()` and `dumpUniforms()` for one‑screen verification until the latch is proven stable.

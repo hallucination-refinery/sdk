@@ -32,6 +32,26 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
   - Regression guard (same session): If `uTempFalloffOn: 1` with rising `uTempIntensity` yields zero motion, suspect influence computed before `vInkUv` assignment; apply the shader ordering fix above.
 - Runbook: see 05-runbooks.md#M1
 
+—
+
+## Next‑Run Delta (2025‑10‑12) — Prebaked Latch Validation Checklist
+
+Setup
+- URL: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1&falloff=1`
+- Wait for `[Dreamdust] reveal end`.
+
+Latch verification
+- Expect a one‑time `[PC] falloff latch (prebaked) applied` after reveal. If not seen within ~1s, while drawing run:
+  - `window.dreamdust.ensureFalloff()`
+  - `window._probe = setInterval(() => window.dreamdust.dumpUniforms(), 100)` for 2–3s, then `clearInterval(window._probe)`
+
+Pass (M1)
+- `uTempFalloffOn: 1` during stroke; immediate localized plume (≤2 frames) affecting ≈10–20% of nearby points; decays smoothly on end; camera fixed; no overlays.
+
+Fail → Triage
+- A) `uTempFalloffOn` remains 0: treat as prebaked timing race; capture absence of the latch log and proceed with the escape hatch above; re‑run.
+- B) `uTempFalloffOn: 1` but still no local motion: confirm the deployed build includes the vertex ordering fix (screen‑space UV influence). If confirmed, test visibility by temporarily raising `uTempIntensity` or `uOffsetGain` via DevTools to rule out under‑scaled displacement at current camera distance; if motion appears, tune the gains back down in code afterward.
+
 Milestone M2 — Palette‑Mapped Cascade
 - Goal: on stroke end, sample hue at gesture start, snap to curated palette, and roll that hue through all particles to a saturated end state.
 - Steps

@@ -20,3 +20,22 @@ Relevant Files
 - Mirror audit: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-10-ink-mirroring-pipeline-audit.md
 - Raw smoke dump (2025‑10‑12): docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-inactive-smoke-raw.md
  - Raw smoke dump (same session, forced falloff): docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-interval-smoke-raw.md
+
+—
+
+## 2025-10-12 Run — Observed vs Expected
+
+Observed (with `?pc=scene-03&debug=1&falloff=1` after reveal end):
+- `uTempIntensity` rises/decays during strokes as expected.
+- `uTempRadius` ≈ 0.16; `uTempCenter` tracks the live UV; pointer guards log mirror flags.
+- `uTempFalloffOn` remains 0 throughout multiple long strokes → localized branch never engages.
+- Visual: slight whole‑cloud jitter; no localized plume under the pointer.
+
+Implications:
+- Prebaked latch likely didn’t apply in this session despite `falloff=1`. The uniform write may still be racing material readiness in prebaked mode.
+- When falloff is OFF, only the global temp force contributes, explaining subtle whole‑cloud motion.
+- Prior “falloff ON but zero motion” finding was traced to shader order (influence sampling before UV assignment). That ordering has been corrected to derive screen‑space UV from `clipPos` before influence. Next run must validate this fix with `uTempFalloffOn: 1` actually in effect.
+
+Next validation (no code edits in this step):
+- After reveal, confirm a one‑shot console log `[PC] falloff latch (prebaked) applied`. If absent, issue `window.dreamdust.ensureFalloff()` while drawing and re‑probe uniforms.
+- Pass expectation for M1: with `uTempFalloffOn: 1`, a visible localized plume appears within ≤2 frames; displacement decays smoothly when input stops; camera stays fixed; no overlays.

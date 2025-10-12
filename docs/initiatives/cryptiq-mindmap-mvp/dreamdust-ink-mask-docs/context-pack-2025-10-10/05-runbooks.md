@@ -57,6 +57,18 @@ M1 — Force‑Field Prototype
 - Phase B add-on: repeat after swapping to `uForceVector`/`uTouch`; log the new uniform values and confirm the temporary `uTempForce` path is removed (note commit/tag).
 - Note: during Phase A scaffolding, `uTempForce` may be used instead of final uniforms; record that value in console before removing scaffolding.
 
+### Prebaked Latch Triage (2025-10-12)
+- After reveal, watch for `[PC] falloff latch (prebaked) applied`. If not present within ~1s:
+  - Start drawing, then run `window.dreamdust.ensureFalloff()` once.
+  - Probe uniforms for 2–3 seconds:
+    ```js
+    window._probe = setInterval(() => window.dreamdust.dumpUniforms(), 100)
+    // ...draw for ~2–3s...
+    clearInterval(window._probe)
+    ```
+  - Expected values while drawing: `uTempFalloffOn: 1`, `uTempRadius ≈ 0.16`, `uTempCenter` ≈ live UV, `uTempIntensity` pulsing.
+  - If `uTempFalloffOn` still 0, capture the absence of the latch log and uniform dumps as evidence; proceed to next code iteration to harden the latch timing in prebaked mode.
+
 Regression triage (2025-10-11)
 - Observation: After clean install/build/start and visiting `?pc=scene-03&debug=1` in an incognito tab, multiple strokes produced no visible motion (cloud unreactive). Console shows: caps fanout OK, prebaked present, repeated `[PC] draw start/end`, `[PC] ink tex updated`, and `ink-uv guard ok` per stroke.
 - Quick checks (no code edits; for console-only triage):
