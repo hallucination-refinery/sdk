@@ -14,11 +14,11 @@
 
 ## Issues (Ranked)
 
-### BLOCKER: M1 force-field specifics could be missed by contributors
+### BLOCKER: Localized falloff not engaged; motion remains global/subtle
 **Severity:** Blocker
-**Files:** `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts`, `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`, `apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx`
-**Why:** Without explicit uniform names, update cadence, and decay semantics, Phase A may stall or ship tint‑only visuals.
-**Fix:** In `03-implementation-plan.md` name `uTempForce` (Phase A) and the Phase B set: `uForceVector`, `uForceIntensity`, `uForceDecay`, `uForceActive`. State update at 60 fps from `InkSurface` pointer delta; decay multiply each frame when idle; set `material.needsUpdate = true` when toggling active.
+**Files:** `DreamdustMaterial.ts` (pxScale after viewPos is fixed), `PointCloudStage.tsx` (flag timing after material/reveal), `InkSurface.tsx` (pointer UV → `uTempCenter`).
+**Why:** Logs show `uTempIntensity > 0` during stroke but `uTempFalloffOn: 0`. Result: either no motion or faint global jitter; localized branch never runs.
+**Fix:** Ensure `uTempFalloffOn` latches post‑reveal; update `uTempCenter` from pointer UV; consider increasing `uTempRadius` slightly for Scene‑03; pxScale already computed after view space.
 
 ### MAJOR: Palette cascade lacks single source of truth
 **Severity:** Major
@@ -90,13 +90,9 @@ Append
 - Touchpoints: `PointCloudStage.tsx` (inject temp uniforms; lock controls), `InkSurface.tsx` (pointer→delta→uniform), `DreamdustMaterial.ts` (apply simple vertex offset)
 - Update cadence: set uniforms on pointer events/frame loop; decay when idle
 - Guardrails: mirror propagation; `material.needsUpdate` if shader define toggles; camera/framing intact
-- Observed issue (2025-10-11): Dragging with Phase A scaffolding displaces the entire particle cloud uniformly. Need to add local falloff (per-particle influence) before hardening.
-- Next action: add temporary uniforms for pointer UV (`uTempCenter`) + radius (`uTempRadius`), gate force with smoothstep falloff in vertex shader, then repeat M1 runbook to confirm only the stroke neighborhood moves (≈10–20% of points).
- - Regression note (2025-10-11): Post‑cleanup prod run showed no visible response to strokes despite `[PC] draw start/end` and `ink tex updated`. Hypothesis: Phase‑A displacement lacks pixel scaling (ink path scales by `pxScale = viewDist / uFocal`), so the added offset may be imperceptible at Scene‑03 camera distances. Action: document console checks in runbook; if confirmed, add view‑space scale in Phase A or queue for Phase B hardening.
- - Same‑run probe (2025-10-11): The devtools snapshot of `uTemp*` uniforms returned `{}` via `window.__vertexCaptureArgs?.material`, implying the capture hook was not present in this session/build. This does not prove zero values; it only shows the probe path was unavailable. Runbook updated to note this and to recommend revert → re‑apply falloff if motion remains absent.
- - Phase A restored + falloff flag (2025-10-11): Global motion reinstated; added `uTempFalloffOn` (+ center/radius) behind `&falloff=1` for A/B without jeopardizing the baseline. Next: add pixel scaling if the localized feel is too subtle at Scene‑03 camera distances.
-  - Falloff flag not active in prod (2025-10-11): Uniform logs during a stroke show `uTempFalloffOn: 0` despite `&falloff=1`, and `uTempIntensity` rising as expected. Action: set the flag post‑material ready and/or after reveal; add a one‑time runtime guard for requested flag.
- - BLOCKER (2025-10-11): Blank canvas due to vertex shader compile error (`viewPos` undeclared) when computing `pxScale`. Root cause: `pxScale` was computed before `viewPos` existed. Fix plan: compute `pxScale` after `viewPos` is defined (or use `viewPos4`/`viewDist` already derived), then apply localized force. Runbook updated to capture error signature.
+- Observed issue (2025-10-11): Dragging with Phase A scaffolding displaced the entire particle cloud uniformly. Local falloff added.
+- Regression (2025-10-11): Shader compile error from pxScale order → fixed by computing after view space.
+- Current (2025-10-12): `uTempIntensity` rises but `uTempFalloffOn` remains 0; visual shows slight global jitter only. Action: ensure post‑reveal flag latch; confirm `uTempCenter` is driven by pointer UV; consider radius +5–10% for visibility.
 - Pass/Fail: visible motion in ≤2 frames; ≥5px displacement; decay resumes on end
 
 ### Phase B — Hardened

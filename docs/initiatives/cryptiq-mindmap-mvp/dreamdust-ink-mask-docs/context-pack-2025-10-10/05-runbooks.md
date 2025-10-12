@@ -19,6 +19,12 @@ Blank canvas triage (2025-10-11)
 - Symptom: no point cloud visible; console shows vertex shader compile error `viewPos : undeclared identifier` at the localized px-scaling block.
 - Why: `pxScale` calculation referenced `viewPos` before it’s defined in the shader; any compile error invalidates the program → nothing renders.
 - Verify: open Console, look for `THREE.WebGLProgram: Shader Error` and the line number; if present, skip localized mode for this run and fall back to baseline URL without `&falloff=1`.
+
+Localized falloff inactive (2025-10-12)
+- Symptom: scene renders, strokes logged, `uTempIntensity` rises/decays, but no visible local plume; only a faint global jitter (entire cloud) may be seen.
+- Evidence: long-stroke logs show `uTempFalloffOn: 0` throughout, with `uTempIntensity` > 0 during stroke; matches slight global offset path.
+- Likely causes: (1) falloff flag not latching post‑reveal; (2) `uTempCenter` not updated from pointer UV (stuck at default ~[0.5,0.5]); (3) radius too small for the current camera setup.
+- Next checks (no code): capture 3 lines of `dumpUniforms()` mid‑stroke to confirm `uTempFalloffOn` stays 0; note whether any jitter is global vs local.
 # Runbooks — One‑Screen Tests
 
 M1 — Force‑Field Prototype

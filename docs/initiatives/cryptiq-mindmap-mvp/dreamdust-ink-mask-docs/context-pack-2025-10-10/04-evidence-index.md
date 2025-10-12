@@ -18,6 +18,7 @@ Run Artifacts — 2025-10-11
  - Follow-up: Phase A restored (global motion visible). Dev flag `&falloff=1` added for localized test; use `window.dreamdust.dumpUniforms()` to capture uniform values during strokes.
  - Latest trial: Using `&falloff=1`, `dumpUniforms()` during a long stroke shows `uTempIntensity` > 0 but `uTempFalloffOn: 0` throughout; visual: cloud jitter remains global. Recorded console excerpt in the task.
  - New failure (2025-10-11): Blank canvas with shader compile error: `THREE.WebGLProgram: Shader Error ... VERTEX ... 'viewPos' : undeclared identifier` at px-scaling block. See full console log in task.
+ - New observation (2025-10-12): Scene renders; during long stroke, `uTempIntensity` increases but `uTempFalloffOn: 0` across samples; no local plume; slight global jitter may be perceptible. Full console + uniform logs pasted in task.
 
 Assets
 - Initial load screenshot: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-09-Test-1-Initial-Load.png

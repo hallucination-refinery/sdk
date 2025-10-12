@@ -19,6 +19,9 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
   - Falloff flag application (2025-10-11): Observed `uTempFalloffOn` remained 0 in prod with `&falloff=1`. Plan: move falloff flag set to a post-material-ready hook (after material is attached), and add a single-shot console guard (if flag is requested and unset after reveal, set to 1).
   - Pixel scaling (pre‑B): When enabling falloff, multiply the temp force by `pxScale = viewDist / uFocal` to ensure screen‑space displacement remains perceptible at Scene‑03 distances.
   - Shader ordering guard (2025-10-11): Compute `pxScale` only after `viewPos`/`viewPos4` is defined in the vertex shader. Recommended placement: after `vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0); vec3 viewPos = viewPos4.xyz;` and `viewDist` derivation; then apply localized offset.
+  - Falloff activation (2025-10-12): Ensure `uTempFalloffOn` is set after material attach and reveal end; re-check once on first uniform init to avoid missed latch. If still 0 in prod, allow a one-shot `window.dreamdust.ensureFalloff()` as a verification escape hatch.
+  - Pointer UV feed (2025-10-12): Update `uTempCenter` per pointer sample (screen-space UV), not a static default; guard/mirror UV as done in `InkSurface` logs.
+  - Radius visibility (2025-10-12): If localized feel is subtle at Scene‑03, bump `uTempRadius` slightly (e.g., 0.14–0.18) for validation; then tune down.
 - Pass/Fail
   - Pass: tap near viewport center produces ≥5 px displacement within ≤2 frames; 2–3 s stroke advects particles along the path; motion decays smoothly when input stops; camera remains fixed.
   - Fail: no motion, motion lagging/past pointer, or camera interference.
