@@ -23,6 +23,7 @@
     "smoke-check": "node scripts/watch-smoke.cjs --once",
     "smoke": "node -e \"console.log('smoke ok')\"",
     "smoke:brain": "playwright test tests/brain.smoke.spec.ts --reporter=line",
+    "smoke:ink": "playwright test tests/ink-interaction.spec.ts --reporter=line",
     "test:smoke:draw3d": "playwright test tests/draw3d.smoke.spec.ts --reporter=line",
     "vggt:readme": "node -e \"require('fs').createReadStream('tools/vggt-cli/README.md').pipe(process.stdout)\"",
     "validate:formations": "node --import=tsx apps/cryptiq-mindmap-demo/scripts/formations/validate.ts",
