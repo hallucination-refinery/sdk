@@ -394,7 +394,12 @@ void main() {
   float viewDist = max(1e-3, -viewPos.z);
 
   if (uTempIntensity > 1e-4) {
-    vec2 tempForce = uTempForce * uTempIntensity;
+    // Soft-knee on intensity to avoid "global jerk" at higher boosts
+    float knee = 0.6;          // start compressing above this
+    float maxGain = 1.5;       // limit effective intensity growth
+    float t = clamp(uTempIntensity, 0.0, 1.0);
+    float soft = t <= knee ? t : knee + (t - knee) / (1.0 + (t - knee) * maxGain);
+    vec2 tempForce = uTempForce * soft;
     if (uTempFalloffOn > 0.5) {
       vec4 tempClip = projectionMatrix * viewPos4;
       vec2 tempNdc = tempClip.xy / max(1e-6, tempClip.w);

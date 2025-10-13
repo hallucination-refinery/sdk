@@ -46,7 +46,7 @@ import DebugHud from './dreamdust/ui/DebugHud'
 import { createVertexTelemetryCollector } from './dreamdust/telemetry'
 
 const TEMP_FORCE_DECAY = 0.92
-const TEMP_FORCE_SCALE = 180
+const TEMP_FORCE_SCALE = 220
 const TEMP_FORCE_CLAMP = 12
 
 type PointCloudStageProps = {
@@ -1373,7 +1373,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       if (falloffRequested) {
         falloffLatchAppliedRef.current = false
         setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
-        setUniform('uTempRadius', 0.16 as unknown as any)
+        setUniform('uTempRadius', 0.14 as unknown as any)
       }
       const boostParam = params.get('inkboost')
       if (boostParam) {
@@ -1394,14 +1394,14 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const applyFalloffFlagIfRequested = React.useCallback(() => {
     if (!falloffRequestedRef.current) return
-    try {
+      try {
       const uniformsAny = uniforms as any
       const flag = uniformsAny?.uTempFalloffOn?.value ?? 0
       if (flag < 0.5) {
         setUniform('uTempFalloffOn', 1)
       }
       setUniform('uTempCenter', uniformsAny?.uTempCenter?.value ?? [0.5, 0.5])
-      setUniform('uTempRadius', uniformsAny?.uTempRadius?.value ?? 0.16)
+        setUniform('uTempRadius', uniformsAny?.uTempRadius?.value ?? 0.14)
     } catch {
       /* noop */
     }
@@ -1439,7 +1439,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           setUniform('uTempFalloffOn', 1)
         }
         if (!u?.uTempRadius?.value) {
-          setUniform('uTempRadius', 0.16 as unknown as any)
+          setUniform('uTempRadius', 0.14 as unknown as any)
         }
         if (!u?.uTempCenter?.value) {
           setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
@@ -1600,7 +1600,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         if (flag < 0.5) {
           setUniform('uTempFalloffOn', 1)
           setUniform('uTempCenter', u?.uTempCenter?.value ?? [0.5, 0.5])
-          setUniform('uTempRadius', u?.uTempRadius?.value ?? 0.16)
+          setUniform('uTempRadius', u?.uTempRadius?.value ?? 0.14)
           try {
             console.info('[PC] falloff latch recheck applied')
           } catch {
