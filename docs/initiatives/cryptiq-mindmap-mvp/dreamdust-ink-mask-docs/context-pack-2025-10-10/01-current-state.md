@@ -39,3 +39,17 @@ Implications:
 Next validation (no code edits in this step):
 - After reveal, confirm a one‑shot console log `[PC] falloff latch (prebaked) applied`. If absent, issue `window.dreamdust.ensureFalloff()` while drawing and re‑probe uniforms.
 - Pass expectation for M1: with `uTempFalloffOn: 1`, a visible localized plume appears within ≤2 frames; displacement decays smoothly when input stops; camera stays fixed; no overlays.
+
+—
+
+## 2025-10-13 Run — With and without Inkboost
+
+Observed
+- First pass (`&falloff=1`): `uTempFalloffOn: 1`, live `uTempCenter`, `uTempRadius ~0.16`, `uTempIntensity` rises/decays; visuals mostly unreactive.
+- Second pass (`&falloff=1&inkboost=1.8`): slight localized motion visible near cursor; uniforms consistent with first pass.
+
+Implication
+- Localized vertex offset is executing (uniforms correct), but the baseline displacement is too small to be obvious at Scene‑03 camera distance without a temporary boost.
+
+Next
+- Keep `uTempRadius ~0.16–0.18`; for the next run, either retain `&inkboost` for validation or modestly increase the effective offset gain so motion is undeniable without the flag. Palette cascade can begin once local motion is plainly visible at default settings.

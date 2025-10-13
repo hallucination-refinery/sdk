@@ -69,6 +69,11 @@ M1 — Force‑Field Prototype
   - Expected values while drawing: `uTempFalloffOn: 1`, `uTempRadius ≈ 0.16`, `uTempCenter` ≈ live UV, `uTempIntensity` pulsing.
   - If `uTempFalloffOn` still 0, capture the absence of the latch log and uniform dumps as evidence; proceed to next code iteration to harden the latch timing in prebaked mode.
 
+### Inkboost Validation (2025-10-13)
+- If the plume is subtle with `&falloff=1`, reload with `&inkboost=1.8` and re-run the probe for 2–3s while drawing.
+- Expected: same uniforms as baseline, with clearly visible localized motion near the cursor.
+- Interpretation: if motion becomes obvious only with `inkboost`, increase the effective displacement slightly (or keep `inkboost` during validation) so default runs are undeniably reactive before moving to the cascade.
+
 Regression triage (2025-10-11)
 - Observation: After clean install/build/start and visiting `?pc=scene-03&debug=1` in an incognito tab, multiple strokes produced no visible motion (cloud unreactive). Console shows: caps fanout OK, prebaked present, repeated `[PC] draw start/end`, `[PC] ink tex updated`, and `ink-uv guard ok` per stroke.
 - Quick checks (no code edits; for console-only triage):

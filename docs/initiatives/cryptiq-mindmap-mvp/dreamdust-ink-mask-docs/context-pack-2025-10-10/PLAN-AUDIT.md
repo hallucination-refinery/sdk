@@ -180,3 +180,18 @@ Next code edits to recommend (do not implement in this step)
    - Retain `pxScale = viewDist / uFocal` in the localized branch; optionally expose a dev knob to temporarily boost perceived motion for validation, then dial back.
 3) Evidence hooks
    - Maintain `window.dreamdust.ensureFalloff()` and `dumpUniforms()` for one‑screen verification until the latch is proven stable.
+
+—
+
+## Audit Update — 2025-10-13
+
+Evidence
+- New raw log: `2025-10-13-ink-inkboost-smoke-raw.md`.
+- With `&falloff=1`, uniforms correct (flag 1, live center, radius ~0.16, intensity pulses) but visuals are faint.
+- With `&inkboost=1.8`, localized motion becomes visible.
+
+Conclusion
+- The vertex path is functioning; default displacement is under‑scaled for Scene‑03 without a temporary boost.
+
+Recommendation before moving to cascade
+- Slightly increase the effective displacement so the plume is undeniable at defaults, or keep `&inkboost` for the next validation while tuning. Once visible motion is consistent, proceed to palette cascade.
