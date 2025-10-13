@@ -34,6 +34,30 @@ Milestone M1 — Force‑Field Prototype (Particles Are the Ink)
 
 —
 
+## Execution order checklist (M1 → M2 → M3)
+
+1) Make motion undeniable and local (M1)
+- Scale: bake a modest default force gain equivalent to ~`inkboost=1.8–2.0` (≤2‑frame response; see 00‑overview acceptance).
+- Footprint: reduce effective radius to ~0.12–0.14 to keep displacement local at higher gains.
+- Soft‑knee: cap/curve intensity so strong drags don’t feel global.
+- Gate: tap and drag must visibly move dots under the finger with smooth decay; camera unchanged.
+
+2) Separate “tap ripple” vs “drag advection” (M1 detail)
+- Tap: small impulse on pointer‑down that blooms then fades.
+- Drag: advect along the stroke path with a vapor feel.
+
+3) Smooth decay (M1 polish)
+- Maintain quick rise + gentle fall so motion eases out after release.
+
+4) Palette cascade (M2)
+- On committed strokes (intent thresholds), sample start hue → snap to curated palette → roll through particles in ~2–3s.
+- Do not change motion feel when cascade is active (00‑overview).
+
+5) Verification (every step)
+- One mid‑stroke uniform block and one mid‑motion screenshot per run; deterministic URL and notes.
+
+—
+
 ## Next‑Run Delta (2025‑10‑12) — Prebaked Latch Validation Checklist
 
 Setup

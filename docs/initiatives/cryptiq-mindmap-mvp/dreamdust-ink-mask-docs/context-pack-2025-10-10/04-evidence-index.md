@@ -26,6 +26,10 @@ Run Artifacts — 2025-10-12
  - Raw dump (same session): docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-12-ink-falloff-interval-smoke-raw.md
  - Summary: Falloff forced ON via interval; `uTempIntensity` rises, `uTempFalloffOn: 1`, yet no motion at all. Points to shader order bug: influence uses `vInkUv` before it’s assigned, yielding ~0 influence and zero displacement.
 
+Run Artifacts — 2025-10-13
+- Raw dump: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/2025-10-13-ink-inkboost-smoke-raw.md
+- Summary: With `&falloff=1`, uniforms correct but motion faint; with `&inkboost=1.8`, slight localized motion appears; higher boosts (≥2.0) feel global.
+
 Assets
 - Initial load screenshot: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-09-Test-1-Initial-Load.png
 - Camera framing: docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/2025-10-08-iteration-06-part-A-initial-camera-framing.png
