@@ -513,7 +513,10 @@ void main() {
   if (uVelToNdc > 1e-5) {
     vec2 clip = gl_Position.xy / max(gl_Position.w, 1e-5);
     vec2 uv = clip * 0.5 + 0.5;
-    vec2 vel = texture2D(uVelocity, uv).xy;
+    vec2 guard = uVelTexInvSize * 0.5;
+    vec2 sampleUv = clamp(uv, guard, vec2(1.0) - guard);
+    bool inside = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
+    vec2 vel = inside ? texture2D(uVelocity, sampleUv).xy : vec2(0.0);
     vec2 disp = vel * uVelToNdc;
     gl_Position.xy = mix(gl_Position.xy, gl_Position.xy + disp, clamp(uInkBlend, 0.0, 1.0));
   }

@@ -1,142 +1,267 @@
 import * as THREE from 'three'
+import type { WebGLRenderer, WebGLRenderTarget, ShaderMaterial } from 'three'
 
-/**
- * Minimal CPU fluid stub for screen-space velocity.
- * - Grid: size x size, velocity in XY (packed into RG of a Float32 DataTexture)
- * - addForce: Gaussian splat impulse at UV with radius (0..1 of grid), strength (0..1)
- * - step: simple decay + diffusion blur (cheap, stable); good enough for MVP under-finger motion
- */
+import { ADD_FORCE_SHADER } from './shaders/addForce'
+import { ADVECT_SHADER } from './shaders/advect'
+import { DIVERGENCE_SHADER } from './shaders/divergence'
+import { JACOBI_SHADER } from './shaders/jacobi'
+import { PROJECT_SHADER } from './shaders/project'
+
+const FULLSCREEN_VERT = /* glsl */ String.raw`#version 300 es
+precision highp float;
+
+in vec3 position;
+in vec2 uv;
+out vec2 vUv;
+
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}
+`
+
+type PingPong = {
+  read: WebGLRenderTarget
+  write: WebGLRenderTarget
+}
+
+type FluidSimOptions = {
+  size?: number
+  iterations?: number
+  dissipation?: number
+}
+
+function supportsHalfFloat(renderer: WebGLRenderer) {
+  const caps = (renderer.capabilities ?? {}) as { isWebGL2?: boolean }
+  if (!caps.isWebGL2) {
+    return false
+  }
+  return Boolean((THREE as any).HalfFloatType)
+}
+
+function makeTarget(renderer: WebGLRenderer, size: number, type: number) {
+  const target = new (THREE as any).WebGLRenderTarget(size, size, {
+    depthBuffer: false,
+    stencilBuffer: false,
+    type,
+    format: (THREE as any).RGBAFormat,
+    magFilter: (THREE as any).LinearFilter,
+    minFilter: (THREE as any).LinearFilter,
+    wrapS: (THREE as any).ClampToEdgeWrapping,
+    wrapT: (THREE as any).ClampToEdgeWrapping,
+  })
+  target.texture.generateMipmaps = false
+  return target as WebGLRenderTarget
+}
+
+function swap(targets: PingPong) {
+  const tmp = targets.read
+  targets.read = targets.write
+  targets.write = tmp
+}
+
 export class FluidSim {
+  private readonly renderer: WebGLRenderer
   private readonly size: number
-  private readonly field: Float32Array // [vx, vy] per cell
-  private readonly next: Float32Array
-  private readonly texData: Float32Array // RGBA float32
-  private readonly texture: THREE.DataTexture
-  private decay = 0.94
-  private diffusion = 0.08
+  private readonly iterations: number
+  private readonly quad: THREE.Mesh
+  private readonly scene: THREE.Scene
+  private readonly camera: THREE.OrthographicCamera
+  private readonly velocity: PingPong
+  private readonly pressure: PingPong
+  private readonly divergence: WebGLRenderTarget
+  private readonly invSizeVec: THREE.Vector2
+  private readonly advectMaterial: ShaderMaterial
+  private readonly addForceMaterial: ShaderMaterial
+  private readonly divergenceMaterial: ShaderMaterial
+  private readonly jacobiMaterial: ShaderMaterial
+  private readonly projectMaterial: ShaderMaterial
+  private readonly glslVersion: number
+  private readonly dissipation: number
+  private readonly dtClamp = 1 / 30
+  private pendingInitLog = true
 
-  constructor(size = 256) {
-    this.size = Math.max(8, Math.floor(size))
-    const cellCount = this.size * this.size
-    this.field = new Float32Array(cellCount * 2)
-    this.next = new Float32Array(cellCount * 2)
-    this.texData = new Float32Array(cellCount * 4)
-    this.texture = new (THREE as any).DataTexture(
-      this.texData,
-      this.size,
-      this.size,
-      (THREE as any).RGBAFormat,
-      (THREE as any).FloatType,
-    )
-    this.texture.needsUpdate = true
-    ;(this.texture as any).flipY = false
-    this.texture.magFilter = (THREE as any).LinearFilter
-    this.texture.minFilter = (THREE as any).LinearFilter
-    this.texture.wrapS = (THREE as any).ClampToEdgeWrapping
-    this.texture.wrapT = (THREE as any).ClampToEdgeWrapping
+  constructor(renderer: WebGLRenderer, options?: FluidSimOptions) {
+    if (!(renderer.getContext() instanceof WebGL2RenderingContext)) {
+      throw new Error('FluidSim requires WebGL2')
+    }
+    this.renderer = renderer
+    const safeSize = options?.size ?? 256
+    this.size = Math.max(8, Math.floor(safeSize))
+    this.iterations = Math.max(1, Math.floor(options?.iterations ?? 10))
+    this.dissipation = options?.dissipation ?? 0.985
+
+    this.glslVersion = (THREE as any).GLSL3 ?? 300
+    this.scene = new THREE.Scene()
+    this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+    this.invSizeVec = new THREE.Vector2(1 / this.size, 1 / this.size)
+
+    const type = supportsHalfFloat(renderer) ? (THREE as any).HalfFloatType : (THREE as any).FloatType
+    this.velocity = {
+      read: makeTarget(renderer, this.size, type),
+      write: makeTarget(renderer, this.size, type),
+    }
+    this.pressure = {
+      read: makeTarget(renderer, this.size, type),
+      write: makeTarget(renderer, this.size, type),
+    }
+    this.divergence = makeTarget(renderer, this.size, type)
+
+    this.advectMaterial = this.createMaterial(ADVECT_SHADER, {
+      uVelocity: { value: this.velocity.read.texture },
+      uTexelSize: { value: this.invSizeVec.clone() },
+      uDt: { value: 0 },
+      uDissipation: { value: this.dissipation },
+    })
+
+    this.addForceMaterial = this.createMaterial(ADD_FORCE_SHADER, {
+      uVelocity: { value: this.velocity.read.texture },
+      uPoint: { value: new THREE.Vector2(0.5, 0.5) },
+      uRadius: { value: 0 },
+      uStrength: { value: 0 },
+    })
+
+    this.divergenceMaterial = this.createMaterial(DIVERGENCE_SHADER, {
+      uVelocity: { value: this.velocity.read.texture },
+      uTexelSize: { value: this.invSizeVec.clone() },
+    })
+
+    this.jacobiMaterial = this.createMaterial(JACOBI_SHADER, {
+      uPressure: { value: this.pressure.read.texture },
+      uDivergence: { value: this.divergence.texture },
+      uTexelSize: { value: this.invSizeVec.clone() },
+    })
+
+    this.projectMaterial = this.createMaterial(PROJECT_SHADER, {
+      uVelocity: { value: this.velocity.read.texture },
+      uPressure: { value: this.pressure.read.texture },
+      uTexelSize: { value: this.invSizeVec.clone() },
+    })
+
+    const geometry = new THREE.PlaneGeometry(2, 2)
+    this.quad = new THREE.Mesh(geometry, this.advectMaterial)
+    this.quad.frustumCulled = false
+    this.scene.add(this.quad)
+
+    this.clearTarget(this.velocity.read)
+    this.clearTarget(this.velocity.write)
+    this.clearTarget(this.pressure.read)
+    this.clearTarget(this.pressure.write)
+    this.clearTarget(this.divergence)
+  }
+
+  private createMaterial(fragmentShader: string, uniforms: Record<string, { value: unknown }>) {
+    const material = new (THREE as any).ShaderMaterial({
+      uniforms,
+      vertexShader: FULLSCREEN_VERT,
+      fragmentShader,
+      glslVersion: this.glslVersion,
+      depthTest: false,
+      depthWrite: false,
+      blending: (THREE as any).NoBlending,
+    })
+    return material as ShaderMaterial
+  }
+
+  private renderPass(target: WebGLRenderTarget, material: ShaderMaterial) {
+    const prevMaterial = this.quad.material
+    this.quad.material = material
+    const prevAutoClear = this.renderer.autoClear
+    this.renderer.autoClear = false
+    this.renderer.setRenderTarget(target)
+    this.renderer.render(this.scene, this.camera)
+    this.renderer.setRenderTarget(null)
+    this.renderer.autoClear = prevAutoClear
+    this.quad.material = prevMaterial
+  }
+
+  private clearTarget(target: WebGLRenderTarget) {
+    const prevAutoClear = this.renderer.autoClear
+    this.renderer.autoClear = false
+    const prevClearColor = this.renderer.getClearColor(new THREE.Color())
+    const prevClearAlpha = this.renderer.getClearAlpha()
+    this.renderer.setRenderTarget(target)
+    this.renderer.setClearColor(0x000000, 1)
+    this.renderer.clear(true, false, false)
+    this.renderer.setRenderTarget(null)
+    this.renderer.setClearColor(prevClearColor, prevClearAlpha)
+    this.renderer.autoClear = prevAutoClear
+  }
+
+  addForce(point: [number, number], radius: number, strength: number) {
+    const [px, py] = point
+    if (!Number.isFinite(px) || !Number.isFinite(py)) {
+      return
+    }
+    const safeRadius = Math.max(1e-4, Math.min(0.5, radius))
+    const safeStrength = Math.max(0, strength)
+    this.addForceMaterial.uniforms.uVelocity.value = this.velocity.read.texture
+    ;(this.addForceMaterial.uniforms.uPoint.value as THREE.Vector2).set(px, py)
+    this.addForceMaterial.uniforms.uRadius.value = safeRadius
+    this.addForceMaterial.uniforms.uStrength.value = safeStrength
+    this.renderPass(this.velocity.write, this.addForceMaterial)
+    swap(this.velocity)
+  }
+
+  step(dt: number) {
+    if (!(dt > 0)) {
+      dt = 1 / 60
+    }
+    const clampedDt = Math.min(dt, this.dtClamp)
+
+    this.advectMaterial.uniforms.uVelocity.value = this.velocity.read.texture
+    this.advectMaterial.uniforms.uDt.value = clampedDt
+    this.renderPass(this.velocity.write, this.advectMaterial)
+    swap(this.velocity)
+
+    this.divergenceMaterial.uniforms.uVelocity.value = this.velocity.read.texture
+    this.renderPass(this.divergence, this.divergenceMaterial)
+
+    this.clearTarget(this.pressure.read)
+    this.clearTarget(this.pressure.write)
+
+    for (let i = 0; i < this.iterations; i += 1) {
+      this.jacobiMaterial.uniforms.uPressure.value = this.pressure.read.texture
+      this.jacobiMaterial.uniforms.uDivergence.value = this.divergence.texture
+      this.renderPass(this.pressure.write, this.jacobiMaterial)
+      swap(this.pressure)
+    }
+
+    this.projectMaterial.uniforms.uVelocity.value = this.velocity.read.texture
+    this.projectMaterial.uniforms.uPressure.value = this.pressure.read.texture
+    this.renderPass(this.velocity.write, this.projectMaterial)
+    swap(this.velocity)
+
+    if (this.pendingInitLog) {
+      try {
+        console.info('[PC] fluid init', { size: this.size, iters: this.iterations })
+      } catch {
+        /* noop */
+      }
+      this.pendingInitLog = false
+    }
   }
 
   getTexture() {
-    return this.texture
+    return this.velocity.read.texture
   }
 
   getInvSize(): [number, number] {
-    const inv = 1 / this.size
-    return [inv, inv]
-  }
-
-  /**
-   * Add a radial force at normalized UV (0..1). Radius is normalized (0..1 of the grid extent).
-   * Strength is ~[0..1] and scaled internally.
-   */
-  addForce(uv: [number, number], radius: number, strength: number) {
-    const [u, v] = uv
-    if (!Number.isFinite(u) || !Number.isFinite(v)) return
-    const rNorm = Math.max(1e-3, Math.min(0.5, radius))
-    const sNorm = Math.max(0, Math.min(1, strength))
-    const cx = Math.floor(u * (this.size - 1))
-    const cy = Math.floor(v * (this.size - 1))
-    const rp = Math.max(1, Math.floor(rNorm * this.size))
-    const sigma = rp * 0.6
-    const twoSigma2 = 2 * sigma * sigma
-    const gain = 6.0 * sNorm // tuned for visible impact within 1-2 frames
-
-    for (let dy = -rp; dy <= rp; dy += 1) {
-      const y = cy + dy
-      if (y < 0 || y >= this.size) continue
-      for (let dx = -rp; dx <= rp; dx += 1) {
-        const x = cx + dx
-        if (x < 0 || x >= this.size) continue
-        const dist2 = dx * dx + dy * dy
-        const w = Math.exp(-dist2 / Math.max(1, twoSigma2))
-        const idx = (y * this.size + x) * 2
-        // Direction: radial outward from center
-        const dirX = dx === 0 && dy === 0 ? 0 : dx / Math.max(1, Math.hypot(dx, dy))
-        const dirY = dx === 0 && dy === 0 ? 0 : dy / Math.max(1, Math.hypot(dx, dy))
-        this.field[idx + 0] += dirX * gain * w
-        this.field[idx + 1] += dirY * gain * w
-      }
-    }
-  }
-
-  /**
-   * Semi-implicit cheap diffusion + decay. Bilinear blur on velocity followed by decay.
-   */
-  step(dt: number) {
-    if (!(dt > 0)) dt = 1 / 60
-    const s = this.size
-    const a = this.field
-    const b = this.next
-    const diffW = Math.max(0, Math.min(1, this.diffusion))
-    const decay = Math.pow(this.decay, dt * 60)
-
-    // 3x3 blur (separable approximation)
-    for (let y = 0; y < s; y += 1) {
-      const y0 = y > 0 ? y - 1 : y
-      const y1 = y
-      const y2 = y < s - 1 ? y + 1 : y
-      for (let x = 0; x < s; x += 1) {
-        const x0 = x > 0 ? x - 1 : x
-        const x1 = x
-        const x2 = x < s - 1 ? x + 1 : x
-        const i = (y1 * s + x1) * 2
-        // Sample 3x3 neighborhood
-        let sumX = 0, sumY = 0
-        for (const yy of [y0, y1, y2]) {
-          for (const xx of [x0, x1, x2]) {
-            const j = (yy * s + xx) * 2
-            sumX += a[j + 0]
-            sumY += a[j + 1]
-          }
-        }
-        const avgX = sumX / 9
-        const avgY = sumY / 9
-        const vx = a[i + 0] * (1 - diffW) + avgX * diffW
-        const vy = a[i + 1] * (1 - diffW) + avgY * diffW
-        b[i + 0] = vx * decay
-        b[i + 1] = vy * decay
-      }
-    }
-
-    // swap
-    this.field.set(b)
-
-    // pack into texture RG
-    const out = this.texData
-    let k = 0
-    for (let i = 0; i < s * s; i += 1) {
-      out[k + 0] = this.field[i * 2 + 0]
-      out[k + 1] = this.field[i * 2 + 1]
-      out[k + 2] = 0
-      out[k + 3] = 1
-      k += 4
-    }
-    this.texture.needsUpdate = true
+    return [this.invSizeVec.x, this.invSizeVec.y]
   }
 
   dispose() {
-    this.texture.dispose()
+    this.velocity.read.dispose()
+    this.velocity.write.dispose()
+    this.pressure.read.dispose()
+    this.pressure.write.dispose()
+    this.divergence.dispose()
+    this.advectMaterial.dispose()
+    this.addForceMaterial.dispose()
+    this.divergenceMaterial.dispose()
+    this.jacobiMaterial.dispose()
+    this.projectMaterial.dispose()
+    this.quad.geometry.dispose()
+    this.scene.clear()
   }
 }
-
-

@@ -52,6 +52,13 @@ const TEMP_FORCE_CLAMP = 12
 const _CANVAS_DEBUG_READBACK = process.env.NEXT_PUBLIC_DEBUG_CANVAS === '1'
 const TARGET_TEMP_RADIUS = 0.14
 const AFTER_REVEAL_LOG_TAG = '[PC] uniforms after-reveal'
+const FLUID_GRID_SIZE = 256
+const FLUID_JACOBI_ITERS = 10
+const FLUID_FORCE_RADIUS = 0.18
+const FLUID_FORCE_GAIN = 9.5
+const FLUID_VEL_TO_NDC = 0.028
+const FLUID_INK_BLEND = 0.78
+const FLUID_SPLAT_LOG_TAG = '[PC] fluid splat'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -877,16 +884,33 @@ function SimDriver({
 function FluidDriver({
   fluidRef,
   uniforms,
+  velToNdc,
+  inkBlend,
 }: {
   fluidRef: React.MutableRefObject<FluidSim | null>
   uniforms: DreamdustStageUniforms
+  velToNdc: number
+  inkBlend: number
 }) {
   useFrame((_, delta) => {
     const sim = fluidRef.current
     if (!sim) return
     sim.step(delta)
-    if (uniforms && uniforms.uVelocity && (uniforms as any).uVelocity.value !== sim.getTexture()) {
-      ;(uniforms as any).uVelocity.value = sim.getTexture()
+    const texture = sim.getTexture()
+    if (uniforms && uniforms.uVelocity && (uniforms as any).uVelocity.value !== texture) {
+      ;(uniforms as any).uVelocity.value = texture
+    }
+    const inv = sim.getInvSize()
+    if (uniforms && uniforms.uVelTexInvSize && Array.isArray(uniforms.uVelTexInvSize.value)) {
+      const target = uniforms.uVelTexInvSize.value as [number, number]
+      target[0] = inv[0]
+      target[1] = inv[1]
+    }
+    if (uniforms && uniforms.uVelToNdc) {
+      uniforms.uVelToNdc.value = velToNdc
+    }
+    if (uniforms && uniforms.uInkBlend) {
+      uniforms.uInkBlend.value = inkBlend
     }
   })
   return null
@@ -1158,6 +1182,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const rendererRef = React.useRef<THREE.WebGLRenderer | null>(null)
   const [rendererReadyTick, setRendererReadyTick] = React.useState(0)
   const simRef = React.useRef<ParticleSim | null>(null)
+  const fluidRef = React.useRef<FluidSim | null>(null)
+  const velToNdcRef = React.useRef(FLUID_VEL_TO_NDC)
   const [simState, setSimState] = React.useState<StageSimState | null>(null)
   const simFitRequestKeyRef = React.useRef<string | null>(null)
   const simFitLoggedKeyRef = React.useRef<string | null>(null)
@@ -1171,35 +1197,55 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!simRef.current) {
       simRef.current = new ParticleSim(renderer)
     }
-    if (!fluidRef.current) {
-      try {
-        fluidRef.current = new FluidSim(256)
-        velToNdcRef.current = 0.0025
-        setUniform('uVelocity', fluidRef.current.getTexture() as unknown as any)
-        setUniform('uVelTexInvSize', fluidRef.current.getInvSize() as unknown as any)
-        setUniform('uVelToNdc', velToNdcRef.current as unknown as any)
-        setUniform('uInkBlend', 1 as unknown as any)
-        console.info('[PC] fluid init', { size: 256, iters: 'cpu-diffuse', gain: velToNdcRef.current })
-      } catch {
-        /* noop */
-      }
-    }
     return () => {
       simRef.current?.dispose()
       simRef.current = null
       simInitKeyRef.current = null
-      fluidRef.current?.dispose?.()
+    }
+  }, [rendererReadyTick])
+  React.useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer) {
+      return undefined
+    }
+    try {
+      const sim = new FluidSim(renderer, {
+        size: FLUID_GRID_SIZE,
+        iterations: FLUID_JACOBI_ITERS,
+      })
+      fluidRef.current = sim
+      velToNdcRef.current = FLUID_VEL_TO_NDC
+      const inv = sim.getInvSize()
+      setUniform('uVelocity', sim.getTexture() as any)
+      setUniform('uVelTexInvSize', inv as unknown as [number, number])
+      setUniform('uVelToNdc', FLUID_VEL_TO_NDC as unknown as number)
+      setUniform('uInkBlend', FLUID_INK_BLEND as unknown as number)
+      try {
+        console.info('[PC] fluid uniforms prime', {
+          invSize: inv,
+          velToNdc: FLUID_VEL_TO_NDC,
+          inkBlend: FLUID_INK_BLEND,
+        })
+      } catch {
+        /* noop */
+      }
+    } catch (error) {
+      console.error('[PC] fluid init failed', error)
+    }
+    return () => {
+      const sim = fluidRef.current
+      if (sim) {
+        sim.dispose()
+      }
       fluidRef.current = null
     }
-  }, [rendererReadyTick, setUniform])
+  }, [rendererReadyTick, setUniform, uniforms])
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
   const [devicePixelRatioRaw, setDevicePixelRatioRaw] = React.useState<number | null>(null)
   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [drawing, setDrawing] = React.useState(false)
-  const fluidRef = React.useRef<FluidSim | null>(null)
-  const velToNdcRef = React.useRef(0)
   const [logCameraTrigger, setLogCameraTrigger] = React.useState(0)
   const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
@@ -1358,6 +1404,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const tempIntensityRef = React.useRef(0)
   // Dev-only visibility boost for temp force, gated by URL (?inkboost=1 or a number like 1.8)
   const inkBoostRef = React.useRef(1)
+  const fluidSplatLogRef = React.useRef(false)
   // Reverted: remove temp center/radius for Phase A global offset
   const debugFlagDefaults = React.useMemo(() => getDebugFlags(), [])
   const { flags: debugFlags, simSnapshot, inkSnapshot, aestheticPreset, setAestheticPreset } =
@@ -2252,7 +2299,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       try {
         const rs = (u?.uTempRadius?.value ?? TARGET_TEMP_RADIUS) as number
         const fs = TEMP_FORCE_SCALE
-        console.info(`${AFTER_REVEAL_LOG_TAG}`, { uTempRadius: rs, uTempFalloffOn: 1, forceScale: fs })
+        console.info(`${AFTER_REVEAL_LOG_TAG}`, {
+          uTempRadius: rs,
+          uTempFalloffOn: 1,
+          forceScale: fs,
+          velToNdc: Number(velToNdcRef.current.toFixed(4)),
+          inkBlend: Number(FLUID_INK_BLEND.toFixed(4)),
+          fluidSize: FLUID_GRID_SIZE,
+          fluidIters: FLUID_JACOBI_ITERS,
+        })
       } catch {
         /* noop */
       }
@@ -3093,15 +3148,33 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             mirrorUD={!!ui.mirrorUD}
             onForceSample={applyTempForce}
             onForceSplat={(uv, radius, strength) => {
+              const sim = fluidRef.current
+              if (!sim) {
+                return
+              }
+              const [u, v] = uv
+              const radiusClamp = Math.min(FLUID_FORCE_RADIUS, Math.max(0.06, radius * 4.0))
+              const normalized = Math.min(1, Math.max(0, strength))
+              const strengthNorm = Math.max(0.18, normalized)
+              const tunedStrength = Math.min(FLUID_FORCE_GAIN, strengthNorm * FLUID_FORCE_GAIN)
               try {
-                fluidRef.current?.addForce(uv, radius, strength)
-              } catch {
-                /* noop */
+                sim.addForce([u, v], radiusClamp, tunedStrength)
+                if (!fluidSplatLogRef.current) {
+                  console.info(FLUID_SPLAT_LOG_TAG, {
+                    uv: [Number(u.toFixed(4)), Number(v.toFixed(4))],
+                    radius: Number(radiusClamp.toFixed(4)),
+                    strength: Number(tunedStrength.toFixed(4)),
+                  })
+                  fluidSplatLogRef.current = true
+                }
+              } catch (error) {
+                console.error('[PC] fluid splat failed', error)
               }
             }}
             onStart={() => {
               inkUpdateLoggedRef.current = false
               setDrawing(true)
+              fluidSplatLogRef.current = false
               // Ensure vertex ink is enabled on first interaction
               try {
                 if (runtimeCaps?.vertexInkOk) setUniform('uVertexInkOk', 1)
@@ -3150,7 +3223,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           tempIntensityRef={tempIntensityRef}
           setUniform={setUniform}
         />
-        <FluidDriver fluidRef={fluidRef} uniforms={uniforms} />
+        <FluidDriver
+          fluidRef={fluidRef}
+          uniforms={uniforms}
+          velToNdc={velToNdcRef.current}
+          inkBlend={FLUID_INK_BLEND}
+        />
         <CameraSync
           fovDeg={ui.fovDeg}
           fitRequest={fitRequest}
