@@ -96,6 +96,10 @@ const DEFAULT_UNIFORM_VALUES = {
   uTempCenter: [0.5, 0.5] as [number, number],
   uTempRadius: 0.16,
   uTempFalloffOn: 0,
+  uVelocity: null,
+  uVelTexInvSize: [1, 1] as [number, number],
+  uVelToNdc: 0.0,
+  uInkBlend: 1.0,
   uSimPositionTex: null,
   uSimColorTex: null,
   uAlphaFloor: 0.00,
@@ -222,6 +226,10 @@ uniform float uTempIntensity;
 uniform vec2 uTempCenter;
 uniform float uTempRadius;
 uniform float uTempFalloffOn;
+uniform sampler2D uVelocity;
+uniform vec2 uVelTexInvSize;
+uniform float uVelToNdc;
+uniform float uInkBlend;
 
 #if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
 uniform float uDebugTelemetryMode;
@@ -500,6 +508,15 @@ void main() {
 #endif
 
   gl_Position = projectionMatrix * viewPos4;
+
+  // Fluid-driven screen-space displacement (MVP)
+  if (uVelToNdc > 1e-5) {
+    vec2 clip = gl_Position.xy / max(gl_Position.w, 1e-5);
+    vec2 uv = clip * 0.5 + 0.5;
+    vec2 vel = texture2D(uVelocity, uv).xy;
+    vec2 disp = vel * uVelToNdc;
+    gl_Position.xy = mix(gl_Position.xy, gl_Position.xy + disp, clamp(uInkBlend, 0.0, 1.0));
+  }
 }
 `
 
@@ -772,8 +789,8 @@ export function makeDreamdustMaterial(
   const vertexTelemetry = resolved.debugVertexLog ? createVertexTelemetryCollector() : null
   const originalOnAfterRender = material.onAfterRender?.bind(material)
   material.onAfterRender = function onAfterRenderHook(
-    renderer: THREE.WebGLRenderer,
-    scene: THREE.Scene,
+    renderer: any,
+    scene: any,
     camera: THREE.Camera,
     geometry: THREE.BufferGeometry,
     object: THREE.Object3D,

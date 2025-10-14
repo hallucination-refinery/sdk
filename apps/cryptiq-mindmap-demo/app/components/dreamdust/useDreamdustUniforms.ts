@@ -48,6 +48,10 @@ export type DreamdustUniformValueMap = {
   uInkTintBoost: number
   uVertexInkOk: number
   uSpriteSharpness: number
+  uVelocity?: unknown | null
+  uVelTexInvSize?: [number, number]
+  uVelToNdc?: number
+  uInkBlend?: number
 }
 
 export type DreamdustUniforms = {

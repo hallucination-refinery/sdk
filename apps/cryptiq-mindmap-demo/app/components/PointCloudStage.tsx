@@ -42,6 +42,7 @@ import {
   pointCap,
 } from './pointcloud/budget'
 import { ParticleSim } from './dreamdust/sim/ParticleSim'
+import { FluidSim } from './dreamdust/fluid/FluidSim'
 import DebugHud from './dreamdust/ui/DebugHud'
 import { createVertexTelemetryCollector } from './dreamdust/telemetry'
 
@@ -873,6 +874,24 @@ function SimDriver({
   return null
 }
 
+function FluidDriver({
+  fluidRef,
+  uniforms,
+}: {
+  fluidRef: React.MutableRefObject<FluidSim | null>
+  uniforms: DreamdustStageUniforms
+}) {
+  useFrame((_, delta) => {
+    const sim = fluidRef.current
+    if (!sim) return
+    sim.step(delta)
+    if (uniforms && uniforms.uVelocity && (uniforms as any).uVelocity.value !== sim.getTexture()) {
+      ;(uniforms as any).uVelocity.value = sim.getTexture()
+    }
+  })
+  return null
+}
+
 function CameraPositionDebugger({ expectedPosition }: { expectedPosition?: [number, number, number] }) {
   const { camera } = useThree()
   const loggedRef = React.useRef(false)
@@ -1152,18 +1171,35 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!simRef.current) {
       simRef.current = new ParticleSim(renderer)
     }
+    if (!fluidRef.current) {
+      try {
+        fluidRef.current = new FluidSim(256)
+        velToNdcRef.current = 0.0025
+        setUniform('uVelocity', fluidRef.current.getTexture() as unknown as any)
+        setUniform('uVelTexInvSize', fluidRef.current.getInvSize() as unknown as any)
+        setUniform('uVelToNdc', velToNdcRef.current as unknown as any)
+        setUniform('uInkBlend', 1 as unknown as any)
+        console.info('[PC] fluid init', { size: 256, iters: 'cpu-diffuse', gain: velToNdcRef.current })
+      } catch {
+        /* noop */
+      }
+    }
     return () => {
       simRef.current?.dispose()
       simRef.current = null
       simInitKeyRef.current = null
+      fluidRef.current?.dispose?.()
+      fluidRef.current = null
     }
-  }, [rendererReadyTick])
+  }, [rendererReadyTick, setUniform])
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
   const [devicePixelRatioRaw, setDevicePixelRatioRaw] = React.useState<number | null>(null)
   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [drawing, setDrawing] = React.useState(false)
+  const fluidRef = React.useRef<FluidSim | null>(null)
+  const velToNdcRef = React.useRef(0)
   const [logCameraTrigger, setLogCameraTrigger] = React.useState(0)
   const inkUpdateLoggedRef = React.useRef(false)
   const base = sceneId ? `/assets/pointclouds/${sceneId}` : null
@@ -3056,6 +3092,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             mirrorLR={!!ui.mirrorLR}
             mirrorUD={!!ui.mirrorUD}
             onForceSample={applyTempForce}
+            onForceSplat={(uv, radius, strength) => {
+              try {
+                fluidRef.current?.addForce(uv, radius, strength)
+              } catch {
+                /* noop */
+              }
+            }}
             onStart={() => {
               inkUpdateLoggedRef.current = false
               setDrawing(true)
@@ -3107,6 +3150,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           tempIntensityRef={tempIntensityRef}
           setUniform={setUniform}
         />
+        <FluidDriver fluidRef={fluidRef} uniforms={uniforms} />
         <CameraSync
           fovDeg={ui.fovDeg}
           fitRequest={fitRequest}

@@ -38,6 +38,7 @@ export type InkSurfaceProps = {
   }) => void
   onTexture?: (texture: AnyDataTexture) => void
   onForceSample?: (sample: { delta: [number, number]; uv: [number, number] }) => void
+  onForceSplat?: (uv: [number, number], radius: number, strength: number) => void
   mirrorLR?: boolean
   mirrorUD?: boolean
 }
@@ -66,6 +67,7 @@ export function InkSurface({
   onEnd,
   onTexture,
   onForceSample,
+  onForceSplat,
   mirrorLR = false,
   mirrorUD = false,
 }: InkSurfaceProps) {
@@ -293,6 +295,11 @@ export function InkSurface({
           const dxNorm = (client.x - lastClient.x) / width
           const dyNorm = (client.y - lastClient.y) / height
           cb({ delta: [dxNorm, dyNorm], uv: [u, v] })
+        }
+        if (typeof onForceSplat === 'function') {
+          const movePx = Math.hypot(client.x - lastClient.x, client.y - lastClient.y)
+          const strength = Math.min(1, movePx / 24)
+          onForceSplat([u, v], BRUSH_RADIUS_PX / TEXTURE_SIZE, strength)
         }
       }
       lastClientRef.current = { x: client.x, y: client.y }
