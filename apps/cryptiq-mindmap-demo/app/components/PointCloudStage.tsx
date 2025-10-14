@@ -1239,7 +1239,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
       fluidRef.current = null
     }
-  }, [rendererReadyTick, setUniform, uniforms])
+  }, [rendererReadyTick, setUniform])
   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
