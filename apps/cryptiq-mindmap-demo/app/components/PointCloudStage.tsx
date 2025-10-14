@@ -48,6 +48,9 @@ import { createVertexTelemetryCollector } from './dreamdust/telemetry'
 const TEMP_FORCE_DECAY = 0.92
 const TEMP_FORCE_SCALE = 220
 const TEMP_FORCE_CLAMP = 12
+const _CANVAS_DEBUG_READBACK = process.env.NEXT_PUBLIC_DEBUG_CANVAS === '1'
+const TARGET_TEMP_RADIUS = 0.14
+const AFTER_REVEAL_LOG_TAG = '[PC] uniforms after-reveal'
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -1373,7 +1376,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       if (falloffRequested) {
         falloffLatchAppliedRef.current = false
         setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
-        setUniform('uTempRadius', 0.14 as unknown as any)
       }
       const boostParam = params.get('inkboost')
       if (boostParam) {
@@ -1401,7 +1403,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         setUniform('uTempFalloffOn', 1)
       }
       setUniform('uTempCenter', uniformsAny?.uTempCenter?.value ?? [0.5, 0.5])
-        setUniform('uTempRadius', uniformsAny?.uTempRadius?.value ?? 0.14)
     } catch {
       /* noop */
     }
@@ -1438,9 +1439,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         if (u?.uTempFalloffOn?.value < 0.5) {
           setUniform('uTempFalloffOn', 1)
         }
-        if (!u?.uTempRadius?.value) {
-          setUniform('uTempRadius', 0.14 as unknown as any)
-        }
+        // radius owned by post-reveal effect; avoid early-frame overrides here
         if (!u?.uTempCenter?.value) {
           setUniform('uTempCenter', [0.5, 0.5] as unknown as any)
         }
@@ -1512,6 +1511,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     runtimeCaps,
     uniforms,
   ])
+
+  // (moved after-reveal initialization into the reveal-start effect below)
   const prebakedMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
     const material = createDreamdustMaterial(uniforms, {
@@ -2171,6 +2172,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     setFitRequest((v) => v + 1)
     revealStartedRef.current = true
+    // Single-source falloff/radius initialization and diagnostic log
+    try {
+      const u: any = uniforms
+      setUniform('uTempFalloffOn', 1)
+      setUniform('uTempCenter', u?.uTempCenter?.value ?? [0.5, 0.5])
+      setUniform('uTempRadius', TARGET_TEMP_RADIUS as unknown as any)
+      try {
+        const rs = (u?.uTempRadius?.value ?? TARGET_TEMP_RADIUS) as number
+        const fs = TEMP_FORCE_SCALE
+        console.info(`${AFTER_REVEAL_LOG_TAG}`, { uTempRadius: rs, uTempFalloffOn: 1, forceScale: fs })
+      } catch {
+        /* noop */
+      }
+    } catch {
+      /* noop */
+    }
   }, [geometryReady, hasRevealUniform, startReveal])
 
   // Compose world-space debug flips with the PCA quaternion so toggles work live
