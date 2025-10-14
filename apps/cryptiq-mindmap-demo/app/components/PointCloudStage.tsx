@@ -1463,6 +1463,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       const fx = clampForce(dx * scale)
       const fy = clampForce(-dy * scale)
       const magnitude = Math.hypot(fx, fy)
+      try {
+        // Diagnostic: force computation snapshot before thresholds/returns
+        console.warn('[PC] force compute', {
+          dx,
+          dy,
+          fx,
+          fy,
+          magnitude,
+          intensityCandidate: Math.min(1, magnitude / TEMP_FORCE_CLAMP),
+          clamp: TEMP_FORCE_CLAMP,
+          scale,
+        })
+      } catch {
+        /* noop */
+      }
       if (magnitude <= 1e-6) {
         return
       }
@@ -1472,6 +1487,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       setUniform('uTempForce', tempForceRef.current)
       setUniform('uTempIntensity', tempIntensityRef.current)
       setUniform('uTempCenter', [u, v] as unknown as any)
+      try {
+        const uAny: any = uniforms
+        console.warn('[PC] force uniforms write', {
+          uTempIntensity: uAny?.uTempIntensity?.value,
+          uTempForce: uAny?.uTempForce?.value,
+          center: [u, v],
+        })
+        requestAnimationFrame(() => {
+          try {
+            const uPost: any = uniforms
+            console.warn('[PC] intensity post-rAF', {
+              uTempIntensity: uPost?.uTempIntensity?.value,
+            })
+          } catch {
+            /* noop */
+          }
+        })
+      } catch {
+        /* noop */
+      }
     },
     [setUniform],
   )

@@ -305,6 +305,13 @@ export function InkSurface({
       }
       lastCanvasRef.current = currentPoint
       scheduleFlush()
+      try {
+        console.warn('[PC] mid-stroke uniforms dump (request)')
+        const w: any = window as any
+        if (w?.dreamdust?.dumpUniforms) w.dreamdust.dumpUniforms()
+      } catch {
+        // noop
+      }
     }
 
     const handlePointerDown = (event: PointerEvent) => {
