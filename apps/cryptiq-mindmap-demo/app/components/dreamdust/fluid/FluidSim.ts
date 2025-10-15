@@ -7,11 +7,9 @@ import { DIVERGENCE_SHADER } from './shaders/divergence'
 import { JACOBI_SHADER } from './shaders/jacobi'
 import { PROJECT_SHADER } from './shaders/project'
 
-const FULLSCREEN_VERT = /* glsl */ String.raw`#version 300 es
+const FULLSCREEN_VERT = /* glsl */ String.raw`
 precision highp float;
 
-in vec3 position;
-in vec2 uv;
 out vec2 vUv;
 
 void main() {

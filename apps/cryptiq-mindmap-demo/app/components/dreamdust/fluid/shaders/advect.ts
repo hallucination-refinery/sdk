@@ -1,4 +1,4 @@
-export const ADVECT_SHADER = /* glsl */ String.raw`#version 300 es
+export const ADVECT_SHADER = /* glsl */ String.raw`
 precision highp float;
 
 uniform sampler2D uVelocity;
