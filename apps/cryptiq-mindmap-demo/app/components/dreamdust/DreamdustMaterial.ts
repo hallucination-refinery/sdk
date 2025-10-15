@@ -532,9 +532,6 @@ void main() {
 const FRAGMENT_SHADER = /* glsl */ `
 precision highp float;
 
-#define varying in
-#define texture2D texture
-
 uniform float uTime;
 uniform float uNoiseSpeed;
 uniform float uEvolution;
