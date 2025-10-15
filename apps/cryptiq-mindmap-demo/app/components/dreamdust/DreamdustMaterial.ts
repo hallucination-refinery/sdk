@@ -96,7 +96,13 @@ const DEFAULT_UNIFORM_VALUES = {
   uTempCenter: [0.5, 0.5] as [number, number],
   uTempRadius: 0.16,
   uTempFalloffOn: 0,
-  uVelocity: null,
+  uVelocity: (() => {
+    // Dummy 1x1 black texture so shader compiles; replaced by FluidSim on init
+    const data = new Float32Array([0, 0, 0, 1])
+    const tex = new (THREE as any).DataTexture(data, 1, 1, (THREE as any).RGBAFormat, (THREE as any).FloatType)
+    tex.needsUpdate = true
+    return tex
+  })(),
   uVelTexInvSize: [1, 1] as [number, number],
   uVelToNdc: 0.0,
   uInkBlend: 1.0,

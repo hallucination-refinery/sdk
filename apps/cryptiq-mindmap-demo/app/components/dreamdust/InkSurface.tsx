@@ -264,15 +264,23 @@ export function InkSurface({
       }
     }
 
-    const drawAtClient = (client: Vec2) => {
-      const context = ctxRef.current
+    type PointerInfo = {
+      uv: [number, number]
+      width: number
+      height: number
+    }
+
+    const resolvePointer = (client: Vec2): PointerInfo | null => {
       const domElement = gl?.domElement
-      if (!context || !domElement) {
-        return
+      if (!domElement) {
+        return null
       }
       const rect = domElement.getBoundingClientRect()
       const width = rect.width || 0
       const height = rect.height || 0
+      if (width <= 0 || height <= 0) {
+        return null
+      }
       const offsetX = client.x - rect.left
       const offsetY = client.y - rect.top
       const rawU = width > 0 ? offsetX / width : Number.NaN
@@ -282,9 +290,23 @@ export function InkSurface({
       const mirror = mirrorRef.current
       const v = mirror.ud ? 1 - vRaw : vRaw
       logInkGuard(rawU, rawV, u, v)
-      if (width <= 0 || height <= 0) {
+      return { uv: [u, v], width, height }
+    }
+
+    const drawAtClient = (client: Vec2, infoOverride?: PointerInfo | null) => {
+      const context = ctxRef.current
+      if (!context) {
         return
       }
+      const info = infoOverride ?? resolvePointer(client)
+      if (!info) {
+        return
+      }
+      const {
+        uv: [u, v],
+        width,
+        height,
+      } = info
       const canvasX = u * TEXTURE_SIZE
       const canvasY = v * TEXTURE_SIZE
       const lastClient = lastClientRef.current
@@ -337,6 +359,7 @@ export function InkSurface({
       } catch {
         // Ignore pointer-capture failures (e.g., unsupported elements)
       }
+      const pointerInfo = resolvePointer({ x: event.clientX, y: event.clientY })
       pointerStateRef.current = {
         pointerId: event.pointerId,
         startTime: typeof performance !== 'undefined' ? performance.now() : event.timeStamp,
@@ -348,7 +371,7 @@ export function InkSurface({
       distanceRef.current = 0
       ctxRef.current.clearRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE) // single-stroke heatmap
       startGuardWatchdog()
-      drawAtClient({ x: event.clientX, y: event.clientY })
+      drawAtClient({ x: event.clientX, y: event.clientY }, pointerInfo)
       scheduleFlush()
       try {
         console.log('[PC] draw start')
@@ -362,6 +385,10 @@ export function InkSurface({
         } catch {
           // Ignore downstream handler failures
         }
+      }
+      if (pointerInfo && typeof onForceSplat === 'function') {
+        const radius = Math.max(0.06, BRUSH_RADIUS_PX / TEXTURE_SIZE)
+        onForceSplat(pointerInfo.uv, radius, 0.6)
       }
     }
 

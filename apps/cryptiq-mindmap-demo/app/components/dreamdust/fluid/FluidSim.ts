@@ -167,10 +167,11 @@ export class FluidSim {
     const prevMaterial = this.quad.material
     this.quad.material = material
     const prevAutoClear = this.renderer.autoClear
+    const prevTarget = this.renderer.getRenderTarget()
     this.renderer.autoClear = false
     this.renderer.setRenderTarget(target)
     this.renderer.render(this.scene, this.camera)
-    this.renderer.setRenderTarget(null)
+    this.renderer.setRenderTarget(prevTarget)
     this.renderer.autoClear = prevAutoClear
     this.quad.material = prevMaterial
   }
@@ -180,10 +181,11 @@ export class FluidSim {
     this.renderer.autoClear = false
     const prevClearColor = this.renderer.getClearColor(new THREE.Color())
     const prevClearAlpha = this.renderer.getClearAlpha()
+    const prevTarget = this.renderer.getRenderTarget()
     this.renderer.setRenderTarget(target)
     this.renderer.setClearColor(0x000000, 1)
     this.renderer.clear(true, false, false)
-    this.renderer.setRenderTarget(null)
+    this.renderer.setRenderTarget(prevTarget)
     this.renderer.setClearColor(prevClearColor, prevClearAlpha)
     this.renderer.autoClear = prevAutoClear
   }
@@ -209,27 +211,39 @@ export class FluidSim {
     }
     const clampedDt = Math.min(dt, this.dtClamp)
 
-    this.advectMaterial.uniforms.uVelocity.value = this.velocity.read.texture
+    // Advect velocity into the write target, then flip read/write.
+    const advectSrc = this.velocity.read
+    const advectDst = this.velocity.write
+    this.advectMaterial.uniforms.uVelocity.value = advectSrc.texture
     this.advectMaterial.uniforms.uDt.value = clampedDt
-    this.renderPass(this.velocity.write, this.advectMaterial)
+    this.renderPass(advectDst, this.advectMaterial)
     swap(this.velocity)
 
-    this.divergenceMaterial.uniforms.uVelocity.value = this.velocity.read.texture
+    // Divergence uses the newly-advected field but does not flip targets.
+    const divergenceSrc = this.velocity.read
+    this.divergenceMaterial.uniforms.uVelocity.value = divergenceSrc.texture
     this.renderPass(this.divergence, this.divergenceMaterial)
 
     this.clearTarget(this.pressure.read)
     this.clearTarget(this.pressure.write)
 
     for (let i = 0; i < this.iterations; i += 1) {
-      this.jacobiMaterial.uniforms.uPressure.value = this.pressure.read.texture
+      // Jacobi relax into write target, then swap for the next iteration.
+      const pressureSrc = this.pressure.read
+      const pressureDst = this.pressure.write
+      this.jacobiMaterial.uniforms.uPressure.value = pressureSrc.texture
       this.jacobiMaterial.uniforms.uDivergence.value = this.divergence.texture
-      this.renderPass(this.pressure.write, this.jacobiMaterial)
+      this.renderPass(pressureDst, this.jacobiMaterial)
       swap(this.pressure)
     }
 
-    this.projectMaterial.uniforms.uVelocity.value = this.velocity.read.texture
-    this.projectMaterial.uniforms.uPressure.value = this.pressure.read.texture
-    this.renderPass(this.velocity.write, this.projectMaterial)
+    // Projection writes the divergence-free velocity and swaps once more.
+    const projectVelocitySrc = this.velocity.read
+    const projectVelocityDst = this.velocity.write
+    const pressureField = this.pressure.read
+    this.projectMaterial.uniforms.uVelocity.value = projectVelocitySrc.texture
+    this.projectMaterial.uniforms.uPressure.value = pressureField.texture
+    this.renderPass(projectVelocityDst, this.projectMaterial)
     swap(this.velocity)
 
     if (this.pendingInitLog) {
