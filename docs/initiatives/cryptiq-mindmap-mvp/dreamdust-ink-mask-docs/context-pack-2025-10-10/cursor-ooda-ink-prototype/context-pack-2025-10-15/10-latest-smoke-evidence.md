@@ -1,13 +1,13 @@
 ---
 title: Latest Smoke Evidence – Prod URL (scene-03)
-date: 2025-10-16T19:08:30Z
+date: 2025-10-16T22:58:24Z
 tags: [evidence, smoke, prod]
-commit: a1c72c41
+commit: 3a84ff69
 branch: docs/ink-falloff-flag-latch-2025-10-12
-url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03
+url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&simParamPointBaseSize=5
 ---
 
-Summary: Prod server verified (200 OK); shader gate clean; fluid initialized; particles still not visually apparent in screenshots. Change under test: `uAlphaFloor 0.0 → 0.15`.
+Summary: Prod server verified (200 OK); shader gate clean; fluid initialized; `simParamPointBaseSize=5` honored; particles still not discernible in screenshots; under‑finger motion not yet visible. Changes under test: `uAlphaFloor 0.0 → 0.15` and point size override via URL.
 
 Key console lines (MCP run):
 - [INFO] [PC] fluid uniforms prime {invSize: [..], velToNdc: 0.028, inkBlend: 0.78}
@@ -16,21 +16,20 @@ Key console lines (MCP run):
 - No THREE.WebGLProgram validation errors observed.
 
 Screenshots (MCP):
-- pre: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-pre.png
-- post-tap: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-tap.png
-- post-drag: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-drag.png
-- debug: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-debug.png
+- pre: cursor-ooda-ink-prototype/assets/3a84ff69/docs/ink-falloff-flag-latch-2025-10-12/20251016-225824/2025-10-16-pre.png
+- post-tap: cursor-ooda-ink-prototype/assets/3a84ff69/docs/ink-falloff-flag-latch-2025-10-12/20251016-225824/2025-10-16-post-tap.png
+- post-drag: cursor-ooda-ink-prototype/assets/3a84ff69/docs/ink-falloff-flag-latch-2025-10-12/20251016-225824/2025-10-16-post-drag.png
 
 Console log (MCP):
-- cursor-ooda-ink-prototype/console/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190812/console.json
+- cursor-ooda-ink-prototype/console/3a84ff69/docs/ink-falloff-flag-latch-2025-10-12/20251016-225824/console.json
 
 Playwright result:
-- BASE_URL=http://127.0.0.1:3000; SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03
-- Spec: tests/brain.smoke.spec.ts (expected to target /brain overlay) → FAILED (timeout waiting for Brain Vertices overlay). Artifacts:
-  - .clmem/artifacts/playwright/brain.smoke-brain-smoke-chromium/test-failed-1.png
-  - .clmem/artifacts/playwright/brain.smoke-brain-smoke-chromium/trace.zip
+- BASE_URL=http://127.0.0.1:3000; SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03&simParamPointBaseSize=5
+- Spec: tests/ink.smoke.spec.ts → FAILED (waitForFunction timeout on reveal logs buffer); Artifacts:
+  - .clmem/artifacts/playwright/ink.smoke-ink-smoke-quiz-route--chromium/test-failed-1.png
+  - .clmem/artifacts/playwright/ink.smoke-ink-smoke-quiz-route--chromium/trace.zip
   - retry artifacts under ...-retry1/
 
-Decision: FAIL (visibility) – particles not discernible; next step is to raise visibility gates (`uAlphaFloor`, `uPointBaseSize`) and re‑run. Playwright spec must be adjusted to a quiz/scene route or a dedicated ink smoke to avoid relying on `/brain` overlay.
+Decision: FAIL (visibility) – despite size override and clean shader logs, screenshots show no visible points; console confirms fluid init and after‑reveal. Next: increase size further (e.g., simParamPointBaseSize=8) or temporarily pin a debug preset that forces `uPointBaseSize` and `uAlphaFloor` in code to isolate any UI/preset overwrite, then re‑run smoke.
 
 
