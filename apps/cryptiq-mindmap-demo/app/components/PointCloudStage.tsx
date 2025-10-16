@@ -2243,6 +2243,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [aestheticPreset, bloomActive, bloomGuardReady, bloomSettings])
 
   React.useEffect(() => {
+    // Respect explicit simParamPointBaseSize URL/env override if present
+    try {
+      const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+      const overrideRaw = params ? params.get('simParamPointBaseSize') : null
+      const override = overrideRaw != null ? Number(overrideRaw) : Number.NaN
+      if (Number.isFinite(override) && override > 0) {
+        setUniform('uPointBaseSize', override)
+        return
+      }
+    } catch {
+      /* noop */
+    }
     setUniform('uPointBaseSize', DEFAULT_POINT_SIZING.baseSize * pointSizeScale)
   }, [pointSizeScale, setUniform])
 
