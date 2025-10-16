@@ -2,8 +2,8 @@
 title: Cursor OODA – Runbooks (Prod Build, MCP, Playwright)
 date: 2025-10-16T00:00:00Z
 tags: [runbook, smoke, prod, mcp, playwright]
-commit: [STUB: commit]
-branch: [STUB: branch]
+commit: a4c4b0fd
+branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 ## 1) Production build & start (Node 20)
@@ -11,19 +11,20 @@ branch: [STUB: branch]
 - Clean caches: `rm -rf apps/cryptiq-mindmap-demo/.next`
 - Build: `pnpm --filter cryptiq-mindmap-demo run build`
 - Start (prod): `pnpm --filter cryptiq-mindmap-demo run start`
+- Verify service is up: `curl -I 127.0.0.1:3000` → expect `HTTP/1.1 200 OK`
 - URL under test: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1&falloff=1`
 
-## 2) MCP browser smoke (operator‑driven)
+## 2) MCP browser smoke (operator-driven)
 Steps
 - Navigate: browser_navigate to the URL above
 - Wait for reveal logs
-- Collect console: browser_console_messages (save to console/ with {commit}/{branch}/{ts})
-- Screenshot: pre (browser_take_screenshot), optional mid/post
+- Collect console: browser_console_messages (save to console/ with {commit}/{branch}/{ts}); optional this pass if console JSON is unavailable
+- Screenshot: optional future step (skip capture this pass; retain placeholders)
 - Assert: no `THREE.WebGLProgram`/`VALIDATE_STATUS` errors in console
 
 Artifacts
-- Screenshots → `cursor-ooda-ink-prototype/assets/{commit}/{branch}/{ts}/`
-- Console logs → `cursor-ooda-ink-prototype/console/{commit}/{branch}/{ts}/`
+- Console logs → `cursor-ooda-ink-prototype/console/{commit}/{branch}/{ts}/console.json` (optional; add when captured)
+- Screenshots → `cursor-ooda-ink-prototype/assets/{commit}/{branch}/{ts}/` (defer this pass)
 
 ## 3) Playwright smoke (CI‑ready)
 Environment
@@ -32,6 +33,7 @@ Environment
 
 Run
 - `pnpm playwright test tests/brain.smoke.spec.ts --reporter=line`
+- TODO: author `tests/ink.smoke.spec.ts` or parameterize the existing spec for quiz routes; current `tests/brain.smoke.spec.ts` expects the `/brain` overlay.
 
 Gates
 - Canvas visible; reveal complete
@@ -41,7 +43,7 @@ Gates
 ## 4) Evidence capture checklist
 - Copy “[PC] uniforms after-reveal …” line
 - Copy “[PC] fluid uniforms prime …” and “[PC] fluid init …” lines
-- Store 3 screenshots (pre/tap/drag) and console dump
+- Console: when captured, store JSON under `cursor-ooda-ink-prototype/console/{commit}/{branch}/{ts}/console.json`; screenshots remain optional this pass (keep placeholders)
 - Update latest evidence doc with paths
 
 ## 5) Tuning loop (post‑unblock)
@@ -59,4 +61,3 @@ References
 - 02‑architecture‑overview.md
 - 03‑rendering‑pipeline‑trace.md
 - context‑pack‑2025‑10‑15/04‑resources‑guide.md
-

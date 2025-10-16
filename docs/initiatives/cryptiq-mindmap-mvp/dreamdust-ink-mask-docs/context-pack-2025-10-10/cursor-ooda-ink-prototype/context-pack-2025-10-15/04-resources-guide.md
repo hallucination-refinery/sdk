@@ -1,7 +1,7 @@
 ---
 title: Cursor OODA Ink Prototype – Resources Guide
 date: 2025-10-16T15:14:01Z
-commit: e1afef58
+commit: a4c4b0fd
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [resources, best-practices, ink, fluid, webgl, three]
 ---
@@ -200,7 +200,7 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
   - Navigate → collect console messages → take screenshot/snapshot; assert no program validation errors; store artifacts under `cursor-ooda-ink-prototype/{commit}/{branch}/{ts}/`.
   - Why this matters here: enables quick manual runs in Cursor to capture evidence and regressions without local Playwright setup.
   - Learn more: MCP spec (Model Context Protocol).
-  - [STUB: mcp_run_script_link]
+  - Run script reference: 09-runbooks.md#2-mcp-browser-smoke-operator-driven
 
 - When to use which
   - Use Playwright for repeatable CI gates and PR checks; use MCP for exploratory, operator‑driven validation and rapid screenshot/console capture during local debugging.
@@ -232,7 +232,7 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
   ```518:529:apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
   // Fluid-driven screen-space displacement (MVP)
   if (uVelToNdc > 1e-5) {
-    vec2 vel = inside ? texture2D(uVelocity, sampleUv).xy : vec2(0.0);
+    vec2 vel = inside ? texture(uVelocity, sampleUv).xy : vec2(0.0);
     vec2 disp = vel * uVelToNdc;
     gl_Position.xy = mix(gl_Position.xy, gl_Position.xy + disp, clamp(uInkBlend, 0.0, 1.0));
   }
@@ -291,13 +291,11 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
 Link availability note: All canonical links above were reachable as of 2025-10-16T15:14:01Z. If a resource is temporarily unavailable, prefer the vendor’s mirrored docs or archived versions (e.g., via web.dev, MDN, or the Internet Archive).
 
 ### Stubs for later evidence
-- [STUB: last_prod_run_summary]
+- Last prod run: Prod server verified 200 OK; shader gate clean; fluid initialized; particles still not visually apparent in screenshots (`10-latest-smoke-evidence.md`).
 - [STUB: screenshots_links]
 - [STUB: console_log_links]
-- [STUB: ci_playwright_spec_link]
-- [STUB: mcp_run_script_link]
+- TODO: dedicated Playwright smoke `tests/ink.smoke.spec.ts` (current `tests/brain.smoke.spec.ts` targets `/brain` overlay).
+- MCP operator script: 09-runbooks.md#2-mcp-browser-smoke-operator-driven
 
 ---
 Why this matters here callouts use our exact files and uniforms so a new engineer can jump in quickly, check the anchors, and run the smoke without guessing.
-
-

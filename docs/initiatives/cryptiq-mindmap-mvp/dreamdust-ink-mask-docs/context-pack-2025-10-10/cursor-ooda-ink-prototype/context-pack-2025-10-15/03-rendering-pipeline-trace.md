@@ -1,7 +1,7 @@
 ---
 title: Rendering Pipeline Trace – Ink Prototype (Finalized)
 date: 2025-10-16T14:31:48Z
-commit: 039954e4
+commit: a4c4b0fd
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [pipeline, uniforms, fluid, shader]
 ---
@@ -116,13 +116,13 @@ tags: [pipeline, uniforms, fluid, shader]
 | Fluid logs look healthy but ink displacement missing. | Vertex shader displacement. | Check `uVelToNdc` epsilon guard and `uInkBlend` mix.[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:519](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:519)[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:527](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:527) | Toggle `fluidBoost=1` for higher displacement and re-run smoke.[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1234](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1234) |
 
 ## Pending Evidence
-- [STUB: smoke_evidence_summary]
+- Smoke evidence summary: Prod server verified 200 OK; shader gate clean; fluid initialized; particles still not visually apparent in screenshots (`10-latest-smoke-evidence.md`).
 - [STUB: screenshots_links]
 
 ## Cross-Links
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/02-architecture-overview.md`
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/01-vision-and-acceptance.md`
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/10-latest-smoke-evidence.md`
-- `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/04-state-and-uniforms-audit.md`
+- `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/05-state-and-uniforms-audit.md`
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/09-runbooks.md`
-- [STUB: runbook_link]
+- Runbook: 09-runbooks.md

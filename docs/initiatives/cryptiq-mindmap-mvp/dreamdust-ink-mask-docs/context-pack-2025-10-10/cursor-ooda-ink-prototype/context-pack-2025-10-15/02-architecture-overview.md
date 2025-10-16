@@ -2,7 +2,7 @@
 title: Architecture Overview – Ink Prototype
 date: 2025-10-16T14:17:50Z
 tags: [architecture, overview, ink, fluid]
-commit: 32f47186
+commit: a4c4b0fd
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
@@ -99,7 +99,7 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 - WebGL2 or EXT_color_buffer_float absence blocks fluid bootstrap; fall back to Float targets but still require WebGL2 context availability on entry.[apps/cryptiq-mindmap-demo/app/components/dreamdust/fluid/FluidSim.ts:32](apps/cryptiq-mindmap-demo/app/components/dreamdust/fluid/FluidSim.ts:32)[apps/cryptiq-mindmap-demo/app/components/dreamdust/fluid/FluidSim.ts:82](apps/cryptiq-mindmap-demo/app/components/dreamdust/fluid/FluidSim.ts:82)
 - If `uVelToNdc` remains zero the displacement path is inert, so debug toggles and logs must confirm velocity binding during bring-up.[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:518](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:518)[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1395](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1395)
 - `00-index` still lists runbook doc slots not yet populated; track follow-up to fill `09-runbooks.md` once the playbook is drafted.[docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/00-index.md:7](docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/00-index.md:7)
-- Re-run smoke after visibility adjustments and capture results once diagnostics are available ([STUB: smoke_evidence_summary]).[docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/10-latest-smoke-evidence.md:13](docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/10-latest-smoke-evidence.md:13)
+- Re-run smoke after visibility adjustments and capture results once diagnostics are available (latest: Prod server verified 200 OK; shader gate clean; fluid initialized; particles still not visually apparent in screenshots).[docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/10-latest-smoke-evidence.md:7](docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/10-latest-smoke-evidence.md:7)
 
 ## Cross-References
 - [Vision & Acceptance](01-vision-and-acceptance.md) – source of latency and visibility gates cited above.[docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/01-vision-and-acceptance.md:8](docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/01-vision-and-acceptance.md:8)
@@ -110,7 +110,7 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 
 ## Evidence Placeholders
 - [STUB: perf_metrics_from_last_run]
-- [STUB: smoke_evidence_summary]
+- Smoke evidence summary: Prod server verified 200 OK; shader gate clean; fluid initialized; particles still not visually apparent in screenshots (`10-latest-smoke-evidence.md`).
 - [STUB: screenshots_links]
 
 ## Link & Citation Validation

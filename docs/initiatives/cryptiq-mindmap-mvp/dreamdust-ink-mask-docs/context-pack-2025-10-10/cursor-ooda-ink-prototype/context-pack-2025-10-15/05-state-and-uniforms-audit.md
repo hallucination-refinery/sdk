@@ -1,7 +1,7 @@
 ---
 title: State & Uniforms Audit – Temp/Velocity Controls
 date: 2025-10-16T17:12:58Z
-commit: 497b3712
+commit: a4c4b0fd
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [state, uniforms, ink, fluid]
 ---
@@ -48,14 +48,20 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 - `FluidSim.addForce` limits radius to `[1e-4, 0.5]` and strength to `≥0`, stopping runaway splats.[FS-AddForce]
 - `FluidDriver` copies the inverse texel size every frame, and the vertex shader clamps UVs plus checks `inside` so velocity sampling never leaves the atlas.[PS-FluidFrame][FS-Inv][DM-VEL]
 - `uVelToNdc` must clear the `>1e-5` guard while `uInkBlend` is clamped into `[0,1]`, giving deterministic displacement envelopes for both baseline and debug boosts.[PS-const][PS-Resolved][PS-ReactVel][DM-VEL]
-- [STUB: typical_ranges_observed]
+- Observed ranges (scene-03 latest):
+
+| Uniform | Observed |
+| --- | --- |
+| `uVelToNdc` | 0.028 baseline (debug 0.045) |
+| `uInkBlend` | 0.78 baseline; 1.0 with `fluidBoost=1` |
+| `uTempRadius` | 0.14 post-reveal |
 
 ## Verification Hooks
 - `[PC] uniforms after-reveal …` confirms falloff/center/radius writes and records the force scale; log surfaces immediately after reveal.[PS-Reveal][Doc-10]
 - `[PC] fluid uniforms prime …` asserts the sim texture, inverse size, and scaling scalars were bound before the first frame.[PS-FluidInit][Doc-10]
 - `[PC] fluid init …` is emitted from the sim loop once the first solve completes, proving the ping-pong targets rendered successfully.[FS-Step][Doc-10]
-- [STUB: after_reveal_uniforms_line]
-- [STUB: fluid_uniforms_prime_line]
+- [INFO] [PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}
+- [INFO] [PC] fluid uniforms prime {invSize: [..], velToNdc: 0.028, inkBlend: 0.78}
 
 ## Tuning Knobs & Interactions
 `resolvedVelToNdc` and `resolvedInkBlend` flip between conservative baseline (0.028/0.78) and debug boost (0.045/1.0) based on the `fluidBoost` flag, with `FluidDriver` reasserting those scalars every frame so shader displacement follows the selected profile.[PS-const][PS-Resolved][PS-FluidFrame] The guard-and-clamp pattern from the Resources Guide keeps velocity sampling stable and highlights that visibility knobs (`uInkBlend`, point size, tint) remain independent from the physics strength (uVelToNdc/uTemp*), matching the recommended separation of concerns.[Doc-04] Cross-checks against DreamdustMaterial’s mix line make it clear that lowering `uInkBlend` hides fluid motion even if the velocity texture is changing.[DM-VEL]
@@ -71,7 +77,7 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 - Pipeline stage sequencing for these uniforms: `03-rendering-pipeline-trace.md`.[Doc-03]
 - Latest console values for reveal/fluid checkpoints: `context-pack-2025-10-15/10-latest-smoke-evidence.md`.[Doc-10]
 - Best-practice tuning guidance (including visibility vs physics separation): `context-pack-2025-10-15/04-resources-guide.md`.[Doc-04]
-- Pending runbook linkage: `09-runbooks.md` (add once authored).
+- Runbook operator steps: 09-runbooks.md#2-mcp-browser-smoke-operator-driven.
 - Evidence capture backlog: [STUB: screenshots_links]
 
 ## Citation Blocks
@@ -196,7 +202,7 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
     vec2 guard = uVelTexInvSize * 0.5;
     vec2 sampleUv = clamp(uv, guard, vec2(1.0) - guard);
     bool inside = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
-    vec2 vel = inside ? texture2D(uVelocity, sampleUv).xy : vec2(0.0);
+    vec2 vel = inside ? texture(uVelocity, sampleUv).xy : vec2(0.0);
     vec2 disp = vel * uVelToNdc;
     gl_Position.xy = mix(gl_Position.xy, gl_Position.xy + disp, clamp(uInkBlend, 0.0, 1.0));
   }
