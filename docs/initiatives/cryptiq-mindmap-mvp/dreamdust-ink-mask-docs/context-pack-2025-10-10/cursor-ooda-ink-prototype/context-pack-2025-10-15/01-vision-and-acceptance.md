@@ -16,7 +16,7 @@ Acceptance gates (must all be true):
 - Motion localized and decays smoothly; no global jerk.
 - Camera unchanged; shader gate clean; p50 ≤10 ms.
 
-- Current status vs gates: `10-latest-smoke-evidence.md` — shader gate clean; particles still invisible so under-finger motion is unverified.
+- Current status vs gates: `10-latest-smoke-evidence.md` — FAIL (visibility); shader gate clean; fluid init present; size override used; logs not persisted due to pipeline bug; next gate: force‑visible preset then under‑finger motion ≤2 frames.
 
 Status: shader gate is clean; particles currently not visible on screen. Next: raise visibility to verify under-finger motion.
 

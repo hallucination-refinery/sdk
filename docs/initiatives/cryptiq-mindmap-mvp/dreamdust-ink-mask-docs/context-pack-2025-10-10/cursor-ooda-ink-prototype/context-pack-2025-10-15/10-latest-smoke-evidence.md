@@ -9,6 +9,8 @@ url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&simParamPointBaseSize=5
 
 Summary: Prod server verified (200 OK); shader gate clean; fluid initialized; `simParamPointBaseSize=5` honored; particles still not discernible in screenshots; under‑finger motion not yet visible. Changes under test: `uAlphaFloor 0.0 → 0.15` and point size override via URL.
 
+Pipeline caveat: Console JSON was empty due to missing persistence in Playwright; spec fixed in commit 2ea36466 to write `console-<browser>-<runId>.json`.
+
 Key console lines (MCP run):
 - [INFO] [PC] fluid uniforms prime {invSize: [..], velToNdc: 0.028, inkBlend: 0.78}
 - [INFO] [PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}

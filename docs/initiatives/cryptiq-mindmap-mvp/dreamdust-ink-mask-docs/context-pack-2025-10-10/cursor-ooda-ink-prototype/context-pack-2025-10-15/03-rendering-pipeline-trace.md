@@ -117,6 +117,14 @@ tags: [pipeline, uniforms, fluid, shader]
 
 ## Pending Evidence
 - Smoke evidence summary: Prod server verified 200 OK; shader gate clean; fluid initialized; particles still not visually apparent in screenshots (`10-latest-smoke-evidence.md`).
+
+### Trace – 2025-10-16 22:58 UTC
+- Observed logs:
+  - [PC] fluid uniforms prime …
+  - [PC] uniforms after‑reveal …
+  - [PC] fluid init …
+  - dreamdust ink‑telemetry vertexInkOk:0
+- Conclusion: displacement stage configured but output likely gated (alpha/depth/preset).
 - [STUB: screenshots_links]
 
 ## Cross-Links

@@ -201,6 +201,10 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
   - Why this matters here: enables quick manual runs in Cursor to capture evidence and regressions without local Playwright setup.
   - Learn more: MCP spec (Model Context Protocol).
   - Run script reference: 09-runbooks.md#2-mcp-browser-smoke-operator-driven
+- Automation harness changes (2025-10-16)
+  - Run: `BASE_URL=… SMOKE_ROUTE=… RUN_ID=… SMOKE_OUT_DIR=.clmem/artifacts/ink SMOKE_CONSOLE_OUT=.clmem/artifacts/ink-console pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line`
+  - Outputs: `console-<browser>-<runId>.json`; screenshots `ink-pre/post`.
+  - Known pitfall: empty console JSON prior to commit `2ea36466`.
 
 - When to use which
   - Use Playwright for repeatable CI gates and PR checks; use MCP for exploratory, operator‑driven validation and rapid screenshot/console capture during local debugging.

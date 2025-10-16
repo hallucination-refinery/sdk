@@ -63,10 +63,12 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 - `[PC] fluid init …` is emitted from the sim loop once the first solve completes, proving the ping-pong targets rendered successfully.[FS-Step][Doc-10]
 - [INFO] [PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}
 - [INFO] [PC] fluid uniforms prime {invSize: [..], velToNdc: 0.028, inkBlend: 0.78}
+- Console persistence via `tests/ink.smoke.spec.ts` (commit `2ea36466`); before this fix, console JSONs may be empty.
 
 ## Tuning Knobs & Interactions
 `resolvedVelToNdc` and `resolvedInkBlend` flip between conservative baseline (0.028/0.78) and debug boost (0.045/1.0) based on the `fluidBoost` flag, with `FluidDriver` reasserting those scalars every frame so shader displacement follows the selected profile.[PS-const][PS-Resolved][PS-FluidFrame] The guard-and-clamp pattern from the Resources Guide keeps velocity sampling stable and highlights that visibility knobs (`uInkBlend`, point size, tint) remain independent from the physics strength (uVelToNdc/uTemp*), matching the recommended separation of concerns.[Doc-04] Cross-checks against DreamdustMaterial’s mix line make it clear that lowering `uInkBlend` hides fluid motion even if the velocity texture is changing.[DM-VEL]
 Additionally, `uAlphaFloor` default has been raised to `0.15` (from `0.0`) to ensure particle visibility during reveal; monitor overdraw/p50 trade‑offs.
+Observed issue on 2025‑10‑16: `vertexInkOk` toggled and `uTempIntensity` remained 0 during tap/drag; evidence incomplete due to missing console persistence (now fixed in 2ea36466).
 
 ## Failure Mode Playbook
 | Symptom | Checks | Likely culprit | Fix path |

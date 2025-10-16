@@ -32,8 +32,10 @@ Environment
 - `SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03`
 
 Run
-- `pnpm playwright test tests/brain.smoke.spec.ts --reporter=line`
-- TODO: author `tests/ink.smoke.spec.ts` or parameterize the existing spec for quiz routes; current `tests/brain.smoke.spec.ts` expects the `/brain` overlay.
+- Export env: `BASE_URL`, `SMOKE_ROUTE`, `RUN_ID`, `SMOKE_OUT_DIR`, `SMOKE_CONSOLE_OUT`.
+- Example: `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&simParamPointBaseSize=5" RUN_ID=$(date -u +%Y%m%d-%H%M%S) SMOKE_OUT_DIR=.clmem/artifacts/ink SMOKE_CONSOLE_OUT=.clmem/artifacts/ink-console pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line`.
+- Post‑run: copy screenshots to `cursor-ooda-ink-prototype/assets/{commit}/{branch}/{ts}/` and console JSON to `cursor-ooda-ink-prototype/console/{commit}/{branch}/{ts}/`.
+- Pipeline caveat: prior runs emitted empty console JSON due to missing persistence; fixed in commit `2ea36466`.
 
 Gates
 - Canvas visible; reveal complete

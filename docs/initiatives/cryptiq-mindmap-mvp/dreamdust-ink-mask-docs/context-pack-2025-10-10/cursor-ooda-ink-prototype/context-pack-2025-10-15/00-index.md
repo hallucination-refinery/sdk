@@ -22,5 +22,5 @@ TBD:
 - 08-current-understanding.md
 - 11-decisions-and-o-o-d-a.md
 
-Milestone status: shader gate clean; particles not visible; uAlphaFloor 0.15 attempted; next: verify under‑finger motion and adjust visibility/motion knobs as needed.
+Milestone status: shader gate clean; particles invisible despite `simParamPointBaseSize=5`; latest run had logging pipeline bug (empty console JSON); Playwright spec fixed in 2ea36466; next run will persist logs.
 

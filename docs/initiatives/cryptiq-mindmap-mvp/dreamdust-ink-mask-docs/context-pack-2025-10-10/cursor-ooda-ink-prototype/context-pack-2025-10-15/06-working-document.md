@@ -24,9 +24,9 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 - Particle footprint is too small (`uPointBaseSize=3.0` default) so even with `uAlphaFloor=0.15` the sprites remain visually sparse/undetectable (02/05 DM‑SIZE path).
 
 ## Single Change to Make (surgical, testable)
-- Diagnostic bypass first (one run): Force visibility to isolate gating. In `PointCloudStage.tsx`, write uniforms once after reveal bootstrap: `setUniform('uReveal', 1)`, optionally set `uNoiseThreshold` lower (e.g., `0.1`) and temporarily relax depth fade (`uDepthBias` smaller or `uDepthNormScale` smaller) to prevent fragment discard. PASS if particles appear → confirms gating; then revert these writes.
-- If geometry is confirmed: File `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts`; change default `uPointBaseSize 3.0 → 5.0` (safe 4.0–6.0) to increase footprint without coupling to physics.
-- Rollback: remove bypass lines; restore `uPointBaseSize` to `3.0` if overdraw/halo or perf regress.
+- Diagnostic bypass first (one run): Force‑visible preset to isolate gating. After reveal, set uniforms: `uReveal=1`, `uAlphaFloor=1`, additive blend, `depthTest=false`, `uPointBaseSize ≥ 8`. PASS if particles appear → confirms gating; then revert these writes.
+- If geometry is confirmed: keep physics unchanged; return to normal blend/depth and begin motion tuning (≤1 knob per run).
+- Rollback: remove bypass lines; restore defaults if overdraw/halo or perf regress.
 
 ## Acceptance Gates (binary)
 - From 01‑vision: under‑finger visible motion within ≤2 frames; localized response and smooth decay; camera unchanged; shader gate clean; p50 ≤10 ms.
@@ -36,7 +36,7 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 - Node 20 build/start (09‑runbooks.md): `nvm use 20`; remove `apps/cryptiq-mindmap-demo/.next`; `pnpm --filter cryptiq-mindmap-demo run build`; `pnpm --filter cryptiq-mindmap-demo run start`; verify `curl -I 127.0.0.1:3000` → 200.
 - MCP smoke (bypass run): navigate to the URL; verify `[PC]` logs; set `uReveal=1` (and optionally `uNoiseThreshold=0.1`, depth knobs) via the planned code writes; assert particles visible; then revert.
 - MCP smoke (change run): after reverting bypass, apply `uPointBaseSize 3.0 → 5.0`; re-run and check ≤2‑frame under‑finger visibility; save console JSON and screenshots.
-- Playwright: run as in 09; note quiz/scene vs `/brain` mismatch (ink spec TODO); parameterize or accept mismatch this pass.
+- Playwright: run as in 09; ink spec now persists console (commit 2ea36466); use `SMOKE_CONSOLE_OUT` to capture JSON.
 - Evidence capture: paste `[PC]` lines and PASS/FAIL to `10-latest-smoke-evidence.md`; include artifact paths above.
 
 ## Risks & Fallbacks
