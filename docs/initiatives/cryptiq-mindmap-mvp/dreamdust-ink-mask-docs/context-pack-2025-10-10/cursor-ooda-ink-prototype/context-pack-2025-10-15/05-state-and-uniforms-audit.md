@@ -1,13 +1,15 @@
 ---
 title: State & Uniforms Audit – Temp/Velocity Controls
-date: 2025-10-16T15:56:33Z
-commit: 39571869
+date: 2025-10-16T17:12:58Z
+commit: 497b3712
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [state, uniforms, ink, fluid]
 ---
 
 ## Uniforms Overview
-The temp uniforms translate normalized pointer deltas from `InkSurface` into short-lived screen-space pushes that update DreamdustMaterial’s vertex positions, while the velocity set keeps the FluidSim render targets bound and scaled so those pushes turn into visible motion across frames.[IS-UV][PS-Event][PS-FluidInit][PS-FluidFrame][DM-TEMP][DM-VEL][Doc-03]
+The Temp uniform cluster (`uTempForce`, `uTempIntensity`, `uTempCenter`, `uTempRadius`, `uTempFalloffOn`) digests normalized pointer deltas from `InkSurface`, clamps them in `applyTempForce`, and replays them through `TempForceDriver` so DreamdustMaterial only applies a softened, falloff-aware shove when intensity stays above the decay floor.[IS-UV][PS-Event][PS-Decay][DM-TEMP] Post-reveal we pin the falloff flag and radius so every stroke inherits a predictable footprint even if the reveal hook races a user tap.[PS-Reveal][IS-Start]
+
+The Velocity cluster (`uVelocity`, `uVelTexInvSize`, `uVelToNdc`, `uInkBlend`) keeps FluidSim’s ping-pong texture wired to the material: bootstrap binds the texture and inverse size, `FluidDriver` refreshes them each frame, and the vertex shader samples the guarded field only when the mix/scaling gates are active.[PS-FluidInit][PS-FluidFrame][DM-VEL] Force splats and solver loops feed the texture so the mix path described in [03-rendering-pipeline-trace.md](../03-rendering-pipeline-trace.md) sees a divergence-free velocity every frame.[PS-FluidSplat][FS-AddForce][FS-Step][Doc-03]
 
 ## Uniforms Matrix
 Labels in parentheses (for example `D1`) point to the citation blocks at the end of this document.
@@ -15,7 +17,7 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 | Name | Type/units | Default | Producer(s) | Write timing | Range/clamps | Consumers | Invariants | Failure modes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `uTempForce` | `vec2` impulse in screen pixels mixed to clip (DM-TEMP) | `[0, 0]` (D1) | `TempForceDriver`; `applyTempForce` (PS-Decay, PS-Event) | `init setUniform(0)` (PS-Init); `per-frame decay` (PS-Decay); `pointer delta` (PS-Event) | `±12 clamp before scaling` + `smoothstep falloff` (PS-const, PS-Event, DM-TEMP) | Vertex displacement when intensity >0 (DM-TEMP) | `Finite vector; only applied when uTempIntensity > 1e-4` (PS-Decay, DM-TEMP) | `No shove` → check pointer UV feed and intensity floor (IS-UV, PS-Decay) |
-| `uTempIntensity` | `float` [0,1] gate | `0` (D1) | `TempForceDriver`; `applyTempForce` (PS-Decay, PS-Event) | `init zero` (PS-Init); `per-frame exponential decay` (PS-Decay); `pointer events raise` (PS-Event) | `clamp(0,1)` with soft knee/maxGain (DM-TEMP) | Vertex shader strength multiplier (DM-TEMP) | `Must decay smoothly; >1e-4 keeps force alive` (PS-Decay, DM-TEMP) | `Stuck at 0` → delta too small or clamp triggered (IS-UV, PS-Event) |
+| `uTempIntensity` | `float` [0,1] gate | `0` (D1) | `TempForceDriver`; `applyTempForce` (PS-Decay, PS-Event) | `init zero` (PS-Init); `per-frame exponential decay` (PS-Decay); `pointer events raise` (PS-Event) | `Math.min` clamps to `[0,1]` before the shader’s soft knee/maxGain (PS-Event, DM-TEMP) | Vertex shader strength multiplier (DM-TEMP) | `Must decay smoothly; >1e-4 keeps force alive` (PS-Decay, DM-TEMP) | `Stuck at 0` → delta too small or clamp triggered (IS-UV, PS-Event) |
 | `uTempCenter` | `vec2` screen UV | `[0.5, 0.5]` (D1) | `applyTempForce`; reveal latch (PS-Event, PS-Reveal) | `after-reveal centers` (PS-Reveal); `pointer updates` (PS-Event) | `clamp01` from pointer resolve; `smoothstep` distance gate (IS-UV, DM-TEMP) | Falloff center in shader (DM-TEMP) | `Normalized UV; must track latest stroke` (IS-UV, PS-Event) | `Off-center falloff` → reveal latch or pointer UV missing (PS-Reveal, IS-Start) |
 | `uTempRadius` | `float` screen radius | `0.16` (D1) | Reveal latch owns target radius (PS-Reveal) | `init default`; `after-reveal sets TARGET_TEMP_RADIUS` (PS-const, PS-Reveal) | `smoothstep` outer radius and px scaling (DM-TEMP) | Shader falloff profile (DM-TEMP) | `>0; kept near 0.14 for scene-03` (PS-const, PS-Reveal) | `Too large` → global shove; `too small` → no motion (PS-Reveal, DM-TEMP) |
 | `uTempFalloffOn` | `float` flag (0/1) | `0` (D1) | Reveal latch; fallback guard (PS-Reveal, PS-Init) | `on init when falloff requested`; `after-reveal forced to 1` (PS-Init, PS-Reveal) | `uTempFalloffOn > 0.5` activates screen-space falloff (DM-TEMP) | Enables localized smoothstep (DM-TEMP) | `Should remain 1 post-reveal` (PS-Reveal) | `0 → global jerk` → check reveal log or ensureFalloff helper (PS-Reveal, PS-Init) |
@@ -41,11 +43,11 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 6. **Shader mix:** The vertex shader guards the displacement behind `uVelToNdc > 1e-5`, clamps UV sampling to stay inside the fluid atlas, and mixes based on `uInkBlend`.[DM-VEL]
 
 ## Ranges, Clamps, and Guards
-- `TEMP_FORCE_CLAMP` caps raw deltas before scaling, and DreamdustMaterial’s soft knee plus optional smoothstep falloff prevent global jumps.[PS-const][PS-Event][DM-TEMP]
-- Pointer UVs are locked to `[0,1]`, so `uTempCenter` stays normalized even when the canvas is rescaled.[IS-UV]
+- `TEMP_FORCE_CLAMP`, the decay floor in `TempForceDriver`, and DreamdustMaterial’s soft knee keep pointer shoves bounded even when boosts are active.[PS-const][PS-Event][PS-Decay][DM-TEMP]
+- Pointer UVs are clamped into `[0,1]`, and the initial tap splat enforces a minimum radius so falloff math never divides by zero.[IS-UV][IS-Start]
 - `FluidSim.addForce` limits radius to `[1e-4, 0.5]` and strength to `≥0`, stopping runaway splats.[FS-AddForce]
-- `FluidSim.getInvSize` feeds the guard vector that the shader uses to clamp sampling away from texture borders.[FS-Inv][DM-VEL]
-- `uVelToNdc` must clear the `>1e-5` guard; base/debug constants provide predictable envelopes for tuning.[PS-const][PS-Resolved][DM-VEL]
+- `FluidDriver` copies the inverse texel size every frame, and the vertex shader clamps UVs plus checks `inside` so velocity sampling never leaves the atlas.[PS-FluidFrame][FS-Inv][DM-VEL]
+- `uVelToNdc` must clear the `>1e-5` guard while `uInkBlend` is clamped into `[0,1]`, giving deterministic displacement envelopes for both baseline and debug boosts.[PS-const][PS-Resolved][PS-ReactVel][DM-VEL]
 - [STUB: typical_ranges_observed]
 
 ## Verification Hooks
@@ -61,8 +63,8 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 ## Failure Mode Playbook
 | Symptom | Checks | Likely culprit | Fix path |
 | --- | --- | --- | --- |
-| No particles visible | Verify reveal log fired and falloff flag is 1; inspect point-size/tint gates in DreamdustMaterial; confirm InkSurface emits UVs | Falloff never latched or vertex mix zeroed | Re-run reveal hook (`ensureFalloff`), raise tint/size per Resources Guide, confirm pointer UV clamps[PS-Reveal][DM-TEMP][IS-UV][Doc-04] |
-| Particles static | Check `[PC] fluid uniforms prime` and `fluid init` logs; ensure `uVelToNdc` > 1e-5 and `uInkBlend` > 0; watch console splat telemetry | Fluid sim not stepping or scaling set to zero | Recreate FluidSim, verify `fluidBoost`/base scalars, trace `onForceSplat` through addForce and frame driver[PS-FluidInit][PS-FluidFrame][PS-FluidSplat][FS-AddForce][FS-Step][DM-VEL] |
+| No particles visible | Confirm `[PC] uniforms after-reveal` ran, `uTempFalloffOn` ≥ 1, and DreamdustMaterial is not discarding alpha/size via sprite, depth, or blend gates; cross-check premult hints in Resources guide | Falloff never latched or visibility gates collapsed the draw | Trigger `ensureFalloff`, bump size/tint per resources, and revalidate alpha floors while keeping pointer UV clamps in range[PS-Reveal][DM-TEMP][DM-SIZE][DM-ALPHA][IS-UV][Doc-04][Doc-10] |
+| Particles static | Watch `onForceSplat` console packets, verify `uTempIntensity` stays >1e-4, ensure fluid prime/init logs fired, and confirm `uVelToNdc`/`uInkBlend` exceed their guards in the frame loop | Fluid sim not ingesting force or displacement gates sitting at zero | Recreate FluidSim, replay splats, and tune `fluidBoost` so frame driver updates velocity, invSize, and scaling factors[PS-Event][PS-Decay][PS-FluidInit][PS-FluidFrame][PS-FluidSplat][FS-AddForce][FS-Step][DM-VEL][Doc-10] |
 
 ## Cross-References
 - Architecture ownership and bridging summary: `02-architecture-overview.md`.[Doc-02]
@@ -117,6 +119,72 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
     viewPos = viewPos4.xyz;
     viewDist = max(1e-3, -viewPos.z);
   }
+```
+
+[DM-SIZE]
+```glsl
+432:458:apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
+  float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
+  float breathScale = 1.0 + breathPhase * 0.06;
+  float cascadeSize = mix(0.0, max(uCascadeSizeBoost, 0.0), cascadeMix);
+  float pointSize = uPointBaseSize * attenuation * breathScale * (1.0 + cascadeSize);
+
+  vec3 inkTint = vec3(0.0);
+  float inkMix = 0.0;
+
+#ifdef USE_VERTEX_INK
+  if (inkSampleIntensity > 1e-5) {
+    float pxScale = viewDist / max(1e-3, uFocal);
+    vec2 inkOffset = inkSampleOffset * (inkSampleIntensity * uOffsetGain * uInkOffsetBoost * pxScale);
+    viewPos.xy += inkOffset;
+    pointSize += inkSampleSwell * inkSampleIntensity * uSizeGain * uInkSizeBoost;
+    inkTint = inkSampleTint;
+    inkMix = inkSampleIntensity * uTintGain * uInkTintBoost;
+
+  }
+#endif
+
+  float pointSizeClamped = max(0.0, pointSize);
+
+#ifdef DEBUG_INK_PROBE
+  pointSizeClamped *= mix(1.0, 4.0, inkProbe);
+#endif
+
+  gl_PointSize = pointSizeClamped;
+```
+
+[DM-ALPHA]
+```glsl
+596:624:apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
+  // Softer disc sprite for vapor look
+  float sprite = dreamdustSoftSprite(gl_PointCoord);
+#ifdef USE_GAUSSIAN
+  sprite = dreamdustGaussianSprite(gl_PointCoord, max(0.1, uSpriteSharpness));
+#endif
+  float spriteAlpha = pow(max(sprite, 0.0), 0.85);
+  float alphaFloor = clamp(uAlphaFloor, 0.0, 1.0);
+  float spriteMix = mix(alphaFloor, 1.0, spriteAlpha);
+
+  float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
+  float revealNoise = dd_noise2(vRevealCoord);
+  float revealStrength = clamp(vRevealMix, 0.0, 1.0);
+  if (uReveal >= 0.999) {
+    revealStrength = 1.0;
+  }
+  float w = 0.08;
+  if (uReveal >= 0.999) {
+    w = 0.14;
+  }
+  float baseReveal = smoothstep(threshold - w, threshold + w, revealNoise);
+  if (uReveal >= 0.999) {
+    baseReveal = 1.0;
+  }
+  float revealAlpha = max(baseReveal, revealStrength * 0.40);
+
+  float alpha = spriteMix * revealAlpha * revealStrength;
+  float depthNorm = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
+  alpha *= dreamdustDepthAlpha(depthNorm, uDepthBias);
+  if (alpha <= 0.001) discard;
 ```
 
 [DM-VEL]
@@ -618,4 +686,3 @@ Key console lines:
 - "[PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}"
 - "[PC] fluid init {size: 256, iters: 10}"
 ```
-
