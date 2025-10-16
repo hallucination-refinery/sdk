@@ -1,8 +1,8 @@
 ---
 title: Latest Smoke Evidence – Prod URL (scene-03)
-date: 2025-10-16T23:59:00Z
+date: 2025-10-16T19:08:30Z
 tags: [evidence, smoke, prod]
-commit: 778fccdc
+commit: a1c72c41
 branch: docs/ink-falloff-flag-latch-2025-10-12
 url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03
 ---
@@ -16,9 +16,13 @@ Key console lines (MCP run):
 - No THREE.WebGLProgram validation errors observed.
 
 Screenshots (MCP):
-- pre: [STUB: saved via MCP] page-pre.png
-- post-reveal: [STUB: saved via MCP] page-post-reveal.png
-- debug open + Fit: [STUB: saved via MCP] page-debug.png, page-fit.png
+- pre: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-pre.png
+- post-tap: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-tap.png
+- post-drag: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-drag.png
+- debug: cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-debug.png
+
+Console log (MCP):
+- cursor-ooda-ink-prototype/console/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190812/console.json
 
 Playwright result:
 - BASE_URL=http://127.0.0.1:3000; SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03
