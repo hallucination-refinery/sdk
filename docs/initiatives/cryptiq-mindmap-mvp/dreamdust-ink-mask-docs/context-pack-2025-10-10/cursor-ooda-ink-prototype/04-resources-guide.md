@@ -1,7 +1,7 @@
 ---
 title: Cursor OODA Ink Prototype – Resources Guide
-date: 2025-10-16T14:52:21Z
-commit: a5ad2b77
+date: 2025-10-16T15:14:01Z
+commit: e1afef58
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [resources, best-practices, ink, fluid, webgl, three]
 ---
@@ -80,6 +80,22 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
   })
   ```
 - **CI smoke gates**: Production URL, deterministic viewport/DPR, assert no shader link/validate errors, capture screenshots and console.
+  - Why this matters here: our Playwright smokes gate on console errors and persist screenshots to artifacts.
+  ```6:9:tests/brain.smoke.spec.ts
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text())
+  })
+  ```
+  ```54:63:tests/brain.smoke.spec.ts
+  const outDir = process.env.SMOKE_OUT_DIR || '.clmem/artifacts/smoke'
+  const runId = process.env.RUN_ID || `${Date.now()}`
+  fs.mkdirSync(outDir, { recursive: true })
+  const outPath = path.join(outDir, `brain-${runId}.png`)
+  await page.screenshot({ path: outPath, fullPage: false })
+  const stat = fs.statSync(outPath)
+  const minBytes = Number(process.env.MIN_SMOKE_BYTES || '10000')
+  expect(stat.size).toBeGreaterThan(minBytes)
+  ```
 
 ### Quick‑start checklists
 - **ShaderMaterial GLSL3 safe‑use**
@@ -165,6 +181,30 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
   - Navigate → collect console → snapshot/screenshot; assert no program validation errors; place artifacts under `cursor-ooda-ink-prototype/` with commit/branch/timestamp.
   - Learn more: MCP spec (Model Context Protocol).
 
+### Automated smoke infrastructure (Playwright + MCP)
+- Playwright (CI‑ready)
+  - Base URL and route from env; deterministic viewport/DPR; native `page.mouse` interactions; wait for reveal checkpoints; capture console/screenshot; fail on shader errors.
+  - Why this matters here: our tests verify canvas visibility, collect console errors, and save screenshots for traceability.
+  ```11:19:tests/brain.smoke.spec.ts
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000'
+  const route = process.env.SMOKE_ROUTE || '/brain'
+  const url = `${baseUrl}${route}`
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const canvas = page.locator('canvas')
+  await expect(canvas).toHaveCount(1)
+  await expect(canvas.first()).toBeVisible()
+  ```
+  - Learn more: `https://playwright.dev/docs/api/class-page`.
+
+- MCP (operator‑driven browser automation)
+  - Navigate → collect console messages → take screenshot/snapshot; assert no program validation errors; store artifacts under `cursor-ooda-ink-prototype/{commit}/{branch}/{ts}/`.
+  - Why this matters here: enables quick manual runs in Cursor to capture evidence and regressions without local Playwright setup.
+  - Learn more: MCP spec (Model Context Protocol).
+  - [STUB: mcp_run_script_link]
+
+- When to use which
+  - Use Playwright for repeatable CI gates and PR checks; use MCP for exploratory, operator‑driven validation and rapid screenshot/console capture during local debugging.
+
 ### Crosswalk to our implementation (code anchors)
 - **InkSurface splats and callbacks**
   ```296:325:apps/cryptiq-mindmap-demo/app/components/dreamdust/InkSurface.tsx
@@ -246,7 +286,9 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
   - `https://threejs.org/docs/#api/en/renderers/WebGLRenderer.info`
   - `https://discoverthreejs.com/`
 - Playwright: `https://playwright.dev/docs/api/class-page`
-- MCP: Model Context Protocol overview/spec
+- MCP: `https://spec.modelcontextprotocol.io/`
+
+Link availability note: All canonical links above were reachable as of 2025-10-16T15:14:01Z. If a resource is temporarily unavailable, prefer the vendor’s mirrored docs or archived versions (e.g., via web.dev, MDN, or the Internet Archive).
 
 ### Stubs for later evidence
 - [STUB: last_prod_run_summary]
