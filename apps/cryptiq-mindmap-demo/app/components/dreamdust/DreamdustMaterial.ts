@@ -108,7 +108,7 @@ const DEFAULT_UNIFORM_VALUES = {
   uInkBlend: 1.0,
   uSimPositionTex: null,
   uSimColorTex: null,
-  uAlphaFloor: 0.00,
+  uAlphaFloor: 0.15,
   uSpriteSharpness: 2.5,
 } as const
 
