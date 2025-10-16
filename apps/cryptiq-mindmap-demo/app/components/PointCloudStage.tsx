@@ -99,9 +99,11 @@ type TempForceDriverProps = {
   tempForceRef: React.MutableRefObject<[number, number]>
   tempIntensityRef: React.MutableRefObject<number>
   setUniform: SetUniformFn
+  frameIndexRef: React.MutableRefObject<number>
 }
 
-function TempForceDriver({ tempForceRef, tempIntensityRef, setUniform }: TempForceDriverProps) {
+ 
+function TempForceDriver({ tempForceRef, tempIntensityRef, setUniform, frameIndexRef }: TempForceDriverProps) {
   useFrame((_, delta) => {
     const current = tempIntensityRef.current
     if (current <= 1e-4) {
@@ -121,6 +123,20 @@ function TempForceDriver({ tempForceRef, tempIntensityRef, setUniform }: TempFor
     tempIntensityRef.current = next
     setUniform('uTempForce', tempForceRef.current)
     setUniform('uTempIntensity', next)
+
+    // Motion probe: record first frame index with non-trivial intensity after a pointer start
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w: any = typeof window !== 'undefined' ? (window as any) : null
+      if (w && w.__inkProbe && w.__inkProbe.startFrameIndex != null && w.__inkProbe.firstVisibleFrameIndex == null) {
+        if (next > 1e-4) {
+          const fi = frameIndexRef.current || 0
+          w.__inkProbe.firstVisibleFrameIndex = Math.max(0, fi - (w.__inkProbe.startFrameIndex as number))
+        }
+      }
+    } catch {
+      /* noop */
+    }
   })
 
   return null
@@ -1417,7 +1433,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
       fluidRef.current = null
     }
-  }, [rendererReadyTick, setUniform])  // eslint-disable-line react-hooks/exhaustive-deps
+   
+  }, [rendererReadyTick, setUniform])
   // Note: fallbackMaterial/prebakedMaterial accessed inside but not in deps to avoid TDZ
 
   React.useEffect(() => {
@@ -3221,6 +3238,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               }
             }}
             onStart={() => {
+              // Initialize motion probe frame indices when a stroke begins
+              try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const w: any = typeof window !== 'undefined' ? (window as any) : null
+                if (w) {
+                  if (!w.__inkProbe) w.__inkProbe = {}
+                  w.__inkProbe.startFrameIndex = (frameIndexRef?.current ?? 0)
+                  w.__inkProbe.firstVisibleFrameIndex = null
+                }
+              } catch { /* noop */ }
               inkUpdateLoggedRef.current = false
               setDrawing(true)
               // Ensure vertex ink is enabled on first interaction
