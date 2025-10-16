@@ -16,6 +16,7 @@ Reading order:
 
 TBD:
 - 05-performance-budget.md
+- 06-working-document.md
 - 06-commit-and-diff-audit.md
 - 07-external-refs-and-practices.md
 - 08-current-understanding.md
