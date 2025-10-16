@@ -1,8 +1,8 @@
 ---
 title: Architecture Overview – Ink Prototype
-date: 2025-10-16T14:17:50Z
+date: 2025-10-16T19:15:43Z
 tags: [architecture, overview, ink, fluid]
-commit: a4c4b0fd
+commit: 4aeec57e
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
@@ -83,7 +83,7 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 - `TEMP_FORCE_SCALE = 220` and `TEMP_FORCE_CLAMP = 12` act as the fluid force gain/clamp, with pointer deltas scaled and capped before writing `uTempForce`.[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:49](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:49)[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1576](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1576)
 - `TARGET_TEMP_RADIUS = 0.14` (default uniform 0.16) initializes falloff once reveal starts, guaranteeing stable easing for screen-space pushes.[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:53](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:53)[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2361](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2361)[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:97](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:97)
 - `FLUID_BASE_VEL_TO_NDC = 0.028` / `FLUID_BASE_INK_BLEND = 0.78` (debug 0.045 / 1.0) gate via `fluidBoost`, with effects writing through `uVelToNdc`/`uInkBlend` on init and effect changes.[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:55](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:55)[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1222](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1222)[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1395](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1395)[apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1424](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1424)
-- `uAlphaFloor = 0.0` controls minimum sprite opacity, raising the alpha floor when visibility regressions appear.[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:111](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:111)[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:602](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:602)
+- `uAlphaFloor = 0.15` controls minimum sprite opacity, raising the alpha floor when visibility regressions appear.[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:111](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:111)[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:602](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:602)
 - `uPointBaseSize = 3.0` seeds point size before depth/ink modulation, trading particle visibility for overdraw risk.[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:64](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:64)[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:435](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:435)
 - Blending switches between normal and additive per preset, adjusting `depthTest` to control occlusion vs glow.[apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:770](apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:770)
 

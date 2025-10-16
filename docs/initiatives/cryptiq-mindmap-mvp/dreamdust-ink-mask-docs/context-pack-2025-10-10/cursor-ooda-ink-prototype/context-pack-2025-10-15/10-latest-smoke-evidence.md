@@ -7,7 +7,7 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03
 ---
 
-Summary: Prod server verified (200 OK); shader gate clean; fluid initialized; particles still not visually apparent in screenshots.
+Summary: Prod server verified (200 OK); shader gate clean; fluid initialized; particles still not visually apparent in screenshots. Change under test: `uAlphaFloor 0.0 → 0.15`.
 
 Key console lines (MCP run):
 - [INFO] [PC] fluid uniforms prime {invSize: [..], velToNdc: 0.028, inkBlend: 0.78}

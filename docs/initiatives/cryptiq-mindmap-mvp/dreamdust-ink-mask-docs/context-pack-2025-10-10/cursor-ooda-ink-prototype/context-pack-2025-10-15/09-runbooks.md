@@ -1,8 +1,8 @@
 ---
 title: Cursor OODA – Runbooks (Prod Build, MCP, Playwright)
-date: 2025-10-16T00:00:00Z
+date: 2025-10-16T19:15:43Z
 tags: [runbook, smoke, prod, mcp, playwright]
-commit: a4c4b0fd
+commit: 4aeec57e
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
@@ -22,9 +22,9 @@ Steps
 - Screenshot: optional future step (skip capture this pass; retain placeholders)
 - Assert: no `THREE.WebGLProgram`/`VALIDATE_STATUS` errors in console
 
-Artifacts
-- Console logs → `cursor-ooda-ink-prototype/console/{commit}/{branch}/{ts}/console.json` (optional; add when captured)
-- Screenshots → `cursor-ooda-ink-prototype/assets/{commit}/{branch}/{ts}/` (defer this pass)
+Artifacts (required)
+- Console logs → `cursor-ooda-ink-prototype/console/{commit}/{branch}/{ts}/console.json`
+- Screenshots → `cursor-ooda-ink-prototype/assets/{commit}/{branch}/{ts}/YYYY-MM-DD-*.png`
 
 ## 3) Playwright smoke (CI‑ready)
 Environment

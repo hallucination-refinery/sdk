@@ -1,7 +1,7 @@
 ---
 title: Cursor OODA Ink Prototype – Resources Guide
-date: 2025-10-16T15:14:01Z
-commit: a4c4b0fd
+date: 2025-10-16T19:15:43Z
+commit: 4aeec57e
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [resources, best-practices, ink, fluid, webgl, three]
 ---
@@ -290,12 +290,16 @@ tags: [resources, best-practices, ink, fluid, webgl, three]
 
 Link availability note: All canonical links above were reachable as of 2025-10-16T15:14:01Z. If a resource is temporarily unavailable, prefer the vendor’s mirrored docs or archived versions (e.g., via web.dev, MDN, or the Internet Archive).
 
-### Stubs for later evidence
-- Last prod run: Prod server verified 200 OK; shader gate clean; fluid initialized; particles still not visually apparent in screenshots (`10-latest-smoke-evidence.md`).
-- [STUB: screenshots_links]
-- [STUB: console_log_links]
+### Evidence pointers
+- Last prod run summary: Prod server verified 200 OK; shader gate clean; fluid initialized; particles still not visually apparent; Change under test: `uAlphaFloor 0.0 → 0.15` (`10-latest-smoke-evidence.md`).
+- Screenshots:
+  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-pre.png`
+  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-tap.png`
+  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-drag.png`
+  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-debug.png`
+- Console logs JSON: `cursor-ooda-ink-prototype/console/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190812/console.json`
 - TODO: dedicated Playwright smoke `tests/ink.smoke.spec.ts` (current `tests/brain.smoke.spec.ts` targets `/brain` overlay).
-- MCP operator script: 09-runbooks.md#2-mcp-browser-smoke-operator-driven
+- MCP operator steps: 09-runbooks.md#2-mcp-browser-smoke-operator-driven
 
 ---
 Why this matters here callouts use our exact files and uniforms so a new engineer can jump in quickly, check the anchors, and run the smoke without guessing.

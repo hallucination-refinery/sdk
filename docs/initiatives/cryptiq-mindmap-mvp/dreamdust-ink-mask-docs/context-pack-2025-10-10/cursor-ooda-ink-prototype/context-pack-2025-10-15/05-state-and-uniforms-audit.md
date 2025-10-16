@@ -1,7 +1,7 @@
 ---
 title: State & Uniforms Audit – Temp/Velocity Controls
-date: 2025-10-16T17:12:58Z
-commit: a4c4b0fd
+date: 2025-10-16T19:15:43Z
+commit: 4aeec57e
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [state, uniforms, ink, fluid]
 ---
@@ -25,6 +25,7 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 | `uVelTexInvSize` | `vec2` texel inverse size | `[1, 1]` (D1) | `FluidSim` via init/driver (PS-FluidInit, PS-FluidFrame) | `fluid init fetch`; `per-frame copy` (PS-FluidInit, PS-FluidFrame) | `Derived from getInvSize()` (FS-Inv); guards sampling clamp (DM-VEL) | Shader guard margin for UV clamp (DM-VEL) | `Matches velocity texture dimensions` (PS-FluidFrame, FS-Inv) | `Zeros` → sampler clamps to border; check driver binding (PS-FluidFrame) |
 | `uVelToNdc` | `float` scale (NDC per velocity texel) | `0.0` (D1) | Fluid init + `useEffect` + frame loop (PS-FluidInit, PS-ReactVel, PS-FluidFrame) | `init to base/debug constant`; `updates with fluidBoost`; `per-frame reaffirm` (PS-const, PS-Resolved, PS-FluidFrame) | `if >1e-5` displacement runs; base 0.028, debug 0.045 (DM-VEL, PS-const, PS-Resolved) | Multiplies sampled velocity before mix (DM-VEL) | `Keep positive; track velToNdcRef` (PS-FluidInit, PS-ReactVel) | `0` → no motion; check fluidBoost params and primes (PS-Resolved, Doc-10) |
 | `uInkBlend` | `float` mix factor [0,1] | `1.0` (D1) | Fluid init + `useEffect` + frame loop (PS-FluidInit, PS-ReactVel, PS-FluidFrame) | `init to base/debug`; `per-frame refresh` (PS-FluidInit, PS-ReactVel, PS-FluidFrame) | `clamp(0,1)` in vertex shader (DM-VEL) | Mixes displaced vs original clip pos (DM-VEL) | `Stay within [0,1]; couples with vel scaling` (DM-VEL, PS-FluidFrame) | `0` → disables fluid displacement; check primes and tunables (PS-FluidInit, Doc-10) |
+| `uAlphaFloor` | `float` min sprite alpha [0,1] | `0.15` (D1 updated) | `DreamdustMaterial` default; runtime tuning via `setUniform` | `init default; adjusted during visibility tuning` | `clamp(0,1)` in fragment (DM‑ALPHA) | Fragment alpha floor in sprite/reveal mix | Higher raises visibility/overdraw; too low hides points | Visibility collapse when near 0 |
 
 ## Lifecycle Timelines
 ### Temp uniform cluster (`uTempForce`, `uTempIntensity`, `uTempCenter`, `uTempRadius`, `uTempFalloffOn`)
@@ -65,6 +66,7 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 
 ## Tuning Knobs & Interactions
 `resolvedVelToNdc` and `resolvedInkBlend` flip between conservative baseline (0.028/0.78) and debug boost (0.045/1.0) based on the `fluidBoost` flag, with `FluidDriver` reasserting those scalars every frame so shader displacement follows the selected profile.[PS-const][PS-Resolved][PS-FluidFrame] The guard-and-clamp pattern from the Resources Guide keeps velocity sampling stable and highlights that visibility knobs (`uInkBlend`, point size, tint) remain independent from the physics strength (uVelToNdc/uTemp*), matching the recommended separation of concerns.[Doc-04] Cross-checks against DreamdustMaterial’s mix line make it clear that lowering `uInkBlend` hides fluid motion even if the velocity texture is changing.[DM-VEL]
+Additionally, `uAlphaFloor` default has been raised to `0.15` (from `0.0`) to ensure particle visibility during reveal; monitor overdraw/p50 trade‑offs.
 
 ## Failure Mode Playbook
 | Symptom | Checks | Likely culprit | Fix path |
@@ -78,7 +80,13 @@ Labels in parentheses (for example `D1`) point to the citation blocks at the end
 - Latest console values for reveal/fluid checkpoints: `context-pack-2025-10-15/10-latest-smoke-evidence.md`.[Doc-10]
 - Best-practice tuning guidance (including visibility vs physics separation): `context-pack-2025-10-15/04-resources-guide.md`.[Doc-04]
 - Runbook operator steps: 09-runbooks.md#2-mcp-browser-smoke-operator-driven.
-- Evidence capture backlog: [STUB: screenshots_links]
+- Evidence capture
+  - Screenshots:
+    - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-pre.png`
+    - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-tap.png`
+    - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-drag.png`
+    - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-debug.png`
+  - Console JSON: `cursor-ooda-ink-prototype/console/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190812/console.json`
 
 ## Citation Blocks
 [D1]

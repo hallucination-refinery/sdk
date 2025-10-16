@@ -1,7 +1,7 @@
 ---
 title: Rendering Pipeline Trace – Ink Prototype (Finalized)
-date: 2025-10-16T14:31:48Z
-commit: a4c4b0fd
+date: 2025-10-16T19:15:43Z
+commit: 4aeec57e
 branch: docs/ink-falloff-flag-latch-2025-10-12
 tags: [pipeline, uniforms, fluid, shader]
 ---
