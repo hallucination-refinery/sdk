@@ -13,12 +13,13 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 - Start (prod): `pnpm --filter cryptiq-mindmap-demo run start`
 - Verify service is up: `curl -I 127.0.0.1:3000` → expect `HTTP/1.1 200 OK`
 - URL under test: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&debug=1&falloff=1`
+- Temporary visibility diagnostic: append `forceVisible=1` while the bypass is under investigation; remove the parameter once particles pass without it.
 
 ## 2) MCP browser smoke (operator-driven)
 Steps
-- Navigate: browser_navigate to the URL above
+- Navigate: browser_navigate to the URL above (include `forceVisible=1` during the diagnostic run)
 - Wait for reveal logs
-- Collect console: browser_console_messages (save to console/ with {commit}/{branch}/{ts}); optional this pass if console JSON is unavailable
+- Collect console: browser_console_messages (save to console/ with {commit}/{branch}/{ts}); include the URL with `forceVisible=1` when the bypass is exercised; optional this pass if console JSON is unavailable
 - Screenshot: optional future step (skip capture this pass; retain placeholders)
 - Assert: no `THREE.WebGLProgram`/`VALIDATE_STATUS` errors in console
 
@@ -30,10 +31,12 @@ Artifacts (required)
 Environment
 - `BASE_URL=http://127.0.0.1:3000`
 - `SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03`
+- Diagnostic run: append `&forceVisible=1` to confirm visibility; drop the param once the gate is satisfied without it.
 
 Run
 - Export env: `BASE_URL`, `SMOKE_ROUTE`, `RUN_ID`, `SMOKE_OUT_DIR`, `SMOKE_CONSOLE_OUT`.
-- Example: `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&simParamPointBaseSize=5" RUN_ID=$(date -u +%Y%m%d-%H%M%S) SMOKE_OUT_DIR=.clmem/artifacts/ink SMOKE_CONSOLE_OUT=.clmem/artifacts/ink-console pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line`.
+- Example (diagnostic): `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&forceVisible=1" RUN_ID=$(date -u +%Y%m%d-%H%M%S) SMOKE_OUT_DIR=.clmem/artifacts/ink SMOKE_CONSOLE_OUT=.clmem/artifacts/ink-console pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line`.
+- Post-diagnostic: substitute other tuning params (e.g., `simParamPointBaseSize=5`) after visibility is confirmed without the bypass.
 - Post‑run: copy screenshots to `cursor-ooda-ink-prototype/assets/{commit}/{branch}/{ts}/` and console JSON to `cursor-ooda-ink-prototype/console/{commit}/{branch}/{ts}/`.
 - Pipeline caveat: prior runs emitted empty console JSON due to missing persistence; fixed in commit `2ea36466`.
 
