@@ -1236,6 +1236,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [devicePixelRatioRaw, setDevicePixelRatioRaw] = React.useState<number | null>(null)
   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [fluidBoost, setFluidBoost] = React.useState(process.env.NEXT_PUBLIC_FLUID_DEBUG === '1')
+  const [forceVisible, setForceVisible] = React.useState(false)
   React.useEffect(() => {
     if (typeof window === 'undefined') {
       return
@@ -1246,6 +1247,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     } else if (params.get('fluidBoost') === '0') {
       setFluidBoost(false)
     }
+    setForceVisible(params.get('forceVisible') === '1')
   }, [])
   const resolvedVelToNdc = fluidBoost ? FLUID_DEBUG_VEL_TO_NDC : FLUID_BASE_VEL_TO_NDC
   const resolvedInkBlend = fluidBoost ? FLUID_DEBUG_INK_BLEND : FLUID_BASE_INK_BLEND
@@ -1744,6 +1746,55 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     applyUniforms(fallbackMaterial)
     applyUniforms(prebakedMaterial)
   }, [fallbackMaterial, prebakedMaterial, resolvedVelToNdc, resolvedInkBlend, fluidRef])
+
+  React.useEffect(() => {
+    if (!forceVisible) {
+      return
+    }
+    try {
+      setUniform('uReveal', 1)
+      setUniform('uAlphaFloor', 1)
+      setUniform('uPointBaseSize', 8)
+      setUniform('uMinSize', 4)
+      setUniform('uMaxSize', 14)
+      const uAny: any = uniforms
+      console.info('[PC] forceVisible uniforms', {
+        uReveal: uAny?.uReveal?.value ?? 'TBD',
+        uAlphaFloor: uAny?.uAlphaFloor?.value ?? 'TBD',
+        uPointBaseSize: uAny?.uPointBaseSize?.value ?? 'TBD',
+        uMinSize: uAny?.uMinSize?.value ?? 'TBD',
+        uMaxSize: uAny?.uMaxSize?.value ?? 'TBD',
+      })
+    } catch (error) {
+      console.error('[PC] forceVisible uniforms failed', error)
+    }
+  }, [forceVisible, setUniform, uniforms])
+
+  React.useEffect(() => {
+    if (!forceVisible) {
+      return
+    }
+    const mats: (THREE.ShaderMaterial | null | undefined)[] = [fallbackMaterial, prebakedMaterial]
+    let applied = false
+    for (const mat of mats) {
+      if (!mat) continue
+      mat.depthTest = false
+      mat.depthWrite = false
+      mat.blending = (THREE as any).AdditiveBlending
+      mat.needsUpdate = true
+      applied = true
+    }
+    try {
+      console.info('[PC] forceVisible applied', {
+        depthTest: mats[0]?.depthTest ?? 'TBD',
+        depthWrite: mats[0]?.depthWrite ?? 'TBD',
+        blending: mats[0]?.blending ?? 'TBD',
+        applied,
+      })
+    } catch {
+      /* noop */
+    }
+  }, [forceVisible, fallbackMaterial, prebakedMaterial])
 
   React.useEffect(() => {
     return () => {
