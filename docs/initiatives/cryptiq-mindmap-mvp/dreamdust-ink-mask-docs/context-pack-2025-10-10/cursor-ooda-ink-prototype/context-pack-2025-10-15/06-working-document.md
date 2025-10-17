@@ -4,53 +4,29 @@ commit: 63719177
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
-## Objective (1–2 lines)
-- Achieve visible particles and ≤2‑frame under‑finger motion with a clean shader gate and fixed camera, per vision gates.
+A) Where we are
+- Latest prod smoke still returns blank screenshots plus reveal logs despite size override (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md:7-35).
+- Fluid pipeline primes velocity uniforms, logs after reveal, and `FluidSim` emits its init banner, so the sim is ticking (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1418-1422, apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2396-2404, apps/cryptiq-mindmap-demo/app/components/dreamdust/fluid/FluidSim.ts:191-254).
+- Dreamdust defaults keep `uPointBaseSize=3.0` and `uAlphaFloor=0.15`; `PointCloudStage` reads `simParamPointBaseSize`, yet we lack instrumentation that proves the post-preset value (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:64-112, apps/cryptiq-mindmap-demo/app/components/dreamdust/useDreamdustUniforms.ts:166-233, apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2246-2259).
+- Material dispatch still depth-tests and applies an exponential depth fade, compounding alpha losses beyond the configured floor (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:432-528, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:596-692, apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:114-134).
+- Acceptance gates expect visible under-finger motion within ≤2 frames; the current evidence is a hard FAIL on visibility (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/01-vision-and-acceptance.md:9-21, docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md:10-35).
 
-## Current Status (facts only)
-- URL under test: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03` (10‑latest‑smoke‑evidence.md).
-- Change under test (last run): `uAlphaFloor 0.0 → 0.15` in `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts` defaults; now present at defaults and used in fragment alpha path (05/DM‑ALPHA; grep shows `uAlphaFloor: 0.15`).
-- Key console lines (observed): `[PC] fluid uniforms prime …`, `[PC] uniforms after‑reveal …`, `[PC] fluid init …`; no shader link/validate errors this iteration (10‑latest‑smoke‑evidence.md).
-- Visibility/motion: particles still not clearly visible; under‑finger motion unverified (10‑latest‑smoke‑evidence.md).
-- Artifacts: screenshots
-  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-pre.png`
-  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-tap.png`
-  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-post-drag.png`
-  - `cursor-ooda-ink-prototype/assets/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190758/2025-10-16-debug.png`
-- Console JSON: `cursor-ooda-ink-prototype/console/a1c72c41/docs/ink-falloff-flag-latch-2025-10-12/20251016-190812/console.json`.
-- Playwright: spec currently targets `/brain`; mismatch on quiz route; dedicated ink spec is TODO (09‑runbooks.md). Perf p50/p90: TBD.
+B) Hypotheses & unknowns
+- P≈0.6 — Depth-test + depth fade are zeroing the sprite before color: `depthTest: true` plus `exp(-depthNorm * uDepthBias)` can crush alpha once the cloud sits behind the scanned mesh; disabling depth test and slamming alpha should immediately reveal whether occlusion is the culprit (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:596-692, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:748-759, apps/cryptiq-mindmap-demo/app/components/dreamdust/glsl/chunks.ts:114-134).
+- P≈0.3 — Effective footprint is still too small: even with `uPointBaseSize` override the attenuation clamp (`uMinSize=1.2`, `uMaxSize=9.0`) and depth fade leave a <6 px sprite that disappears under tone mapping; forcing a larger clamp exposes whether footprint, not occlusion, is the limiter (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:432-458, apps/cryptiq-mindmap-demo/app/components/dreamdust/useDreamdustUniforms.ts:166-233).
+- P≈0.1 — URL override is being overwritten post-preset swap, so we are still running at the preset’s 3.0 base size; we need a log of the final uniform values to rule this out (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2246-2259, apps/cryptiq-mindmap-demo/app/components/dreamdust/useDreamdustUniforms.ts:863-935).
 
-## Single Hypothesis (1 line)
-- Particle footprint is too small (`uPointBaseSize=3.0` default) so even with `uAlphaFloor=0.15` the sprites remain visually sparse/undetectable (02/05 DM‑SIZE path).
+C) Golden path
+- Milestone 1 (P≈0.7): Introduce a `?forceVisible=1` bypass that disables depth testing, sets `uAlphaFloor=1`, and logs the resolved point-size cluster to confirm the renderer can actually draw the cloud (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2246-2259, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:748-759). Assumption: instrumentation lands without touching baseline presets.
+- Milestone 2 (P≈0.6): Once the cloud is visible, restore depth test but keep `uAlphaFloor≥0.3` and widen the clamp to keep a ~10% footprint while monitoring overdraw (apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:432-692). Assumption: widening size does not blow perf beyond p50 10 ms.
+- Milestone 3 (P≈0.5): Nudge `uVelToNdc`/`uInkBlend` only after visibility is proven to achieve ≤2-frame motion without destabilizing reveal logs (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1250-1399, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:519-528). Assumption: fluid displacement remains linear in this regime.
 
-## Single Change to Make (surgical, testable)
-- Diagnostic bypass first (one run): Force‑visible preset to isolate gating. After reveal, set uniforms: `uReveal=1`, `uAlphaFloor=1`, additive blend, `depthTest=false`, `uPointBaseSize ≥ 8`. PASS if particles appear → confirms gating; then revert these writes.
-- If geometry is confirmed: keep physics unchanged; return to normal blend/depth and begin motion tuning (≤1 knob per run).
-- Rollback: remove bypass lines; restore defaults if overdraw/halo or perf regress.
+D) Single change to test next
+- Add a guarded `forceVisible` path in `PointCloudStage` that, when the query param is present, sets `uAlphaFloor=1`, pushes the point-size clamp to 12 px, flips the Dreamdust material’s depthTest off, and logs the final uniform bundle after preset application; PASS if the MCP screenshot shows a saturated particle sheet within two frames, FAIL if the screen remains blank (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2246-2259, apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:3308-3317, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:748-759).
 
-## Acceptance Gates (binary)
-- From 01‑vision: under‑finger visible motion within ≤2 frames; localized response and smooth decay; camera unchanged; shader gate clean; p50 ≤10 ms.
-- This run’s PASS/FAIL: under‑finger motion clearly visible within ≤2 frames (particles visibly present is the prerequisite).
-
-## Run Plan (copy‑runnable)
-- Node 20 build/start (09‑runbooks.md): `nvm use 20`; remove `apps/cryptiq-mindmap-demo/.next`; `pnpm --filter cryptiq-mindmap-demo run build`; `pnpm --filter cryptiq-mindmap-demo run start`; verify `curl -I 127.0.0.1:3000` → 200.
-- MCP smoke (bypass run): navigate to the URL; verify `[PC]` logs; set `uReveal=1` (and optionally `uNoiseThreshold=0.1`, depth knobs) via the planned code writes; assert particles visible; then revert.
-- MCP smoke (change run): after reverting bypass, apply `uPointBaseSize 3.0 → 5.0`; re-run and check ≤2‑frame under‑finger visibility; save console JSON and screenshots.
-- Playwright: run as in 09; ink spec now persists console (commit 2ea36466); use `SMOKE_CONSOLE_OUT` to capture JSON.
-- Evidence capture: paste `[PC]` lines and PASS/FAIL to `10-latest-smoke-evidence.md`; include artifact paths above.
-
-## Risks & Fallbacks
-- Overdraw/halo risk from larger sprites; monitor p50 (01). Rollback to `3.0` if degraded.
-- If still invisible: next single change is `resolvedVelToNdc` boost via `fluidBoost` (02/05; `0.028 → 0.045`) while keeping `uInkBlend` ≤1.0.
-- Maintain GLSL3/ShaderMaterial and premultiplied alpha discipline (04); no manual `#version`, no blend/depthWrite edits this iteration.
-- Keep uniform invariants and RT hygiene intact (04/05); do not create feedback loops.
-
-## Evidence Pointers
-- `.../context-pack-2025-10-15/10-latest-smoke-evidence.md`
-- Artifacts: the 4 `assets/...png` and `console/.../console.json` paths above.
-- Code/flows: `.../02-architecture-overview.md`, `.../03-rendering-pipeline-trace.md`, `.../05-state-and-uniforms-audit.md`, `.../09-runbooks.md`.
-
-## Decision Line (to be filled after run)
-- `uPointBaseSize 3.0 → 5.0` → PASS/FAIL because <observed under‑finger visibility within ≤2 frames; cite console lines + screenshot path>.
-
+E) Run plan
+- Build & serve: `nvm use 20 && pnpm --filter cryptiq-mindmap-demo run build && pnpm --filter cryptiq-mindmap-demo run start` (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/09-runbooks.md:5-14).
+- MCP smoke: navigate to `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1`, capture `[PC]` console lines and screenshots under `cursor-ooda-ink-prototype/assets/{commit}/...` (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/09-runbooks.md:16-34).
+- Playwright: `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&forceVisible=1" RUN_ID=$(date -u +%Y%m%d-%H%M%S) SMOKE_OUT_DIR=.clmem/artifacts/ink SMOKE_CONSOLE_OUT=.clmem/artifacts/ink-console pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line` (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/09-runbooks.md:35-44).
+- Evidence capture: archive console JSON plus screenshots to the context-pack folders and record PASS/FAIL with `SMOKE_CONSOLE_OUT` path in `10-latest-smoke-evidence.md`.
 
