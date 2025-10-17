@@ -1,40 +1,42 @@
 ---
 title: Latest Smoke Evidence – Prod URL (scene-03 forceVisible bypass)
-date: 2025-10-17T18:02:57Z
+date: 2025-10-17T19:04:24Z
 tags: [evidence, smoke, prod, forceVisible, diagnostic]
-commit: e68bd701
+commit: c2f62ddf
 branch: docs/ink-falloff-flag-latch-2025-10-12
 url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1
 ---
 
-Summary: Prod server verified (200 OK); shader gate clean; forceVisible bypass APPLIED (`depthTest=false`, `blending=2/additive`, `applied=true`); uniforms slammed (`uReveal=1`, `uAlphaFloor=1`, `uPointBaseSize=8`, `uMinSize=4`, `uMaxSize=14`); fluid initialized; geometry present (90650 instances); particles STILL NOT VISIBLE. FAIL (visibility) — bypass confirms issue is NOT reveal/depth/alpha gating; escalate to material binding, gl_PointSize computation, or renderer draw calls.
+Summary: MCP and Playwright reruns on commit `c2f62ddf` confirmed the server delivers scene-03 with `forceVisible=1`; uniforms, blend/depth overrides, and fluid init all logged, yet screenshots remain blank. The newly added render-stat instrumentation failed to emit a `[PC] render-info …` entry, so we still cannot prove a point-cloud draw call. FAIL (visibility) — focus shifts to verifying stage material binding and emitter draw submission.
 
-Key console lines (MCP + Playwright):
-- [INFO] [PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}
-- [INFO] [PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}
-- [INFO] [PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}
-- [INFO] [PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}
-- [INFO] [PC] fluid init {size: 256, iters: 10}
-- [LOG] [PC] instances: 90650
-- [INFO] [preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false} (before forceVisible override)
-- [INFO] [PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true} (after override)
-- No THREE.WebGLProgram validation errors observed.
+Key console lines (MCP):
+- `[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}`
+- `[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}`
+- `[PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}`
+- `[PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}`
+- `[PC] fluid init {size: 256, iters: 10}`
+- `[PC] instances: 90650`
+- _Expected_ `[PC] render-info …` log **not present** in `console-mcp.json`; instrumentation needs follow-up.
+
+Key console lines (Playwright):
+- same `[PC] forceVisible …`, `uniforms after-reveal`, `fluid init` sequence as MCP.
+- `[PC] render-info …` **absent** in all chromium console captures; draw path remains unverified.
 
 Screenshots (MCP):
-- cursor-ooda-ink-prototype/assets/e68bd701/docs/ink-falloff-flag-latch-2025-10-12/20251017-180014/2025-10-17-forceVisible-mcp.png
+- `cursor-ooda-ink-prototype/assets/c2f62ddf/docs/ink-falloff-flag-latch-2025-10-12/20251017-185946/2025-10-17-forceVisible-mcp.png`
 
 Screenshots (Playwright):
-- cursor-ooda-ink-prototype/assets/e68bd701/docs/ink-falloff-flag-latch-2025-10-12/20251017-180257/ink-chromium-20251017-180257-pre.png
-- cursor-ooda-ink-prototype/assets/e68bd701/docs/ink-falloff-flag-latch-2025-10-12/20251017-180257/ink-chromium-20251017-180257-post.png
+- `cursor-ooda-ink-prototype/assets/c2f62ddf/docs/ink-falloff-flag-latch-2025-10-12/20251017-190424/ink-chromium-20251017-190424-pre.png`
+- `cursor-ooda-ink-prototype/assets/c2f62ddf/docs/ink-falloff-flag-latch-2025-10-12/20251017-190424/ink-chromium-20251017-190424-post.png`
+- Historical captures from the same run preserved under `20251017-185640/` (still blank).
 
 Console logs:
-- MCP: cursor-ooda-ink-prototype/console/e68bd701/docs/ink-falloff-flag-latch-2025-10-12/20251017-180014/console-mcp.json
-- Playwright: cursor-ooda-ink-prototype/console/e68bd701/docs/ink-falloff-flag-latch-2025-10-12/20251017-180257/console-chromium-20251017-180257.json
+- MCP: `cursor-ooda-ink-prototype/console/c2f62ddf/docs/ink-falloff-flag-latch-2025-10-12/20251017-185946/console-mcp.json`
+- Playwright (final attempt): `cursor-ooda-ink-prototype/console/c2f62ddf/docs/ink-falloff-flag-latch-2025-10-12/20251017-190424/console-chromium-20251017-190424.json`
 
 Playwright result:
-- BASE_URL=http://127.0.0.1:3000; SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03&forceVisible=1
-- Spec: tests/ink.smoke.spec.ts → PASSED (1 test, 2.0s); all gates satisfied; console JSON persisted; deterministic viewport/DPR enforced.
+- `BASE_URL=http://127.0.0.1:3000`
+- `SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03&forceVisible=1`
+- `tests/ink.smoke.spec.ts` → PASSED (1 test, 1.8 s); deterministic viewport/DPR + console persistence verified.
 
-Decision: FAIL (visibility) — forceVisible bypass correctly applied (uniforms set, depthTest disabled, additive blending active, applied=true confirmed in second log) but screenshots remain black; geometry present (90650 instances logged, prebaked positions loaded); issue is NOT alpha/depth/reveal gating. Next: investigate whether material instance bound to stagePointsRef receives the forceVisible uniform writes, verify gl_PointSize is computed >0 (check vertex shader or add probe), inspect renderer.info.render.calls to confirm draw submission, or check if preset swap post-override reverts the blend/depth flags.
-
-
+Decision: **FAIL (visibility)** — even after reiterating `forceVisible`, all diagnostics show uniforms/geometry present but no rendered points. Absence of the new `[PC] render-info …` log suggests the draw pipeline is still uninstrumented or not firing, so the next iteration must confirm renderer submission before tweaking shader gates.
