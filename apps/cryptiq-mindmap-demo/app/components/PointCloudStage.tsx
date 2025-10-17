@@ -1797,43 +1797,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [forceVisible, fallbackMaterial, prebakedMaterial])
 
   React.useEffect(() => {
-    if (!forceVisible) {
-      return
-    }
-    if (typeof window === 'undefined') {
-      return
-    }
-    const renderer = rendererRef.current
-    if (!renderer) {
-      return
-    }
-    let raf = 0
-    let frames = 0
-    const step = () => {
-      frames += 1
-      if (frames >= 2) {
-        try {
-          logRenderInfo()
-        } catch (error) {
-          try {
-            console.error('[PC] render-info failed', error)
-          } catch {
-            /* noop */
-          }
-        }
-        return
-      }
-      raf = window.requestAnimationFrame(step)
-    }
-    raf = window.requestAnimationFrame(step)
-    return () => {
-      if (raf) {
-        window.cancelAnimationFrame(raf)
-      }
-    }
-  }, [forceVisible, logRenderInfo])
-
-  React.useEffect(() => {
     return () => {
       fallbackMaterial?.dispose()
     }
@@ -3006,82 +2969,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }, [hashArraySample, simActive, simState])
 
   const stageDataLogRef = React.useRef<string | null>(null)
-  const logRenderInfo = React.useCallback(() => {
-    const renderer = rendererRef.current
-    const renderStats = renderer?.info?.render
-    const calls = renderStats?.calls ?? null
-    const pointsRendered = renderStats?.points ?? null
-    const trianglesRendered = renderStats?.triangles ?? null
-
-    let materialInfo: {
-      uuid: string
-      blending: unknown
-      depthTest: unknown
-      depthWrite: unknown
-      programCacheKey: unknown
-    } | null = null
-
-    const pointsObject = stagePointsRef.current
-    if (pointsObject) {
-      const rawMaterial = pointsObject.material as
-        | THREE.Material
-        | THREE.Material[]
-        | undefined
-      const resolvedMaterial = Array.isArray(rawMaterial)
-        ? rawMaterial[0] ?? null
-        : rawMaterial ?? null
-      if (resolvedMaterial) {
-        const programCacheKey =
-          typeof (resolvedMaterial as any).customProgramCacheKey === 'function'
-            ? (resolvedMaterial as any).customProgramCacheKey()
-            : null
-        materialInfo = {
-          uuid: resolvedMaterial.uuid,
-          blending: (resolvedMaterial as any).blending ?? null,
-          depthTest:
-            typeof (resolvedMaterial as any).depthTest === 'boolean'
-              ? (resolvedMaterial as any).depthTest
-              : null,
-          depthWrite:
-            typeof (resolvedMaterial as any).depthWrite === 'boolean'
-              ? (resolvedMaterial as any).depthWrite
-              : null,
-          programCacheKey,
-        }
-      }
-    }
-
-    const readUniformValue = (name: keyof DreamdustStageUniforms): unknown => {
-      const entry = uniforms[name]
-      if (entry && typeof entry === 'object' && 'value' in entry) {
-        return (entry as { value: unknown }).value
-      }
-      return null
-    }
-
-    const uniformSnapshot = {
-      uPointBaseSize: readUniformValue('uPointBaseSize'),
-      uMinSize: readUniformValue('uMinSize'),
-      uMaxSize: readUniformValue('uMaxSize'),
-      uAlphaFloor: readUniformValue('uAlphaFloor'),
-      uVelToNdc: readUniformValue('uVelToNdc'),
-      uInkBlend: readUniformValue('uInkBlend'),
-      uDepthNormScale: readUniformValue('uDepthNormScale'),
-      uDepthBias: readUniformValue('uDepthBias'),
-    }
-
-    try {
-      console.info('[PC] render-info', {
-        calls,
-        points: pointsRendered,
-        triangles: trianglesRendered,
-        mat: materialInfo,
-        uniforms: uniformSnapshot,
-      })
-    } catch {
-      /* noop */
-    }
-  }, [uniforms])
   React.useEffect(() => {
     const versionKey = `${stageAttributeVersion}:${simUvVersion}`
     if (stageDataLogRef.current === versionKey) {
