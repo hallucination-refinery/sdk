@@ -24,9 +24,7 @@ C) Golden path
 D) Single change to test next
 - Add a guarded `forceVisible` path in `PointCloudStage` that, when the query param is present, sets `uAlphaFloor=1`, pushes the point-size clamp to 12 px, flips the Dreamdust material’s depthTest off, and logs the final uniform bundle after preset application; PASS if the MCP screenshot shows a saturated particle sheet within two frames, FAIL if the screen remains blank (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:2246-2259, apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:3308-3317, apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:748-759).
 
-E) Run plan
-- Build & serve: `nvm use 20 && pnpm --filter cryptiq-mindmap-demo run build && pnpm --filter cryptiq-mindmap-demo run start` (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/09-runbooks.md:5-14).
-- MCP smoke: navigate to `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1`, capture `[PC]` console lines and screenshots under `cursor-ooda-ink-prototype/assets/{commit}/...` (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/09-runbooks.md:16-34).
-- Playwright: `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&forceVisible=1" RUN_ID=$(date -u +%Y%m%d-%H%M%S) SMOKE_OUT_DIR=.clmem/artifacts/ink SMOKE_CONSOLE_OUT=.clmem/artifacts/ink-console pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line` (docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/09-runbooks.md:35-44).
-- Evidence capture: archive console JSON plus screenshots to the context-pack folders and record PASS/FAIL with `SMOKE_CONSOLE_OUT` path in `10-latest-smoke-evidence.md`.
+E) Run complete (2025-10-17T18:02:57Z)
+- forceVisible=1 → FAIL (visibility) because bypass correctly applied (depthTest=false, blending=2/additive, applied=true logged) but screenshots remain black; geometry present (90650 instances); shader gate clean; no THREE.WebGLProgram errors. Issue is NOT gating.
+- Next: investigate material instance binding to stagePointsRef, add gl_PointSize vertex probe, check renderer.info.render.calls for draw submission, or verify preset swap doesn't revert blend/depth post-override.
 
