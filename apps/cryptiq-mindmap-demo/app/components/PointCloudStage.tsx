@@ -2915,6 +2915,53 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
 
+  const renderInfoLoggedRef = React.useRef(false)
+
+  useFrame(() => {
+    if (!forceVisible || renderInfoLoggedRef.current) return
+    const renderer = rendererRef.current
+    const pointsObj = stagePointsRef.current
+    if (!renderer || !pointsObj) return
+    const info = (renderer as any).info?.render
+    const rawMat = (pointsObj as any).material
+    const mat = Array.isArray(rawMat) ? rawMat[0] : rawMat
+    const programCacheKey =
+      typeof (mat as any)?.customProgramCacheKey === 'function'
+        ? (mat as any).customProgramCacheKey()
+        : null
+    const read = (name: string) => ((uniforms as any)?.[name]?.value ?? null)
+    const snapshot = {
+      uPointBaseSize: read('uPointBaseSize'),
+      uMinSize: read('uMinSize'),
+      uMaxSize: read('uMaxSize'),
+      uAlphaFloor: read('uAlphaFloor'),
+      uVelToNdc: read('uVelToNdc'),
+      uInkBlend: read('uInkBlend'),
+      uDepthNormScale: read('uDepthNormScale'),
+      uDepthBias: read('uDepthBias'),
+    }
+    try {
+      console.info('[PC] render-info', {
+        calls: info?.calls ?? null,
+        points: info?.points ?? null,
+        triangles: info?.triangles ?? null,
+        mat: mat
+          ? {
+              uuid: (mat as any).uuid,
+              blending: (mat as any).blending ?? null,
+              depthTest: (mat as any).depthTest ?? null,
+              depthWrite: (mat as any).depthWrite ?? null,
+              programCacheKey,
+            }
+          : null,
+        uniforms: snapshot,
+      })
+    } catch {
+      /* noop */
+    }
+    renderInfoLoggedRef.current = true
+  }, 1)
+
   const stagePositionArray = React.useMemo(() => {
     if (simActive && simState) {
       return simState.positions
