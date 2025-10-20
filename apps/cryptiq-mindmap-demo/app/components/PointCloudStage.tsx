@@ -954,8 +954,38 @@ function RenderInfoLogger({
 }) {
   const renderer = useThree((state) => state.gl)
   const loggedRef = React.useRef(false)
+  const meshLoggedRef = React.useRef(false)
   const frameCountRef = React.useRef(0)
   const MAX_FRAMES = 60
+  const buildMeshSnapshot = React.useCallback((points: THREE.Points) => {
+    const rawMaterial = (points as { material?: THREE.Material | THREE.Material[] }).material
+    const material = Array.isArray(rawMaterial) ? rawMaterial[0] ?? null : rawMaterial ?? null
+    const geometry = points.geometry as THREE.BufferGeometry | undefined
+    const readAttrCount = (name: string) => {
+      const attr = geometry?.getAttribute(name) as { count?: number } | undefined
+      return typeof attr?.count === 'number' ? attr.count : 0
+    }
+    let matrixWorldDet: number | null = null
+    if (points.matrixWorld) {
+      const matrix3 = new (THREE as any).Matrix3()
+      matrix3.setFromMatrix4(points.matrixWorld)
+      const det = matrix3.determinant()
+      matrixWorldDet = Number.isFinite(det) ? det : null
+    }
+    return {
+      type: points.type,
+      visible: points.visible,
+      frustumCulled: points.frustumCulled,
+      renderOrder: points.renderOrder,
+      parentType: points.parent?.type ?? null,
+      matrixWorldDet,
+      positionCount: readAttrCount('position'),
+      colorCount: readAttrCount('color'),
+      uvCount: readAttrCount('uv'),
+      depthCount: readAttrCount('aDepth'),
+      materialUuid: material && typeof (material as any).uuid === 'string' ? (material as any).uuid : null,
+    }
+  }, [])
 
   useFrame(() => {
     if (!forceVisible || loggedRef.current) {
@@ -1000,6 +1030,14 @@ function RenderInfoLogger({
     const timedOut = frameCountRef.current >= MAX_FRAMES
 
     if (haveDraws || timedOut) {
+      if (!meshLoggedRef.current) {
+        try {
+          console.info('[PC] points-mesh', buildMeshSnapshot(points))
+        } catch {
+          /* noop */
+        }
+        meshLoggedRef.current = true
+      }
       try {
         console.info('[PC] render-info', {
           calls,
