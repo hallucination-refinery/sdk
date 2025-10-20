@@ -1,6 +1,6 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-20T20:21:00Z
-commit: b6cf2605
+date: 2025-10-20T21:10:00Z
+commit: fc45deab
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 

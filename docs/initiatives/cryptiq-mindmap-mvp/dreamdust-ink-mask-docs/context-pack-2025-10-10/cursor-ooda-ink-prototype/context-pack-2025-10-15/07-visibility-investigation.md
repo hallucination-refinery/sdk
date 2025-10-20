@@ -1,14 +1,14 @@
 ---
 title: Visibility Investigation – Render Stats Diagnostic
-date: 2025-10-18T14:05:00Z
-commit: c1ea70ff
+date: 2025-10-20T21:10:00Z
+commit: fc45deab
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 ## Evidence intake
 - MCP `20251017-185946` and Playwright `20251017-190424` runs remain blank even though all `[PC]` readiness logs fire (`forceVisible uniforms`, `uniforms after-reveal`, `fluid init`, `instances`). Screenshots: `cursor-ooda-ink-prototype/assets/c2f62ddf/docs/ink-falloff-flag-latch-2025-10-12/20251017-185946/2025-10-17-forceVisible-mcp.png` and `.../20251017-190424/ink-chromium-20251017-190424-{pre,post}.png`.
 - Console captures contain no WebGL errors, but the expected `[PC] render-info …` entry is absent from both `console-mcp.json` and `console-chromium-20251017-190424.json`; draw-call execution is still unconfirmed.
-- `PointCloudStage.tsx` now mounts a dedicated `<RenderInfoLogger>` inside the Canvas that waits for `forceVisible`, the WebGL renderer, and the stage points before emitting a single `[PC] render-info …` line (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx).
+- `PointCloudStage.tsx` now mounts a dedicated `<RenderInfoLogger>` inside the Canvas that waits for `forceVisible`, the WebGL renderer, and the stage points before emitting `[PC] render-info …`; it retries for up to 60 frames and logs `timeout: true/false` with `framesWaited` (apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx).
 
 ## Investigation notes
 - The logger now runs inside the R3F context via `useFrame`, so it cannot trip the “hooks outside Canvas” guard seen during the last attempt.
