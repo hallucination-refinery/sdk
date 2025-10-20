@@ -1,34 +1,37 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-18T14:05:00Z
-commit: c1ea70ff
+date: 2025-10-20T20:21:00Z
+commit: b6cf2605
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251017-185946`) and Playwright (`20251017-190424`) smokes on commit `c2f62ddf` both return blank frames despite the `forceVisible` override; all `[PC]` readiness logs still fire (uniforms, fluid init, instances, preset drift). docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
-- `PointCloudStage.tsx` now mounts `<RenderInfoLogger>` inside the Canvas, so the `[PC] render-info …` line should emit once forceVisible engages. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
-- No shader errors or WebGL validation warnings recorded; Playwright spec continues to pass (1.8 s) with deterministic viewport/DPR. cursor-ooda-ink-prototype/console/c2f62ddf/docs/ink-falloff-flag-latch-2025-10-12/20251017-190424/console-chromium-20251017-190424.json
-- Acceptance gate status: FAIL (visibility). Under-finger motion cannot be evaluated while points remain invisible.
+- MCP (`20251020-201848`) and Playwright (`20251020-202100`) smokes on commit `b6cf2605` (includes `c1ea70ff` fix) confirmed `<RenderInfoLogger>` now emits `[PC] render-info` successfully. docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
+- **Critical finding**: `calls: 0, points: 0, triangles: 0` — the draw call NEVER executes. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+- Uniforms, blend/depth overrides, fluid init all fire correctly; material reports `blending: 2`, `depthTest: false`, `depthWrite: false` as expected.
+- Screenshots remain blank; Playwright spec continues to pass (2.0 s) with deterministic viewport/DPR.
+- Acceptance gate status: FAIL (diagnostic) → Milestone 1 complete (logger works), proceed to Milestone 2 (debug stage binding).
 
 **B) Reflection**
-- Render logging now lives inside the R3F context (`useFrame` + `useThree`), eliminating the “hooks outside Canvas” runtime error and ensuring we only log once the renderer and stage points exist.
+- The `<RenderInfoLogger>` eliminated the "hooks outside Canvas" error and now successfully logs renderer stats, confirming the instrumentation is correct.
+- Zero draw calls proves the issue is **upstream of shaders** — the stage points mesh is either not mounted, not attached to the scene graph, or its geometry is empty.
 
-**B) Hypotheses & unknowns**
-- P≈0.55 — Points draw call never executes (stage points not attached / material swap); absence of `render-info` corroborates this.
-- P≈0.30 — Draw happens but stage material resolves to zero alpha/tint (colour attribute or fragment output still black).
-- P≈0.10 — Instrumentation bug (if the new logger still fails to fire, investigate stage ref binding/logging).
-- P≈0.05 — Depth/alpha gates still culling output even under `forceVisible`.
+**C) Hypotheses & unknowns**
+- P≈0.70 — `stagePointsRef.current` never references a valid `<points>` mesh (binding issue, conditional mount guard, or ref assignment timing).
+- P≈0.20 — Stage points mesh exists but geometry buffer is empty (vertex count = 0, positions attribute not set).
+- P≈0.08 — Mesh exists with geometry but is culled by R3F layer or visibility flags before renderer submission.
+- P≈0.02 — Material is swapped after logger runs (unlikely, log shows correct UUID and flags).
 
-**C) Golden Path**
-- Milestone 1 (P≈0.6): Capture render stats via the new logger during the next smoke run (`calls/points/triangles`). PASS = draw path proven; FAIL (calls = 0 or missing log) ⇒ investigate stage binding.
-- Milestone 2 (P≈0.45): If draws == 0, trace stage binding (ensure `stagePointsRef` points to Dreamdust material, inspect `PointsMesh` vs prebaked path).
-- Milestone 3 (P≈0.35): If draws > 0 but frames blank, instrument shader output (e.g., hard-coded colour / gl_PointSize probe) before revisiting physics tuning.
+**D) Golden Path**
+- Milestone 2 (P≈0.7): Add logging inside `PointCloudStage.tsx` to trace `stagePointsRef.current` at mount and in `useFrame`; log `geometry.attributes.position.count`, `visible`, `parent`, and `material.uuid`. PASS = mesh exists with vertices; FAIL = ref is null or geometry empty → investigate mount conditions.
+- Milestone 3 (P≈0.25): If mesh exists with geometry but still no draws, log `scene.children` to confirm mesh is in scene graph; check `layers` and R3F `renderOrder`.
+- Milestone 4 (P≈0.05): If all above pass, add hard-coded colour/size probe in vertex shader to rule out uniform/attribute issues.
 
-**D) Single change to run next**
-- Run diagnostic smoke (MCP + Playwright) with `forceVisible=1`, archive the new `[PC] render-info …` line, and record the reported draw counts. PASS if `calls > 0`; FAIL otherwise, then debug binding.
+**E) Single change to run next**
+- Instrument `stagePointsRef.current` inside `useFrame` (or in a new diagnostic component) to log: `mesh ? { hasGeometry: !!mesh.geometry, vertexCount: mesh.geometry?.attributes.position?.count ?? 0, visible: mesh.visible, materialUUID: mesh.material?.uuid, parent: !!mesh.parent } : null`. Archive logs in next smoke run to confirm ref binding and geometry presence.
 
-**E) Run plan**
-- Build & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`.
-- MCP smoke: hit `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1`, capture console JSON + `[PC] render-info …` line + screenshot.
-- Playwright smoke: same URL, expect `[PC]` logs plus render-info entry; archive artifacts to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`.
-- Update `10-latest-smoke-evidence.md` with render-info stats, then evaluate shader strategy based on PASS/FAIL.
+**F) Run plan**
+- Add diagnostic log in `PointCloudStage.tsx` or extend `<RenderInfoLogger>` to include `stagePointsRef.current` details.
+- Rebuild & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`.
+- MCP + Playwright smoke: same URL with `forceVisible=1`, capture new diagnostic log + `[PC] render-info …` line.
+- Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`.
+- Update `10-latest-smoke-evidence.md` with mesh/geometry details; PASS if vertexCount > 0, FAIL if ref is null or count = 0 → investigate mount/binding.
