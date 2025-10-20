@@ -7,6 +7,7 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 **A) Where we are**
 - MCP (`20251020-201848`) and Playwright (`20251020-202100`) smokes on commit `b6cf2605` (includes `c1ea70ff` fix) confirmed `<RenderInfoLogger>` now emits `[PC] render-info` successfully. docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
 - **Critical finding**: `calls: 0, points: 0, triangles: 0` — the draw call NEVER executes. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+- Render-info logger has been hardened to sample up to 60 frames, emitting `timeout` and `framesWaited` so diagnostics either capture the first draw or explicitly report "no draws observed within 60 frames".
 - Uniforms, blend/depth overrides, fluid init all fire correctly; material reports `blending: 2`, `depthTest: false`, `depthWrite: false` as expected.
 - Screenshots remain blank; Playwright spec continues to pass (2.0 s) with deterministic viewport/DPR.
 - Acceptance gate status: FAIL (diagnostic) → Milestone 1 complete (logger works), proceed to Milestone 2 (debug stage binding).

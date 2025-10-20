@@ -954,6 +954,8 @@ function RenderInfoLogger({
 }) {
   const renderer = useThree((state) => state.gl)
   const loggedRef = React.useRef(false)
+  const frameCountRef = React.useRef(0)
+  const MAX_FRAMES = 60
 
   useFrame(() => {
     if (!forceVisible || loggedRef.current) {
@@ -963,6 +965,8 @@ function RenderInfoLogger({
     if (!renderer || !points) {
       return
     }
+
+    frameCountRef.current += 1
 
     const info = renderer.info?.render
     const rawMaterial = (points as { material?: THREE.Material | THREE.Material[] }).material
@@ -991,27 +995,35 @@ function RenderInfoLogger({
       uDepthBias: readUniformValue('uDepthBias'),
     }
 
-    try {
-      console.info('[PC] render-info', {
-        calls: info?.calls ?? null,
-        points: info?.points ?? null,
-        triangles: info?.triangles ?? null,
-        mat: material
-          ? {
-              uuid: (material as any).uuid,
-              blending: (material as any).blending ?? null,
-              depthTest: (material as any).depthTest ?? null,
-              depthWrite: (material as any).depthWrite ?? null,
-              programCacheKey,
-            }
-          : null,
-        uniforms: uniformSnapshot,
-      })
-    } catch {
-      /* noop */
-    }
+    const calls = info?.calls ?? null
+    const haveDraws = typeof calls === 'number' && calls > 0
+    const timedOut = frameCountRef.current >= MAX_FRAMES
 
-    loggedRef.current = true
+    if (haveDraws || timedOut) {
+      try {
+        console.info('[PC] render-info', {
+          calls,
+          points: info?.points ?? null,
+          triangles: info?.triangles ?? null,
+          mat: material
+            ? {
+                uuid: (material as any).uuid,
+                blending: (material as any).blending ?? null,
+                depthTest: (material as any).depthTest ?? null,
+                depthWrite: (material as any).depthWrite ?? null,
+                programCacheKey,
+              }
+            : null,
+          uniforms: uniformSnapshot,
+          timeout: !haveDraws,
+          framesWaited: frameCountRef.current,
+        })
+      } catch {
+        /* noop */
+      }
+
+      loggedRef.current = true
+    }
   })
 
   return null
