@@ -1,26 +1,42 @@
-A) Where we are
-- Latest smoke captured `[PC] render-info {calls:1, points:0, triangles:2, timeout:false, framesWaited:2}` confirming the renderer is active but submits no point draws; triangles match the fullscreen quad used by the fluid passes. cursor-ooda-ink-prototype/console/16c73c7e/docs/ink-falloff-flag-latch-2025-10-12/20251020-204626/console-chromium-20251020-204626.json, dreamdust/fluid/FluidSim.ts:139
-- The logger only fires after `forceVisible` is true and a `THREE.Points` ref exists, so the sample was taken with our stage mesh mounted and uniforms resolved. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:946
-- `forceVisible` forces reveal, alpha floor, point sizing, and disables depth so shader gates should not be hiding fragments. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:1837
-- The vertex shader still derives `gl_PointSize` from `uPointBaseSize` (forced to 8) before applying velocity displacement, so a valid geometry should render visible sprites. apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:432
-- Stage wiring instantiates `<points>` with `frustumCulled={false}` and the Dreamdust ShaderMaterial, so the earlier “maybe Mesh vs Points” theory is disproven. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:3501
-- No `[vertex] geometry attribute summary` log appeared in the smoke artifact even though the effect emits one when attributes bind, leaving the actual vertex count at draw time unverified. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:3124, cursor-ooda-ink-prototype/console/16c73c7e/docs/ink-falloff-flag-latch-2025-10-12/20251020-204626/console-chromium-20251020-204626.json
+title: Working Plan — Ink Prototype (Current Iteration)
+date: 2025-10-21T01:17:25Z
+commit: 1d8dccf4
+branch: docs/ink-falloff-flag-latch-2025-10-12
+---
 
-B) Hypotheses and unknowns
-- P≈0.55 — Geometry binding is late or empty when the logger fires: the stage effect rebuilds attributes in `useEffect`, but we have no log proving `position.count > 0` when the renderer first records draws. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:3124
-- P≈0.25 — Points mesh exists but is excluded from traversal (visibility/layers/parent): `frustumCulled={false}` and `renderOrder=1` should keep it eligible, yet we have not inspected `points.visible`, parent linkage, or layer masks at runtime. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:3501
-- P≈0.20 — Logger stops after the fluid pass increments `calls`, so we may be sampling before the point draw occurs later in the frame; screenshots still blank, but this needs falsification. apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:999
+**A) Where we are**
+- MCP (`20251021-011543`) and Playwright (`20251021-011725`) smokes on commit `1d8dccf4` (added `[PC] points-mesh` snapshot logging) confirmed **SMOKING GUN**. docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
+- **Critical findings**: 
+  - `[PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, positionCount: 90650, colorCount: 90650}` — mesh correctly configured with 90650 vertices
+  - `[PC] render-info {calls: 1, points: 0, triangles: 2, timeout: false, framesWaited: 2}` — WebGL renderer counts 0 points, 2 triangles
+  - **MISMATCH**: Mesh exists with correct type and geometry, but renderer doesn't count any points primitives
+- Render-info logger sample up to 60 frames; reported `timeout: false, framesWaited: 2` — draws executed immediately.
+- Uniforms, blend/depth overrides, fluid init all fire correctly; material reports `blending: 2`, `depthTest: false`, `depthWrite: false` as expected.
+- Screenshots remain blank; Playwright spec continues to pass (2.0 s) with deterministic viewport/DPR.
+- Acceptance gate status: FAIL (diagnostic) — Milestone 2 complete (mesh confirmed visible with vertices), proceed to Milestone 3 with renderer pipeline trace.
 
-C) Golden Path
-- Milestone 1 (P≈0.70): Instrument the points mesh at the moment `render-info` triggers to log type, visibility, parent UUID, and attribute counts; assumption—diagnostic log fires in the same frame as the fluid draw. PASS gives `position.count > 0`; FAIL pinpoints data/binding gap.
-- Milestone 2 (conditional P≈0.60): If counts >0 yet `renderer.info.render.points` stays 0, temporarily emit a hard-coded GL_POINTS probe (fixed `gl_PointSize`, solid color) to check submission path; assumption—probe does not violate acceptance gates because it is diagnostic-only. PASS proves traversal; FAIL directs us to scene graph masks.
-- Milestone 3 (conditional P≈0.45): Once we confirm point submission, revert probe, tune motion/alpha to hit under-finger ≤2-frame visibility and remove `forceVisible`. Assumptions—fluid displacement and temp-force drivers already behave per current logs.
+**B) Reflection**
+- The `[PC] points-mesh` snapshot eliminated all doubts about mesh configuration: it IS a Points type, it IS visible, it HAS 90650 vertices loaded.
+- Zero points rendered combined with 2 triangles suggests the renderer is either (a) skipping the Points mesh during traversal/render, or (b) counting a different mesh (background plane) in the stats while Points mesh never reaches WebGL.
 
-D) Single change to test next
-- Extend `RenderInfoLogger` to emit one `[PC] points-mesh` snapshot when draws are first detected, including `{type, visible, frustumCulled, renderOrder, parentType, matrixWorldDet, positionCount, colorCount, uvCount, depthCount, materialUuid}` so we can conclusively classify the failure as “no geometry” vs “not submitted”.
+**C) Hypotheses & unknowns**
+- P≈0.60 — R3F render loop is skipping the Points mesh during scene traversal (layers, visibility checks, or render list filtering).
+- P≈0.25 — Material/shader compilation fails silently for Points geometry, so WebGL never receives the draw call (despite mesh being in scene).
+- P≈0.10 — The renderer is counting stats from a different part of the scene graph (background plane = 2 triangles), and Points mesh draws are happening but not being counted.
+- P≈0.05 — Points geometry attributes are malformed or empty despite `positionCount: 90650` report (attribute stride/offset issue).
 
-E) Run plan
-- Build/start per runbook: `pnpm --filter cryptiq-mindmap-demo run build` then `pnpm --filter cryptiq-mindmap-demo run start`.
-- MCP smoke: navigate to `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1`, capture console to `cursor-ooda-ink-prototype/console/<commit>/<branch>/<ts>/console-mcp.json`, verify new `[PC] points-mesh` log alongside `[PC] render-info`.
-- Playwright smoke: `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&forceVisible=1" RUN_ID=$(date -u +%Y%m%d-%H%M%S) SMOKE_OUT_DIR=.clmem/artifacts/ink SMOKE_CONSOLE_OUT=.clmem/artifacts/ink-console pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line`, then archive screenshot/console per runbook.
-- Acceptance for this iteration: PASS if `[PC] points-mesh` reports `positionCount > 0` and (ideally) `renderer.info.render.points > 0`; FAIL otherwise, guiding whether we fix binding or traversal next.
+**D) Golden Path**
+- Milestone 3 (P≈0.7): Add R3F render loop instrumentation or THREE.js patch to log when Points mesh is (a) added to render list, (b) passed to WebGL, (c) actually drawn. Check if R3F `render()` is even seeing the Points mesh. PASS = mesh reaches WebGL but fails to render (shader issue); FAIL = mesh never reaches render list (scene graph/R3F issue).
+- Milestone 4 (P≈0.25): Create minimal test: hard-coded Points mesh with basic material in isolated R3F Canvas to verify Points geometry works at all in this stack.
+- Milestone 5 (P≈0.05): If Points mesh reaches WebGL, add shader probe (hard-coded color/size) to bypass uniforms and prove shader execution path.
+
+**E) Single change to run next**
+- Option A (preferred, P≈0.7): Patch THREE.WebGLRenderer or R3F to log whenever a Points object enters the render pipeline. Check `scene.traverse()`, `renderList`, and `renderObjects()` to see if Points mesh is being filtered out before WebGL submission. If not feasible, proceed to Option B.
+- Option B (fallback, P≈0.25): Create standalone diagnostic: minimal `<points>` element in a separate test route with hard-coded BufferGeometry to isolate whether R3F + THREE.js Points rendering works at all in this codebase.
+
+**F) Run plan**
+- Add render pipeline logging in PointCloudStage or patch THREE.js temporarily to trace Points mesh through render loop.
+- Rebuild & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`.
+- MCP + Playwright smoke: same URL with `forceVisible=1`, capture new pipeline trace logs.
+- Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`.
+- Update `10-latest-smoke-evidence.md` with pipeline trace; PASS if Points mesh reaches WebGL (proceed to shader debug); FAIL if mesh filtered out (debug R3F/scene-graph integration).
