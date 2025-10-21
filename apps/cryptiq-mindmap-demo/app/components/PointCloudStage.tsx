@@ -59,6 +59,8 @@ const FLUID_BASE_VEL_TO_NDC = 0.028
 const FLUID_BASE_INK_BLEND = 0.78
 const FLUID_DEBUG_VEL_TO_NDC = 0.045
 const FLUID_DEBUG_INK_BLEND = 1.0
+const RENDER_CALL_LOG_LIMIT = 6
+const RENDER_LIST_SAMPLE_LIMIT = 12
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -3043,10 +3045,30 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const pointsAfterRenderLoggedRef = React.useRef(false)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
-  const renderCallLoggedRef = React.useRef(false)
+  const renderCallLogCountRef = React.useRef(0)
+  const renderCallSeenPointsRef = React.useRef(false)
+  const traversedSceneUuidRef = React.useRef<string | null>(null)
+
+  const summarizeRenderEntries = (entries: any[] | undefined) => {
+    return (entries ?? [])
+      .slice(0, RENDER_LIST_SAMPLE_LIMIT)
+      .map((entry) => ({
+        type: entry?.object?.type ?? null,
+        id: entry?.object?.id ?? null,
+        uuid: entry?.object?.uuid ?? null,
+        materialUuid: entry?.material?.uuid ?? null,
+      }))
+  }
 
   React.useEffect(() => {
     forceVisibleRef.current = forceVisible
+  }, [forceVisible])
+
+  React.useEffect(() => {
+    if (!forceVisible) {
+      renderCallLogCountRef.current = 0
+      renderCallSeenPointsRef.current = false
+    }
   }, [forceVisible])
 
 
@@ -3164,13 +3186,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       pointsAfterRenderLoggedRef.current = false
       sceneTraversalLoggedRef.current = false
       renderListLoggedRef.current = false
-      renderCallLoggedRef.current = false
+      renderCallLogCountRef.current = 0
+      renderCallSeenPointsRef.current = false
+      traversedSceneUuidRef.current = null
       return
     }
     pointsAfterRenderLoggedRef.current = false
     sceneTraversalLoggedRef.current = false
     renderListLoggedRef.current = false
-    renderCallLoggedRef.current = false
+    renderCallLogCountRef.current = 0
+    renderCallSeenPointsRef.current = false
 
     const geometry = points.geometry as THREE.BufferGeometry | undefined
     if (!geometry) {
@@ -3475,6 +3500,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }) {
     const scene = useThree((state) => state.scene)
     useFrame(() => {
+      traversedSceneUuidRef.current = (scene as any)?.uuid ?? null
       if (!forceVisible || sceneTraversalLoggedRef.current) {
         return
       }
@@ -3579,15 +3605,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           if (!(gl as any).__originalRenderListGet && gl.renderLists && typeof gl.renderLists.get === 'function') {
             const originalGet = gl.renderLists.get.bind(gl.renderLists)
             ;(gl as any).__originalRenderListGet = originalGet
-            const summarizeEntries = (entries: any[]) =>
-              (entries ?? [])
-                .slice(0, 12)
-                .map((entry) => ({
-                  type: entry?.object?.type ?? null,
-                  id: entry?.object?.id ?? null,
-                  uuid: entry?.object?.uuid ?? null,
-                  materialUuid: entry?.material?.uuid ?? null,
-                }))
             gl.renderLists.get = function patchedRenderListsGet(scene, camera) {
               const list = originalGet(scene, camera)
               if (!renderListLoggedRef.current && forceVisibleRef.current) {
@@ -3601,8 +3618,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                     pointsPresent,
                     opaqueCount: opaque.length,
                     transparentCount: transparent.length,
-                    opaqueSample: summarizeEntries(opaque),
-                    transparentSample: summarizeEntries(transparent),
+                    opaqueSample: summarizeRenderEntries(opaque),
+                    transparentSample: summarizeRenderEntries(transparent),
                   })
                 } catch {
                   /* noop */
@@ -3617,7 +3634,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             ;(gl as any).__originalRender = originalRender
             gl.render = function patchedRender(scene: THREE.Scene, camera: THREE.Camera) {
               const result = originalRender(scene, camera)
-              if (!renderCallLoggedRef.current && forceVisibleRef.current) {
+              if (forceVisibleRef.current && renderCallLogCountRef.current < RENDER_CALL_LOG_LIMIT) {
+                const renderIndex = renderCallLogCountRef.current
+                renderCallLogCountRef.current += 1
                 try {
                   const lists = gl.renderLists?.get?.(scene, camera)
                   const opaque = (lists?.opaque ?? []) as any[]
@@ -3625,31 +3644,30 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   const pointsPresent =
                     opaque.some((entry) => entry?.object?.type === 'Points') ||
                     transparent.some((entry) => entry?.object?.type === 'Points')
-                  const summarizeEntries = (entries: any[]) =>
-                    (entries ?? [])
-                      .slice(0, 12)
-                      .map((entry) => ({
-                        type: entry?.object?.type ?? null,
-                        id: entry?.object?.id ?? null,
-                        uuid: entry?.object?.uuid ?? null,
-                        materialUuid: entry?.material?.uuid ?? null,
-                      }))
+                  const seenPreviously = renderCallSeenPointsRef.current
+                  if (pointsPresent) {
+                    renderCallSeenPointsRef.current = true
+                  }
+                  const traversedUuid = traversedSceneUuidRef.current
                   const cameraLayers = (camera as any)?.layers?.mask ?? null
-                  console.info('[PC] renderer-render-call', {
+                  console.info('[PC] renderer-render-pass', {
+                    renderIndex,
                     sceneUuid: (scene as any)?.uuid ?? null,
                     sceneChildCount: scene?.children?.length ?? null,
+                    matchesTraversedScene:
+                      typeof traversedUuid === 'string' ? ((scene as any)?.uuid ?? null) === traversedUuid : null,
                     cameraType: (camera as any)?.type ?? null,
                     cameraLayers,
                     pointsPresent,
+                    renderCallSeenPointsPreviously: seenPreviously,
                     opaqueCount: opaque.length,
                     transparentCount: transparent.length,
-                    opaqueSample: summarizeEntries(opaque),
-                    transparentSample: summarizeEntries(transparent),
+                    opaqueSample: summarizeRenderEntries(opaque),
+                    transparentSample: summarizeRenderEntries(transparent),
                   })
                 } catch {
                   /* noop */
                 }
-                renderCallLoggedRef.current = true
               }
               return result
             }
