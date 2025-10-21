@@ -1,7 +1,7 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 'use client'
 
-import { Canvas, Portal, useFrame, useThree, invalidate } from '@react-three/fiber'
+import { Canvas, useFrame, useThree, invalidate } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as React from 'react'
 // three types are optional in this workspace; import at runtime only
@@ -3048,6 +3048,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const renderCallLogCountRef = React.useRef(0)
   const renderCallSeenPointsRef = React.useRef(false)
   const renderSceneUuidRef = React.useRef<string | null>(null)
+  const dreamdustRootRef = React.useRef<THREE.Group | null>(null)
 
   const summarizeRenderEntries = (entries: any[] | undefined) => {
     return (entries ?? [])
@@ -3522,16 +3523,31 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return null
   }
 
-  function DreamdustScenePortal({ children }: { children: React.ReactNode }) {
+  function DreamdustSceneBridge() {
     const renderScene = useThree((state) => state.internal?.active?.scene ?? state.scene)
     React.useEffect(() => {
-      if (renderScene) {
-        renderSceneUuidRef.current = (renderScene as any)?.uuid ?? null
+      const group = dreamdustRootRef.current
+      if (!renderScene || !group) {
+        return
+      }
+
+      renderSceneUuidRef.current = (renderScene as any)?.uuid ?? null
+
+      if (group.parent && group.parent !== renderScene) {
+        group.parent.remove(group)
+      }
+      if (!renderScene.children.includes(group)) {
+        renderScene.add(group)
+      }
+
+      return () => {
+        if (renderScene.children.includes(group)) {
+          renderScene.remove(group)
+        }
       }
     }, [renderScene])
 
-    if (!renderScene) return null
-    return <Portal container={renderScene}>{children}</Portal>
+    return null
   }
 
   return (
@@ -3787,6 +3803,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           uniforms={uniforms}
           material={prebakedMaterial}
         />
+        <DreamdustSceneBridge />
         <SceneTraversalLogger forceVisible={forceVisible} pointsRef={stagePointsRef} />
         <RenderInfoLogger
           forceVisible={forceVisible}
@@ -3799,6 +3816,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
           {prebaked && prebakedMaterial ? (
             <group
+              ref={dreamdustRootRef}
               position={
                 prebakedTransform
                   ? [
@@ -3845,21 +3863,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               </group>
             </group>
           ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
-            <PointsMesh
-              colorImage={{ data: color.data!, width: color.width, height: color.height }}
-              depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
-              stride={stride}
-              pointBudget={pointBudget}
-              material={fallbackMaterial}
-              uniforms={uniforms}
-              onMaterialValid={() => setBloomEnabled(bloomActive)}
-              onInstancesReady={logInstances}
-            />
-          ) : prebakedStatus === 'absent' && fallbackMaterial ? (
-            readyFallback && (
+            <group ref={dreamdustRootRef}>
               <PointsMesh
                 colorImage={{ data: color.data!, width: color.width, height: color.height }}
-                depth16={depth16From8!}
+                depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
                 stride={stride}
                 pointBudget={pointBudget}
                 material={fallbackMaterial}
@@ -3867,6 +3874,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 onMaterialValid={() => setBloomEnabled(bloomActive)}
                 onInstancesReady={logInstances}
               />
+            </group>
+          ) : prebakedStatus === 'absent' && fallbackMaterial ? (
+            readyFallback && (
+              <group ref={dreamdustRootRef}>
+                <PointsMesh
+                  colorImage={{ data: color.data!, width: color.width, height: color.height }}
+                  depth16={depth16From8!}
+                  stride={stride}
+                  pointBudget={pointBudget}
+                  material={fallbackMaterial}
+                  uniforms={uniforms}
+                  onMaterialValid={() => setBloomEnabled(bloomActive)}
+                  onInstancesReady={logInstances}
+                />
+              </group>
             )
           ) : null}
         </DreamdustScenePortal>
