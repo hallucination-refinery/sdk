@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Canvas, useFrame, useThree, invalidate } from '@react-three/fiber'
@@ -126,7 +127,7 @@ function TempForceDriver({ tempForceRef, tempIntensityRef, setUniform, frameInde
 
     // Motion probe: record first frame index with non-trivial intensity after a pointer start
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const w: any = typeof window !== 'undefined' ? (window as any) : null
       if (w && w.__inkProbe && w.__inkProbe.startFrameIndex != null && w.__inkProbe.firstVisibleFrameIndex == null) {
         if (next > 1e-4) {
@@ -3039,6 +3040,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
   const pointsAfterRenderLoggedRef = React.useRef(false)
+  const sceneTraversalLoggedRef = React.useRef(false)
 
 
   const stagePositionArray = React.useMemo(() => {
@@ -3153,9 +3155,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const points = stagePointsRef.current
     if (!points) {
       pointsAfterRenderLoggedRef.current = false
+      sceneTraversalLoggedRef.current = false
       return
     }
     pointsAfterRenderLoggedRef.current = false
+    sceneTraversalLoggedRef.current = false
 
     const geometry = points.geometry as THREE.BufferGeometry | undefined
     if (!geometry) {
@@ -3392,6 +3396,82 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     debugVertexLog,
   ])
 
+  function collectSceneSnapshot(root: THREE.Object3D, maxNodes = 64) {
+    const queue: { node: THREE.Object3D; path: string }[] = [{ node: root, path: root.type ?? 'Scene' }]
+    const nodes: Array<{
+      type: string
+      name?: string
+      visible: boolean
+      layers: number
+      children: number
+      path: string
+      isPoints?: boolean
+      materialUuid?: string | null
+      geometryPositionCount?: number | null
+    }> = []
+    let pointsFound = false
+    while (queue.length && nodes.length < maxNodes) {
+      const { node, path } = queue.shift()!
+      const type = node.type ?? 'Unknown'
+      const entry: (typeof nodes)[number] = {
+        type,
+        name: node.name || undefined,
+        visible: node.visible,
+        layers: node.layers?.mask ?? 0,
+        children: node.children?.length ?? 0,
+        path,
+      }
+      if (type === 'Points') {
+        const pointsNode = node as THREE.Points
+        const material = Array.isArray(pointsNode.material)
+          ? pointsNode.material[0] ?? null
+          : pointsNode.material ?? null
+        const geometry = pointsNode.geometry as THREE.BufferGeometry | undefined
+        entry.isPoints = true
+        entry.materialUuid = material && typeof (material as any).uuid === 'string' ? (material as any).uuid : null
+        entry.geometryPositionCount =
+          (geometry?.getAttribute('position') as THREE.BufferAttribute | undefined)?.count ?? null
+        pointsFound = true
+      }
+      nodes.push(entry)
+      for (const child of node.children ?? []) {
+        queue.push({ node: child, path: `${path}/${child.type ?? child.uuid ?? 'Object3D'}` })
+      }
+    }
+    return { nodes, pointsFound }
+  }
+
+  function SceneTraversalLogger({
+    forceVisible,
+    pointsRef,
+  }: {
+    forceVisible: boolean
+    pointsRef: React.MutableRefObject<THREE.Points | null>
+  }) {
+    const scene = useThree((state) => state.scene)
+    useFrame(() => {
+      if (!forceVisible || sceneTraversalLoggedRef.current) {
+        return
+      }
+      const points = pointsRef.current
+      if (!scene || !points) {
+        return
+      }
+      const snapshot = collectSceneSnapshot(scene)
+      try {
+        console.info('[PC] scene-traversal', {
+          pointsFound: snapshot.pointsFound,
+          nodeCount: snapshot.nodes.length,
+          nodes: snapshot.nodes,
+        })
+      } catch {
+        /* noop */
+      }
+      sceneTraversalLoggedRef.current = true
+    })
+    return null
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
@@ -3494,7 +3574,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             onStart={() => {
               // Initialize motion probe frame indices when a stroke begins
               try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const w: any = typeof window !== 'undefined' ? (window as any) : null
                 if (w) {
                   if (!w.__inkProbe) w.__inkProbe = {}
@@ -3573,6 +3653,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           uniforms={uniforms}
           material={prebakedMaterial}
         />
+        <SceneTraversalLogger forceVisible={forceVisible} pointsRef={stagePointsRef} />
         <RenderInfoLogger
           forceVisible={forceVisible}
           stagePointsRef={stagePointsRef}
