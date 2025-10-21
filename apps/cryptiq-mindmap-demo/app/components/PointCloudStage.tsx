@@ -3043,6 +3043,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const pointsAfterRenderLoggedRef = React.useRef(false)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
+  const renderCallLoggedRef = React.useRef(false)
 
   React.useEffect(() => {
     forceVisibleRef.current = forceVisible
@@ -3163,11 +3164,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       pointsAfterRenderLoggedRef.current = false
       sceneTraversalLoggedRef.current = false
       renderListLoggedRef.current = false
+      renderCallLoggedRef.current = false
       return
     }
     pointsAfterRenderLoggedRef.current = false
     sceneTraversalLoggedRef.current = false
     renderListLoggedRef.current = false
+    renderCallLoggedRef.current = false
 
     const geometry = points.geometry as THREE.BufferGeometry | undefined
     if (!geometry) {
@@ -3249,6 +3252,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       if (renderer && (renderer as any).__originalRenderListGet) {
         renderer.renderLists.get = (renderer as any).__originalRenderListGet
         delete (renderer as any).__originalRenderListGet
+      }
+      if (renderer && (renderer as any).__originalRender) {
+        renderer.render = (renderer as any).__originalRender
+        delete (renderer as any).__originalRender
       }
     }
   }, [])
@@ -3603,6 +3610,48 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 renderListLoggedRef.current = true
               }
               return list
+            }
+          }
+          if (!(gl as any).__originalRender && typeof gl.render === 'function') {
+            const originalRender = gl.render.bind(gl)
+            ;(gl as any).__originalRender = originalRender
+            gl.render = function patchedRender(scene: THREE.Scene, camera: THREE.Camera) {
+              const result = originalRender(scene, camera)
+              if (!renderCallLoggedRef.current && forceVisibleRef.current) {
+                try {
+                  const lists = gl.renderLists?.get?.(scene, camera)
+                  const opaque = (lists?.opaque ?? []) as any[]
+                  const transparent = (lists?.transparent ?? []) as any[]
+                  const pointsPresent =
+                    opaque.some((entry) => entry?.object?.type === 'Points') ||
+                    transparent.some((entry) => entry?.object?.type === 'Points')
+                  const summarizeEntries = (entries: any[]) =>
+                    (entries ?? [])
+                      .slice(0, 12)
+                      .map((entry) => ({
+                        type: entry?.object?.type ?? null,
+                        id: entry?.object?.id ?? null,
+                        uuid: entry?.object?.uuid ?? null,
+                        materialUuid: entry?.material?.uuid ?? null,
+                      }))
+                  const cameraLayers = (camera as any)?.layers?.mask ?? null
+                  console.info('[PC] renderer-render-call', {
+                    sceneUuid: (scene as any)?.uuid ?? null,
+                    sceneChildCount: scene?.children?.length ?? null,
+                    cameraType: (camera as any)?.type ?? null,
+                    cameraLayers,
+                    pointsPresent,
+                    opaqueCount: opaque.length,
+                    transparentCount: transparent.length,
+                    opaqueSample: summarizeEntries(opaque),
+                    transparentSample: summarizeEntries(transparent),
+                  })
+                } catch {
+                  /* noop */
+                }
+                renderCallLoggedRef.current = true
+              }
+              return result
             }
           }
           // ensure browser gesture handling doesn't block wheel/touch
