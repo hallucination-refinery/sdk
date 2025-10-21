@@ -1,41 +1,43 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-21T04:18:11Z
-commit: 1c78306f
+date: 2025-10-21T04:48:03Z
+commit: 60421b13
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251021-041617`) and Playwright (`20251021-041811`) smokes on commit `1c78306f` (added `renderLists.get` probe) confirmed **DEFINITIVE ROOT CAUSE**. docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
+- MCP (`20251021-044608`) and Playwright (`20251021-044803`) smokes on commit `60421b13` (added `renderer.render()` probe) confirmed **GAME-CHANGING DISCOVERY**. docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
 - **Critical findings**: 
-  - `[PC] scene-traversal {pointsFound: true, path: "Scene/Group/Group/Group/Points", geometryPositionCount: 90650}` — **Points mesh IS in THREE.js scene graph**
-  - `[PC] render-list {pointsPresent: false, opaqueCount: 0, transparentCount: 0}` — **Render lists are COMPLETELY EMPTY**
-  - `[PC] points-mesh {type: Points, visible: true, layers: 1, positionCount: 90650}` — mesh correctly configured
-  - `[PC] render-info {calls: 1, points: 0, triangles: 2, timeout: false}` — only 2 triangles from elsewhere
-  - **❌ `[PC] points-after-render` — MISSING** — consistent with empty render lists
-- **DEFINITIVE**: The ENTIRE scene is being skipped during render list creation (`opaqueCount: 0, transparentCount: 0`), not just the Points mesh.
-- Acceptance gate status: FAIL (definitive — render list filtering) — Milestone 5 complete (render lists proven empty), proceed to Milestone 6 with R3F render() investigation.
+  - `[PC] scene-traversal {pointsFound: true, nodeCount: 7, nodes:[Scene with 3 children...]}` — **Our scene has 3 children at root**
+  - `[PC] renderer-render-call {sceneChildCount: 1, cameraType: OrthographicCamera}` — **R3F renders a scene with only 1 child**
+  - **SCENE MISMATCH**: R3F is calling `renderer.render()` with a DIFFERENT scene object than the one we're adding Points to
+  - `[PC] render-list {opaqueCount: 0, transparentCount: 0}` — Lists empty (consistent with wrong scene)
+  - **❌ `[PC] points-after-render` — MISSING** — Consistent with Points in different scene
+- Acceptance gate status: FAIL (definitive — wrong scene) — Milestone 6 complete (renderer.render() call confirmed with wrong scene), proceed to Milestone 7 with R3F scene management fix.
 
 **B) Reflection**
-- The `renderLists.get` probe revealed the ultimate blocker: THREE.WebGLRenderer's render lists are COMPLETELY EMPTY. This means the issue is NOT specific to Points — the entire scene graph is being filtered out before any objects can be added to render queues.
-- Since `opaqueCount: 0` and `transparentCount: 0`, whatever is rendering those 2 triangles must be from a separate render pass or a different scene entirely.
+- The `renderer.render()` probe revealed the ultimate blocker: R3F is managing TWO DIFFERENT SCENE OBJECTS. The scene we traverse (via `useThree().scene` in our traversal logger) has our Points mesh with 3 children at root. But the scene R3F passes to `renderer.render()` only has 1 child and doesn't contain our Points mesh.
+- This explains why ALL our diagnostics worked perfectly (mesh exists, is visible, has geometry) but nothing renders — we've been adding objects to the wrong scene the entire time.
 
 **C) Hypotheses & unknowns**
-- P≈0.60 — R3F is NOT calling `renderer.render(scene, camera)` at all, or is calling it with the wrong scene object (possibly rendering a different scene that doesn't contain our Points mesh).
-- P≈0.30 — R3F IS calling `renderer.render()` but the entire scene is being culled (camera frustum doesn't intersect scene bounds, or scene.visible=false, or layers mismatch between camera and scene).
-- P≈0.08 — R3F has patched/wrapped `THREE.WebGLRenderer.render()` in a way that breaks render list creation (unlikely but possible).
-- P≈0.02 — The scene object we're traversing is different from the scene being rendered (R3F might maintain multiple scenes).
+- P≈0.70 — R3F maintains multiple scene instances: one for the Canvas render target and one for internal state. Our Points mesh is being added to the internal/state scene, not the render scene.
+- P≈0.20 — The scene returned by `useThree().scene` is different from the scene R3F actually renders. We're traversing the correct scene but R3F renders a portal/intermediate scene.
+- P≈0.08 — R3F uses portals or layers, and our Points mesh is in a portal that's not connected to the main render scene.
+- P≈0.02 — Multiple Canvas instances exist and we're adding Points to one but rendering from another.
 
 **D) Golden Path**
-- Milestone 6 (P≈0.8): Patch `THREE.WebGLRenderer.render()` to log its arguments (scene, camera) and verify: (a) render() is being called, (b) the scene object matches what we traversed, (c) camera frustum is valid. PASS = render() called with correct scene (proceed to culling/filtering debug); FAIL = render() not called or wrong scene (R3F integration issue).
-- Milestone 7 (P≈0.15): If render() is being called correctly, log camera.layers vs scene children layers to check for layer filtering. Also check scene.visible and scene.matrixWorld.
-- Milestone 8 (P≈0.05): If all above pass, the issue is in THREE.js's projectObject() filtering logic — may need to patch projectObject() to log why objects are being skipped.
+- Milestone 7 (P≈0.85): Add logging to capture BOTH scene UUIDs: (a) the scene from `useThree().scene` where we're adding Points, (b) the scene being passed to renderer.render(). Compare UUIDs and children counts to confirm they're different scenes. Then trace R3F's scene management to find the correct render scene.
+- Milestone 8 (P≈0.12): Once we identify why there are two scenes, ensure Points mesh is added to the actual render scene (the one with sceneChildCount: 1) instead of the traversed scene.
+- Milestone 9 (P≈0.03): If issue persists, investigate R3F Canvas configuration (frameloop, concurrent, etc.) that might affect scene management.
 
 **E) Single change to run next**
-- Patch `THREE.WebGLRenderer.render()` to emit a one-shot `[PC] renderer-render-call` log with: scene UUID, scene.children.length (top-level), camera type, camera.layers.mask, and a flag indicating if this is the expected scene. This will confirm if R3F is calling render() and with what arguments.
+- Add logging in SceneTraversalLogger to capture the scene UUID from `useThree().scene` and compare it with the `sceneUuid` from `renderer-render-call`. This will definitively prove we're working with two different scenes. Also log where our Points mesh is being added (which scene parent) vs which scene is being rendered.
 
 **F) Run plan**
-- Add WebGLRenderer.render() patch in PointCloudStage (similar pattern to renderLists.get hook).
+- Extend SceneTraversalLogger to log scene UUID from `useThree().scene` and mark it as "traversed scene".
+- Compare traversed scene UUID with rendered scene UUID from `renderer-render-call`.
+- If UUIDs differ, investigate R3F's scene graph structure to find why there are multiple scenes.
+- Fix: Add Points mesh to the correct render scene (likely need to use a different R3F API or mount point).
 - Rebuild & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`.
-- MCP + Playwright smoke: same URL with `forceVisible=1`, capture `[PC] renderer-render-call` log.
+- MCP + Playwright smoke: same URL with `forceVisible=1`, capture scene UUID comparison.
 - Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`.
-- Update `10-latest-smoke-evidence.md` with render() call details; PASS if render() called with correct scene (proceed to culling debug); FAIL if not called or wrong scene (fix R3F integration).
+- Update `10-latest-smoke-evidence.md` with scene UUID findings; document the fix approach based on why there are two scenes.
