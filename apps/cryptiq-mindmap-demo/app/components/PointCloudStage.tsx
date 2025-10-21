@@ -1362,6 +1362,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [fluidBoost, setFluidBoost] = React.useState(process.env.NEXT_PUBLIC_FLUID_DEBUG === '1')
   const [forceVisible, setForceVisible] = React.useState(false)
+  const forceVisibleRef = React.useRef(false)
   React.useEffect(() => {
     if (typeof window === 'undefined') {
       return
@@ -3041,6 +3042,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const stageTelemetryCleanupRef = React.useRef<() => void>()
   const pointsAfterRenderLoggedRef = React.useRef(false)
   const sceneTraversalLoggedRef = React.useRef(false)
+  const renderListLoggedRef = React.useRef(false)
+
+  React.useEffect(() => {
+    forceVisibleRef.current = forceVisible
+  }, [forceVisible])
 
 
   const stagePositionArray = React.useMemo(() => {
@@ -3156,10 +3162,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     if (!points) {
       pointsAfterRenderLoggedRef.current = false
       sceneTraversalLoggedRef.current = false
+      renderListLoggedRef.current = false
       return
     }
     pointsAfterRenderLoggedRef.current = false
     sceneTraversalLoggedRef.current = false
+    renderListLoggedRef.current = false
 
     const geometry = points.geometry as THREE.BufferGeometry | undefined
     if (!geometry) {
@@ -3234,6 +3242,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stageUvDepth,
     simUvVersion,
   ])
+
+  React.useEffect(() => {
+    return () => {
+      const renderer = rendererRef.current
+      if (renderer && (renderer as any).__originalRenderListGet) {
+        renderer.renderLists.get = (renderer as any).__originalRenderListGet
+        delete (renderer as any).__originalRenderListGet
+      }
+    }
+  }, [])
 
   React.useEffect(() => {
     const cleanup = stageTelemetryCleanupRef.current
@@ -3550,6 +3568,42 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             if (gl.debug) gl.debug.checkShaderErrors = true
           } catch {
             /* noop */
+          }
+          if (!(gl as any).__originalRenderListGet && gl.renderLists && typeof gl.renderLists.get === 'function') {
+            const originalGet = gl.renderLists.get.bind(gl.renderLists)
+            ;(gl as any).__originalRenderListGet = originalGet
+            const summarizeEntries = (entries: any[]) =>
+              (entries ?? [])
+                .slice(0, 12)
+                .map((entry) => ({
+                  type: entry?.object?.type ?? null,
+                  id: entry?.object?.id ?? null,
+                  uuid: entry?.object?.uuid ?? null,
+                  materialUuid: entry?.material?.uuid ?? null,
+                }))
+            gl.renderLists.get = function patchedRenderListsGet(scene, camera) {
+              const list = originalGet(scene, camera)
+              if (!renderListLoggedRef.current && forceVisibleRef.current) {
+                const opaque = (list?.opaque ?? []) as any[]
+                const transparent = (list?.transparent ?? []) as any[]
+                const pointsPresent =
+                  opaque.some((entry) => entry?.object?.type === 'Points') ||
+                  transparent.some((entry) => entry?.object?.type === 'Points')
+                try {
+                  console.info('[PC] render-list', {
+                    pointsPresent,
+                    opaqueCount: opaque.length,
+                    transparentCount: transparent.length,
+                    opaqueSample: summarizeEntries(opaque),
+                    transparentSample: summarizeEntries(transparent),
+                  })
+                } catch {
+                  /* noop */
+                }
+                renderListLoggedRef.current = true
+              }
+              return list
+            }
           }
           // ensure browser gesture handling doesn't block wheel/touch
           gl.domElement.style.touchAction = 'none'
