@@ -3038,6 +3038,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const stagePointsRef = React.useRef<THREE.Points | null>(null)
   const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
+  const pointsAfterRenderLoggedRef = React.useRef(false)
 
 
   const stagePositionArray = React.useMemo(() => {
@@ -3151,8 +3152,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     const points = stagePointsRef.current
     if (!points) {
+      pointsAfterRenderLoggedRef.current = false
       return
     }
+    pointsAfterRenderLoggedRef.current = false
 
     const geometry = points.geometry as THREE.BufferGeometry | undefined
     if (!geometry) {
@@ -3324,6 +3327,69 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stageUvDepth,
     prebakedTransform,
     thicknessScale,
+  ])
+
+  React.useEffect(() => {
+    const points = stagePointsRef.current
+    if (!points || !rendererRef.current) {
+      return
+    }
+
+    const originalAfterRender = typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined
+    const probe = function pointsAfterRenderProbe(
+      this: THREE.Points,
+      rendererArg: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera,
+      geometry: THREE.BufferGeometry,
+      material: THREE.Material,
+      group?: THREE.Group,
+    ) {
+      if (!pointsAfterRenderLoggedRef.current) {
+        const info = rendererArg?.info?.render ?? null
+        const resolvedMaterial =
+          material ??
+          (Array.isArray((this as { material?: THREE.Material | THREE.Material[] }).material)
+            ? ((this as { material?: THREE.Material | THREE.Material[] }).material as THREE.Material[])[0] ?? null
+            : ((this as { material?: THREE.Material }).material ?? null))
+        try {
+          console.info('[PC] points-after-render', {
+            calls: info?.calls ?? null,
+            points: info?.points ?? null,
+            triangles: info?.triangles ?? null,
+            material: resolvedMaterial
+              ? {
+                  uuid: (resolvedMaterial as any).uuid ?? null,
+                  blending: (resolvedMaterial as any).blending ?? null,
+                  depthTest: (resolvedMaterial as any).depthTest ?? null,
+                  depthWrite: (resolvedMaterial as any).depthWrite ?? null,
+                }
+              : null,
+          })
+        } catch {
+          /* noop */
+        }
+        pointsAfterRenderLoggedRef.current = true
+      }
+      if (originalAfterRender) {
+        originalAfterRender.call(this, rendererArg, scene, camera, geometry, material, group)
+      }
+    }
+
+    points.onAfterRender = probe
+
+    return () => {
+      if (points.onAfterRender === probe) {
+        points.onAfterRender = originalAfterRender ?? undefined
+      }
+    }
+  }, [
+    rendererReadyTick,
+    stageAttributeVersion,
+    stagePositionVersion,
+    stageUvDepth,
+    simUvVersion,
+    debugVertexLog,
   ])
 
   return (
