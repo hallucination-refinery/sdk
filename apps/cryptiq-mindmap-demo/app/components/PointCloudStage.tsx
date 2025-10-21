@@ -1,7 +1,7 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 'use client'
 
-import { Canvas, useFrame, useThree, invalidate } from '@react-three/fiber'
+import { Canvas, Portal, useFrame, useThree, invalidate } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as React from 'react'
 // three types are optional in this workspace; import at runtime only
@@ -3047,7 +3047,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const renderListLoggedRef = React.useRef(false)
   const renderCallLogCountRef = React.useRef(0)
   const renderCallSeenPointsRef = React.useRef(false)
-  const traversedSceneUuidRef = React.useRef<string | null>(null)
+  const renderSceneUuidRef = React.useRef<string | null>(null)
 
   const summarizeRenderEntries = (entries: any[] | undefined) => {
     return (entries ?? [])
@@ -3188,7 +3188,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       renderListLoggedRef.current = false
       renderCallLogCountRef.current = 0
       renderCallSeenPointsRef.current = false
-      traversedSceneUuidRef.current = null
+      renderSceneUuidRef.current = null
       return
     }
     pointsAfterRenderLoggedRef.current = false
@@ -3500,7 +3500,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }) {
     const scene = useThree((state) => state.scene)
     useFrame(() => {
-      traversedSceneUuidRef.current = (scene as any)?.uuid ?? null
       if (!forceVisible || sceneTraversalLoggedRef.current) {
         return
       }
@@ -3521,6 +3520,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       sceneTraversalLoggedRef.current = true
     })
     return null
+  }
+
+  function DreamdustScenePortal({ children }: { children: React.ReactNode }) {
+    const renderScene = useThree((state) => state.internal?.active?.scene ?? state.scene)
+    React.useEffect(() => {
+      if (renderScene) {
+        renderSceneUuidRef.current = (renderScene as any)?.uuid ?? null
+      }
+    }, [renderScene])
+
+    if (!renderScene) return null
+    return <Portal container={renderScene}>{children}</Portal>
   }
 
   return (
@@ -3648,14 +3659,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   if (pointsPresent) {
                     renderCallSeenPointsRef.current = true
                   }
-                  const traversedUuid = traversedSceneUuidRef.current
+                  const activeRenderUuid = renderSceneUuidRef.current
                   const cameraLayers = (camera as any)?.layers?.mask ?? null
                   console.info('[PC] renderer-render-pass', {
                     renderIndex,
                     sceneUuid: (scene as any)?.uuid ?? null,
                     sceneChildCount: scene?.children?.length ?? null,
-                    matchesTraversedScene:
-                      typeof traversedUuid === 'string' ? ((scene as any)?.uuid ?? null) === traversedUuid : null,
+                    matchesRenderScene:
+                      typeof activeRenderUuid === 'string'
+                        ? ((scene as any)?.uuid ?? null) === activeRenderUuid
+                        : null,
                     cameraType: (camera as any)?.type ?? null,
                     cameraLayers,
                     pointsPresent,
@@ -3780,72 +3793,61 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           stagePointsRef={stagePointsRef}
           uniforms={uniforms}
         />
-        <ambientLight intensity={1} />
-        <directionalLight position={[2, 3, 4]} intensity={0.6} />
-        {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
-        {prebaked && prebakedMaterial ? (
-          <group
-            position={
-              prebakedTransform
-                ? [
-                    -prebakedTransform.center[0] * prebakedTransform.scale,
-                    -prebakedTransform.center[1] * prebakedTransform.scale,
-                    -prebakedTransform.center[2] * prebakedTransform.scale,
-                  ]
-                : [0, 0, 0]
-            }
-            scale={
-              prebakedTransform
-                ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
-                : [1, 1, 1]
-            }
-            quaternion={appliedQuaternion ?? prebakedTransform?.rotationQuat}
-            matrixAutoUpdate
-          >
-            <group scale={mirrorScale}>
-              <group scale={[1, 1, thicknessScale]}>
-                <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
-                  <bufferGeometry
-                    key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}
-                  >
-                    <bufferAttribute
-                      key={`pos:${stagePositionVersion}`}
-                      attach="attributes-position"
-                      args={[stagePositionArray, 3]}
-                    />
-                    {stageColorArray && (
+        <DreamdustScenePortal>
+          <ambientLight intensity={1} />
+          <directionalLight position={[2, 3, 4]} intensity={0.6} />
+          {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
+          {prebaked && prebakedMaterial ? (
+            <group
+              position={
+                prebakedTransform
+                  ? [
+                      -prebakedTransform.center[0] * prebakedTransform.scale,
+                      -prebakedTransform.center[1] * prebakedTransform.scale,
+                      -prebakedTransform.center[2] * prebakedTransform.scale,
+                    ]
+                  : [0, 0, 0]
+              }
+              scale={
+                prebakedTransform
+                  ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
+                  : [1, 1, 1]
+              }
+              quaternion={appliedQuaternion ?? prebakedTransform?.rotationQuat}
+              matrixAutoUpdate
+            >
+              <group scale={mirrorScale}>
+                <group scale={[1, 1, thicknessScale]}>
+                  <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
+                    <bufferGeometry
+                      key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}
+                    >
                       <bufferAttribute
-                        key={`color:${stagePositionVersion}`}
-                        attach="attributes-color"
-                        args={[stageColorArray, 3, true]}
+                        key={`pos:${stagePositionVersion}`}
+                        attach="attributes-position"
+                        args={[stagePositionArray, 3]}
                       />
-                    )}
-                  </bufferGeometry>
-                  <primitive
-                    key={`material:${aestheticPreset}`}
-                    object={prebakedMaterial}
-                    attach="material"
-                  />
-                </points>
+                      {stageColorArray && (
+                        <bufferAttribute
+                          key={`color:${stagePositionVersion}`}
+                          attach="attributes-color"
+                          args={[stageColorArray, 3, true]}
+                        />
+                      )}
+                    </bufferGeometry>
+                    <primitive
+                      key={`material:${aestheticPreset}`}
+                      object={prebakedMaterial}
+                      attach="material"
+                    />
+                  </points>
+                </group>
               </group>
             </group>
-          </group>
-        ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
-          <PointsMesh
-            colorImage={{ data: color.data!, width: color.width, height: color.height }}
-            depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
-            stride={stride}
-            pointBudget={pointBudget}
-            material={fallbackMaterial}
-            uniforms={uniforms}
-            onMaterialValid={() => setBloomEnabled(bloomActive)}
-            onInstancesReady={logInstances}
-          />
-        ) : prebakedStatus === 'absent' && fallbackMaterial ? (
-          readyFallback && (
+          ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
             <PointsMesh
               colorImage={{ data: color.data!, width: color.width, height: color.height }}
-              depth16={depth16From8!}
+              depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
               stride={stride}
               pointBudget={pointBudget}
               material={fallbackMaterial}
@@ -3853,8 +3855,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               onMaterialValid={() => setBloomEnabled(bloomActive)}
               onInstancesReady={logInstances}
             />
-          )
-        ) : null}
+          ) : prebakedStatus === 'absent' && fallbackMaterial ? (
+            readyFallback && (
+              <PointsMesh
+                colorImage={{ data: color.data!, width: color.width, height: color.height }}
+                depth16={depth16From8!}
+                stride={stride}
+                pointBudget={pointBudget}
+                material={fallbackMaterial}
+                uniforms={uniforms}
+                onMaterialValid={() => setBloomEnabled(bloomActive)}
+                onInstancesReady={logInstances}
+              />
+            )
+          ) : null}
+        </DreamdustScenePortal>
         <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           // For scene-03, disable controls by default; allow opt-in via ?controls=1
