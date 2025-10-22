@@ -61,6 +61,7 @@ const FLUID_DEBUG_VEL_TO_NDC = 0.045
 const FLUID_DEBUG_INK_BLEND = 1.0
 const RENDER_CALL_LOG_LIMIT = 6
 const RENDER_LIST_SAMPLE_LIMIT = 12
+const FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC = true
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -911,6 +912,17 @@ function FluidDriver({
   inkBlend: number
 }) {
   const frameloop = useThree((state) => state.frameloop)
+  const skipLogRef = React.useRef(false)
+  const disableFluidStep = React.useMemo(() => {
+    if (FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC) return true
+    if (typeof window === 'undefined') return false
+    try {
+      const params = new URLSearchParams(window.location.search)
+      return params.get('disableFluidStep') === '1'
+    } catch {
+      return false
+    }
+  }, [])
   React.useEffect(() => {
     if (frameloop === 'demand') {
       invalidate()
@@ -920,7 +932,18 @@ function FluidDriver({
     (state, delta) => {
       const sim = fluidRef.current
       if (!sim) return
-      sim.step(delta)
+      if (disableFluidStep) {
+        if (!skipLogRef.current) {
+          try {
+            console.info('[PC] fluid-step skipped', { reason: 'diagnostic-disable' })
+          } catch {
+            /* noop */
+          }
+          skipLogRef.current = true
+        }
+      } else {
+        sim.step(delta)
+      }
       const texture = sim.getTexture()
       if (uniforms?.uVelocity && uniforms.uVelocity.value !== texture) {
         uniforms.uVelocity.value = texture

@@ -333,3 +333,19 @@ I recommend staying with the SINGLE CHANGE → TEST → EVALUATE loop: each of t
 3. Only if the warnings persist after step 1, inspect `FluidSim.renderPass` for cases where the same render target is both bound and sampled (e.g., missed swaps), then patch just that code path.
 
 That sequence keeps us honest with the OODA cadence, yet acknowledges the severity of the current blocker.
+
+# SHADER DOCS AUDIT 5
+
+**Change Executed**  
+- Added a diagnostic guard that completely skips `FluidSim.step` during render (`apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:68-72, 892-924`).  
+- Guard logs `[PC] fluid-step skipped { reason: 'diagnostic-disable' }` the first time it runs so smoke artifacts show the experiment.  
+- The rest of the per-frame uniform updates still run, so renderer info (`[PC] points-after-render`) should remain comparable while feedback-loop draw calls stop executing.
+
+**Purpose**  
+- Validate whether the WebGL feedback-loop (`GL_INVALID_OPERATION: glDrawArrays`) disappears when the fluid driver is idle.  
+- If warnings vanish but particles remain invisible, we advance to the tone-mapping/blending diagnostics; if warnings persist, we inspect `FluidSim.renderPass` for stale targets.
+
+**Verification Plan**  
+- Next smoke run: expect console logs with `fluid-step skipped` and **no** feedback-loop errors; `[PC] points-after-render` should still report ~90k.  
+- Screenshots may stay blank (velocity texture remains static), but success here is strictly “warnings gone,” proving the feedback loop was the blocker.  
+- Rollback is one-line: set `FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC` back to `false` (or remove the guard).  
