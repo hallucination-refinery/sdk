@@ -3049,6 +3049,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const renderCallSeenPointsRef = React.useRef(false)
   const renderSceneUuidRef = React.useRef<string | null>(null)
   const dreamdustRootRef = React.useRef<THREE.Group | null>(null)
+  const [dreamdustRoot, setDreamdustRoot] = React.useState<THREE.Group | null>(null)
 
   const summarizeRenderEntries = (entries: any[] | undefined) => {
     return (entries ?? [])
@@ -3526,7 +3527,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   function DreamdustSceneBridge() {
     const renderScene = useThree((state) => state.internal?.active?.scene ?? state.scene)
     React.useEffect(() => {
-      const group = dreamdustRootRef.current
+      const group = dreamdustRoot
       if (!renderScene || !group) {
         return
       }
@@ -3541,11 +3542,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
 
       return () => {
-        if (renderScene.children.includes(group)) {
+        if (group && renderScene.children.includes(group)) {
           renderScene.remove(group)
         }
       }
-    }, [renderScene])
+    }, [renderScene, dreamdustRoot])
 
     return null
   }
@@ -3810,60 +3811,63 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           stagePointsRef={stagePointsRef}
           uniforms={uniforms}
         />
-        <DreamdustScenePortal>
-          <ambientLight intensity={1} />
+      <ambientLight intensity={1} />
           <directionalLight position={[2, 3, 4]} intensity={0.6} />
           {/* Prefer prebaked VGGT positions if present; gate fallback until checked */}
-          {prebaked && prebakedMaterial ? (
-            <group
-              ref={dreamdustRootRef}
-              position={
-                prebakedTransform
-                  ? [
-                      -prebakedTransform.center[0] * prebakedTransform.scale,
-                      -prebakedTransform.center[1] * prebakedTransform.scale,
-                      -prebakedTransform.center[2] * prebakedTransform.scale,
-                    ]
-                  : [0, 0, 0]
-              }
-              scale={
-                prebakedTransform
-                  ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
-                  : [1, 1, 1]
-              }
-              quaternion={appliedQuaternion ?? prebakedTransform?.rotationQuat}
-              matrixAutoUpdate
-            >
-              <group scale={mirrorScale}>
-                <group scale={[1, 1, thicknessScale]}>
-                  <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
-                    <bufferGeometry
-                      key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}
-                    >
-                      <bufferAttribute
-                        key={`pos:${stagePositionVersion}`}
-                        attach="attributes-position"
-                        args={[stagePositionArray, 3]}
-                      />
-                      {stageColorArray && (
+          <group
+            ref={(node) => {
+              dreamdustRootRef.current = node
+              setDreamdustRoot(node)
+            }}
+          >
+            {prebaked && prebakedMaterial ? (
+              <group
+                position={
+                  prebakedTransform
+                    ? [
+                        -prebakedTransform.center[0] * prebakedTransform.scale,
+                        -prebakedTransform.center[1] * prebakedTransform.scale,
+                        -prebakedTransform.center[2] * prebakedTransform.scale,
+                      ]
+                    : [0, 0, 0]
+                }
+                scale={
+                  prebakedTransform
+                    ? [prebakedTransform.scale, prebakedTransform.scale, prebakedTransform.scale]
+                    : [1, 1, 1]
+                }
+                quaternion={appliedQuaternion ?? prebakedTransform?.rotationQuat}
+                matrixAutoUpdate
+              >
+                <group scale={mirrorScale}>
+                  <group scale={[1, 1, thicknessScale]}>
+                    <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
+                      <bufferGeometry
+                        key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}
+                      >
                         <bufferAttribute
-                          key={`color:${stagePositionVersion}`}
-                          attach="attributes-color"
-                          args={[stageColorArray, 3, true]}
+                          key={`pos:${stagePositionVersion}`}
+                          attach="attributes-position"
+                          args={[stagePositionArray, 3]}
                         />
-                      )}
-                    </bufferGeometry>
-                    <primitive
-                      key={`material:${aestheticPreset}`}
-                      object={prebakedMaterial}
-                      attach="material"
-                    />
-                  </points>
+                        {stageColorArray && (
+                          <bufferAttribute
+                            key={`color:${stagePositionVersion}`}
+                            attach="attributes-color"
+                            args={[stageColorArray, 3, true]}
+                          />
+                        )}
+                      </bufferGeometry>
+                      <primitive
+                        key={`material:${aestheticPreset}`}
+                        object={prebakedMaterial}
+                        attach="material"
+                      />
+                    </points>
+                  </group>
                 </group>
               </group>
-            </group>
-          ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
-            <group ref={dreamdustRootRef}>
+            ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
               <PointsMesh
                 colorImage={{ data: color.data!, width: color.width, height: color.height }}
                 depth16={{ data16: packed.data16!, width: packed.width, height: packed.height }}
@@ -3874,10 +3878,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 onMaterialValid={() => setBloomEnabled(bloomActive)}
                 onInstancesReady={logInstances}
               />
-            </group>
-          ) : prebakedStatus === 'absent' && fallbackMaterial ? (
-            readyFallback && (
-              <group ref={dreamdustRootRef}>
+            ) : prebakedStatus === 'absent' && fallbackMaterial ? (
+              readyFallback && (
                 <PointsMesh
                   colorImage={{ data: color.data!, width: color.width, height: color.height }}
                   depth16={depth16From8!}
@@ -3888,10 +3890,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   onMaterialValid={() => setBloomEnabled(bloomActive)}
                   onInstancesReady={logInstances}
                 />
-              </group>
-            )
-          ) : null}
-        </DreamdustScenePortal>
+              )
+            ) : null}
+          </group>
         <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           // For scene-03, disable controls by default; allow opt-in via ?controls=1
