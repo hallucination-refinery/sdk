@@ -755,7 +755,6 @@ export function makeDreamdustMaterial(
     toneMapped: true,
     premultipliedAlpha: true,
     defines,
-    glslVersion: (THREE as any).GLSL3,
   }
 
   const material = new (THREE as any).ShaderMaterial(params)
