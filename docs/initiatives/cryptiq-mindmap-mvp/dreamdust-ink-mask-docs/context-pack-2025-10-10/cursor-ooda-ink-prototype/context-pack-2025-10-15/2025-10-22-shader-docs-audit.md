@@ -298,3 +298,38 @@ The findings directly impact the Vision & Acceptance criteria:
 4. **Long-term**: Once visibility is restored, return to single-change testing for fine-tuning motion response
 
 The foundation is solid, but the WebGL feedback loops are blocking the entire rendering pipeline. A focused refactor of the texture management system is the most efficient path to achieving the Vision & Acceptance goals.
+
+# SHADER DOCS AUDIT 4
+
+Seeing thousands of ink particles still disappear on screen is like turning on a faucet and nothing comes out even though the pipes are pressurized—the GPU is receiving draw commands, but visibility fails because render settings and a stream of WebGL errors keep cancelling the output.
+
+**Key Ideas & Tradeoffs**  
+- `Shader version`: the shader now compiles under GLSL100 (line-based syntax with `gl_FragColor`), matching Three.js defaults, so compilation is no longer the blocker (`apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:685-691`).  
+- `Tone mapping`: our shader applies ACES + gamma, yet the material and renderer add a second ACES pass (`DreamdustMaterial.ts:748-756`, `apps/.../PointCloudStage.tsx:3624-3650`); double conversion can crush brightness, just as the Three.js color-management guide warns.  
+- `Premultiplied alpha & blending`: the material always outputs premultiplied color while defaulting to additive blending for most presets (`DreamdustMaterial.ts:748-775`), so dark colors barely brighten the background, even when alpha is high.  
+- `Force-visible overrides`: the debug path keeps flipping between success and failure (`console-chromium-20251022-184929.json:20`, `:125`, `:265`, `:390`), meaning our “make it obvious” safeguard isn’t reliably applied when screenshots are taken.  
+- `Feedback loop`: hundreds of `GL_INVALID_OPERATION` warnings show the renderer is drawing from the same texture it’s writing to (`console-chromium-20251022-184929.json:515-600`), so entire draw calls are being dropped—turning off the faucet mid-flow.
+
+**Audit Cross-Check**  
+- Audit 1 spotted the same tone-mapping and additive/premult risks and urged single-step diagnostics. Our fresh evidence confirms those were valid hypotheses.  
+- Audit 2 declared the debugging “complete” and recommended sprinting toward under-finger motion, yet the latest logs still show blank frames and repeated GL errors (`console-chromium-20251022-184929.json:215`, `:515`), so its graduation call was premature.  
+- Audit 3 correctly highlighted the feedback-loop errors and argued for a refactor. We agree the loop is a hard blocker, but a scoped toggle (e.g., pausing the fluid sim or swapping its targets) should prove whether a lighter-weight fix restores visibility before dedicating time to a full architecture rewrite.
+
+**Where We Stand vs. Vision**  
+- Vision demands “under-finger visible motion” and the first acceptance gate is simply “particles must be visible” (`docs/.../01-vision-and-acceptance.md:6-15`).  
+- Right now: draw calls happen (`console-chromium-20251022-184929.json:215`), but three gates fail—visibility, under-finger response, and timing—because the frame graph keeps voiding the draws.  
+- Removing the feedback loop will let us observe whether tone mapping or blending still suppress brightness; both must pass before we can measure under-finger latency.
+
+**Path Forward (in increasing technical depth)**  
+- First, run a single-change test that disables the fluid sim driver (or swaps its ping-pong buffers) so no target is sampled and written in the same pass; that should silence the `GL_INVALID_OPERATION` spam with minimal code.  
+- Next, while visibility testing, flip either `toneMapped` to `false` or remove the in-shader ACES/gamma so we only tone-map once—a tiny toggle that checks whether color compression is the remaining culprit.  
+- Finally, trial a `NormalBlending` + `premultipliedAlpha: false` diagnostic in the force-visible preset; if particles pop into view, we know additive/premult logic needs tuning.
+
+I recommend staying with the SINGLE CHANGE → TEST → EVALUATE loop: each of the fixes above is a reversible flag or one-liner, and each isolates a distinct gate (feedback loop, color pipeline, blend state) without entangling the entire renderer.
+
+**Suggested Next Steps**  
+1. Add a build-flag to skip `FluidDriver` stepping during the next smoke run and confirm the GL feedback warnings disappear.  
+2. Capture a run with renderer tone mapping disabled (`toneMapped: false`) to see if brightness returns.  
+3. Only if the warnings persist after step 1, inspect `FluidSim.renderPass` for cases where the same render target is both bound and sampled (e.g., missed swaps), then patch just that code path.
+
+That sequence keeps us honest with the OODA cadence, yet acknowledges the severity of the current blocker.
