@@ -3050,6 +3050,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const renderSceneUuidRef = React.useRef<string | null>(null)
   const dreamdustRootRef = React.useRef<THREE.Group | null>(null)
   const [dreamdustRoot, setDreamdustRoot] = React.useState<THREE.Group | null>(null)
+  const renderSceneRef = React.useRef<THREE.Scene | null>(null)
+  const sceneCandidatesLoggedRef = React.useRef(false)
 
   const summarizeRenderEntries = (entries: any[] | undefined) => {
     return (entries ?? [])
@@ -3527,34 +3529,42 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   function DreamdustSceneBridge() {
     const state = useThree((s) => s)
     React.useEffect(() => {
-      const candidates = {
-        useThreeScene: (state.scene as any)?.uuid ?? null,
-        internalScene: (state.internal?.scene as any)?.uuid ?? null,
-        internalActiveScene: (state.internal?.active?.scene as any)?.uuid ?? null,
-        rendererScene: ((state.gl as any)?.scene as any)?.uuid ?? null,
-      }
-      try {
-        console.info('[PC] scene-candidates', {
-          candidates,
-          renderCallCount: renderCallLogCountRef.current,
-        })
-      } catch {
-        /* noop */
+      if (!sceneCandidatesLoggedRef.current) {
+        const candidates = {
+          useThreeScene: (state.scene as any)?.uuid ?? null,
+          internalScene: (state.internal?.scene as any)?.uuid ?? null,
+          internalActiveScene: (state.internal?.active?.scene as any)?.uuid ?? null,
+          rendererScene: ((state.gl as any)?.scene as any)?.uuid ?? null,
+          capturedRenderScene: renderSceneRef.current ? (renderSceneRef.current as any).uuid ?? null : null,
+        }
+        try {
+          console.info('[PC] scene-candidates', {
+            candidates,
+            renderCallCount: renderCallLogCountRef.current,
+          })
+          sceneCandidatesLoggedRef.current = true
+        } catch {
+          /* noop */
+        }
       }
 
-      const renderScene = state.internal?.active?.scene ?? state.scene
+      const renderScene = renderSceneRef.current
       const group = dreamdustRoot
       if (!renderScene || !group) {
         return
       }
 
-      renderSceneUuidRef.current = (renderScene as any)?.uuid ?? null
+      const renderUuid = (renderScene as any)?.uuid ?? null
+      renderSceneUuidRef.current = renderUuid
 
       if (group.parent && group.parent !== renderScene) {
         group.parent.remove(group)
       }
       if (!renderScene.children.includes(group)) {
         renderScene.add(group)
+        renderCallLogCountRef.current = 0
+        renderCallSeenPointsRef.current = false
+        renderListLoggedRef.current = false
       }
 
       return () => {
@@ -3677,6 +3687,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             const originalRender = gl.render.bind(gl)
             ;(gl as any).__originalRender = originalRender
             gl.render = function patchedRender(scene: THREE.Scene, camera: THREE.Camera) {
+              if (!renderSceneRef.current) {
+                renderSceneRef.current = scene
+                renderSceneUuidRef.current = (scene as any)?.uuid ?? null
+                try {
+                  console.info('[PC] render-scene-captured', {
+                    uuid: (scene as any)?.uuid ?? null,
+                    childCount: scene?.children?.length ?? null,
+                  })
+                } catch {
+                  /* noop */
+                }
+              }
               const result = originalRender(scene, camera)
               if (forceVisibleRef.current && renderCallLogCountRef.current < RENDER_CALL_LOG_LIMIT) {
                 const renderIndex = renderCallLogCountRef.current
