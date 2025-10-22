@@ -1,0 +1,222 @@
+[
+  {
+    "type": "log",
+    "text": "[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 0, stageUvCount: 0, simStageUvCount: 0, simKey: null}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: TBD, depthWrite: TBD, blending: TBD, applied: false}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked positions {bytes: 2175600, count: 181300, sample: Array(6)}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked AABB {min: Array(3), max: Array(3), extent: Array(3), maxExtent: 2.454334169626236, scale: 407.44247966538614}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] instances: 90650",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 90650, stageUvCount: 181300, simStageUvCount: 0, simKey: null}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/app/quiz/%5Bslug%5D/page-708f3477f40b7639.js:0"
+  },
+  {
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 1: {expected: Object, actual: Object}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {width: 256, height: 256, needsUpdate: false}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 0}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] attach controls to JSHandle@node",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[DEBUG] Camera position check:",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "  Expected: [-65.737, 103.054, -681.379]",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "  Actual: [-65.737, 103.054, -681.379]",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "  Match: true",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {position: Array(3), target: Array(3), actualPosition: Array(3), actualTarget: null}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 0}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] reveal start {duration: 2}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-traversal {pointsFound: true, nodeCount: 8, nodes: Array(8)}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-list {pointsPresent: false, opaqueCount: 0, transparentCount: 0, opaqueSample: Array(0), transparentSample: Array(0)}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 0, sceneUuid: 99acc4e3-faf6-4c92-80e9-f9d163074ff1, sceneChildCount: 1, matchesRenderScene: false, cameraType: OrthographicCamera}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 1, sceneUuid: 99acc4e3-faf6-4c92-80e9-f9d163074ff1, sceneChildCount: 1, matchesRenderScene: false, cameraType: OrthographicCamera}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 2, sceneUuid: 99acc4e3-faf6-4c92-80e9-f9d163074ff1, sceneChildCount: 1, matchesRenderScene: false, cameraType: OrthographicCamera}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 3, sceneUuid: 99acc4e3-faf6-4c92-80e9-f9d163074ff1, sceneChildCount: 1, matchesRenderScene: false, cameraType: OrthographicCamera}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 4, sceneUuid: 99acc4e3-faf6-4c92-80e9-f9d163074ff1, sceneChildCount: 1, matchesRenderScene: false, cameraType: OrthographicCamera}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 5, sceneUuid: 99acc4e3-faf6-4c92-80e9-f9d163074ff1, sceneChildCount: 1, matchesRenderScene: false, cameraType: OrthographicCamera}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] fluid init {size: 256, iters: 10}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, parentType: Group}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-info {calls: 1, points: 0, triangles: 2, mat: Object, uniforms: Object}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 6}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 4: {expected: Object, actual: Object}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] reveal end {duration: 2}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 6}",
+    "location": "http://127.0.0.1:3000/_next/static/chunks/290.6a1c2ab2c3751bbc.js:82"
+  }
+]
