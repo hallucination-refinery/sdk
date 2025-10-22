@@ -1,38 +1,44 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-22T00:01:30Z
-commit: cc22de16
+date: 2025-10-22T03:44:45Z
+commit: 43f774d5
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP smoke on commit `cc22de16` (imperative scene.add fix attempt) **CRASHED** immediately with **"ReferenceError: DreamdustScenePortal is not defined"**. docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
-- **Critical finding**: Code bug in `cc22de16` — references `DreamdustScenePortal` which doesn't exist, causing immediate crash before any Dreamdust initialization.
-- Previous non-crash smoke runs (commit `a550adc6`) definitively proved R3F renders a different scene than the one we're adding Points to (ALL 6 render passes use wrong scene with `matchesRenderScene: false`).
-- Acceptance gate status: FAIL (crash — code bug) — Imperative fix approach is correct, but implementation has undefined reference bug.
+- MCP (`20251022-034153`) and Playwright (`20251022-034445`) smokes on commit `43f774d5` (imperative scene.add fix) **NO CRASH** but **STILL WRONG SCENE**. docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
+- **Critical findings**: 
+  - App didn't crash (DreamdustScenePortal bug fixed)
+  - `[PC] scene-traversal {pointsFound: true, nodeCount: 8}` — **NodeCount increased from 7 to 8** (group WAS added to traversed scene)
+  - ALL 6 `[PC] renderer-render-pass` logs: **matchesRenderScene: false, sceneChildCount: 1, pointsPresent: false, lists EMPTY**
+  - **DreamdustSceneBridge's imperative scene.add() FAILED** to attach group to render scene
+  - `[PC] render-info {calls: 1, points: 0, triangles: 2}` — still rendering wrong scene
+  - **❌ `[PC] points-after-render` — STILL MISSING**
+- Acceptance gate status: FAIL (still wrong scene) — Milestone 8 partially complete (no crash, but scene.add didn't work), need to debug why imperative attachment failed.
 
 **B) Reflection**
-- The imperative scene.add() approach is conceptually sound (directly attach Points to render scene), but commit `cc22de16` has an implementation bug.
-- The STATUS UPDATE claimed Portal was removed and replaced with DreamdustSceneBridge, but runtime error shows code still references `DreamdustScenePortal` (undefined).
-- This is a simple naming/reference bug that needs to be fixed before we can validate if the imperative approach works.
+- The nodeCount increase from 7 to 8 proves the Dreamdust group IS being added to SOME scene (likely the event scene we traverse), but it's still not in the render scene.
+- The imperative `scene.add()` in DreamdustSceneBridge either used the wrong scene reference, wasn't called, or was immediately undone by R3F's scene management.
 
 **C) Hypotheses & unknowns**
-- P≈0.90 — Code has leftover reference to `DreamdustScenePortal` that should be `DreamdustSceneBridge` (or vice versa).
-- P≈0.08 — Component was renamed but not exported properly.
-- P≈0.02 — Multiple components with similar names causing confusion.
+- P≈0.50 — DreamdustSceneBridge is using `useThree().gl.scene` or `useThree().scene`, but that's the EVENT scene, not the RENDER scene. R3F might store the actual render scene elsewhere (internal state, different property).
+- P≈0.30 — The useEffect in DreamdustSceneBridge runs, but R3F immediately removes the group (R3F might enforce that only JSX-declared children stay in its internal scenes).
+- P≈0.15 — useEffect timing issue — scene.add() is called before the render scene exists or after R3F has already captured its render scene snapshot.
+- P≈0.05 — The group was added to render scene but something else prevents it from being traversed (layer mismatch, visibility, or rendering order).
 
 **D) Golden Path**
-- Milestone 8 (P≈0.95, BUG FIX): Fix the undefined reference bug in PointCloudStage.tsx. Search for all occurrences of `DreamdustScenePortal` and ensure they match the actual component definition (`DreamdustSceneBridge` per STATUS UPDATE). Verify component is defined and used consistently.
-- Milestone 9 (P≈0.85): After bug fix, re-run smoke to verify imperative scene.add() works. Expect at least one render-pass with `matchesRenderScene: true` AND `pointsPresent: true`.
-- Milestone 10 (P≈0.70): If scene.add() works and Points render, remove diagnostic logging and verify acceptance gate (under-finger motion visible within 2 frames).
+- Milestone 9 (P≈0.75): Add logging INSIDE DreamdustSceneBridge useEffect to emit: (a) whether useEffect runs, (b) the scene UUID it's adding to, (c) success/failure of scene.add(), (d) the group's parent UUID after add. Compare logged scene UUID with render-pass sceneUuid to confirm if we're adding to the right scene.
+- Milestone 10 (P≈0.20): If we're adding to wrong scene, investigate R3F internals to find the actual render scene reference (might be in R3F's internal fiber state, not exposed via useThree API).
+- Milestone 11 (P≈0.05): If we're adding to correct scene but it's being removed, investigate why R3F removes manually-added objects and how to prevent it.
 
 **E) Single change to run next**
-- Fix the code bug in PointCloudStage.tsx: find where `DreamdustScenePortal` is referenced and either (a) rename references to `DreamdustSceneBridge`, or (b) rename the component definition to `DreamdustScenePortal` for consistency. Ensure the component is defined before it's used.
+- Add comprehensive logging inside DreamdustSceneBridge's useEffect to emit `[PC] scene-bridge { useEffectRan: true, targetSceneUuid, addSucceeded, groupParentUuid, groupInScene }` immediately after calling scene.add(). This will reveal whether the bridge is executing and if it's using the correct scene.
 
 **F) Run plan**
-- Review PointCloudStage.tsx to identify the undefined reference bug.
-- Fix all references to use the correct component name.
+- Add logging to DreamdustSceneBridge useEffect in PointCloudStage.tsx.
 - Rebuild & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`.
-- MCP + Playwright smoke: same URL with `forceVisible=1`, verify NO CRASH and at least one render-pass shows `matchesRenderScene: true`.
-- If successful, expect `[PC] points-after-render` with `points > 0` and visible particles in screenshot.
+- MCP + Playwright smoke: same URL with `forceVisible=1`, capture `[PC] scene-bridge` log.
+- Compare scene-bridge targetSceneUuid with renderer-render-pass sceneUuid to confirm if they match.
+- If UUIDs don't match: find the correct R3F render scene reference.
+- If UUIDs match: investigate why group isn't staying in render scene or isn't being traversed.
 - Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`.
-- Update `10-latest-smoke-evidence.md` with results; PASS if points render; document next fix if still blocked.
+- Update `10-latest-smoke-evidence.md` with findings; document next fix approach.
