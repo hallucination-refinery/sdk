@@ -1,20 +1,20 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-22T21:07:58Z
-commit: 6e5d5b42
+date: 2025-10-22T22:07:58Z
+commit: 21e186a5
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251022-210758`) smoke on commit `6e5d5b42` (fluid simulation diagnostic) **PROGRESS** — the fluid simulation is disabled for diagnostic purposes! docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
-- **Fluid simulation diagnostic findings**: 
-  - `[PC] fluid-step skipped {reason: diagnostic-disable}` appears — **FLUID SIMULATION DISABLED FOR DIAGNOSTIC**
+- MCP (`20251022-220745`) smoke on commit `21e186a5` (corrected fluid simulation diagnostic) **PROGRESS** — the corrected fluid simulation diagnostic is working! docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
+- **Corrected fluid simulation diagnostic findings**: 
+  - `[PC] fluid-step skipped {reason: diagnostic-disable}` appears — **CORRECTED FLUID SIMULATION DIAGNOSTIC WORKING!**
   - All previous fixes remain intact (scene attachment, shader compilation)
   - **❌ POINT CLOUD STILL NOT VISIBLE** — **Fluid simulation was not the culprit**
   - `[PC] render-info {calls: 0, points: 0, triangles: 0}` — **Still 0 points rendered**
-- Acceptance gate status: PASS (progress) — fluid simulation diagnostic worked, but point cloud still not visible. Need to investigate other causes.
+- Acceptance gate status: PASS (progress) — corrected fluid simulation diagnostic worked, but point cloud still not visible. Need to investigate other causes.
 
 **B) Reflection**
-- The fluid simulation diagnostic worked perfectly, but the point cloud is still not visible. This proves the fluid simulation was not causing the visibility issue.
+- The corrected fluid simulation diagnostic worked perfectly, but the point cloud is still not visible. This proves the fluid simulation was not causing the visibility issue.
 - We've successfully ruled out:
   - ✅ Scene attachment issues (fixed)
   - ✅ Shader compilation issues (fixed)
