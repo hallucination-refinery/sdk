@@ -3525,8 +3525,24 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   }
 
   function DreamdustSceneBridge() {
-    const renderScene = useThree((state) => state.internal?.active?.scene ?? state.scene)
+    const state = useThree((s) => s)
     React.useEffect(() => {
+      const candidates = {
+        useThreeScene: (state.scene as any)?.uuid ?? null,
+        internalScene: (state.internal?.scene as any)?.uuid ?? null,
+        internalActiveScene: (state.internal?.active?.scene as any)?.uuid ?? null,
+        rendererScene: ((state.gl as any)?.scene as any)?.uuid ?? null,
+      }
+      try {
+        console.info('[PC] scene-candidates', {
+          candidates,
+          renderCallCount: renderCallLogCountRef.current,
+        })
+      } catch {
+        /* noop */
+      }
+
+      const renderScene = state.internal?.active?.scene ?? state.scene
       const group = dreamdustRoot
       if (!renderScene || !group) {
         return
@@ -3546,7 +3562,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           renderScene.remove(group)
         }
       }
-    }, [renderScene, dreamdustRoot])
+    }, [state, dreamdustRoot])
 
     return null
   }
