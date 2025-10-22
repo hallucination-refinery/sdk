@@ -177,3 +177,124 @@ No files changed during this audit; documentation already overstates "COMPLETE S
 • **Don't assume**: Verify each gate even if "it should work"
 
 The debugging journey is complete. The path to implementing ink physics is now clear and unblocked. 🚀
+
+---
+
+# SHADER DOCS AUDIT 3
+
+## Shader Visibility Debugging Plan - Comprehensive Analysis
+
+### 1. Layman's Explanation
+
+Imagine you're trying to display thousands of tiny, glowing particles on your computer screen, but despite all the technical setup working correctly, nothing appears. This is like having a perfectly functioning projector that's connected and powered on, but the image isn't showing up on the wall. The "Shader Visibility Debugging Plan" is our systematic approach to figure out why these particles remain invisible.
+
+**Key Terms and Concepts:**
+
+- **Shader Versions**: Think of shaders as special instructions that tell your computer how to display graphics. There are different versions of these instructions (like different languages), and using the wrong one can cause problems.
+
+- **Submission vs. Visibility**: "Submission" means sending the drawing instructions to the computer (like mailing a letter). "Visibility" means actually seeing the result on the screen (like receiving and reading the letter).
+
+- **Premultiplied Alpha**: This is a technique for handling transparency in images. It's like mixing paint colors before applying them to ensure they blend correctly.
+
+- **Force-Visible**: This is a diagnostic tool that overrides certain settings to make sure particles are displayed, like turning on all the lights in a dark room to see what's inside.
+
+**Trade-offs and Considerations:**
+
+- **Speed vs. Rigor**: Quick fixes might get things working temporarily, but thorough solutions ensure long-term stability.
+
+- **Blending Models**: How colors combine can affect visibility. Using certain blending methods with dark colors might make particles disappear, like mixing black paint into other colors and losing the original hues.
+
+- **Tone Mapping**: Adjusting colors to display correctly on different screens is crucial. Incorrect settings can make images look too dark or washed out.
+
+- **Depth Fade**: This technique makes particles fade as they approach other objects, but if set too aggressively, it can make particles vanish entirely.
+
+### 2. Key Findings from Investigation
+
+#### **Critical Discovery: The Real Problem**
+
+After thorough investigation, I discovered that the issue is **NOT** a shader compilation problem. The evidence shows:
+
+1. **✅ Shader compilation is working**: No shader errors found in the latest logs
+2. **✅ Points are being drawn**: `[PC] points-after-render {calls: 2, points: 90650, triangles: 2}` appears consistently
+3. **✅ Scene attachment is working**: All render passes show `matchesRenderScene: true`
+4. **❌ BUT: Massive WebGL feedback loop errors**: 200+ `GL_INVALID_OPERATION: glDrawArrays: Feedback loop formed between Framebuffer and active Texture` errors
+
+#### **The Actual Visibility Blocker: WebGL Feedback Loops**
+
+The console logs reveal the real culprit: **WebGL feedback loops**. These occur when:
+- A texture is being read from and written to simultaneously
+- The fluid simulation system is creating circular dependencies
+- The velocity texture (`uVelocity`) is being used as both input and output
+
+#### **Shader Code Analysis**
+
+From examining `DreamdustMaterial.ts`:
+
+1. **Fragment Shader Output**: Uses `gl_FragColor` (GLSL100 syntax) ✅
+2. **Premultiplied Alpha**: Correctly implemented with `gl_FragColor = vec4(color * alpha, alpha)` ✅
+3. **Blending Settings**: Force-visible applies `AdditiveBlending` with `depthTest: false, depthWrite: false` ✅
+4. **Tone Mapping**: ACES tonemapping applied before gamma correction ✅
+
+#### **Force-Visible Implementation Issues**
+
+The force-visible system in `PointCloudStage.tsx`:
+- Sets `blending = AdditiveBlending` ✅
+- Disables depth testing ✅
+- But the WebGL feedback loops are preventing actual rendering
+
+### 3. Relevance to Vision & Acceptance Document
+
+The findings directly impact the Vision & Acceptance criteria:
+
+**Current Status vs. Gates:**
+- ❌ **Under-finger visible motion within ≤2 frames**: FAIL - particles not visible due to WebGL errors
+- ❌ **Motion localized and decays smoothly**: Cannot test - no visible particles
+- ✅ **Shader gate clean**: No compilation errors
+- ❌ **p50 ≤10 ms**: Cannot measure - rendering blocked by feedback loops
+
+**The core issue**: While the shader compilation is working and points are being submitted to the GPU, the WebGL feedback loops are preventing the actual rendering from completing, resulting in blank screens.
+
+### 4. Recommendation: Focused Refactor vs. Single Change Testing
+
+#### **Recommendation: Focused Refactor First**
+
+**Reasoning:**
+
+1. **Root Cause is Architectural**: The WebGL feedback loops indicate a fundamental issue with the fluid simulation system's texture management, not a simple shader parameter issue.
+
+2. **Single Changes Won't Fix This**: The feedback loops require restructuring how textures are bound and used in the rendering pipeline. This isn't a parameter tweak.
+
+3. **Evidence Points to System-Level Issue**: 200+ identical WebGL errors suggest the problem is in the fluid simulation's texture binding logic, not individual shader settings.
+
+4. **Risk of Wasted Effort**: Continuing with single-change testing on shader parameters while ignoring the WebGL errors would be like adjusting the brightness on a broken projector.
+
+#### **Specific Refactor Areas:**
+
+1. **Fluid Simulation Texture Management**: 
+   - Separate input and output textures for velocity
+   - Implement proper texture ping-ponging
+   - Ensure no texture is bound as both input and output
+
+2. **WebGL State Management**:
+   - Add proper texture binding guards
+   - Implement texture state tracking
+   - Prevent simultaneous read/write operations
+
+3. **Render Pass Isolation**:
+   - Separate fluid simulation passes from particle rendering
+   - Ensure clean state between passes
+
+#### **Why Not Single Change Testing:**
+
+- **Feedback loops are systemic**: They require architectural changes to the texture binding system
+- **Parameter tweaks won't help**: The issue isn't with shader uniforms or blending modes
+- **Evidence is clear**: The WebGL errors are the smoking gun pointing to texture management issues
+
+### 5. Next Steps
+
+1. **Immediate**: Investigate the fluid simulation's texture binding logic
+2. **Short-term**: Implement proper texture ping-ponging to eliminate feedback loops
+3. **Medium-term**: Add WebGL state validation to prevent future feedback loops
+4. **Long-term**: Once visibility is restored, return to single-change testing for fine-tuning motion response
+
+The foundation is solid, but the WebGL feedback loops are blocking the entire rendering pipeline. A focused refactor of the texture management system is the most efficient path to achieving the Vision & Acceptance goals.
