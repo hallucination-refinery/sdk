@@ -346,6 +346,20 @@ That sequence keeps us honest with the OODA cadence, yet acknowledges the severi
 - If warnings vanish but particles remain invisible, we advance to the tone-mapping/blending diagnostics; if warnings persist, we inspect `FluidSim.renderPass` for stale targets.
 
 **Verification Plan**  
-- Next smoke run: expect console logs with `fluid-step skipped` and **no** feedback-loop errors; `[PC] points-after-render` should still report ~90k.  
-- Screenshots may stay blank (velocity texture remains static), but success here is strictly “warnings gone,” proving the feedback loop was the blocker.  
-- Rollback is one-line: set `FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC` back to `false` (or remove the guard).  
+- Next smoke run: expect console logs with `fluid-step skipped` and **no** feedback-loop errors; `[PC] points-after-render` should still report ~90k.
+- Screenshots may stay blank (velocity texture remains static), but success here is strictly “warnings gone,” proving the feedback loop was the blocker.
+- Rollback is one-line: set `FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC` back to `false` (or remove the guard). 
+
+# SHADER DOCS AUDIT 6
+
+**Change Executed**
+- Converted the diagnostic guard into an early return so the frame hook exits before touching `FluidSim.step` (`apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx:908-947`).
+- Still logs `[PC] fluid-step skipped { reason: 'diagnostic-disable' }` once and invalidates demand-driven loops even when skipping, guaranteeing the sim stays idle.
+
+**Purpose**
+- Ensure the fluid diagnostic actually fires—previous run lacked the skip log and still hit feedback-loop warnings, so now we prove the sim is truly off.
+- This isolates whether the WebGL feedback loop comes from the fluid passes or elsewhere in the pipeline.
+
+**Verification Plan**
+- Next smoke run must show the skip log and, ideally, zero feedback-loop warnings; if warnings persist, we pivot to shader output/blending diagnostics immediately.
+- Renderer metrics (`[PC] render-info`) may still report zero points because velocity stays static—expected for this experiment.

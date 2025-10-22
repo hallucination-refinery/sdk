@@ -941,9 +941,12 @@ function FluidDriver({
           }
           skipLogRef.current = true
         }
-      } else {
-        sim.step(delta)
+        if (frameloop === 'demand') {
+          invalidate()
+        }
+        return
       }
+      sim.step(delta)
       const texture = sim.getTexture()
       if (uniforms?.uVelocity && uniforms.uVelocity.value !== texture) {
         uniforms.uVelocity.value = texture
