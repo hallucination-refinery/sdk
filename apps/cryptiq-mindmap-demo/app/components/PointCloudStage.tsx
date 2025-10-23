@@ -3159,8 +3159,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
   const pointsAfterRenderLoggedRef = React.useRef(false)
+  const pointsBeforeRenderLoggedRef = React.useRef(false)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
+  const firstRenderListLogRef = React.useRef(false)
   const renderCallLogCountRef = React.useRef(0)
   const renderCallSeenPointsRef = React.useRef(false)
   const renderSceneUuidRef = React.useRef<string | null>(null)
@@ -3509,7 +3511,36 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       return
     }
 
+    pointsBeforeRenderLoggedRef.current = false
+    const originalBeforeRender =
+      typeof points.onBeforeRender === 'function' ? points.onBeforeRender : undefined
     const originalAfterRender = typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined
+    const beforeProbe = function pointsBeforeRenderProbe(
+      this: THREE.Points,
+      rendererArg: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera,
+      geometry: THREE.BufferGeometry,
+      material: THREE.Material,
+      group?: THREE.Group,
+    ) {
+      if (!pointsBeforeRenderLoggedRef.current) {
+        try {
+          console.info('[PC] points-before-render', {
+            timestamp: Date.now(),
+            renderOrder: this.renderOrder ?? null,
+            visible: this.visible,
+            frustumCulled: this.frustumCulled,
+          })
+        } catch {
+          /* noop */
+        }
+        pointsBeforeRenderLoggedRef.current = true
+      }
+      if (originalBeforeRender) {
+        originalBeforeRender.call(this, rendererArg, scene, camera, geometry, material, group)
+      }
+    }
     const probe = function pointsAfterRenderProbe(
       this: THREE.Points,
       rendererArg: THREE.WebGLRenderer,
@@ -3558,9 +3589,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
     }
 
+    points.onBeforeRender = beforeProbe
     points.onAfterRender = probe
 
     return () => {
+      if (points.onBeforeRender === beforeProbe) {
+        points.onBeforeRender = originalBeforeRender ?? undefined
+      }
       if (points.onAfterRender === probe) {
         points.onAfterRender = originalAfterRender ?? undefined
       }
@@ -3785,7 +3820,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             ;(gl as any).__originalRenderListGet = originalGet
             gl.renderLists.get = function patchedRenderListsGet(scene, camera) {
               const list = originalGet(scene, camera)
-              if (!renderListLoggedRef.current && forceVisibleRef.current) {
+              const shouldLogFirst = !firstRenderListLogRef.current
+              const shouldLogFrame = !renderListLoggedRef.current && forceVisibleRef.current
+              if (shouldLogFirst || shouldLogFrame) {
                 const opaque = (list?.opaque ?? []) as any[]
                 const transparent = (list?.transparent ?? []) as any[]
                 const pointsPresent =
@@ -3804,6 +3841,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 } catch {
                   /* noop */
                 }
+                firstRenderListLogRef.current = true
                 renderListLoggedRef.current = true
               }
               return list
