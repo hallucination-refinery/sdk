@@ -110,6 +110,175 @@ tags: [diagnostics, rendering, instrumentation, dreamdust]
 
 ---
 
+## Follow-on Instrumentation – Render List & Frame Flow (Draft Date: 2025-10-24T00:15:00Z)
+
+### Objective
+- Close the diagnostic gap uncovered on commit `332e9390`: the render list and `points-after-render` probes never fired.
+- Capture definitive evidence showing whether the Dreamdust `Points` mesh ever enters Three.js’s render queues and whether a render pass is invoked.
+
+### Implementation Plan (updated with audit adjustments)
+
+#### 1. Ensure Render List Logging Always Fires Once
+1. File: `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`
+2. Locate the `gl.renderLists.get` override (currently logging `[PC] render-list snapshot` when `forceVisibleRef.current` is true).
+3. Introduce a dedicated `firstRenderListLogRef` (never reset) to guarantee a single snapshot per session:
+   - Emit when `!firstRenderListLogRef.current` (log once on first invocation).
+   - Preserve existing payload structure (counts, point presence, samples).
+   - Continue using `renderListLoggedRef` for frame-level gating if needed, but the new ref prevents duplicate logs after ref resets.
+4. Rationale: guarantees a single render-list snapshot even if `forceVisibleRef` changes after frame 0 or the existing ref resets.
+
+#### 2. Log When Points Mesh Is Evaluated for Culling
+1. Same file; find the `stagePointsRef` usage or where we set `points.frustumCulled = false`.
+2. Before attaching the new hook, ensure `stagePointsRef.current` is non-null; bail out early otherwise.
+3. Add `console.info('[PC] points-before-render', …)` inside the hook (parallel to `onAfterRender`), with payload `{ timestamp, renderOrder, visible, frustumCulled, matrixWorldDet }`.
+   - Guard with a ref so it logs only once per session to avoid spam.
+4. Rationale: confirms whether Three.js evaluates the mesh for rendering and what state it sees without triggering null reference errors.
+
+#### 3. Log Render Pass Invocation
+1. In the same Canvas `onCreated` block where we patch `gl.render`, wrap the original render function with start/end logs:
+   ```ts
+   console.info('[PC] render-pass begin', { timestamp: Date.now(), sceneUuid: ..., cameraUuid: ... })
+   const result = originalRender(scene, camera)
+   console.info('[PC] render-pass end', { timestamp: Date.now(), calls: renderer.info?.render?.calls ?? null })
+   ```
+2. Guard with try/catch to avoid breaking rendering if logging fails.
+3. Rationale: verifies whether Three.js actually invokes the render pass and whether draw-call counters change between begin/end.
+
+#### 4. Capture Renderer Visibility Decisions
+1. Still in PointCloudStage, add a debug helper that logs when `renderListSeenPointsRef` (or equivalent) remains false after several frames:
+   - After the render loop increments `frameCountRef`, if `renderCallSeenPointsRef` is still false on timeout, log `[PC] render-timeout` with frame count.
+2. This supplements existing timeout handling with a clear log that the render pass never saw points.
+
+### Post-Implementation Checklist
+- Typecheck: `pnpm --filter @refinery/schema exec tsc -p tsconfig.json --noEmit`
+- Build (Node ≥20 via `nvm use 20`): `pnpm --filter cryptiq-mindmap-demo run build`
+- MCP smoke run capturing the new tags:
+  - `[PC] render-list snapshot`
+  - `[PC] points-before-render`
+  - `[PC] render-pass begin/end`
+  - `[PC] render-timeout` (if applicable)
+- Update `10-latest-smoke-evidence.md`, `06-working-document.md`, and `03-rendering-pipeline-trace.md` with references to the new diagnostics.
+
+---
+
+## Audit Report – Follow-on Instrumentation
+**Date**: 2025-10-24
+**Auditor**: Independent Verification Agent
+**Branch**: docs/ink-falloff-flag-latch-2025-10-12
+
+### Executive Summary
+The Follow-on Instrumentation plan is **FEASIBLE with minor adjustments**. All required hooks, refs, and infrastructure exist in the codebase. However, several clarifications and adjustments are needed to avoid side effects and ensure proper implementation.
+
+### Detailed Findings (By Severity)
+
+#### HIGH PRIORITY - Must Address Before Implementation
+
+1. **Missing Points mesh reference** ([PointCloudStage.tsx](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx))
+   - **Issue**: The plan assumes direct access to a Points mesh object, but `stagePointsRef` (line 3158) is a ref that may be null
+   - **Evidence**: No Points mesh is created directly in PointCloudStage - only a fallback PointsMaterial exists (line 591)
+   - **Impact**: Cannot attach `onBeforeRender` hook if Points mesh doesn't exist
+   - **Recommendation**: Add null checks and ensure Points mesh is created before instrumentation
+
+2. **Render list logging condition change risks** ([PointCloudStage.tsx:3788](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx#L3788))
+   - **Issue**: Removing `forceVisibleRef.current` check will cause logging on EVERY frame, not just once
+   - **Evidence**: `renderListLoggedRef` gets reset multiple times (lines 3308, 3316, 3691)
+   - **Impact**: Potential log spam if not properly guarded
+   - **Recommendation**: Keep the one-time guard but add a separate first-frame flag
+
+#### MEDIUM PRIORITY - Implementation Considerations
+
+3. **Render pass wrapper already exists** ([PointCloudStage.tsx:3812-3828](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx#L3812))
+   - **Status**: ✅ Wrapper exists and is functional
+   - **Current behavior**: Already logs `[PC] render-scene-captured` on first call
+   - **Enhancement needed**: Add begin/end timestamps as proposed
+   - **Note**: Must preserve existing logic (lines 3816-3827)
+
+4. **onAfterRender hook complexity** ([PointCloudStage.tsx:3438-3565](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx#L3438))
+   - **Status**: Complex existing implementation with multiple layers
+   - **Evidence**: Two different onAfterRender implementations (lines 3438, 3513)
+   - **Risk**: Adding onBeforeRender may conflict with existing probe logic
+   - **Recommendation**: Follow same pattern as existing onAfterRender implementation
+
+5. **Frame counting infrastructure exists** ([PointCloudStage.tsx](apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx))
+   - **Status**: ✅ Multiple frameCountRef instances exist
+   - **RenderInfoLogger**: Uses MAX_FRAMES=60 (line 989)
+   - **PresetValidation**: Uses 60 frame limit (line 1256)
+   - **Risk**: Multiple frame counters may cause confusion
+   - **Recommendation**: Reuse existing RenderInfoLogger's frameCountRef
+
+#### LOW PRIORITY - Minor Adjustments
+
+6. **Existing refs are properly initialized**
+   - ✅ `renderListLoggedRef`: line 3163
+   - ✅ `forceVisibleRef`: line 1471
+   - ✅ `renderCallLogCountRef`: line 3164
+   - ✅ `renderCallSeenPointsRef`: line 3165
+   - All refs follow proper React patterns
+
+7. **Console logging conventions**
+   - ✅ All existing logs use `[PC]` prefix
+   - ✅ Try/catch guards are consistently used
+   - ✅ JSON.stringify used where needed for complex objects
+
+### Implementation Verification
+
+#### 1. Render List Logging Adjustment
+**Current Code** (line 3788):
+```typescript
+if (!renderListLoggedRef.current && forceVisibleRef.current) {
+```
+**Proposed Change**: VALID but needs refinement
+- Remove `forceVisibleRef.current` check: ✅ Feasible
+- Risk: renderListLoggedRef resets cause multiple logs
+- Solution: Add separate `firstRenderListCallRef` that never resets
+
+#### 2. Points onBeforeRender Hook
+**Feasibility**: ⚠️ CONDITIONAL
+- `stagePointsRef` exists but may be null
+- No guarantee Points mesh is created
+- Must check `stagePointsRef.current` before attaching hook
+- Follow pattern from lines 3507-3565 for safe implementation
+
+#### 3. Render Pass Begin/End Logging
+**Feasibility**: ✅ READY
+- Wrapper already exists (lines 3812-3859)
+- Can add timestamps before line 3828 and after
+- Must preserve existing `renderSceneRef` logic
+- Follow existing try/catch pattern
+
+#### 4. Render Timeout Logging
+**Feasibility**: ✅ READY with existing infrastructure
+- RenderInfoLogger already tracks timeout (line 1061)
+- Can enhance existing timeout detection
+- Add `[PC] render-timeout` log when `timedOut && !haveDraws`
+
+### Prerequisites Verification
+
+- **Node version requirement**: ✅ Documented (needs ≥18.18.0 for build)
+- **TypeScript compilation**: ✅ Command correct
+- **Build command**: ✅ Correct filter and script
+- **MCP smoke capability**: ✅ Tags follow conventions
+
+### Recommendations
+
+1. **CRITICAL**: Add null checks for `stagePointsRef.current` before any Points mesh operations
+2. **IMPORTANT**: Create a separate `firstRenderListLogRef` that doesn't reset to ensure truly one-time logging
+3. **SUGGESTED**: Reuse existing RenderInfoLogger's timeout detection instead of creating new mechanism
+4. **OPTIONAL**: Consider logging render pass stats from `gl.info.render` in begin/end logs
+
+### Confidence Assessment
+
+- **Render list logging fix**: 85% confident (needs guard refinement)
+- **Points onBeforeRender**: 60% confident (depends on Points mesh existence)
+- **Render pass wrapper**: 95% confident (infrastructure exists)
+- **Timeout logging**: 90% confident (can enhance existing logic)
+
+### Conclusion
+
+The Follow-on Instrumentation plan is technically sound and achievable. The main risk is the assumption that a Points mesh always exists, which needs verification. All other components have existing infrastructure that can be enhanced. With the recommended adjustments, particularly around null checking and guard refinement, the implementation should successfully close the diagnostic gap identified in commit `332e9390`.
+
+---
+
 ## Independent Verification Audit
 **Date**: 2025-10-23
 **Auditor**: Independent Verification Agent
