@@ -127,6 +127,20 @@ tags: [pipeline, uniforms, fluid, shader]
 - Conclusion: displacement stage configured but output likely gated (alpha/depth/preset).
 - [STUB: screenshots_links]
 
+### Trace – 2025-10-23 21:19 UTC (Commit 332e9390)
+- **Context**: Smoke test `20251023-211920` with rendering pipeline instrumentation
+- **Console artifact**: `console/332e9390/docs/ink-falloff-flag-latch-2025-10-12/20251023-211920/console-mcp.json`
+- **Observed logs**:
+  - Line 4: `[PC] ink debug {vertexInkOk: false}` — Vertex texture unavailable
+  - Line 64: `[PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false}` — Shader fallback correct
+  - Line 165: `[PC] scene-traversal {pointsFound: true}` — Points mesh in scene
+  - Line 179: `[PC] points-mesh {type: Points, visible: true, frustumCulled: false}` — Mesh configured
+  - Line 189: `[PC] render-info {calls: 0, points: 0, triangles: 0}` — No draw calls
+  - **MISSING**: `[PC] render-list snapshot` — Points never entered render list
+  - **MISSING**: `[PC] points-after-render` — onAfterRender never fired
+- **Conclusion**: Points mesh exists with correct material but never enters Three.js render list. Failure occurs in render list population, not shader compilation.
+- **Next diagnostic target**: Track why `gl.renderLists.get()` excludes Points mesh
+
 ## Cross-Links
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/02-architecture-overview.md`
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/01-vision-and-acceptance.md`

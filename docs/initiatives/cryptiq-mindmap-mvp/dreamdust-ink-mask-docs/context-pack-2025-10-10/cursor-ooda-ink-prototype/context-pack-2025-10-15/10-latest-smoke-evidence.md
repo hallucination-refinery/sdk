@@ -7,20 +7,20 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1
 ---
 
-Summary: MCP (`20251023-211920`) smoke on commit `332e9390` (rendering pipeline instrumentation) **BREAKTHROUGH DISCOVERY** — the rendering pipeline instrumentation revealed the **root cause**! **BREAKTHROUGH** — `[PC] material-defines {"useVelocityDisp":false}` shows the `USE_VELOCITY_DISP` guard is **NOT being applied**! This explains why the vertex texture fix didn't work.
+Summary: MCP (`20251023-211920`) smoke on commit `332e9390` (rendering pipeline instrumentation) — New instrumentation reveals the shader fallback is correctly configured (`vertexInkOk: false`, `useVelocityDisp: false` as expected for fallback hardware), but render calls remain at zero. The actual failure point: render-list and points-after-render probes did NOT fire, indicating the render pass never attempts to draw the points mesh.
 
 Key console lines (MCP):
 - `[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}` ← **Vertex texture unavailable confirmed**
 - `[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}`
 - `[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}`
 - `[PC] scene-traversal {pointsFound: true, nodeCount: 8, nodes: Array(8)}` ← **Points mesh in traversed scene**
-- **🔍 BREAKTHROUGH DISCOVERY**: `[PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}` ← **`useVelocityDisp: false` - GUARD NOT APPLIED!**
+- `[PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}` (line 64, console-mcp.json) ← **Shader fallback configured correctly for non-vertex-texture hardware**
 - `[PC] diag solid color {enabled: true}` ← **Shader output diagnostic working**
 - `[PC] fluid-step skipped {reason: diagnostic-disable}` ← **Fluid simulation disabled**
 - `[PC] camera-diag {enabled: true, cameraPosition: Array(3), target: Array(3), radius: 500, near: 0.1}` ← **Camera diagnostic working**
 - `[PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, parentType: Group}` ← **Mesh correctly configured**
-- **❌ STILL 0 POINTS RENDERED**: `[PC] render-info {calls: 0, points: 0, triangles: 0, memory: Object, mat: Object}` ← **Still 0 points rendered**
-- **❌ POINT CLOUD STILL NOT VISIBLE** ← **But now we know why!**
+- `[PC] render-info {calls: 0, points: 0, triangles: 0, memory: Object, mat: Object}` (line 189, console-mcp.json) ← **Renderer never issues draw calls**
+- **⚠️ MISSING PROBES**: `[PC] render-list snapshot` and `[PC] points-after-render` did NOT fire ← **Indicates render pass never attempts to draw Points mesh**
 
 Key console lines (Playwright):
 - **TIMEOUT**: Playwright test failed due to timeout (60s) - no artifacts created
@@ -40,21 +40,21 @@ Playwright result:
 - `SMOKE_ROUTE=/quiz/archetype-v1?pc=scene-03&forceVisible=1`
 - `tests/ink.smoke.spec.ts` → **FAILED (timeout 60s)** — Test timed out waiting for diagnostic logs
 
-Decision: **BREAKTHROUGH DISCOVERY** — Evidence proves:
-1. 🔍 **BREAKTHROUGH DISCOVERY** — `[PC] material-defines {"useVelocityDisp":false}` shows the `USE_VELOCITY_DISP` guard is **NOT being applied**!
-2. ✅ **Vertex texture unavailable confirmed** — `[PC] ink debug {vertexInkOk: false}` confirms the issue
-3. ✅ **All previous diagnostics working** — Scene attachment, shader compilation, fluid simulation disabled, shader output, camera diagnostic all working
-4. ❌ **Still 0 points rendered** — `[PC] render-info {calls: 0, points: 0, triangles: 0}` shows zero render stats
-5. ❌ **Point cloud still not visible** — But now we know why!
-6. ✅ **Mesh configuration correct** — `[PC] points-mesh` shows proper configuration
-7. ✅ **Scene traversal working** — `[PC] scene-traversal {pointsFound: true}` confirms mesh in scene
+Decision: **Instrumentation reveals new diagnostic gap** — Evidence from console-mcp.json shows:
+1. ✅ **Material shader fallback working correctly** — `useVelocityDisp: false` is the EXPECTED state when `vertexInkOk: false` (fallback hardware scenario)
+2. ✅ **Vertex texture unavailable confirmed** — `[PC] ink debug {vertexInkOk: false}` (line 4)
+3. ✅ **Material instantiation successful** — Two `[PC] material-defines` logs (lines 64, 79) show material created with correct fallback defines
+4. ❌ **Render pass never attempts draw** — `[PC] render-info {calls: 0}` (line 189) with NO corresponding render-list or points-after-render probes
+5. ⚠️ **Critical diagnostic gap** — Missing `[PC] render-list snapshot` and `[PC] points-after-render` probes indicate Points mesh never enters render pipeline
+6. ✅ **Scene setup correct** — `[PC] scene-traversal {pointsFound: true}` and `[PC] points-mesh` logs confirm mesh exists and is visible
 
-**BREAKTHROUGH DISCOVERY**: The rendering pipeline instrumentation revealed the **root cause**! The `USE_VELOCITY_DISP` guard is **NOT being applied** (`useVelocityDisp: false`), which explains why the vertex texture fix didn't work. The shader is still trying to use vertex textures even when they're unavailable.
+**Corrected understanding**: The shader guard logic is CORRECT. When vertex textures are unavailable (`vertexInkOk: false`), the shader should NOT use velocity displacement (`useVelocityDisp: false`). The actual problem is that the Points mesh never enters the WebGL render pass.
 
-**Next action (Milestone 18 — Fix USE_VELOCITY_DISP Guard Application)**: 
-The issue is that the `USE_VELOCITY_DISP` guard is not being properly applied in the shader. We need to:
-1. **Fix the guard application logic** — Ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
-2. **Verify shader compilation** — Ensure the guard is properly compiled into the shader
-3. **Test the fix** — Run another smoke test to verify the guard is applied and particles become visible
+**Next action (Investigate render pipeline blockage)**:
+The missing probes indicate the render list is never populated with the Points mesh. Next steps:
+1. **Debug render list population** — Why doesn't `gl.renderLists.get` include the Points mesh?
+2. **Check Points.onAfterRender** — Why doesn't this lifecycle hook fire?
+3. **Verify frustum culling** — Despite `frustumCulled: false`, is the mesh being culled elsewhere?
+4. **Add additional instrumentation** — Track when/why the Points mesh is excluded from rendering
 
-The debugging journey continues with a clear path forward! 🔍
+The issue is deeper in the Three.js render pipeline, not in shader compilation.

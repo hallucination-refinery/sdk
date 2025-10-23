@@ -5,54 +5,52 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251023-211920`) smoke on commit `332e9390` (rendering pipeline instrumentation) **BREAKTHROUGH DISCOVERY** — the rendering pipeline instrumentation revealed the **root cause**! docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
-- **BREAKTHROUGH DISCOVERY findings**: 
-  - `[PC] material-defines {"useVelocityDisp":false}` — **`USE_VELOCITY_DISP` guard is NOT being applied!**
-  - `[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}` — **Vertex texture unavailable confirmed**
-  - `[PC] render-info {calls: 0, points: 0, triangles: 0, memory: Object, mat: Object}` — **Still 0 points rendered**
-  - All previous diagnostics working (scene attachment, shader compilation, fluid simulation disabled, shader output, camera diagnostic)
-  - **❌ POINT CLOUD STILL NOT VISIBLE** — **But now we know why!**
-  - **🔍 BREAKTHROUGH DISCOVERY** — The `USE_VELOCITY_DISP` guard is **NOT being applied**!
-- Acceptance gate status: BREAKTHROUGH DISCOVERY — we found the root cause!
+- MCP (`20251023-211920`) smoke on commit `332e9390` (rendering pipeline instrumentation) — Instrumentation reveals shader fallback is correctly configured but render pass never executes. See: 10-latest-smoke-evidence.md
+- **Key findings from console-mcp.json**:
+  - `[PC] material-defines {"useVelocityDisp":false}` (line 64) — Shader fallback CORRECTLY configured for non-vertex-texture hardware
+  - `[PC] ink debug {vertexInkOk: false}` (line 4) — Vertex texture unavailable confirmed
+  - `[PC] render-info {calls: 0, points: 0, triangles: 0}` (line 189) — Renderer never issues draw calls
+  - **MISSING**: `[PC] render-list snapshot` and `[PC] points-after-render` probes did NOT fire
+  - Points mesh exists (`[PC] scene-traversal {pointsFound: true}`) but never enters render pipeline
+- Acceptance gate status: Diagnostic gap identified — render list population failure
 
 **B) Reflection**
-- The rendering pipeline instrumentation revealed the **root cause**! The `USE_VELOCITY_DISP` guard is **NOT being applied** (`useVelocityDisp: false`), which explains why the vertex texture fix didn't work.
+- The rendering pipeline instrumentation corrected a misunderstanding: `useVelocityDisp: false` is CORRECT for fallback hardware (when `vertexInkOk: false`)
 - We've successfully ruled out:
-  - ✅ Scene attachment issues (fixed)
-  - ✅ Shader compilation issues (fixed)
-  - ✅ Fluid simulation interference (ruled out)
-  - ✅ Shader output issues (ruled out)
-  - ✅ Vertex texture issues (identified - guard not applied)
-- This is **BREAKTHROUGH DISCOVERY** — we found the root cause!
+  - ✅ Scene attachment issues (mesh exists in scene graph)
+  - ✅ Shader compilation issues (material instantiates with correct defines)
+  - ✅ Fluid simulation interference (disabled via diagnostic flag)
+  - ✅ Shader guard logic (fallback configuration is correct)
+- New finding: Points mesh never enters Three.js render lists despite being visible and in scene
 
 **C) Hypotheses & unknowns**
-- P≈1.00 — **ROOT CAUSE IDENTIFIED**: The `USE_VELOCITY_DISP` guard is not being applied when `vertexInkOk: false`
-- P≈0.90 — The issue is in the guard application logic — the shader define is not being set correctly
-- P≈0.80 — The issue is in the material compilation — the guard is not being compiled into the shader
-- P≈0.70 — The issue is in the condition logic — the guard condition is not being evaluated correctly
+- P≈0.85 — Render list population blocked by material/geometry incompatibility in fallback mode
+- P≈0.70 — Three.js culls Points mesh due to bounding box or layer mask issues
+- P≈0.60 — onBeforeRender hook prevents mesh from entering render pipeline
+- P≈0.40 — WebGL context state prevents Points primitive rendering
 
 **D) Golden Path**
-- Milestone 18 (P≈1.00): **Fix USE_VELOCITY_DISP Guard Application** — Ensure the guard is properly applied when `vertexInkOk: false`
-- Milestone 19 (P≈0.90): **Verify Guard Application Logic** — Check the condition logic for setting the guard
-- Milestone 20 (P≈0.80): **Verify Material Compilation** — Ensure the guard is compiled into the shader
-- Milestone 21 (P≈0.70): **Test the Fix** — Run smoke test to verify particles become visible
+- Milestone 18: **Debug render list population** — Add instrumentation to track why Points mesh doesn't enter render lists
+- Milestone 19: **Investigate culling logic** — Check if Points are culled before render despite visible=true
+- Milestone 20: **Verify geometry/material compatibility** — Ensure fallback material works with Points geometry
+- Milestone 21: **Test alternative render paths** — Try forcing Points into render list manually
 
 **E) Single change to run next**
-- **Fix the USE_VELOCITY_DISP guard application logic** to ensure it's set to `true` when `vertexInkOk: false`.
+- Add instrumentation to track when/why Points mesh is excluded from `gl.renderLists`
 
 **F) Run plan**
-- Fix the guard application logic to:
-  1. **Set USE_VELOCITY_DISP to true** when `vertexInkOk: false`
-  2. **Verify the condition logic** is correct
-  3. **Ensure the guard is compiled** into the shader
-- Rebuild & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`
-- MCP + Playwright smoke: same URL with `forceVisible=1`, capture material-defines diagnostic
-- Verify the diagnostic shows `useVelocityDisp: true` when `vertexInkOk: false`
+- Add diagnostic logging to:
+  1. Track render list population in detail
+  2. Log when Points mesh is evaluated for rendering
+  3. Capture any culling or filtering decisions
+- Rebuild & serve: `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`
+- MCP smoke: same URL with `forceVisible=1`, capture new diagnostics
+- Look for render-list and points-after-render probe firing
 - Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`
-- Update `10-latest-smoke-evidence.md` with findings; document success or next debugging step
+- Update `03-rendering-pipeline-trace.md` with detailed render pipeline flow
 
 **G) Success criteria**
-- ✅ `[PC] material-defines` shows `useVelocityDisp: true` when `vertexInkOk: false`
+- ✅ `[PC] render-list snapshot` probe fires (indicates Points enters render list)
+- ✅ `[PC] points-after-render` probe fires (indicates onAfterRender lifecycle triggered)
 - ✅ `[PC] render-info` shows `calls > 0, points > 0` (nonzero render stats)
-- ✅ Screenshot shows **visible points/particles** (the ultimate test!)
-- 🔍 Guard application logs reveal the fix is working and particles become visible
+- ✅ Screenshot shows visible particles (ultimate validation)
