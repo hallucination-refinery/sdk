@@ -1069,6 +1069,16 @@ function RenderInfoLogger({
         }
         meshLoggedRef.current = true
       }
+      if (!haveDraws && timedOut) {
+        try {
+          console.info('[PC] render-timeout', {
+            framesWaited: frameCountRef.current,
+            timestamp: Date.now(),
+          })
+        } catch {
+          /* noop */
+        }
+      }
       try {
         console.info('[PC] render-info', {
           calls,
@@ -3155,16 +3165,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     uniforms.uDepthNormScale.value = depthScale
   }, [cameraFitRadius, prebakedTransform, thicknessScale, uniforms, fitRequest])
 
+  const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)
+  const retryRafRef = React.useRef<number | null>(null)
   const stagePointsRef = React.useRef<THREE.Points | null>(null)
   const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
   const pointsAfterRenderLoggedRef = React.useRef(false)
   const pointsBeforeRenderLoggedRef = React.useRef(false)
+  const pointsHookAttachedRef = React.useRef(false)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
   const firstRenderListLogRef = React.useRef(false)
   const renderCallLogCountRef = React.useRef(0)
   const renderCallSeenPointsRef = React.useRef(false)
+  const renderPassLogRef = React.useRef(0)
+  const renderListInstrumentationLoggedRef = React.useRef(false)
   const renderSceneUuidRef = React.useRef<string | null>(null)
   const dreamdustRootRef = React.useRef<THREE.Group | null>(null)
   const [dreamdustRoot, setDreamdustRoot] = React.useState<THREE.Group | null>(null)
@@ -3396,9 +3411,15 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   React.useEffect(() => {
     return () => {
       const renderer = rendererRef.current
-      if (renderer && (renderer as any).__originalRenderListGet) {
-        renderer.renderLists.get = (renderer as any).__originalRenderListGet
-        delete (renderer as any).__originalRenderListGet
+      if (renderer) {
+        const renderLists =
+          (renderer as any).renderLists ??
+          (renderer as any).__webglRenderLists ??
+          null
+        if (renderLists && (renderLists as any).__originalGet) {
+          renderLists.get = (renderLists as any).__originalGet
+          delete (renderLists as any).__originalGet
+        }
       }
       if (renderer && (renderer as any).__originalRender) {
         renderer.render = (renderer as any).__originalRender
@@ -3506,15 +3527,39 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   ])
 
   React.useEffect(() => {
-    const points = stagePointsRef.current
-    if (!points || !rendererRef.current) {
+    const renderer = rendererRef.current
+    const cancelPendingRaf = () => {
+      if (retryRafRef.current != null) {
+        cancelAnimationFrame(retryRafRef.current)
+        retryRafRef.current = null
+      }
+    }
+
+    if (!renderer) {
+      cancelPendingRaf()
       return
     }
 
+    const points = stagePointsRef.current
+    if (!points) {
+      cancelPendingRaf()
+      retryRafRef.current = requestAnimationFrame(() => {
+        setStagePointsReadyTick((v) => v + 1)
+      })
+      return () => {
+        cancelPendingRaf()
+      }
+    }
+
+    cancelPendingRaf()
     pointsBeforeRenderLoggedRef.current = false
+    pointsAfterRenderLoggedRef.current = false
+
     const originalBeforeRender =
       typeof points.onBeforeRender === 'function' ? points.onBeforeRender : undefined
-    const originalAfterRender = typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined
+    const originalAfterRender =
+      typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined
+
     const beforeProbe = function pointsBeforeRenderProbe(
       this: THREE.Points,
       rendererArg: THREE.WebGLRenderer,
@@ -3541,7 +3586,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         originalBeforeRender.call(this, rendererArg, scene, camera, geometry, material, group)
       }
     }
-    const probe = function pointsAfterRenderProbe(
+
+    const afterProbe = function pointsAfterRenderProbe(
       this: THREE.Points,
       rendererArg: THREE.WebGLRenderer,
       scene: THREE.Scene,
@@ -3590,13 +3636,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
 
     points.onBeforeRender = beforeProbe
-    points.onAfterRender = probe
+    points.onAfterRender = afterProbe
+
+    if (!pointsHookAttachedRef.current) {
+      try {
+        console.info('[PC] instrumentation points-hook attached', {
+          timestamp: Date.now(),
+          pointsUuid: points.uuid,
+        })
+      } catch {
+        /* noop */
+      }
+      pointsHookAttachedRef.current = true
+    }
 
     return () => {
+      cancelPendingRaf()
       if (points.onBeforeRender === beforeProbe) {
         points.onBeforeRender = originalBeforeRender ?? undefined
       }
-      if (points.onAfterRender === probe) {
+      if (points.onAfterRender === afterProbe) {
         points.onAfterRender = originalAfterRender ?? undefined
       }
     }
@@ -3607,6 +3666,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     stageUvDepth,
     simUvVersion,
     debugVertexLog,
+    stagePointsReadyTick,
   ])
 
   function collectSceneSnapshot(root: THREE.Object3D, maxNodes = 64) {
@@ -3815,37 +3875,71 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           } catch {
             /* noop */
           }
-          if (!(gl as any).__originalRenderListGet && gl.renderLists && typeof gl.renderLists.get === 'function') {
-            const originalGet = gl.renderLists.get.bind(gl.renderLists)
-            ;(gl as any).__originalRenderListGet = originalGet
-            gl.renderLists.get = function patchedRenderListsGet(scene, camera) {
-              const list = originalGet(scene, camera)
-              const shouldLogFirst = !firstRenderListLogRef.current
-              const shouldLogFrame = !renderListLoggedRef.current && forceVisibleRef.current
-              if (shouldLogFirst || shouldLogFrame) {
-                const opaque = (list?.opaque ?? []) as any[]
-                const transparent = (list?.transparent ?? []) as any[]
-                const pointsPresent =
-                  opaque.some((entry) => entry?.object?.type === 'Points') ||
-                  transparent.some((entry) => entry?.object?.type === 'Points')
+          const resolveRenderLists = (
+            rendererInstance: THREE.WebGLRenderer,
+            glInstance: THREE.WebGLRenderer
+          ) => {
+            return (
+              (glInstance as any).renderLists ??
+              (glInstance as any).__webglRenderLists ??
+              (rendererInstance as any).renderLists ??
+              null
+            )
+          }
+          const renderLists = resolveRenderLists(gl, gl)
+          if (renderLists && typeof renderLists.get === 'function') {
+            if (!(renderLists as any).__originalGet) {
+              const originalGet = renderLists.get.bind(renderLists)
+              ;(renderLists as any).__originalGet = originalGet
+              renderLists.get = function patchedRenderListsGet(scene: THREE.Scene, camera: THREE.Camera) {
+                const list = originalGet(scene, camera)
+                const shouldLogFirst = !firstRenderListLogRef.current
+                const shouldLogFrame = !renderListLoggedRef.current && forceVisibleRef.current
+                if (shouldLogFirst || shouldLogFrame) {
+                  const opaque = (list?.opaque ?? []) as any[]
+                  const transparent = (list?.transparent ?? []) as any[]
+                  const pointsPresent =
+                    opaque.some((entry) => entry?.object?.type === 'Points') ||
+                    transparent.some((entry) => entry?.object?.type === 'Points')
+                  try {
+                    console.info('[PC] render-list snapshot', {
+                      pointsPresent,
+                      opaqueCount: opaque.length,
+                      transparentCount: transparent.length,
+                      pointsInOpaque: opaque.some((entry) => entry?.object?.type === 'Points'),
+                      pointsInTransparent: transparent.some((entry) => entry?.object?.type === 'Points'),
+                      opaqueSample: summarizeRenderEntries(opaque),
+                      transparentSample: summarizeRenderEntries(transparent),
+                    })
+                  } catch {
+                    /* noop */
+                  }
+                  firstRenderListLogRef.current = true
+                  renderListLoggedRef.current = true
+                }
+                return list
+              }
+              if (!renderListInstrumentationLoggedRef.current) {
                 try {
-                  console.info('[PC] render-list snapshot', {
-                    pointsPresent,
-                    opaqueCount: opaque.length,
-                    transparentCount: transparent.length,
-                    pointsInOpaque: opaque.some((entry) => entry?.object?.type === 'Points'),
-                    pointsInTransparent: transparent.some((entry) => entry?.object?.type === 'Points'),
-                    opaqueSample: summarizeRenderEntries(opaque),
-                    transparentSample: summarizeRenderEntries(transparent),
+                  console.info('[PC] instrumentation render-list override active', {
+                    timestamp: Date.now(),
+                    hasRenderLists: true,
                   })
                 } catch {
                   /* noop */
                 }
-                firstRenderListLogRef.current = true
-                renderListLoggedRef.current = true
+                renderListInstrumentationLoggedRef.current = true
               }
-              return list
             }
+          } else if (!renderListInstrumentationLoggedRef.current) {
+            try {
+              console.info('[PC] instrumentation render-list missing', {
+                timestamp: Date.now(),
+              })
+            } catch {
+              /* noop */
+            }
+            renderListInstrumentationLoggedRef.current = true
           }
           if (!(gl as any).__originalRender && typeof gl.render === 'function') {
             const originalRender = gl.render.bind(gl)
@@ -3858,6 +3952,19 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   console.info('[PC] render-scene-captured', {
                     uuid: (scene as any)?.uuid ?? null,
                     childCount: scene?.children?.length ?? null,
+                  })
+                } catch {
+                  /* noop */
+                }
+              }
+              const renderPassIndex = renderPassLogRef.current
+              const shouldLogRenderPass = renderPassIndex < RENDER_CALL_LOG_LIMIT
+              if (shouldLogRenderPass) {
+                try {
+                  console.info('[PC] render-pass begin', {
+                    timestamp: Date.now(),
+                    renderIndex: renderPassIndex,
+                    cameraUuid: (camera as any)?.uuid ?? null,
                   })
                 } catch {
                   /* noop */
@@ -3901,6 +4008,18 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   /* noop */
                 }
               }
+              if (shouldLogRenderPass) {
+                try {
+                  console.info('[PC] render-pass end', {
+                    timestamp: Date.now(),
+                    renderIndex: renderPassIndex,
+                    calls: gl.info?.render?.calls ?? null,
+                  })
+                } catch {
+                  /* noop */
+                }
+              }
+              renderPassLogRef.current = renderPassIndex + 1
               return result
             }
           }
@@ -4048,7 +4167,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               >
                 <group scale={mirrorScale}>
                   <group scale={[1, 1, thicknessScale]}>
-                    <points ref={stagePointsRef} frustumCulled={false} renderOrder={1}>
+                    <points
+                      ref={(node) => {
+                        stagePointsRef.current = node
+                        if (node) {
+                          setStagePointsReadyTick((v) => v + 1)
+                        }
+                      }}
+                      frustumCulled={false}
+                      renderOrder={1}
+                    >
                       <bufferGeometry
                         key={`${stagePositionVersion}:${stageAttributeVersion}:${simUvVersion}`}
                       >
