@@ -363,3 +363,17 @@ That sequence keeps us honest with the OODA cadence, yet acknowledges the severi
 **Verification Plan**
 - Next smoke run must show the skip log and, ideally, zero feedback-loop warnings; if warnings persist, we pivot to shader output/blending diagnostics immediately.
 - Renderer metrics (`[PC] render-info`) may still report zero points because velocity stays static—expected for this experiment.
+
+# SHADER DOCS AUDIT 7
+
+**Change Executed**
+- Added a solid-color diagnostic path in `DreamdustMaterial` (`apps/.../DreamdustMaterial.ts:120-160, 525-700`) that defines `DIAG_SOLID_COLOR`, forces the fragment shader to return a bright yellow, and disables tone mapping/premultiplied alpha.
+- Logs `[PC] diag solid color { enabled: true }` when the diagnostic is active so console artifacts prove the override.
+
+**Purpose**
+- Confirm whether fragment output reaches the framebuffer: if the smoke screenshot shows bright dots and `render-info` reports points > 0, visibility was purely a shading/blending issue.
+- If the screen stays blank despite the forced color, we know the blockage lies elsewhere (camera/frustum, depth state, or renderer info path).
+
+**Verification Plan**
+- Next smoke run should show the diag log, non-zero `render-info.points`, and a screenshot full of yellow points; shader compile errors should remain absent.
+- Rollback by toggling `DREAMDUST_SOLID_COLOR_DIAG` back to `false` once we capture evidence.

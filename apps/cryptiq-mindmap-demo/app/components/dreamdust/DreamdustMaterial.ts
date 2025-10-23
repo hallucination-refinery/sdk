@@ -18,6 +18,8 @@ import {
 
 type UniformRecord = Record<string, { value: unknown }>
 
+const DREAMDUST_SOLID_COLOR_DIAG = true
+
 type DreamdustMaterialOptions = {
   unproject: boolean
   vertexInkOk: boolean
@@ -593,6 +595,10 @@ void main() {
   }
   return;
 #endif
+  #ifdef DIAG_SOLID_COLOR
+    gl_FragColor = vec4(1.0, 0.95, 0.2, 1.0);
+    return;
+  #endif
   // Softer disc sprite for vapor look
   float sprite = dreamdustSoftSprite(gl_PointCoord);
 #ifdef USE_GAUSSIAN
@@ -743,6 +749,9 @@ export function makeDreamdustMaterial(
   if (useGaussian) {
     defines.USE_GAUSSIAN = 1
   }
+  if (DREAMDUST_SOLID_COLOR_DIAG) {
+    defines.DIAG_SOLID_COLOR = 1
+  }
   syncLegacyVertexInkDefine(defines)
 
   const params: any = {
@@ -752,8 +761,8 @@ export function makeDreamdustMaterial(
     transparent: true,
     depthWrite: false,
     depthTest: true,
-    toneMapped: true,
-    premultipliedAlpha: true,
+    toneMapped: DREAMDUST_SOLID_COLOR_DIAG ? false : true,
+    premultipliedAlpha: DREAMDUST_SOLID_COLOR_DIAG ? false : true,
     defines,
   }
 
@@ -785,6 +794,13 @@ export function makeDreamdustMaterial(
   }
 
   // DEBUG: Log material state per preset
+  if (DREAMDUST_SOLID_COLOR_DIAG) {
+    try {
+      console.info('[PC] diag solid color', { enabled: true })
+    } catch {
+      /* noop */
+    }
+  }
   console.info('[preset]', {
     preset,
     blending: material.blending,
