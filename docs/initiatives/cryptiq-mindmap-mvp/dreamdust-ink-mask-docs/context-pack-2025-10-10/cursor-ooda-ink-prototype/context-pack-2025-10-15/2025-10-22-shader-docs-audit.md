@@ -377,3 +377,17 @@ That sequence keeps us honest with the OODA cadence, yet acknowledges the severi
 **Verification Plan**
 - Next smoke run should show the diag log, non-zero `render-info.points`, and a screenshot full of yellow points; shader compile errors should remain absent.
 - Rollback by toggling `DREAMDUST_SOLID_COLOR_DIAG` back to `false` once we capture evidence.
+
+# SHADER DOCS AUDIT 8
+
+**Change Executed**
+- Added `CAMERA_DIAGNOSTIC_ACTIVE` guard and a `CameraDiag` helper that logs camera position, target, radius, and frustum intersection on first frame (`apps/.../PointCloudStage.tsx:138-400`).
+- Diagnostic pulls the existing `cameraFitTarget`/`cameraCoverRadius` so logs align with our fit heuristics.
+
+**Purpose**
+- Determine whether the Dreamdust bounds intersect the active camera frustum; if the log reports `intersectsFrustum: false`, we shift focus to camera positioning.
+- If the log says `true` yet points remain invisible, we can deprioritize camera issues and move on to point-size or depth diagnostics.
+
+**Verification Plan**
+- Next smoke run must surface `[PC] camera-diag { ... }` with fov/near/far/distance/intersectsFrustum fields. Snapshot the console and screenshot as usual.
+- After capturing evidence, toggle `CAMERA_DIAGNOSTIC_ACTIVE` back to false to avoid noisy logs.

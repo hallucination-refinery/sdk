@@ -62,6 +62,7 @@ const FLUID_DEBUG_INK_BLEND = 1.0
 const RENDER_CALL_LOG_LIMIT = 6
 const RENDER_LIST_SAMPLE_LIMIT = 12
 const FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC = true
+const CAMERA_DIAGNOSTIC_ACTIVE = true
 
 type PointCloudStageProps = {
   sceneId?: string
@@ -1093,6 +1094,75 @@ function RenderInfoLogger({
     }
   })
 
+  return null
+}
+
+function CameraDiag({
+  enabled,
+  target,
+  radius,
+}: {
+  enabled: boolean
+  target: [number, number, number]
+  radius: number
+}) {
+  const { camera } = useThree()
+  const loggedRef = React.useRef(false)
+  const tmpMatrixRef = React.useRef(new (THREE as any).Matrix4())
+  const tmpFrustumRef = React.useRef(new (THREE as any).Frustum())
+  const tmpSphereRef = React.useRef(new (THREE as any).Sphere(new (THREE as any).Vector3(), 1))
+  const targetVecRef = React.useRef(new (THREE as any).Vector3())
+
+  useFrame(() => {
+    if (!enabled) return
+    if (loggedRef.current) return
+    const cam: any = camera
+    if (!cam) return
+    try {
+      cam.updateMatrixWorld?.()
+    } catch {
+      /* noop */
+    }
+    const position = cam.position
+      ? [cam.position.x, cam.position.y, cam.position.z]
+      : ['TBD']
+    const near = typeof cam.near === 'number' ? cam.near : null
+    const far = typeof cam.far === 'number' ? cam.far : null
+    const fov = typeof cam.fov === 'number' ? cam.fov : null
+    targetVecRef.current.set(target[0], target[1], target[2])
+    const distance = cam.position
+      ? cam.position.distanceTo(targetVecRef.current)
+      : null
+    let intersects = false
+    try {
+      const projScreenMatrix = tmpMatrixRef.current
+      const frustum = tmpFrustumRef.current
+      const sphere = tmpSphereRef.current
+      projScreenMatrix.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)
+      frustum.setFromProjectionMatrix(projScreenMatrix)
+      sphere.center.copy(targetVecRef.current)
+      sphere.radius = Math.max(radius, 1e-3)
+      intersects = frustum.intersectsSphere(sphere)
+    } catch {
+      intersects = false
+    }
+    try {
+      console.info('[PC] camera-diag', {
+        enabled,
+        cameraPosition: position,
+        target,
+        radius,
+        near,
+        far,
+        fov,
+        distance,
+        intersectsFrustum: intersects,
+      })
+    } catch {
+      /* noop */
+    }
+    loggedRef.current = true
+  })
   return null
 }
 
@@ -3860,6 +3930,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           fitMargin={simActive ? 0.9 : 0.78}
           fitTarget={cameraFitTarget}
           fitMode={simActive ? 'fit' : 'cover'}
+        />
+        <CameraDiag
+          enabled={CAMERA_DIAGNOSTIC_ACTIVE}
+          target={cameraFitTarget}
+          radius={cameraCoverRadius}
         />
         <DreamdustTicker tick={tick} />
         <SimDriver
