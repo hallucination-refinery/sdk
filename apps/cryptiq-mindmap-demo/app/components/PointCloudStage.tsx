@@ -1898,6 +1898,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     } else {
       delete defines.USE_VERTEX_INK
     }
+    const velocityDispDefine = vertexInkEnabled ? 1 : 0
+    if (velocityDispDefine) {
+      defines.USE_VELOCITY_DISP = 1
+    } else {
+      delete defines.USE_VELOCITY_DISP
+    }
     material.defines = defines
     material.needsUpdate = true
     return material
@@ -1930,6 +1936,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       defines.USE_VERTEX_INK = 1
     } else {
       delete defines.USE_VERTEX_INK
+    }
+    const velocityDispDefine = vertexInkEnabled ? 1 : 0
+    if (velocityDispDefine) {
+      defines.USE_VELOCITY_DISP = 1
+    } else {
+      delete defines.USE_VELOCITY_DISP
     }
     material.defines = defines
     material.needsUpdate = true

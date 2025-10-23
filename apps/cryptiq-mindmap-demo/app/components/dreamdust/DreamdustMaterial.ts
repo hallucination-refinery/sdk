@@ -518,6 +518,7 @@ void main() {
   gl_Position = projectionMatrix * viewPos4;
 
   // Fluid-driven screen-space displacement (MVP)
+#ifdef USE_VELOCITY_DISP
   if (uVelToNdc > 1e-5) {
     vec2 clip = gl_Position.xy / max(gl_Position.w, 1e-5);
     vec2 uv = clip * 0.5 + 0.5;
@@ -528,6 +529,7 @@ void main() {
     vec2 disp = vel * uVelToNdc;
     gl_Position.xy = mix(gl_Position.xy, gl_Position.xy + disp, clamp(uInkBlend, 0.0, 1.0));
   }
+#endif
 }
 `
 
@@ -732,6 +734,7 @@ export function makeDreamdustMaterial(
   if (resolved.vertexInkOk) {
     defines.USE_VERTEX_INK = 1
     defines.VERTEX_INK_OK = 1
+    defines.USE_VELOCITY_DISP = 1
   }
   if (resolved.debugInkProbe) {
     defines.DEBUG_INK_PROBE = 1
@@ -790,7 +793,9 @@ export function makeDreamdustMaterial(
   // CRITICAL FIX: Force shader recompile when USE_GAUSSIAN define changes
   // THREE.js program cache doesn't key by defines alone, so we add explicit cache key
   material.customProgramCacheKey = function customProgramCacheKey() {
-    return material.defines?.USE_GAUSSIAN ? 'dreamdust-gauss-1' : 'dreamdust-gauss-0'
+    const gaussianKey = material.defines?.USE_GAUSSIAN ? 'gauss-1' : 'gauss-0'
+    const velocityKey = material.defines?.USE_VELOCITY_DISP ? 'vel-1' : 'vel-0'
+    return `dreamdust-${gaussianKey}-${velocityKey}`
   }
 
   // DEBUG: Log material state per preset
