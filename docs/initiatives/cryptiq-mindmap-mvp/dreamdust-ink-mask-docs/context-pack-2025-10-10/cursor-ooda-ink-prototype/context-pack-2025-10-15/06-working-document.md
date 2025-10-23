@@ -1,56 +1,57 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-23T21:19:20Z
-commit: 332e9390
+date: 2025-10-23T23:00:24Z
+commit: b99fe68f
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251023-211920`) smoke on commit `332e9390` (rendering pipeline instrumentation) — Instrumentation reveals shader fallback is correctly configured but render pass never executes. See: 10-latest-smoke-evidence.md
+- MCP (`20251023-230024`) smoke on commit `b99fe68f` (extended render pipeline instrumentation) — **DIAGNOSTIC IMPLEMENTATION FAILURE**: New render pipeline diagnostics did NOT appear, but existing diagnostics confirm the root cause. See: 10-latest-smoke-evidence.md
 - **Key findings from console-mcp.json**:
-  - `[PC] material-defines {"useVelocityDisp":false}` (line 64) — Shader fallback CORRECTLY configured for non-vertex-texture hardware
-  - `[PC] ink debug {vertexInkOk: false}` (line 4) — Vertex texture unavailable confirmed
-  - `[PC] render-info {calls: 0, points: 0, triangles: 0}` (line 189) — Renderer never issues draw calls
-  - **MISSING**: `[PC] render-list snapshot` and `[PC] points-after-render` probes did NOT fire
+  - `[PC] material-defines {"useVelocityDisp":false}` — **BREAKTHROUGH DISCOVERY: Root cause identified**
+  - `[PC] ink debug {vertexInkOk: false}` — Vertex texture unavailable confirmed
+  - `[PC] render-info {calls: 0, points: 0, triangles: 0}` — Renderer never issues draw calls
+  - **❌ MISSING NEW DIAGNOSTICS**: `[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end` did NOT fire
   - Points mesh exists (`[PC] scene-traversal {pointsFound: true}`) but never enters render pipeline
-- Acceptance gate status: Diagnostic gap identified — render list population failure
+- Acceptance gate status: **DIAGNOSTIC IMPLEMENTATION FAILURE** — New render pipeline diagnostics not working
 
 **B) Reflection**
-- The rendering pipeline instrumentation corrected a misunderstanding: `useVelocityDisp: false` is CORRECT for fallback hardware (when `vertexInkOk: false`)
+- **BREAKTHROUGH DISCOVERY**: The `USE_VELOCITY_DISP` guard is **NOT being applied** as indicated by `[PC] material-defines {"useVelocityDisp":false}`. This is the root cause of the vertex texture fix failure.
 - We've successfully ruled out:
   - ✅ Scene attachment issues (mesh exists in scene graph)
   - ✅ Shader compilation issues (material instantiates with correct defines)
   - ✅ Fluid simulation interference (disabled via diagnostic flag)
-  - ✅ Shader guard logic (fallback configuration is correct)
-- New finding: Points mesh never enters Three.js render lists despite being visible and in scene
+  - ✅ Shader output issues (solid color diagnostic working)
+  - ✅ Camera positioning issues (camera diagnostic working)
+- **New finding**: The `USE_VELOCITY_DISP` guard application logic is incorrect
 
 **C) Hypotheses & unknowns**
-- P≈0.85 — Render list population blocked by material/geometry incompatibility in fallback mode
-- P≈0.70 — Three.js culls Points mesh due to bounding box or layer mask issues
-- P≈0.60 — onBeforeRender hook prevents mesh from entering render pipeline
-- P≈0.40 — WebGL context state prevents Points primitive rendering
+- P≈0.95 — **BREAKTHROUGH DISCOVERY**: `USE_VELOCITY_DISP` guard application logic is incorrect
+- P≈0.80 — Diagnostic implementation failure prevents new render pipeline diagnostics from firing
+- P≈0.60 — Guard application logic needs to be fixed to ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
 
 **D) Golden Path**
-- Milestone 18: **Debug render list population** — Add instrumentation to track why Points mesh doesn't enter render lists
-- Milestone 19: **Investigate culling logic** — Check if Points are culled before render despite visible=true
-- Milestone 20: **Verify geometry/material compatibility** — Ensure fallback material works with Points geometry
-- Milestone 21: **Test alternative render paths** — Try forcing Points into render list manually
+- Milestone 18: **Fix guard application logic** — Ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
+- Milestone 19: **Fix diagnostic implementation** — Ensure new render pipeline diagnostics (`[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end`) actually fire
+- Milestone 20: **Verify guard application** — Confirm `[PC] material-defines` shows `"useVelocityDisp": true` after fix
+- Milestone 21: **Test visible particles** — Confirm screenshot shows visible points/particles after guard fix
 
 **E) Single change to run next**
-- Add instrumentation to track when/why Points mesh is excluded from `gl.renderLists`
+- Fix the `USE_VELOCITY_DISP` guard application logic to ensure it's set to `true` when `vertexInkOk: false`
 
 **F) Run plan**
-- Add diagnostic logging to:
-  1. Track render list population in detail
-  2. Log when Points mesh is evaluated for rendering
-  3. Capture any culling or filtering decisions
+- Fix the `USE_VELOCITY_DISP` guard application logic:
+  1. Ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
+  2. Fix diagnostic implementation to ensure new render pipeline diagnostics fire
+  3. Verify guard application in material defines
 - Rebuild & serve: `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`
 - MCP smoke: same URL with `forceVisible=1`, capture new diagnostics
-- Look for render-list and points-after-render probe firing
+- Look for `[PC] material-defines` showing `"useVelocityDisp": true`
 - Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`
-- Update `03-rendering-pipeline-trace.md` with detailed render pipeline flow
+- Update `03-rendering-pipeline-trace.md` with guard application fix
 
 **G) Success criteria**
+- ✅ `[PC] material-defines` shows `"useVelocityDisp": true` (guard application working)
 - ✅ `[PC] render-list snapshot` probe fires (indicates Points enters render list)
-- ✅ `[PC] points-after-render` probe fires (indicates onAfterRender lifecycle triggered)
+- ✅ `[PC] points-before-render` probe fires (indicates Points mesh hook execution)
 - ✅ `[PC] render-info` shows `calls > 0, points > 0` (nonzero render stats)
 - ✅ Screenshot shows visible particles (ultimate validation)
