@@ -788,6 +788,22 @@ export function makeDreamdustMaterial(
     material.blending = (THREE as any).NormalBlending
     material.depthTest = true
   }
+  try {
+    console.info(
+      '[PC] material-defines',
+      JSON.stringify({
+        vertexInkOk: resolved.vertexInkOk,
+        useVertexInk: !!material.defines?.USE_VERTEX_INK,
+        useVelocityDisp: !!material.defines?.USE_VELOCITY_DISP,
+        blending: material.blending ?? null,
+        depthTest: material.depthTest ?? null,
+        depthWrite: material.depthWrite ?? null,
+        toneMapped: material.toneMapped ?? null,
+      }),
+    )
+  } catch {
+    /* noop */
+  }
   material.needsUpdate = true
 
   // CRITICAL FIX: Force shader recompile when USE_GAUSSIAN define changes

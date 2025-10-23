@@ -1056,6 +1056,7 @@ function RenderInfoLogger({
     }
 
     const calls = info?.calls ?? null
+    const memory = renderer.info?.memory ?? null
     const haveDraws = typeof calls === 'number' && calls > 0
     const timedOut = frameCountRef.current >= MAX_FRAMES
 
@@ -1073,6 +1074,7 @@ function RenderInfoLogger({
           calls,
           points: info?.points ?? null,
           triangles: info?.triangles ?? null,
+          memory,
           mat: material
             ? {
                 uuid: (material as any).uuid,
@@ -1085,6 +1087,7 @@ function RenderInfoLogger({
           uniforms: uniformSnapshot,
           timeout: !haveDraws,
           framesWaited: frameCountRef.current,
+          timestamp: Date.now(),
         })
       } catch {
         /* noop */
@@ -3524,6 +3527,13 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             ? ((this as { material?: THREE.Material | THREE.Material[] }).material as THREE.Material[])[0] ?? null
             : ((this as { material?: THREE.Material }).material ?? null))
         try {
+          const attrCounts = {
+            position: geometry.getAttribute('position')?.count ?? 0,
+            color: geometry.getAttribute('color')?.count ?? 0,
+            aSimUv: geometry.getAttribute('aSimUv')?.count ?? 0,
+            aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
+            drawRange: geometry.drawRange ?? null,
+          }
           console.info('[PC] points-after-render', {
             calls: info?.calls ?? null,
             points: info?.points ?? null,
@@ -3536,6 +3546,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   depthWrite: (resolvedMaterial as any).depthWrite ?? null,
                 }
               : null,
+            attrCounts,
           })
         } catch {
           /* noop */
@@ -3781,10 +3792,12 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   opaque.some((entry) => entry?.object?.type === 'Points') ||
                   transparent.some((entry) => entry?.object?.type === 'Points')
                 try {
-                  console.info('[PC] render-list', {
+                  console.info('[PC] render-list snapshot', {
                     pointsPresent,
                     opaqueCount: opaque.length,
                     transparentCount: transparent.length,
+                    pointsInOpaque: opaque.some((entry) => entry?.object?.type === 'Points'),
+                    pointsInTransparent: transparent.some((entry) => entry?.object?.type === 'Points'),
                     opaqueSample: summarizeRenderEntries(opaque),
                     transparentSample: summarizeRenderEntries(transparent),
                   })
