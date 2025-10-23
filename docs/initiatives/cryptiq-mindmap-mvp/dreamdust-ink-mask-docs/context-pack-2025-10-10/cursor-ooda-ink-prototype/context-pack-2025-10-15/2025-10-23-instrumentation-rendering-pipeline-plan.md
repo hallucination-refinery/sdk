@@ -567,3 +567,79 @@ To remove instrumentation, delete:
 ### Conclusion
 
 The implementation is **COMPLETE and CORRECT**. All four instrumentation points have been added exactly as specified in the plan, with minor improvements (tag name change, consistent sample limits). The code is ready for smoke testing once the Node.js version requirement is satisfied. The instrumentation successfully addresses all diagnostic gaps identified in the initial audit.
+
+---
+
+## Instrumentation Fix Plan – Guarantee Probe Emission (Draft Date: 2025-10-24T03:20:00Z)
+
+The follow-on instrumentation committed in `b99fe68f` did **not** emit any of the new diagnostic logs during smoke run `20251023-230024`. The hooks never attached, so we still lack render-list evidence. This corrective plan must be executed before the next run.
+
+### Confirmed blockers
+- `gl.renderLists` is `null` in the production build, so the current guard (`gl.renderLists && typeof gl.renderLists.get === 'function'`) prevents the override from installing.
+- The `useEffect` that wires `onBeforeRender`/`onAfterRender` executes before `<points>` assigns its ref; `stagePointsRef.current` is null, so the effect returns and never retries.
+- Consequently, `[PC] render-list snapshot`, `[PC] points-before-render`, and render-pass begin/end logs never appear.
+
+### Required changes
+
+#### 1. Drive a “points ready” tick from the ref callback
+1. Add `const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)` alongside existing refs.
+2. Replace the `<points ref={stagePointsRef}>` assignment with:
+   ```tsx
+   <points
+     ref={(node) => {
+       stagePointsRef.current = node
+       if (node) setStagePointsReadyTick((v) => v + 1)
+     }}
+     …
+   >
+   ```
+3. Include `stagePointsReadyTick` in the instrumentation effect’s dependency array so the effect re-runs once the mesh mounts.
+
+#### 2. Retry hook attachment until the mesh is live
+1. Inside the effect, if `!stagePointsRef.current`, schedule a retry:
+   ```ts
+   retryRafRef.current = requestAnimationFrame(() => {
+     setStagePointsReadyTick((v) => v + 1)
+   })
+   return () => cancelAnimationFrame(retryRafRef.current)
+   ```
+2. After successfully attaching `onBeforeRender`/`onAfterRender`, emit `[PC] instrumentation points-hook attached` once to prove the hook executed.
+
+#### 3. Override render list getter regardless of renderer internals
+1. Resolve the getter using a fallback chain:
+   ```ts
+   const renderLists =
+     (gl as any).renderLists ??
+     (gl as any).__webglCustomRenderLists ??
+     (renderer as any).renderLists ??
+     null
+   ```
+2. If no getter exists, log `[PC] instrumentation render-list missing` once and skip the override so the absence is explicit.
+3. Otherwise, cache the original getter on the `renderLists` object, replace it with the snapshot wrapper, and emit `[PC] instrumentation render-list override active` the first time it runs. Use `firstRenderListLogRef` (never reset) plus `renderListLoggedRef` to avoid duplicate logs.
+
+#### 4. Render-pass begin/end and timeout logging
+1. Enhance the existing `gl.render` patch to log:
+   ```ts
+   console.info('[PC] render-pass begin', { timestamp: Date.now(), renderIndex, cameraUuid })
+   const result = originalRender(scene, camera)
+   console.info('[PC] render-pass end', { timestamp: Date.now(), calls: renderer.info?.render?.calls ?? null })
+   ```
+   Gate by `RENDER_CALL_LOG_LIMIT` and wrap in try/catch.
+2. In `RenderInfoLogger`, when `timedOut && !haveDraws`, emit `[PC] render-timeout` with the frame count and timestamp.
+
+#### 5. Local verification before automation
+1. Build/run locally with Node 20. Open the browser console before running MCP.
+2. Confirm `[PC] instrumentation render-list override active` and `[PC] instrumentation points-hook attached` appear immediately.
+3. Trigger a frame and ensure `[PC] render-pass begin`/`end`, `[PC] render-list snapshot`, and `[PC] points-before-render` all fire.
+4. Only after these logs appear locally should the automated smoke workflow run.
+
+### Documentation updates after fix
+- Add a dated entry to `03-rendering-pipeline-trace.md` describing the new diagnostic output.
+- Update `06-working-document.md` and `10-latest-smoke-evidence.md` to note that the shader guard is behaving as designed, and the render-list diagnostics are now active.
+
+### Revised success criteria
+- `[PC] instrumentation render-list override active` and `[PC] instrumentation points-hook attached` appear exactly once per run.
+- `[PC] render-list snapshot`, `[PC] points-before-render`, and render-pass begin/end logs are captured during smoke.
+- `[PC] render-timeout` fires only if draw calls remain zero, providing a clear boundary for the failure.
+- With these probes emitting, the next smoke run will conclusively show whether the Points mesh reaches the render queue.
+
