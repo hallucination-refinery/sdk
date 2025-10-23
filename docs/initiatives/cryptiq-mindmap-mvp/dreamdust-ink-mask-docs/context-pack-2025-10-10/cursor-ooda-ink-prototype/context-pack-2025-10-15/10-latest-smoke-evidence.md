@@ -1,22 +1,22 @@
 ---
 title: Latest Smoke Evidence – Prod URL (scene-03 forceVisible bypass)
-date: 2025-10-22T22:07:58Z
-tags: [evidence, smoke, prod, forceVisible, diagnostic, render-info, points-mesh, scene-traversal, render-list, renderer-render-pass, render-scene-captured, BREAKTHROUGH, SUCCESS, FLUID_SIM_DIAGNOSTIC_CORRECTED]
-commit: 21e186a5
+date: 2025-10-23T03:43:23Z
+tags: [evidence, smoke, prod, forceVisible, diagnostic, render-info, points-mesh, scene-traversal, render-list, renderer-render-pass, render-scene-captured, BREAKTHROUGH, SUCCESS, SHADER_OUTPUT_DIAGNOSTIC]
+commit: 10b04eef
 branch: docs/ink-falloff-flag-latch-2025-10-12
 url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1
 ---
 
-Summary: MCP (`20251022-220745`) smoke on commit `21e186a5` (corrected fluid simulation diagnostic) **PROGRESS** — the corrected fluid simulation diagnostic is working! **PASS (PROGRESS)** — `[PC] fluid-step skipped {reason: diagnostic-disable}` appears, confirming the corrected experiment is running, but the point cloud is still not visible. The fluid simulation was not the culprit.
+Summary: MCP (`20251023-034323`) smoke on commit `10b04eef` (shader output diagnostic) **PROGRESS** — the shader output diagnostic is working! **PASS (PROGRESS)** — `[PC] diag solid color {enabled: true}` appears, confirming the shader diagnostic is running, but the point cloud is still not visible. The shader output was not the culprit.
 
 Key console lines (MCP):
 - `[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}`
 - `[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}`
 - `[PC] scene-traversal {pointsFound: true, nodeCount: 8, nodes: Array(8)}` ← **Points mesh in traversed scene**
-- **✅ DIAGNOSTIC WORKING**: `[PC] fluid-step skipped {reason: diagnostic-disable}` ← **Corrected fluid simulation diagnostic working!**
+- **✅ SHADER DIAGNOSTIC WORKING**: `[PC] diag solid color {enabled: true}` ← **Shader output diagnostic working!**
 - `[PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, parentType: Group}` ← **Mesh correctly configured**
 - `[PC] render-info {calls: 0, points: 0, triangles: 0, mat: Object, uniforms: Object}` ← **Still 0 points rendered**
-- **❌ POINT CLOUD STILL NOT VISIBLE** ← **Fluid simulation was not the culprit**
+- **❌ POINT CLOUD STILL NOT VISIBLE** ← **Shader output was not the culprit**
 
 Key console lines (Playwright):
 - **BREAKTHROUGH**: `[PC] render-scene-captured {"uuid":"eb2274ce-3e1a-455d-a661-5960e100df4d","childCount":1}` ← **Render scene captured**
@@ -27,13 +27,13 @@ Key console lines (Playwright):
 - **✅ NO WebGL ERRORS FOUND** ← **Shader compilation successful!**
 
 Screenshots (MCP):
-- `cursor-ooda-ink-prototype/assets/21e186a5/docs/ink-falloff-flag-latch-2025-10-12/20251022-220745/2025-10-22-forceVisible-mcp.png` (should show visible ink motion!)
+- `cursor-ooda-ink-prototype/assets/10b04eef/docs/ink-falloff-flag-latch-2025-10-12/20251023-034323/2025-10-23-forceVisible-mcp.png` (should show visible yellow points!)
 
 Screenshots (Playwright):
 - **TIMEOUT**: Playwright test failed due to timeout (60s) - no artifacts created
 
 Console logs:
-- MCP: `cursor-ooda-ink-prototype/console/21e186a5/docs/ink-falloff-flag-latch-2025-10-12/20251022-220745/console-mcp.json`
+- MCP: `cursor-ooda-ink-prototype/console/10b04eef/docs/ink-falloff-flag-latch-2025-10-12/20251023-034323/console-mcp.json`
 - Playwright: **TIMEOUT**: No console artifacts created due to test timeout
 
 Playwright result:
@@ -42,17 +42,16 @@ Playwright result:
 - `tests/ink.smoke.spec.ts` → **FAILED (timeout 60s)** — Test timed out waiting for diagnostic logs
 
 Decision: **PASS (PROGRESS)** — Evidence proves:
-1. ✅ **Corrected fluid simulation diagnostic working** — `[PC] fluid-step skipped {reason: diagnostic-disable}` appears
+1. ✅ **Shader output diagnostic working** — `[PC] diag solid color {enabled: true}` appears
 2. ✅ **Scene attachment still working** — All previous fixes remain intact
 3. ✅ **Shader compilation still successful** — No shader errors found
-4. ❌ **Point cloud still not visible** — Fluid simulation was not the culprit
+4. ❌ **Point cloud still not visible** — Shader output was not the culprit
 5. ❌ **Still 0 points rendered** — `[PC] render-info {calls: 0, points: 0, triangles: 0}`
 
-**PROGRESS**: The corrected fluid simulation diagnostic worked, but the point cloud is still not visible. This proves the fluid simulation was not causing the visibility issue.
+**PROGRESS**: The shader output diagnostic worked, but the point cloud is still not visible. This proves the shader output was not causing the visibility issue.
 
-**Next action (Milestone 13 — Material/Shader Output Diagnostics)**: 
-The fluid simulation is not the culprit. We need to investigate other potential causes:
-- Material/shader output diagnostics (check if shader outputs visible pixels)
+**Next action (Milestone 14 — Camera/Viewport Positioning Diagnostics)**: 
+The shader output is not the culprit. We need to investigate other potential causes:
 - Camera/viewport positioning (check if points are in visible area)
 - Point size diagnostics (check if points are too small to see)
 - Blending/depth state diagnostics (check rendering state)
