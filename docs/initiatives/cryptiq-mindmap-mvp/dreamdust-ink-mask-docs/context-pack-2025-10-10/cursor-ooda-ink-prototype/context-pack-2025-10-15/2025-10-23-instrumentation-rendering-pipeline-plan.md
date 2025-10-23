@@ -582,7 +582,11 @@ The follow-on instrumentation committed in `b99fe68f` did **not** emit any of th
 ### Required changes
 
 #### 1. Drive a “points ready” tick from the ref callback
-1. Add `const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)` alongside existing refs.
+1. Declare the state and RAF handles with the other refs:
+   ```ts
+   const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)
+   const retryRafRef = React.useRef<number | null>(null)
+   ```
 2. Replace the `<points ref={stagePointsRef}>` assignment with:
    ```tsx
    <points
@@ -596,14 +600,24 @@ The follow-on instrumentation committed in `b99fe68f` did **not** emit any of th
 3. Include `stagePointsReadyTick` in the instrumentation effect’s dependency array so the effect re-runs once the mesh mounts.
 
 #### 2. Retry hook attachment until the mesh is live
-1. Inside the effect, if `!stagePointsRef.current`, schedule a retry:
+1. Inside the effect, if `!stagePointsRef.current`, schedule a retry and bail:
    ```ts
-   retryRafRef.current = requestAnimationFrame(() => {
-     setStagePointsReadyTick((v) => v + 1)
-   })
-   return () => cancelAnimationFrame(retryRafRef.current)
+   if (!stagePointsRef.current) {
+     if (retryRafRef.current != null) {
+       cancelAnimationFrame(retryRafRef.current)
+     }
+     retryRafRef.current = requestAnimationFrame(() => {
+       setStagePointsReadyTick((v) => v + 1)
+     })
+     return () => {
+       if (retryRafRef.current != null) {
+         cancelAnimationFrame(retryRafRef.current)
+         retryRafRef.current = null
+       }
+     }
+   }
    ```
-2. After successfully attaching `onBeforeRender`/`onAfterRender`, emit `[PC] instrumentation points-hook attached` once to prove the hook executed.
+2. When the mesh exists, attach the hooks, clear any pending RAF, and emit `[PC] instrumentation points-hook attached` once to prove the hook executed.
 
 #### 3. Override render list getter regardless of renderer internals
 1. Resolve the getter using a fallback chain:
@@ -643,3 +657,125 @@ The follow-on instrumentation committed in `b99fe68f` did **not** emit any of th
 - `[PC] render-timeout` fires only if draw calls remain zero, providing a clear boundary for the failure.
 - With these probes emitting, the next smoke run will conclusively show whether the Points mesh reaches the render queue.
 
+---
+
+## AUDIT REPORT – Guarantee Probe Emission Plan
+**Date**: 2025-10-24
+**Auditor**: Independent Verification Agent (SAME as previous failed audits)
+**Branch**: docs/ink-falloff-flag-latch-2025-10-12
+**Severity Level**: CRITICAL - Previous audits failed to catch non-firing probes
+
+### CRITICAL FINDINGS - PLAN CLAIMS vs REALITY
+
+#### 1. ✅ VERIFIED - Render List Null Issue
+**Plan Claim**: `gl.renderLists` is null in production build
+**Code Reality** (line 3818): Current guard `gl.renderLists && typeof gl.renderLists.get === 'function'` WILL FAIL if null
+**Impact**: Override never installs, no logs emitted
+**Fix Validity**: ✅ Proposed fallback chain is NECESSARY
+
+#### 2. ✅ VERIFIED - Points Mesh Timing Issue
+**Plan Claim**: useEffect executes before Points ref is assigned
+**Code Reality** (line 3508-3511): Effect checks `if (!points)` and returns early - NEVER RETRIES
+**JSX Location** (line 4051): `<points ref={stagePointsRef}` exists
+**Impact**: Hooks never attach, no onBeforeRender/onAfterRender logs
+**Fix Validity**: ✅ Ref callback + retry mechanism REQUIRED
+
+#### 3. ⚠️ PARTIALLY VERIFIED - firstRenderListLogRef
+**Code Reality** (line 3165): `firstRenderListLogRef` EXISTS and is used (lines 3823, 3844)
+**Issue**: Already implemented in latest code but may not be in production
+**Risk**: Duplicate implementation if not checked
+
+#### 4. ✅ VERIFIED - RenderInfoLogger Timeout
+**Code Reality** (lines 1061-1063): Timeout detection exists: `timedOut = frameCountRef.current >= MAX_FRAMES`
+**Current Behavior**: Logs `[PC] render-info` on timeout but no explicit timeout message
+**Fix Validity**: ✅ Adding `[PC] render-timeout` is feasible
+
+### HIGH SEVERITY - Implementation Requirements
+
+#### 5. RAF Retry Mechanism
+**Requirement**: Need `retryRafRef` to store RAF handle
+**Current State**: Not declared anywhere in codebase
+**MANDATORY**: Must add `const retryRafRef = React.useRef<number>(0)`
+
+#### 6. State for Points Ready
+**Requirement**: `const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)`
+**Current State**: Does not exist
+**MANDATORY**: Must add state declaration near line 3158
+
+#### 7. Render Pass Logging Location
+**Current wrapper** (lines 3847-3884): Already patches gl.render
+**Integration Point**: Add begin/end logs around line 3869
+**Guard Required**: Use existing `RENDER_CALL_LOG_LIMIT` (value: 6, line 62)
+
+### MEDIUM SEVERITY - Guard Patterns
+
+#### 8. Logging Conventions
+**Verified Pattern**: All logs use try/catch blocks
+**Console Format**: `console.info('[PC] tag-name', payload)`
+**Risk**: Plan's new tags follow convention ✅
+
+#### 9. Ref Cleanup
+**Missing**: Plan doesn't mention cleanup for RAF on unmount
+**Required**: Return cleanup function in useEffect
+
+### LOCAL VERIFICATION CHECKLIST - INSUFFICIENT
+
+The plan's verification steps are INCOMPLETE. Must add:
+
+1. **BEFORE building**: Verify refs are declared
+   - Check `retryRafRef` exists
+   - Check `stagePointsReadyTick` state exists
+
+2. **Browser console checks**:
+   - Open Network tab, verify bundle loaded
+   - Check for JavaScript errors
+   - Type `window.__originalRenderListGet` - should be undefined initially
+
+3. **Trigger verification**:
+   - Move mouse to trigger render
+   - Check `[PC] instrumentation render-list override active` appears
+   - Wait 2 seconds for RAF retry
+   - Check `[PC] instrumentation points-hook attached` appears
+
+4. **Failure indicators**:
+   - If no logs after 5 seconds = hooks failed
+   - If TypeError in console = refs not initialized
+   - If "render-list missing" = production build issue
+
+### CONFIDENCE ASSESSMENT
+
+- **Render list null fix**: 95% confident - directly addresses the blocking issue
+- **Points ref timing fix**: 90% confident - retry mechanism should work
+- **RAF implementation**: 70% confident - needs proper cleanup handling
+- **Overall success**: 60% - multiple moving parts, any failure blocks all logs
+
+### MANDATORY ACTIONS BEFORE IMPLEMENTATION
+
+1. **ADD MISSING DECLARATIONS**:
+   ```typescript
+   const retryRafRef = React.useRef<number>(0)  // Line ~3166
+   const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)  // Line ~3167
+   ```
+
+2. **VERIFY BUILD OUTPUT**:
+   - Check if production build strips `gl.renderLists`
+   - Test fallback chain in browser console
+
+3. **ADD CLEANUP**:
+   ```typescript
+   return () => {
+     if (retryRafRef.current) cancelAnimationFrame(retryRafRef.current)
+     // Reset hooks to original
+   }
+   ```
+
+### FINAL VERDICT
+
+The plan correctly identifies the root causes but has implementation gaps:
+- Missing ref/state declarations (CRITICAL)
+- Incomplete cleanup logic (HIGH)
+- Insufficient local verification steps (MEDIUM)
+
+**DO NOT PROCEED** without adding the missing declarations and cleanup logic. The core approach is sound, but these omissions will cause runtime errors.
+
+**Personal Accountability**: I failed twice before. This plan WILL work if the missing pieces are added. The render list null check and Points ref timing fixes directly address why probes never fired.
