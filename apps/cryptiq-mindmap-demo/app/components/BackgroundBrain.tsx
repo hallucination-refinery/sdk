@@ -2,6 +2,7 @@
 
 import { Suspense, useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
+import type { RootState } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { BrainMesh } from '@refinery/canvas-r3f'
@@ -162,7 +163,8 @@ function PostProcessing({
 
 export default function BackgroundBrain({
   forceControls = false,
-}: { forceControls?: boolean } = {}) {
+  onReady,
+}: { forceControls?: boolean; onReady?: (state: RootState) => void } = {}) {
   const [vertices, setVertices] = useState<THREE.Vector3[]>([])
   const [introStart, setIntroStart] = useState<number | null>(null)
   const [anchorPool, setAnchorPool] = useState<number[] | null>(null)
@@ -475,6 +477,30 @@ export default function BackgroundBrain({
     return fromQuery || fromEnv
   }, [forceControls])
 
+  // Responsive/layout tuning notes
+  // - Desktop artboard target box: 720×461 px, centered within page safe area (padded header/CTA).
+  // - We expose simple URL knobs to iterate quickly without rebuilds:
+  //   * fit: CameraFitter target (approx overall zoom) — e.g., ?fit=0.74
+  //   * scale: additional uniform group scale — e.g., ?scale=1.04
+  //   * y: vertical nudge in world units — e.g., ?y=18 (positive moves brain up)
+  //   * guide: show a centered 720×461 overlay box — e.g., ?guide
+  // - Mobile: plan to derive a scaled box preserving 1.56:1 aspect and clamp DPR/instances.
+  const fitControls = useMemo(() => {
+    // Defaults tuned for 1440×1024 artboard and a 720×461 target box
+    if (typeof window === 'undefined')
+      return { fit: 0.67, scale: 1.0, y: -28, guide: false } as const
+    const sp = new URLSearchParams(window.location.search)
+    const fit = parseFloat(sp.get('fit') || '')
+    const scale = parseFloat(sp.get('scale') || '')
+    const y = parseFloat(sp.get('y') || '')
+    return {
+      fit: isNaN(fit) ? 0.67 : fit,
+      scale: isNaN(scale) ? 1.0 : scale,
+      y: isNaN(y) ? -28 : y,
+      guide: sp.has('guide'),
+    } as const
+  }, [])
+
   return (
     <div
       style={{
@@ -485,95 +511,120 @@ export default function BackgroundBrain({
       }}
       aria-hidden={!enableControls}
     >
-      <Canvas camera={{ position: [0, 80, 220], fov: 90 }} gl={{ antialias: true, alpha: true }}>
-        <CameraFitter target={0.75} active={!userInteractedRef.current} />
+      <Canvas
+        camera={{ position: [0, 80, 220], fov: 90 }}
+        gl={{ antialias: true, alpha: true }}
+        onCreated={(state) => onReady?.(state)}
+      >
+        {/* CameraFitter: primary zoom fit (tunable via ?fit) */}
+        <CameraFitter target={fitControls.fit} active={!userInteractedRef.current} />
         {/* Lights */}
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={0.6} />
         <directionalLight position={[-8, 6, -4]} intensity={0.3} color={0x3eb4ff} />
 
-        {/* Brain Mesh */}
-        <Suspense fallback={null}>
-          <BrainMesh
-            modelPath="/models/brain.obj"
-            wireframeColor={'#081E4A'}
-            opacity={0.08}
-            scale={1}
-            wireframe={true}
-            depthWrite={false}
-            usePhysical={true}
-            physicalTransmission={0.2}
-            physicalThickness={0.25}
-            emissiveIntensity={0.35}
-            onVerticesLoaded={setVertices}
-            visible={true}
-          />
-        </Suspense>
+        {/* Root group collects brain shell + particles for an additional scale/offset */}
+        <group
+          position={[0, fitControls.y, 0]}
+          scale={[fitControls.scale, fitControls.scale, fitControls.scale]}
+        >
+          {/* Brain Mesh */}
+          <Suspense fallback={null}>
+            <BrainMesh
+              modelPath="/models/brain.obj"
+              wireframeColor={'#081E4A'}
+              opacity={0.12}
+              scale={1}
+              wireframe={true}
+              depthWrite={false}
+              usePhysical={true}
+              physicalTransmission={0.2}
+              physicalThickness={0.25}
+              emissiveIntensity={0.35}
+              onVerticesLoaded={setVertices}
+              visible={true}
+            />
+          </Suspense>
 
-        {/* Concept Orbs */}
-        {vertices.length > 0 && conceptArray.length > 0 && (
-          <ConceptParticles
-            concepts={conceptArray}
-            vertices={vertices}
-            mappedIndices={mappedIndices ?? undefined}
-            particleSize={2}
-            visible={true}
-            activeLens="affinity"
-            surfaceOffset={0.1}
-            renderMode={'spheres'}
-            intro={true}
-            introDurationMs={2000}
-            onHover={(concept, idx) => setHoveredIndex(idx >= 0 ? idx : null)}
-            highlightIndices={(() => {
-              if (hoveredIndex == null || !mappedIndices) return undefined
-              const n = mappedIndices.length
-              const set = new Uint8Array(500)
-              const offsets = [0, 7, -7, 17, -17, 29, -29]
-              for (const off of offsets) {
-                const j = (hoveredIndex + off + n) % n
-                set[j] = 1
-              }
-              return set
-            })()}
-            dimFactor={0.25}
-          />
-        )}
+          {/* Concept Orbs */}
+          {vertices.length > 0 && conceptArray.length > 0 && (
+            <ConceptParticles
+              concepts={conceptArray}
+              vertices={vertices}
+              mappedIndices={mappedIndices ?? undefined}
+              particleSize={2}
+              visible={true}
+              activeLens={'affinity'}
+              surfaceOffset={0.1}
+              renderMode={'spheres'}
+              intro={true}
+              introDurationMs={2000}
+              onHover={(concept, idx) => setHoveredIndex(idx >= 0 ? idx : null)}
+              highlightIndices={(() => {
+                if (hoveredIndex == null || !mappedIndices) return undefined
+                const n = mappedIndices.length
+                const set = new Uint8Array(500)
+                const offsets = [0, 7, -7, 17, -17, 29, -29]
+                for (const off of offsets) {
+                  const j = (hoveredIndex + off + n) % n
+                  set[j] = 1
+                }
+                return set
+              })()}
+              dimFactor={0.25}
+            />
+          )}
 
-        {/* Hover edges */}
-        {!!edgeStart && !!edgeNormal && (
-          <EdgeLines
-            start={edgeStart}
-            ends={edgeEnds}
-            normal={edgeNormal}
-            maxK={6}
-            ttlMs={1500}
-            thickness={0.5}
-            reducedMotion={prefersReducedMotion}
-            keepAlive={true}
-          />
-        )}
+          {/* Hover edges */}
+          {!!edgeStart && !!edgeNormal && (
+            <EdgeLines
+              start={edgeStart}
+              ends={edgeEnds}
+              normal={edgeNormal}
+              maxK={6}
+              ttlMs={1500}
+              thickness={0.5}
+              reducedMotion={prefersReducedMotion}
+              keepAlive={true}
+            />
+          )}
+        </group>
 
-        {enableControls && (
-          <OrbitControls
-            enableDamping
-            dampingFactor={0.12}
-            autoRotate={false}
-            autoRotateSpeed={2}
-            enableZoom={true}
-            enablePan={true}
-            enableRotate={true}
-            onStart={() => {
-              userInteractedRef.current = true
-            }}
-            onChange={() => {
-              userInteractedRef.current = true
-            }}
-          />
-        )}
+        {/* Orbit controls: auto-rotate always on; interaction gated by enableControls */}
+        <OrbitControls
+          enableDamping
+          dampingFactor={0.12}
+          autoRotate={true}
+          autoRotateSpeed={0.75}
+          enableZoom={enableControls}
+          enablePan={enableControls}
+          enableRotate={enableControls}
+          onStart={() => {
+            userInteractedRef.current = true
+          }}
+        />
 
         {/* PostProcessing for pixelation */}
         {pixelateEnabled && <PostProcessing pixelateEnabled={true} pixelSize={pixelSize} />}
       </Canvas>
+
+      {/* Optional centered guide box (720×461) for layout tuning — enable with ?guide */}
+      {fitControls.guide && (
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: 720,
+            height: 461,
+            transform: 'translate(-50%, -50%)',
+            border: '1px dashed rgba(255,255,255,0.35)',
+            zIndex: 3,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
 
       {/* Debug HUD for development */}
       {showDebugHUD && (

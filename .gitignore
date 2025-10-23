@@ -102,3 +102,4 @@ vendor/**
 # Prebaked pointcloud binaries (keep meta.json tracked)
 apps/cryptiq-mindmap-demo/public/assets/pointclouds/**/positions.f32
 apps/cryptiq-mindmap-demo/public/assets/pointclouds/**/colors.u8
+docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/motion-reanalysis-60fps/

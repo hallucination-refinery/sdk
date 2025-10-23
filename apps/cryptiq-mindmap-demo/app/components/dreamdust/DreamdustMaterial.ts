@@ -1,0 +1,925 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore three types are optional in this workspace
+import * as THREE from 'three'
+
+import { createInkTelemetryCollector, createVertexTelemetryCollector } from './telemetry'
+
+import {
+  DD_CURL3,
+  DD_FBM3,
+  DREAMDUST_ACES_TONEMAP_CHUNK,
+  DREAMDUST_COLOR_CHUNK,
+  DREAMDUST_DEPTH_FADE_CHUNK,
+  DREAMDUST_GAUSSIAN_SPRITE_CHUNK,
+  DREAMDUST_INK_SAMPLE_CHUNK,
+  DREAMDUST_NOISE_CHUNK,
+  DREAMDUST_SOFT_SPRITE_CHUNK,
+} from './glsl/chunks'
+
+type UniformRecord = Record<string, { value: unknown }>
+
+const DREAMDUST_SOLID_COLOR_DIAG = true
+
+type DreamdustMaterialOptions = {
+  unproject: boolean
+  vertexInkOk: boolean
+  debugInkProbe?: boolean
+  debugSimProbe?: boolean
+  debugForceAlpha?: boolean
+  debugVertexLog?: boolean
+  aestheticPreset?: 'current' | 'A' | 'B1' | 'B2' | 'C' | 'D1' | 'D2'
+}
+
+type DreamdustMaterialOptionsInput = {
+  unproject: boolean
+  vertexInkOk?: boolean
+  debugInkProbe?: boolean
+  debugSimProbe?: boolean
+  debugForceAlpha?: boolean
+  debugVertexLog?: boolean
+  aestheticPreset?: 'current' | 'A' | 'B1' | 'B2' | 'C' | 'D1' | 'D2'
+}
+
+type DreamdustMaterialResolvedOptions = {
+  unproject: boolean
+  vertexInkOk: boolean
+  debugInkProbe: boolean
+  debugSimProbe: boolean
+  debugForceAlpha: boolean
+  debugVertexLog: boolean
+  aestheticPreset: 'current' | 'A' | 'B1' | 'B2' | 'C' | 'D1' | 'D2'
+}
+
+const DEFAULT_UNIFORM_VALUES = {
+  uTime: 0,
+  uReveal: 1,
+  uBreath: 0.5,
+  uNoiseScale: 1,
+  uNoiseSpeed: 1,
+  uNoiseThreshold: 0.25,
+  uDriftAmp: 0.28,
+  uCurlFreq: 1,
+  uCurlAmp: 0.35,
+  uDriftSpeed: 0.05,
+  uTapGain: 0.5,
+  uTapTau: 2,
+  uPointBaseSize: 3.0,
+  uFocal: 1,
+  uMinSize: 1,
+  uMaxSize: 1,
+  uSizeGain: 1,
+  uOffsetGain: 0,
+  uInkIntensity: 1,
+  uTintGain: 1,
+  uDepthMin: 0,
+  uDepthMax: 1,
+  uGamma: 1.10,
+  uRimGamma: 10.0,
+  uDepthBias: 0.4,
+  uDepthNormScale: 0.003,
+  uHasCapture: 0,
+  uZNearNdc: -0.85,
+  uZFarNdc: 0.85,
+  uPVInvCapture: new (THREE as any).Matrix4(),
+  uInkTex: null,
+  uCascade: 0,
+  uCascadeColor: [1, 1, 1] as [number, number, number],
+  uCascadeSizeBoost: 0,
+  uVaporGain: 0,
+  uBreathAmp: 0.05,
+  uEvolution: 0.85,
+  uInkOffsetBoost: 1,
+  uInkSizeBoost: 1,
+  uInkTintBoost: 1,
+  uVertexInkOk: 0,
+  uViewport: [1, 1] as [number, number],
+  uTempForce: [0, 0] as [number, number],
+  uTempIntensity: 0,
+  uTempCenter: [0.5, 0.5] as [number, number],
+  uTempRadius: 0.16,
+  uTempFalloffOn: 0,
+  uVelocity: (() => {
+    // Dummy 1x1 black texture so shader compiles; replaced by FluidSim on init
+    const data = new Float32Array([0, 0, 0, 1])
+    const tex = new (THREE as any).DataTexture(data, 1, 1, (THREE as any).RGBAFormat, (THREE as any).FloatType)
+    tex.needsUpdate = true
+    return tex
+  })(),
+  uVelTexInvSize: [1, 1] as [number, number],
+  uVelToNdc: 0.0,
+  uInkBlend: 1.0,
+  uSimPositionTex: null,
+  uSimColorTex: null,
+  uAlphaFloor: 0.15,
+  uSpriteSharpness: 2.5,
+} as const
+
+type DefaultUniformKey = keyof typeof DEFAULT_UNIFORM_VALUES
+
+function cloneUniformValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return [...value]
+  }
+  const m = value as { clone?: () => unknown; isMatrix4?: boolean } | undefined
+  if (m && typeof m.clone === 'function') {
+    try {
+      return m.clone()
+    } catch {
+      // fallthrough
+    }
+  }
+  return value
+}
+
+function ensureUniform(uniforms: UniformRecord, name: DefaultUniformKey) {
+  if (uniforms[name] === undefined) {
+    const defaultValue = DEFAULT_UNIFORM_VALUES[name]
+    uniforms[name] = { value: cloneUniformValue(defaultValue) }
+  }
+}
+
+function aliasUniform(
+  uniforms: UniformRecord,
+  legacyName: string,
+  canonicalName: DefaultUniformKey
+) {
+  const canonicalUniform = uniforms[canonicalName]
+  const legacyUniform = uniforms[legacyName]
+
+  if (legacyUniform && !canonicalUniform) {
+    uniforms[canonicalName] = legacyUniform
+    return
+  }
+
+  if (!legacyUniform && canonicalUniform) {
+    uniforms[legacyName] = canonicalUniform
+    return
+  }
+
+  if (legacyUniform && canonicalUniform && legacyUniform !== canonicalUniform) {
+    uniforms[legacyName] = canonicalUniform
+  }
+}
+
+function isTruthyDefine(value: unknown): boolean {
+  if (typeof value === 'number') {
+    return value !== 0
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase()
+    if (trimmed === '' || trimmed === '0' || trimmed === 'false') {
+      return false
+    }
+    return true
+  }
+  return !!value
+}
+
+function syncLegacyVertexInkDefine(defines: Record<string, unknown> | undefined) {
+  if (!defines) {
+    return
+  }
+  const record = defines as Record<string, unknown>
+  if (!Object.prototype.hasOwnProperty.call(record, 'VERTEX_INK_OK')) {
+    return
+  }
+  if (isTruthyDefine(record.VERTEX_INK_OK)) {
+    record.USE_VERTEX_INK = 1
+  } else {
+    delete record.USE_VERTEX_INK
+  }
+}
+
+const VERTEX_SHADER = /* glsl */ `
+precision highp float;
+
+#if defined(DEBUG_VERTEX_LOG) && !defined(DEBUG_VERTEX_SLOT_COUNT)
+#define DEBUG_VERTEX_SLOT_COUNT 8
+#endif
+
+uniform float uTime;
+uniform float uReveal;
+uniform float uBreath;
+uniform float uBreathAmp;
+uniform float uNoiseScale;
+uniform float uNoiseSpeed;
+uniform float uEvolution;
+uniform float uDriftAmp;
+uniform float uCurlFreq;
+uniform float uCurlAmp;
+uniform float uDriftSpeed;
+uniform float uTapGain;
+uniform float uTapTau;
+uniform float uPointBaseSize;
+uniform float uFocal;
+uniform float uMinSize;
+uniform float uMaxSize;
+uniform float uSizeGain;
+uniform float uOffsetGain;
+uniform float uInkOffsetBoost;
+uniform float uInkSizeBoost;
+uniform float uInkIntensity;
+uniform float uTintGain;
+uniform float uInkTintBoost;
+uniform float uDepthMin;
+uniform float uDepthMax;
+uniform float uGamma;
+uniform float uDepthNormScale;
+uniform float uVertexInkOk;
+uniform float uCascade;
+uniform float uCascadeSizeBoost;
+uniform float uVaporGain;
+uniform vec2 uTempForce;
+uniform float uTempIntensity;
+uniform vec2 uTempCenter;
+uniform float uTempRadius;
+uniform float uTempFalloffOn;
+uniform sampler2D uVelocity;
+uniform vec2 uVelTexInvSize;
+uniform float uVelToNdc;
+uniform float uInkBlend;
+
+#if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
+uniform float uDebugTelemetryMode;
+#endif
+
+uniform float uHasCapture;
+uniform float uZNearNdc;
+uniform float uZFarNdc;
+uniform mat4 uPVInvCapture;
+
+uniform sampler2D uInkTex;
+
+#ifdef USE_SIM_POS
+uniform sampler2D uSimPositionTex;
+#endif
+
+#if defined(USE_SIM_POS) || defined(DEBUG_VTF_SANITY)
+attribute vec2 aSimUv;
+#endif
+
+#ifdef USE_SIM_COLOR
+uniform sampler2D uSimColorTex;
+#endif
+
+attribute vec2 aUv;
+attribute float aDepth;
+attribute vec3 color;
+
+#if defined(DEBUG_VERTEX_LOG)
+varying vec3 vDebugRevealPos;
+varying vec4 vDebugClipPos;
+varying float vDebugSampleSlot;
+#endif
+
+varying vec3 vColor;
+varying vec3 vInkTint;
+varying float vInkMix;
+varying vec2 vInkUv;
+varying float vRevealMix;
+varying vec2 vRevealCoord;
+varying vec3 vPosMV;
+varying float vDepthView;
+#if defined(DEBUG_VTF_SANITY)
+varying float vSimProbe;
+#endif
+
+${DREAMDUST_NOISE_CHUNK}
+${DREAMDUST_INK_SAMPLE_CHUNK}
+${DD_FBM3}
+${DD_CURL3}
+
+#ifdef DEBUG_VTF_SANITY
+vec3 dreamdustSampleSimPosition(vec2 uv) {
+#ifdef USE_SIM_POS
+  return texture2D(uSimPositionTex, uv).xyz;
+#else
+  return vec3(0.0);
+#endif
+}
+#endif
+
+vec4 dreamdustUnproject(vec3 localPos, vec2 captureUv, float depth01) {
+#ifdef USE_UNPROJECT
+  if (uHasCapture > 0.5) {
+    vec2 ndc = captureUv * 2.0 - 1.0;
+    vec4 wNear = uPVInvCapture * vec4(ndc.x, ndc.y, uZNearNdc, 1.0);
+    vec4 wFar = uPVInvCapture * vec4(ndc.x, ndc.y, uZFarNdc, 1.0);
+    vec3 nearPos = wNear.xyz / max(1e-6, wNear.w);
+    vec3 farPos = wFar.xyz / max(1e-6, wFar.w);
+    return vec4(mix(nearPos, farPos, depth01), 1.0);
+  }
+#endif
+  return modelMatrix * vec4(localPos, 1.0);
+}
+
+void main() {
+  float depth01;
+  vec4 worldPos;
+  vec3 basePos;
+
+#ifdef USE_SIM_POS
+  vec4 simSample = texture2D(uSimPositionTex, aSimUv);
+  depth01 = clamp(simSample.w, 0.0, 1.0);
+  depth01 = pow(depth01, max(uGamma, 1e-5));
+  worldPos = dreamdustUnproject(simSample.xyz, aUv, depth01);
+  basePos = worldPos.xyz;
+#else
+  float depthSpan = max(1e-5, uDepthMax - uDepthMin);
+  depth01 = clamp((aDepth - uDepthMin) / depthSpan, 0.0, 1.0);
+  depth01 = pow(depth01, max(uGamma, 1e-5));
+
+  worldPos = dreamdustUnproject(position, aUv, depth01);
+  basePos = worldPos.xyz;
+#endif
+
+  float revealProgress = clamp(uReveal, 0.0, 1.0);
+  float revealSeed = dd_hash13(vec3(aUv * 37.0, aDepth * 19.0));
+  float revealGate = smoothstep(revealSeed * 0.7, 1.0, revealProgress);
+
+  vec3 jitterSeed = dd_hash33(vec3(aUv * 173.0, aDepth * 59.0));
+  vec3 mistDir = jitterSeed * 2.0 - 1.0;
+  mistDir = normalize(mistDir + vec3(1e-4));
+  float settle = smoothstep(0.55, 1.0, revealProgress);
+  float mistAmount = (1.0 - revealProgress) * 1.8;
+  vec3 mistPos = basePos + mistDir * mistAmount;
+
+  float breathPhase = (uBreath - 0.5) * 2.0;
+  float breathAmp = max(uBreathAmp, 0.0);
+  mistPos += mistDir * (breathPhase * breathAmp * (1.0 - 0.7 * settle));
+
+  vec3 revealPos = mix(mistPos, basePos, settle);
+
+  float tapImpulse = 0.0;
+  vec2 inkSampleOffset = vec2(0.0);
+  float inkSampleSwell = 0.0;
+  vec3 inkSampleTint = vec3(0.0);
+  float inkSampleIntensity = 0.0;
+
+#ifdef DEBUG_INK_PROBE
+  float inkProbe = 0.0;
+#endif
+
+#ifdef USE_VERTEX_INK
+  if (uInkIntensity > 1e-5 && uVertexInkOk > 0.5) {
+    DreamdustInkSample inkSample = dreamdustSampleInk(uInkTex, aUv);
+#ifdef DEBUG_INK_PROBE
+    inkProbe = smoothstep(0.1, 1.0, inkSample.intensity);
+#endif
+    float localIntensity = inkSample.intensity * uInkIntensity;
+    if (localIntensity > 1e-5) {
+      inkSampleOffset = inkSample.offset;
+      inkSampleSwell = inkSample.swell;
+      inkSampleTint = inkSample.tint;
+      inkSampleIntensity = localIntensity;
+
+      float tapPhase = clamp(inkSample.swell, 0.0, 1.0);
+      float tapMix = tapPhase;
+      if (uTapTau > 1e-3) {
+        float baseDecay = exp(-uTapTau);
+        float tapDecay = exp(-max(0.0, 1.0 - tapPhase) * uTapTau);
+        float denom = max(1.0 - baseDecay, 1e-3);
+        tapMix = clamp((tapDecay - baseDecay) / denom, 0.0, 1.0);
+      }
+      tapImpulse = tapMix * localIntensity * uTapGain;
+    }
+  }
+#endif
+
+  vec3 curlSample = revealPos * uCurlFreq + vec3(uTime * uDriftSpeed);
+  float cascadeMix = clamp(uCascade, 0.0, 1.0);
+  float vaporGain = max(uVaporGain, 0.0);
+  float curlFade = 1.0 - 0.7 * settle;
+  float curlMix = (uDriftAmp + tapImpulse) * uCurlAmp * curlFade;
+  float curlBoost = mix(1.0, 4.0, cascadeMix);
+  float vaporBoost = 1.0 + vaporGain * cascadeMix;
+  curlMix *= curlBoost * vaporBoost;
+  vec3 curlOffset = dd_curl3(curlSample) * curlMix;
+  revealPos += curlOffset;
+
+  if (cascadeMix > 1e-5) {
+    vec3 vaporSample = curlSample * 0.75
+      + vec3(uTime * 0.21 * uEvolution, uTime * 0.13 * uEvolution, uTime * 0.07 * uEvolution);
+    vec3 vaporFlow = dd_fbm3Vec(vaporSample) - vec3(0.5);
+    float vaporStrength = cascadeMix * (0.35 + vaporGain * 0.85);
+    revealPos += vaporFlow * vaporStrength;
+  }
+
+  vec4 viewPos4 = viewMatrix * vec4(revealPos, 1.0);
+  vec3 viewPos = viewPos4.xyz;
+  float viewDist = max(1e-3, -viewPos.z);
+
+  if (uTempIntensity > 1e-4) {
+    // Soft-knee on intensity to avoid "global jerk" at higher boosts
+    float knee = 0.6;          // start compressing above this
+    float maxGain = 1.5;       // limit effective intensity growth
+    float t = clamp(uTempIntensity, 0.0, 1.0);
+    float soft = t <= knee ? t : knee + (t - knee) / (1.0 + (t - knee) * maxGain);
+    vec2 tempForce = uTempForce * soft;
+    if (uTempFalloffOn > 0.5) {
+      vec4 tempClip = projectionMatrix * viewPos4;
+      vec2 tempNdc = tempClip.xy / max(1e-6, tempClip.w);
+      vec2 tempSsUv = tempNdc * 0.5 + 0.5;
+      float influence = smoothstep(uTempRadius, 0.0, distance(tempSsUv, uTempCenter));
+      tempForce *= influence;
+      float pxScale = viewDist / max(uFocal, 1e-3);
+      tempForce *= pxScale;
+    }
+    revealPos.xy += tempForce;
+    viewPos4 = viewMatrix * vec4(revealPos, 1.0);
+    viewPos = viewPos4.xyz;
+    viewDist = max(1e-3, -viewPos.z);
+  }
+
+  float attenuation = clamp(uFocal / viewDist, uMinSize, uMaxSize);
+  float breathScale = 1.0 + breathPhase * 0.06;
+  float cascadeSize = mix(0.0, max(uCascadeSizeBoost, 0.0), cascadeMix);
+  float pointSize = uPointBaseSize * attenuation * breathScale * (1.0 + cascadeSize);
+
+  vec3 inkTint = vec3(0.0);
+  float inkMix = 0.0;
+
+#ifdef USE_VERTEX_INK
+  if (inkSampleIntensity > 1e-5) {
+    float pxScale = viewDist / max(1e-3, uFocal);
+    vec2 inkOffset = inkSampleOffset * (inkSampleIntensity * uOffsetGain * uInkOffsetBoost * pxScale);
+    viewPos.xy += inkOffset;
+    pointSize += inkSampleSwell * inkSampleIntensity * uSizeGain * uInkSizeBoost;
+    inkTint = inkSampleTint;
+    inkMix = inkSampleIntensity * uTintGain * uInkTintBoost;
+
+  }
+#endif
+
+  float pointSizeClamped = max(0.0, pointSize);
+
+#ifdef DEBUG_INK_PROBE
+  pointSizeClamped *= mix(1.0, 4.0, inkProbe);
+#endif
+
+  gl_PointSize = pointSizeClamped;
+
+  float mistLift = mix(0.35, 1.0, revealGate);
+  mistLift = clamp(max(mistLift, revealProgress * 0.9), 0.0, 1.0);
+
+  vec3 baseColor = color;
+#ifdef USE_SIM_COLOR
+  baseColor = texture2D(uSimColorTex, aSimUv).rgb;
+#endif
+
+  vColor = baseColor;
+  vInkTint = inkTint;
+  vInkMix = inkMix;
+  // Screen-space UV from post-projection position
+  vec4 clipPos = projectionMatrix * viewPos4;
+
+#if defined(DEBUG_VERTEX_LOG)
+  float debugSlot = -1.0;
+  float debugSlotCount = max(1.0, float(DEBUG_VERTEX_SLOT_COUNT));
+  float debugSeed = dd_hash13(vec3(aUv * 5773.0, aDepth * 233.0));
+  if (debugSeed > 0.995) {
+    float slotSeed = fract(debugSeed * 97.0);
+    debugSlot = floor(clamp(slotSeed * debugSlotCount, 0.0, debugSlotCount - 1.0));
+  }
+  vDebugSampleSlot = debugSlot;
+  vDebugRevealPos = revealPos;
+  vDebugClipPos = clipPos;
+
+#if defined(VERTEX_TELEMETRY_PASS)
+  if (vDebugSampleSlot < 0.0) {
+    gl_Position = vec4(-2.0, -2.0, 0.0, 1.0);
+    gl_PointSize = 0.0;
+    return;
+  }
+  float debugSlotNorm = (vDebugSampleSlot + 0.5) / debugSlotCount;
+  float debugClipX = debugSlotNorm * 2.0 - 1.0;
+  float debugClipY = mix(-1.0, 1.0, clamp(uDebugTelemetryMode, 0.0, 1.0));
+  gl_Position = vec4(debugClipX, debugClipY, 0.0, 1.0);
+  gl_PointSize = 1.0;
+  return;
+#endif
+
+#endif
+
+  float invW = 1.0 / max(1e-6, clipPos.w);
+  vec2 ndc = clipPos.xy * invW; // [-1,1]
+  vec2 ss = ndc * 0.5 + 0.5;
+  vInkUv = ss;                   // [0,1]
+  vRevealMix = mistLift;
+  vRevealCoord = ss * (2.6 + uNoiseScale * 0.8) + jitterSeed.xy * 0.07;
+  vPosMV = viewPos;
+  vDepthView = viewDist;
+#ifdef DEBUG_VTF_SANITY
+  vec3 simPos = dreamdustSampleSimPosition(aSimUv);
+  float simProbe = length(simPos);
+  vSimProbe = simProbe;
+#endif
+
+  gl_Position = projectionMatrix * viewPos4;
+
+  // Fluid-driven screen-space displacement (MVP)
+  if (uVelToNdc > 1e-5) {
+    vec2 clip = gl_Position.xy / max(gl_Position.w, 1e-5);
+    vec2 uv = clip * 0.5 + 0.5;
+    vec2 guard = uVelTexInvSize * 0.5;
+    vec2 sampleUv = clamp(uv, guard, vec2(1.0) - guard);
+    bool inside = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
+    vec2 vel = inside ? texture2D(uVelocity, sampleUv).xy : vec2(0.0);
+    vec2 disp = vel * uVelToNdc;
+    gl_Position.xy = mix(gl_Position.xy, gl_Position.xy + disp, clamp(uInkBlend, 0.0, 1.0));
+  }
+}
+`
+
+const FRAGMENT_SHADER = /* glsl */ `
+precision highp float;
+
+uniform float uTime;
+uniform float uNoiseSpeed;
+uniform float uEvolution;
+uniform float uNoiseThreshold;
+uniform float uReveal;
+uniform float uInkIntensity;
+uniform float uTintGain;
+uniform float uInkTintBoost;
+uniform float uDepthBias;
+uniform float uDepthNormScale;
+uniform float uGamma;
+uniform float uRimGamma;
+uniform float uAlphaFloor;
+uniform float uCascade;
+uniform vec3 uCascadeColor;
+uniform float uSpriteSharpness;
+
+uniform sampler2D uInkTex;
+
+#if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
+uniform float uDebugTelemetryMode;
+#endif
+
+varying vec3 vColor;
+varying vec3 vInkTint;
+varying float vInkMix;
+varying vec2 vInkUv;
+varying float vRevealMix;
+varying vec2 vRevealCoord;
+varying vec3 vPosMV;
+varying float vDepthView;
+#if defined(DEBUG_VTF_SANITY)
+varying float vSimProbe;
+#endif
+#if defined(DEBUG_VERTEX_LOG)
+varying vec3 vDebugRevealPos;
+varying vec4 vDebugClipPos;
+varying float vDebugSampleSlot;
+#endif
+
+${DREAMDUST_NOISE_CHUNK}
+${DREAMDUST_SOFT_SPRITE_CHUNK}
+${DREAMDUST_GAUSSIAN_SPRITE_CHUNK}
+${DREAMDUST_ACES_TONEMAP_CHUNK}
+${DREAMDUST_COLOR_CHUNK}
+${DREAMDUST_INK_SAMPLE_CHUNK}
+${DREAMDUST_DEPTH_FADE_CHUNK}
+
+void main() {
+#if defined(DEBUG_VERTEX_LOG) && defined(VERTEX_TELEMETRY_PASS)
+  if (vDebugSampleSlot < 0.0) {
+    discard;
+  }
+  if (uDebugTelemetryMode < 0.5) {
+    gl_FragColor = vec4(vDebugRevealPos, vDebugClipPos.w);
+  } else {
+    vec3 clipNdc = vDebugClipPos.xyz / max(1e-6, vDebugClipPos.w);
+    gl_FragColor = vec4(clipNdc, vDebugClipPos.w);
+  }
+  return;
+#endif
+  #ifdef DIAG_SOLID_COLOR
+    gl_FragColor = vec4(1.0, 0.95, 0.2, 1.0);
+    return;
+  #endif
+  // Softer disc sprite for vapor look
+  float sprite = dreamdustSoftSprite(gl_PointCoord);
+#ifdef USE_GAUSSIAN
+  sprite = dreamdustGaussianSprite(gl_PointCoord, max(0.1, uSpriteSharpness));
+#endif
+  float spriteAlpha = pow(max(sprite, 0.0), 0.85);
+  float alphaFloor = clamp(uAlphaFloor, 0.0, 1.0);
+  float spriteMix = mix(alphaFloor, 1.0, spriteAlpha);
+
+  float threshold = clamp(uNoiseThreshold, 0.0, 1.0);
+  float revealNoise = dd_noise2(vRevealCoord);
+  float revealStrength = clamp(vRevealMix, 0.0, 1.0);
+  if (uReveal >= 0.999) {
+    revealStrength = 1.0;
+  }
+  float w = 0.08;
+  if (uReveal >= 0.999) {
+    w = 0.14;
+  }
+  float baseReveal = smoothstep(threshold - w, threshold + w, revealNoise);
+  if (uReveal >= 0.999) {
+    baseReveal = 1.0;
+  }
+  float revealAlpha = max(baseReveal, revealStrength * 0.40);
+
+  float alpha = spriteMix * revealAlpha * revealStrength;
+  float depthNorm = dreamdustViewDepthNorm(vPosMV, uDepthNormScale);
+  alpha *= dreamdustDepthAlpha(depthNorm, uDepthBias);
+  if (alpha <= 0.001) discard;
+
+  vec3 color = vColor;
+
+#ifdef USE_VERTEX_INK
+  if (vInkMix > 1e-5) {
+    color = dreamdustApplyInkTint(color, vInkTint, vInkMix);
+  }
+#else
+  if (uInkIntensity > 1e-5) {
+    DreamdustInkSample fragInk = dreamdustSampleInk(uInkTex, vInkUv);
+    float localIntensity = fragInk.intensity * uInkIntensity;
+    if (localIntensity > 1e-5) {
+      float tintMix = localIntensity * uTintGain * uInkTintBoost;
+      if (tintMix > 1e-5) {
+        color = dreamdustApplyInkTint(color, fragInk.tint, tintMix);
+      }
+      alpha *= clamp(localIntensity, 0.0, 1.0);
+    }
+  }
+#endif
+
+  vec3 baseRgb = color;
+  if (uCascade > 0.0) {
+    float cascadeMix = clamp(uCascade, 0.0, 1.0);
+    float cascadeStrength = smoothstep(0.0, 1.0, pow(cascadeMix, 0.7));
+    color = mix(baseRgb, uCascadeColor, cascadeStrength);
+  }
+
+  float depthAmount = clamp(depthNorm * 0.25, 0.0, 1.0);
+  float depthLuma = dot(color, vec3(0.299, 0.587, 0.114));
+  vec3 depthGray = vec3(depthLuma);
+  color = mix(color, depthGray, depthAmount);
+  color *= (1.0 - 0.25 * depthAmount);
+
+  // Boost color saturation to match reference vibrance
+  color = color * 1.6;
+
+  float rim = dreamdustRimStrength(sprite);
+  color = dreamdustApplyRimLight(color, rim);
+  alpha = dreamdustApplyRimAlpha(alpha, rim);
+
+#ifdef DEBUG_INK_PROBE
+  DreamdustInkSample debugInkSample = dreamdustSampleInk(uInkTex, vInkUv);
+  float inkProbe = smoothstep(0.1, 1.0, debugInkSample.intensity);
+  color = mix(color, vec3(0.1, 0.9, 0.8), inkProbe);
+#endif
+
+#ifdef DEBUG_VTF_SANITY
+  float simProbe = vSimProbe;
+  bool probeNaN = isnan(simProbe);
+  bool probeInf = isinf(simProbe);
+  bool probeBad = probeNaN || probeInf || simProbe < 0.01;
+  if (probeBad) {
+    color = mix(color, vec3(1.0, 0.15, 0.15), 0.7);
+  }
+  if (probeNaN || probeInf) {
+    alpha = -abs(alpha);
+  }
+#endif
+
+  // Apply ACES tonemapping to prevent white blowout with additive blending
+  color = dreamdustACESFilmic(color);
+
+  color = dreamdustApplyGamma(color, uGamma);
+
+  // Premultiplied alpha output
+  gl_FragColor = vec4(color * alpha, alpha);
+}
+`
+
+export function makeDreamdustMaterial(
+  uniforms: UniformRecord,
+  opts: DreamdustMaterialOptions | DreamdustMaterialOptionsInput
+) {
+  aliasUniform(uniforms, 'uBaseSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uPointSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uThickness', 'uDepthBias')
+  const uniformNames = Object.keys(DEFAULT_UNIFORM_VALUES) as DefaultUniformKey[]
+  for (const name of uniformNames) {
+    ensureUniform(uniforms, name)
+  }
+  aliasUniform(uniforms, 'uBaseSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uPointSize', 'uPointBaseSize')
+  aliasUniform(uniforms, 'uThickness', 'uDepthBias')
+
+  const resolved: DreamdustMaterialResolvedOptions = {
+    unproject: opts.unproject,
+    vertexInkOk: opts.vertexInkOk ?? false,
+    debugInkProbe: opts.debugInkProbe ?? false,
+    debugSimProbe: opts.debugSimProbe ?? false,
+    debugForceAlpha: opts.debugForceAlpha ?? false,
+    debugVertexLog: opts.debugVertexLog ?? false,
+    aestheticPreset: opts.aestheticPreset ?? 'current',
+  }
+
+  const preset = resolved.aestheticPreset
+
+  const defines: Record<string, unknown> = {}
+  if (resolved.unproject) {
+    defines.USE_UNPROJECT = 1
+  }
+  if (resolved.vertexInkOk) {
+    defines.USE_VERTEX_INK = 1
+    defines.VERTEX_INK_OK = 1
+  }
+  if (resolved.debugInkProbe) {
+    defines.DEBUG_INK_PROBE = 1
+  }
+  if (resolved.debugSimProbe) {
+    defines.DEBUG_VTF_SANITY = 1
+  }
+  if (resolved.debugForceAlpha) {
+    defines.DEBUG_FORCE_ALPHA = 1
+  }
+  if (resolved.debugVertexLog) {
+    defines.DEBUG_VERTEX_LOG = 1
+  }
+  const useGaussian = preset === 'C' || preset === 'D1' || preset === 'D2'
+  if (useGaussian) {
+    defines.USE_GAUSSIAN = 1
+  }
+  if (DREAMDUST_SOLID_COLOR_DIAG) {
+    defines.DIAG_SOLID_COLOR = 1
+  }
+  syncLegacyVertexInkDefine(defines)
+
+  const params: any = {
+    uniforms,
+    vertexShader: VERTEX_SHADER,
+    fragmentShader: FRAGMENT_SHADER,
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    toneMapped: DREAMDUST_SOLID_COLOR_DIAG ? false : true,
+    premultipliedAlpha: DREAMDUST_SOLID_COLOR_DIAG ? false : true,
+    defines,
+  }
+
+  const material = new (THREE as any).ShaderMaterial(params)
+  ;(material as any).uniforms = uniforms
+  ;(material as any).defines = (material as any).defines ?? {}
+  syncLegacyVertexInkDefine((material as any).defines)
+  if (useGaussian) {
+    ;(material as any).defines.USE_GAUSSIAN = 1
+  } else {
+    delete (material as any).defines.USE_GAUSSIAN
+  }
+  const useAdditive =
+    preset === 'B1' || preset === 'B2' || preset === 'D1' || preset === 'D2'
+  if (useAdditive) {
+    material.blending = (THREE as any).AdditiveBlending
+    const occluding = preset === 'B1' || preset === 'D1'
+    material.depthTest = occluding
+  } else {
+    material.blending = (THREE as any).NormalBlending
+    material.depthTest = true
+  }
+  material.needsUpdate = true
+
+  // CRITICAL FIX: Force shader recompile when USE_GAUSSIAN define changes
+  // THREE.js program cache doesn't key by defines alone, so we add explicit cache key
+  material.customProgramCacheKey = function customProgramCacheKey() {
+    return material.defines?.USE_GAUSSIAN ? 'dreamdust-gauss-1' : 'dreamdust-gauss-0'
+  }
+
+  // DEBUG: Log material state per preset
+  if (DREAMDUST_SOLID_COLOR_DIAG) {
+    try {
+      console.info('[PC] diag solid color', { enabled: true })
+    } catch {
+      /* noop */
+    }
+  }
+  console.info('[preset]', {
+    preset,
+    blending: material.blending,
+    blendingName: material.blending === 2 ? 'AdditiveBlending' : material.blending === 1 ? 'NormalBlending' : `Unknown(${material.blending})`,
+    depthTest: material.depthTest,
+    hasGaussian: !!material.defines?.USE_GAUSSIAN,
+    cacheKey: material.customProgramCacheKey(),
+  })
+
+  const inkTelemetry = createInkTelemetryCollector()
+  const vertexTelemetry = resolved.debugVertexLog ? createVertexTelemetryCollector() : null
+  const originalOnAfterRender = material.onAfterRender?.bind(material)
+  material.onAfterRender = function onAfterRenderHook(
+    renderer: any,
+    scene: any,
+    camera: THREE.Camera,
+    geometry: THREE.BufferGeometry,
+    object: THREE.Object3D,
+    group?: THREE.Group
+  ) {
+    inkTelemetry.capture(renderer, uniforms)
+    vertexTelemetry?.capture({
+      renderer,
+      geometry,
+      object,
+      material: material as THREE.ShaderMaterial,
+    })
+    if (originalOnAfterRender) {
+      originalOnAfterRender(renderer, scene, camera, geometry, object, group)
+    }
+  }
+  if (resolved.unproject) {
+    ;(material as any).defines.USE_UNPROJECT = 1
+  } else {
+    delete (material as any).defines.USE_UNPROJECT
+  }
+  if (resolved.vertexInkOk) {
+    ;(material as any).defines.USE_VERTEX_INK = 1
+    ;(material as any).defines.VERTEX_INK_OK = 1
+  } else {
+    delete (material as any).defines.USE_VERTEX_INK
+    delete (material as any).defines.VERTEX_INK_OK
+  }
+  if (resolved.debugInkProbe) {
+    ;(material as any).defines.DEBUG_INK_PROBE = 1
+  } else {
+    delete (material as any).defines.DEBUG_INK_PROBE
+  }
+  if (resolved.debugSimProbe) {
+    ;(material as any).defines.DEBUG_VTF_SANITY = 1
+  } else {
+    delete (material as any).defines.DEBUG_VTF_SANITY
+  }
+  if (resolved.debugForceAlpha) {
+    ;(material as any).defines.DEBUG_FORCE_ALPHA = 1
+  } else {
+    delete (material as any).defines.DEBUG_FORCE_ALPHA
+  }
+  if (resolved.debugVertexLog) {
+    ;(material as any).defines.DEBUG_VERTEX_LOG = 1
+  } else {
+    delete (material as any).defines.DEBUG_VERTEX_LOG
+  }
+
+  const originalDispose = material.dispose.bind(material)
+  material.dispose = function disposeWithTelemetry() {
+    inkTelemetry.dispose()
+    vertexTelemetry?.dispose()
+    originalDispose()
+  }
+
+  if (uniforms.uVertexInkOk) {
+    uniforms.uVertexInkOk.value = resolved.vertexInkOk ? 1 : 0
+  }
+
+  const originalOnBeforeCompile = (material as any).onBeforeCompile?.bind(material)
+  ;(material as any).onBeforeCompile = function onBeforeCompile(shader: any, renderer: any) {
+    syncLegacyVertexInkDefine((material as any).defines)
+    if (resolved.debugInkProbe) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_INK_PROBE = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_INK_PROBE
+    }
+    if (resolved.debugSimProbe) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_VTF_SANITY = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_VTF_SANITY
+    }
+    if (resolved.debugForceAlpha) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_FORCE_ALPHA = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_FORCE_ALPHA
+    }
+    if (resolved.debugVertexLog) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.DEBUG_VERTEX_LOG = 1
+    } else if (shader.defines) {
+      delete shader.defines.DEBUG_VERTEX_LOG
+    }
+    if (useGaussian) {
+      shader.defines = shader.defines ?? {}
+      shader.defines.USE_GAUSSIAN = 1
+    } else if (shader.defines) {
+      delete shader.defines.USE_GAUSSIAN
+    }
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile(shader, renderer)
+    }
+  }
+
+  return material
+}
+
+/**
+ * @deprecated use {@link makeDreamdustMaterial} instead.
+ */
+export const createDreamdustMaterial = makeDreamdustMaterial
+
+export type { DreamdustMaterialOptions }

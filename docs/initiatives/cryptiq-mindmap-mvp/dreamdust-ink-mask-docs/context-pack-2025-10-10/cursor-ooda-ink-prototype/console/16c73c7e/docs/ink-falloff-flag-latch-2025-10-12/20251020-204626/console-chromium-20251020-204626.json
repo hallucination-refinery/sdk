@@ -1,0 +1,322 @@
+[
+  {
+    "ts": 1760993190329,
+    "type": "log",
+    "text": "[PC] ink debug {\"vertexInkOk\":false,\"uViewport\":[1280,800],\"inkIntensity\":1}"
+  },
+  {
+    "ts": 1760993190333,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":0,\"stageUvCount\":0,\"simStageUvCount\":0,\"simKey\":null}"
+  },
+  {
+    "ts": 1760993190336,
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {\"uReveal\":1,\"uAlphaFloor\":1,\"uPointBaseSize\":8,\"uMinSize\":4,\"uMaxSize\":14}"
+  },
+  {
+    "ts": 1760993190336,
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":\"TBD\",\"depthWrite\":\"TBD\",\"blending\":\"TBD\",\"applied\":false}"
+  },
+  {
+    "ts": 1760993190362,
+    "type": "log",
+    "text": "[PC] prebaked positions {\"bytes\":2175600,\"count\":181300,\"sample\":[-0.5670044422149658,-0.3836313486099243,0.853047251701355,-0.5648150444030762,-0.38363149762153625,0.8530470728874207]}"
+  },
+  {
+    "ts": 1760993190367,
+    "type": "log",
+    "text": "[PC] prebaked AABB {\"min\":[-1.067277193069458,-0.7974746823310852,0.29305800795555115],\"max\":[1.2338374853134155,0.19435033202171326,2.747392177581787],\"extent\":[2.3011146783828735,0.9918250143527985,2.454334169626236],\"maxExtent\":2.454334169626236,\"scale\":407.44247966538614,\"radius\":500}"
+  },
+  {
+    "ts": 1760993190375,
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied"
+  },
+  {
+    "ts": 1760993190380,
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon"
+  },
+  {
+    "ts": 1760993190386,
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required"
+  },
+  {
+    "ts": 1760993190386,
+    "type": "log",
+    "text": "[PC] instances: 90650"
+  },
+  {
+    "ts": 1760993190387,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":90650,\"stageUvCount\":181300,\"simStageUvCount\":0,\"simKey\":null}"
+  },
+  {
+    "ts": 1760993190531,
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }"
+  },
+  {
+    "ts": 1760993190532,
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0\"}"
+  },
+  {
+    "ts": 1760993190532,
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0\"}"
+  },
+  {
+    "ts": 1760993190534,
+    "type": "warn",
+    "text": "[PC] Preset drifted at frame 1: {\"expected\":{\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168]},\"actual\":{\"position\":[-65.7370000000001,103.05399999999997,-681.379],\"target\":null}}"
+  },
+  {
+    "ts": 1760993190538,
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {\"width\":256,\"height\":256,\"needsUpdate\":false}"
+  },
+  {
+    "ts": 1760993190539,
+    "type": "log",
+    "text": "[PC] attach controls to [object HTMLCanvasElement]"
+  },
+  {
+    "ts": 1760993190539,
+    "type": "log",
+    "text": "[DEBUG] Camera position check:"
+  },
+  {
+    "ts": 1760993190539,
+    "type": "log",
+    "text": "  Expected: [-65.737,103.054,-681.379]"
+  },
+  {
+    "ts": 1760993190539,
+    "type": "log",
+    "text": "  Actual: [-65.737,103.054,-681.379]"
+  },
+  {
+    "ts": 1760993190540,
+    "type": "log",
+    "text": "  Match: true"
+  },
+  {
+    "ts": 1760993190540,
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168],\"actualPosition\":[-65.737,103.054,-681.379],\"actualTarget\":null}"
+  },
+  {
+    "ts": 1760993190552,
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {\"invSize\":[0.00390625,0.00390625],\"velToNdc\":0.028,\"inkBlend\":0.78}"
+  },
+  {
+    "ts": 1760993190553,
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":false,\"depthWrite\":false,\"blending\":2,\"applied\":true}"
+  },
+  {
+    "ts": 1760993190553,
+    "type": "log",
+    "text": "[Dreamdust] reveal start {\"duration\":2}"
+  },
+  {
+    "ts": 1760993190553,
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {\"uTempRadius\":0.14,\"uTempFalloffOn\":1,\"forceScale\":220,\"velToNdc\":0.028,\"inkBlend\":0.78,\"fluidSize\":256,\"fluidIters\":10}"
+  },
+  {
+    "ts": 1760993190567,
+    "type": "info",
+    "text": "[PC] fluid init {\"size\":256,\"iters\":10}"
+  },
+  {
+    "ts": 1760993190571,
+    "type": "info",
+    "text": "[PC] render-info {\"calls\":1,\"points\":0,\"triangles\":2,\"mat\":{\"uuid\":\"eaa80575-0d5a-4324-bc7b-8aaf5d6f7225\",\"blending\":2,\"depthTest\":false,\"depthWrite\":false,\"programCacheKey\":\"dreamdust-gauss-0\"},\"uniforms\":{\"uPointBaseSize\":8,\"uMinSize\":4,\"uMaxSize\":14,\"uAlphaFloor\":1,\"uVelToNdc\":0.028,\"uInkBlend\":0.78,\"uDepthNormScale\":0.00076,\"uDepthBias\":1.8},\"timeout\":false,\"framesWaited\":2}"
+  },
+  {
+    "ts": 1760993190572,
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }"
+  },
+  {
+    "ts": 1760993190575,
+    "type": "warn",
+    "text": "[PC] Preset drifted at frame 4: {\"expected\":{\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168]},\"actual\":{\"position\":[40.09112090134561,-62.84969459158883,415.553613165158],\"target\":[-62.924,103.948,-656.168]}}"
+  },
+  {
+    "ts": 1760993190334,
+    "type": "log",
+    "text": "[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}"
+  },
+  {
+    "ts": 1760993190335,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 0, stageUvCount: 0, simStageUvCount: 0, simKey: null}"
+  },
+  {
+    "ts": 1760993190337,
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}"
+  },
+  {
+    "ts": 1760993190337,
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: TBD, depthWrite: TBD, blending: TBD, applied: false}"
+  },
+  {
+    "ts": 1760993190371,
+    "type": "log",
+    "text": "[PC] prebaked positions {bytes: 2175600, count: 181300, sample: Array(6)}"
+  },
+  {
+    "ts": 1760993190371,
+    "type": "log",
+    "text": "[PC] prebaked AABB {min: Array(3), max: Array(3), extent: Array(3), maxExtent: 2.454334169626236, scale: 407.44247966538614}"
+  },
+  {
+    "ts": 1760993190376,
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied"
+  },
+  {
+    "ts": 1760993190381,
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon"
+  },
+  {
+    "ts": 1760993190387,
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required"
+  },
+  {
+    "ts": 1760993190388,
+    "type": "log",
+    "text": "[PC] instances: 90650"
+  },
+  {
+    "ts": 1760993190388,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 90650, stageUvCount: 181300, simStageUvCount: 0, simKey: null}"
+  },
+  {
+    "ts": 1760993190526,
+    "type": "warning",
+    "text": "[.WebGL-0x104001de300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "ts": 1760993190526,
+    "type": "warning",
+    "text": "[.WebGL-0x104001de300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "ts": 1760993190526,
+    "type": "warning",
+    "text": "[.WebGL-0x104001de300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "ts": 1760993190526,
+    "type": "warning",
+    "text": "[.WebGL-0x104001de300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  },
+  {
+    "ts": 1760993190532,
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }"
+  },
+  {
+    "ts": 1760993190532,
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+  },
+  {
+    "ts": 1760993190532,
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+  },
+  {
+    "ts": 1760993190535,
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 1: {expected: Object, actual: Object}"
+  },
+  {
+    "ts": 1760993190539,
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {width: 256, height: 256, needsUpdate: false}"
+  },
+  {
+    "ts": 1760993190543,
+    "type": "log",
+    "text": "[PC] attach controls to JSHandle@node"
+  },
+  {
+    "ts": 1760993190544,
+    "type": "log",
+    "text": "[DEBUG] Camera position check:"
+  },
+  {
+    "ts": 1760993190544,
+    "type": "log",
+    "text": "  Expected: [-65.737, 103.054, -681.379]"
+  },
+  {
+    "ts": 1760993190544,
+    "type": "log",
+    "text": "  Actual: [-65.737, 103.054, -681.379]"
+  },
+  {
+    "ts": 1760993190544,
+    "type": "log",
+    "text": "  Match: true"
+  },
+  {
+    "ts": 1760993190544,
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {position: Array(3), target: Array(3), actualPosition: Array(3), actualTarget: null}"
+  },
+  {
+    "ts": 1760993190553,
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}"
+  },
+  {
+    "ts": 1760993190553,
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}"
+  },
+  {
+    "ts": 1760993190554,
+    "type": "log",
+    "text": "[Dreamdust] reveal start {duration: 2}"
+  },
+  {
+    "ts": 1760993190554,
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}"
+  },
+  {
+    "ts": 1760993190567,
+    "type": "info",
+    "text": "[PC] fluid init {size: 256, iters: 10}"
+  },
+  {
+    "ts": 1760993190573,
+    "type": "info",
+    "text": "[PC] render-info {calls: 1, points: 0, triangles: 2, mat: Object, uniforms: Object}"
+  },
+  {
+    "ts": 1760993190573,
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }"
+  },
+  {
+    "ts": 1760993190575,
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 4: {expected: Object, actual: Object}"
+  }
+]

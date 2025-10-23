@@ -1,0 +1,112 @@
+export interface HUDProps {
+  ready: boolean
+  loadMs: number
+  inferMs: number
+  fps: number
+  instances: number
+  onClassify?(): void
+  onClear?(): void
+  onUndo?(): void
+  autoEnabled?: boolean
+  onToggleAuto?(next: boolean): void
+  busy?: boolean
+  devControls?: boolean
+  showCopyTrace?: boolean
+}
+
+import { useEffect, useState } from 'react'
+
+export default function HUD({
+  ready,
+  loadMs,
+  inferMs,
+  fps,
+  instances,
+  onClassify,
+  onClear,
+  onUndo,
+  autoEnabled,
+  onToggleAuto,
+  busy,
+  devControls,
+  showCopyTrace,
+}: HUDProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const onCopyTrace = () => {
+    const traces = (window as any).__draw3dTraces
+    const trace = traces?.at?.(-1) ?? traces
+    const text = JSON.stringify(trace ?? [])
+    navigator.clipboard.writeText(text).catch(() => {})
+  }
+  const lastTrace =
+    mounted && typeof window !== 'undefined'
+      ? (window as any).__draw3dTraces?.at?.(-1) ??
+        (window as any).__draw3dTraces
+      : null
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        color: '#0f0',
+        background: 'rgba(0,0,0,0.5)',
+        padding: 8,
+        font: '12px/1.2 monospace',
+        borderRadius: 4,
+        zIndex: 2,
+      }}
+    >
+      <div>ready: {String(ready)}</div>
+      <div>load: {loadMs}ms</div>
+      <div>infer: {inferMs}ms</div>
+      <div>fps: {fps}</div>
+      <div>instances: {instances}</div>
+      {mounted && (devControls || showCopyTrace) && lastTrace?.classify && (
+        <div>
+          label: {lastTrace.classify.normalized} (
+          {(lastTrace.classify.topK?.[0]?.confidence ?? 0).toFixed(2)})
+        </div>
+      )}
+      <div style={{ marginTop: 4 }}>
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={() => onToggleAuto?.(!autoEnabled)}
+          disabled={!onToggleAuto || !!busy}
+        >
+          Auto {autoEnabled ? 'On' : 'Off'}
+        </button>
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={onClear}
+          disabled={!onClear || !!busy}
+        >
+          Clear
+        </button>
+        <button
+          style={{ marginRight: 4, fontSize: 10 }}
+          onClick={onUndo}
+          disabled={!onUndo || !!busy}
+        >
+          Undo
+        </button>
+        {devControls && (
+          <button
+            style={{ marginRight: 4, fontSize: 10 }}
+            onClick={onClassify}
+            disabled={!onClassify || !!busy}
+          >
+            Classify
+          </button>
+        )}
+        {(devControls || (showCopyTrace && mounted)) && (
+          <button style={{ marginRight: 4, fontSize: 10 }} onClick={onCopyTrace}>
+            Copy trace
+          </button>
+        )}
+        {busy && <span style={{ marginLeft: 4 }}>inference…</span>}
+      </div>
+    </div>
+  )
+}

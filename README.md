@@ -30,6 +30,8 @@ pnpm add @refinery/input-hub
 pnpm add @refinery/widget-aperture @refinery/widget-hud
 ```
 
+> Run with `?r1=house&trace=1` for sanity.
+
 ## Basic Example
 
 ```typescript

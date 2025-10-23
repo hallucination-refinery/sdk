@@ -1,3 +1,26 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Read(//private/tmp/scene-03-processed/**)",
+      "Read(//private/tmp/**)",
+      "Read(//tmp/scene-03-processed/**)",
+      "Bash(git log:*)",
+      "Bash(cat:*)",
+      "Bash(xargs ls:*)",
+      "Bash(xargs kill:*)",
+      "Bash(find:*)",
+      "Bash(git push:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(chmod:*)",
+      "Bash(bash:*)",
+      "Bash(node:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
   "notes": "Local settings intentionally minimal; project-level permissions apply."
 }

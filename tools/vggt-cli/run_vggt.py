@@ -188,8 +188,8 @@ def main():
 
     os.makedirs(args.out, exist_ok=True)
 
-    # Preprocess image (pad to 518 square while preserving all pixels)
-    images = load_and_preprocess_images([args.image], mode="pad")  # (1,3,H,W), H=W=518
+    # Preprocess image (crop mode preserves aspect ratio, no padding)
+    images = load_and_preprocess_images([args.image], mode="crop")  # (1,3,H,W)
     H, W = int(images.shape[-2]), int(images.shape[-1])
     images = images.to(device)
 
@@ -206,14 +206,54 @@ def main():
     extr_np = extrinsic.squeeze(0)
     intr_np = intrinsic.squeeze(0)
 
-    # Unproject to world points (S,H,W,3) numpy
-    world_points = unproject_depth_map_to_point_map(depth_np, extr_np, intr_np)
+    # ===== PHASE 1: DEPTH POST-PROCESSING =====
+    # Extract depth as numpy array for processing
+    import numpy as _np
+    import cv2
+
+    depth_arr = depth_np.detach().cpu().numpy() if hasattr(depth_np, "detach") else _np.asarray(depth_np)
+    depth_arr = depth_arr.squeeze(-1)  # (S,H,W) or (H,W)
+    if depth_arr.ndim == 3:
+        depth_arr = depth_arr[0]  # Take first frame if batched
+
+    # Get RGB image for edge-aware guidance
+    rgb_np = images.squeeze(0).permute(1, 2, 0).detach().cpu().numpy()  # (H,W,3)
+    rgb_u8 = (rgb_np * 255.0).astype(_np.uint8)
+
+    # 1. Normalize depth to [0,1]
+    depth_min, depth_max = depth_arr.min(), depth_arr.max()
+    if depth_max > depth_min:
+        depth_normalized = (depth_arr - depth_min) / (depth_max - depth_min)
+    else:
+        depth_normalized = _np.zeros_like(depth_arr)
+
+    # 2. Gamma remapping to salvage background (compress foreground, expand background)
+    gamma = 0.7
+    depth_remapped = _np.power(depth_normalized, gamma)
+
+    # 3. Edge-aware bilateral smoothing (RGB-guided)
+    # Convert to uint8 for cv2.bilateralFilter
+    depth_u8 = (depth_remapped * 255.0).astype(_np.uint8)
+    depth_smooth_u8 = cv2.bilateralFilter(depth_u8, d=5, sigmaColor=25, sigmaSpace=25)
+    depth_smooth = depth_smooth_u8.astype(_np.float32) / 255.0
+
+    # 4. Clamp outliers
+    depth_clamped = _np.clip(depth_smooth, 0.01, 0.99)
+
+    # 5. Rescale back to metric depth range for unprojection
+    depth_processed = depth_clamped * (depth_max - depth_min) + depth_min
+
+    # Convert back to torch tensor with original shape
+    depth_processed_tensor = torch.from_numpy(depth_processed).unsqueeze(-1).to(depth_np.device)
+    if depth_np.dim() == 4:
+        depth_processed_tensor = depth_processed_tensor.unsqueeze(0)
+
+    # Unproject to world points (S,H,W,3) numpy - using PROCESSED depth
+    world_points = unproject_depth_map_to_point_map(depth_processed_tensor, extr_np, intr_np)
 
     # Prepare masks: valid depth (>0) and finite coordinates
-    import numpy as _np
-    depth_arr = depth_np.detach().cpu().numpy() if hasattr(depth_np, "detach") else _np.asarray(depth_np)
-    depth_arr = depth_arr.squeeze(-1)  # (S,H,W)
-    valid_depth = depth_arr > 0.0
+    # Use processed depth for validity mask
+    valid_depth = depth_processed > 0.0
 
     pts = world_points.reshape(-1, 3).astype(_np.float32)
     finite_mask = _np.isfinite(pts).all(axis=1)
@@ -225,12 +265,24 @@ def main():
     pos_path = os.path.join(args.out, "positions.f32")
     pts.astype("<f4").tofile(pos_path)
 
+    # Save processed depth map as debug visualization
+    depth_vis = (depth_processed / depth_processed.max() * 255.0).astype(_np.uint8)
+    depth_vis_path = os.path.join(args.out, "depth_processed.png")
+    cv2.imwrite(depth_vis_path, depth_vis)
+
     meta = {
         "image": os.path.relpath(args.image),
         "width": int(W),
         "height": int(H),
         "positions_f32": os.path.relpath(pos_path),
         "num_points": int(pts.shape[0]),
+        "post_processing": {
+            "gamma_remap": gamma,
+            "bilateral_filter": {"d": 5, "sigmaColor": 25, "sigmaSpace": 25},
+            "depth_clamp": {"min": 0.01, "max": 0.99},
+            "depth_range": {"min": float(depth_min), "max": float(depth_max)},
+        },
+        "depth_processed_png": os.path.relpath(depth_vis_path),
     }
 
     # Optional colors: use preprocessed image to match geometry grid

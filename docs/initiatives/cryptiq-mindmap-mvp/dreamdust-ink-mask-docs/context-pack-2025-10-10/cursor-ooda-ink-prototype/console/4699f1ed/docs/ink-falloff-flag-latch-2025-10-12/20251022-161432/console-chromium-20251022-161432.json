@@ -1,0 +1,1757 @@
+[
+  {
+    "ts": 1761149676708,
+    "type": "log",
+    "text": "[PC] ink debug {\"vertexInkOk\":false,\"uViewport\":[1280,800],\"inkIntensity\":1}"
+  },
+  {
+    "ts": 1761149676710,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":0,\"stageUvCount\":0,\"simStageUvCount\":0,\"simKey\":null}"
+  },
+  {
+    "ts": 1761149676712,
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {\"uReveal\":1,\"uAlphaFloor\":1,\"uPointBaseSize\":8,\"uMinSize\":4,\"uMaxSize\":14}"
+  },
+  {
+    "ts": 1761149676712,
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":\"TBD\",\"depthWrite\":\"TBD\",\"blending\":\"TBD\",\"applied\":false}"
+  },
+  {
+    "ts": 1761149676725,
+    "type": "log",
+    "text": "[PC] prebaked positions {\"bytes\":2175600,\"count\":181300,\"sample\":[-0.5670044422149658,-0.3836313486099243,0.853047251701355,-0.5648150444030762,-0.38363149762153625,0.8530470728874207]}"
+  },
+  {
+    "ts": 1761149676727,
+    "type": "log",
+    "text": "[PC] prebaked AABB {\"min\":[-1.067277193069458,-0.7974746823310852,0.29305800795555115],\"max\":[1.2338374853134155,0.19435033202171326,2.747392177581787],\"extent\":[2.3011146783828735,0.9918250143527985,2.454334169626236],\"maxExtent\":2.454334169626236,\"scale\":407.44247966538614,\"radius\":500}"
+  },
+  {
+    "ts": 1761149676730,
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied"
+  },
+  {
+    "ts": 1761149676733,
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon"
+  },
+  {
+    "ts": 1761149676740,
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required"
+  },
+  {
+    "ts": 1761149676740,
+    "type": "log",
+    "text": "[PC] instances: 90650"
+  },
+  {
+    "ts": 1761149676740,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":90650,\"stageUvCount\":181300,\"simStageUvCount\":0,\"simKey\":null}"
+  },
+  {
+    "ts": 1761149676850,
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }"
+  },
+  {
+    "ts": 1761149676851,
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0\"}"
+  },
+  {
+    "ts": 1761149676851,
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0\"}"
+  },
+  {
+    "ts": 1761149676852,
+    "type": "warn",
+    "text": "[PC] Preset drifted at frame 1: {\"expected\":{\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168]},\"actual\":{\"position\":[-65.7370000000001,103.05399999999997,-681.379],\"target\":null}}"
+  },
+  {
+    "ts": 1761149676854,
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {\"width\":256,\"height\":256,\"needsUpdate\":false}"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "info",
+    "text": "[PC] scene-candidates {\"candidates\":{\"useThreeScene\":\"31750d0f-ad7a-4ecb-a656-f2d72c00ac0a\",\"internalScene\":null,\"internalActiveScene\":null,\"rendererScene\":null,\"capturedRenderScene\":null},\"renderCallCount\":0}"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "log",
+    "text": "[PC] attach controls to [object HTMLCanvasElement]"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "log",
+    "text": "[DEBUG] Camera position check:"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "log",
+    "text": "  Expected: [-65.737,103.054,-681.379]"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "log",
+    "text": "  Actual: [-65.737,103.054,-681.379]"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "log",
+    "text": "  Match: true"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168],\"actualPosition\":[-65.737,103.054,-681.379],\"actualTarget\":null}"
+  },
+  {
+    "ts": 1761149676863,
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {\"invSize\":[0.00390625,0.00390625],\"velToNdc\":0.028,\"inkBlend\":0.78}"
+  },
+  {
+    "ts": 1761149676863,
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":false,\"depthWrite\":false,\"blending\":2,\"applied\":true}"
+  },
+  {
+    "ts": 1761149676863,
+    "type": "log",
+    "text": "[Dreamdust] reveal start {\"duration\":2}"
+  },
+  {
+    "ts": 1761149676863,
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {\"uTempRadius\":0.14,\"uTempFalloffOn\":1,\"forceScale\":220,\"velToNdc\":0.028,\"inkBlend\":0.78,\"fluidSize\":256,\"fluidIters\":10}"
+  },
+  {
+    "ts": 1761149676864,
+    "type": "info",
+    "text": "[PC] scene-traversal {\"pointsFound\":true,\"nodeCount\":8,\"nodes\":[{\"type\":\"Scene\",\"visible\":true,\"layers\":1,\"children\":3,\"path\":\"Scene\"},{\"type\":\"AmbientLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/AmbientLight\"},{\"type\":\"DirectionalLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/DirectionalLight\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group/Group\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group/Group/Group\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group/Group/Group/Group\"},{\"type\":\"Points\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Group/Group/Group/Group/Points\",\"isPoints\":true,\"materialUuid\":\"3e8708dd-54d8-42f0-af87-f89507a919e1\",\"geometryPositionCount\":90650}]}"
+  },
+  {
+    "ts": 1761149676865,
+    "type": "info",
+    "text": "[PC] render-scene-captured {\"uuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"childCount\":1}"
+  },
+  {
+    "ts": 1761149676865,
+    "type": "info",
+    "text": "[PC] render-list {\"pointsPresent\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676870,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":0,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":1,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676872,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":1,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":1,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676875,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":2,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":1,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676875,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":3,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":1,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676875,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":4,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":1,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676875,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":5,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":1,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676882,
+    "type": "info",
+    "text": "[PC] fluid init {\"size\":256,\"iters\":10}"
+  },
+  {
+    "ts": 1761149676883,
+    "type": "info",
+    "text": "[PC] points-mesh {\"type\":\"Points\",\"visible\":true,\"frustumCulled\":false,\"renderOrder\":1,\"parentType\":\"Group\",\"matrixWorldDet\":1,\"positionCount\":90650,\"colorCount\":90650,\"uvCount\":0,\"depthCount\":0,\"materialUuid\":\"3e8708dd-54d8-42f0-af87-f89507a919e1\"}"
+  },
+  {
+    "ts": 1761149676883,
+    "type": "info",
+    "text": "[PC] render-info {\"calls\":1,\"points\":0,\"triangles\":2,\"mat\":{\"uuid\":\"3e8708dd-54d8-42f0-af87-f89507a919e1\",\"blending\":2,\"depthTest\":false,\"depthWrite\":false,\"programCacheKey\":\"dreamdust-gauss-0\"},\"uniforms\":{\"uPointBaseSize\":8,\"uMinSize\":4,\"uMaxSize\":14,\"uAlphaFloor\":1,\"uVelToNdc\":0.028,\"uInkBlend\":0.78,\"uDepthNormScale\":0.00076,\"uDepthBias\":1.8},\"timeout\":false,\"framesWaited\":2}"
+  },
+  {
+    "ts": 1761149676884,
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }"
+  },
+  {
+    "ts": 1761149676899,
+    "type": "warn",
+    "text": "[PC] Preset drifted at frame 4: {\"expected\":{\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168]},\"actual\":{\"position\":[40.09112090134561,-62.84969459158883,415.553613165158],\"target\":[-62.924,103.948,-656.168]}}"
+  },
+  {
+    "ts": 1761149676900,
+    "type": "info",
+    "text": "[PC] render-list {\"pointsPresent\":false,\"opaqueCount\":1,\"transparentCount\":0,\"opaqueSample\":[{\"type\":\"Mesh\",\"id\":23,\"uuid\":\"f60a0d79-4b56-490a-ad20-5b65561ebc44\",\"materialUuid\":\"ae26936b-970f-4e38-b562-2f6999f6ce1d\"}],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676911,
+    "type": "error",
+    "text": "THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: ShaderMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\u0000\n\nFRAGMENT\n\nERROR: 0:382: 'gl_FragColor' : undeclared identifier\nERROR: 0:382: 'assign' : l-value required (can't modify a const)\nERROR: 0:382: '=' : dimension mismatch\nERROR: 0:382: 'assign' : cannot convert from 'highp 4-component vector of float' to 'const highp float'\n\u0000\n\n  377:   color = dreamdustACESFilmic(color);\n  378: \n  379:   color = dreamdustApplyGamma(color, uGamma);\n  380: \n  381:   // Premultiplied alpha output\n> 382:   gl_FragColor = vec4(color * alpha, alpha);\n  383: }\n  384: "
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] points-after-render {\"calls\":2,\"points\":90650,\"triangles\":2,\"material\":{\"uuid\":\"3e8708dd-54d8-42f0-af87-f89507a919e1\",\"blending\":2,\"depthTest\":false,\"depthWrite\":false}}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":0,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":2,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":1,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":2,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":2,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":2,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":3,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":2,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":4,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":2,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":5,\"sceneUuid\":\"0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c\",\"sceneChildCount\":2,\"matchesRenderScene\":true,\"cameraType\":\"OrthographicCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false,\"opaqueCount\":0,\"transparentCount\":0,\"opaqueSample\":[],\"transparentSample\":[]}"
+  },
+  {
+    "ts": 1761149676710,
+    "type": "log",
+    "text": "[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}"
+  },
+  {
+    "ts": 1761149676711,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 0, stageUvCount: 0, simStageUvCount: 0, simKey: null}"
+  },
+  {
+    "ts": 1761149676712,
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}"
+  },
+  {
+    "ts": 1761149676712,
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: TBD, depthWrite: TBD, blending: TBD, applied: false}"
+  },
+  {
+    "ts": 1761149676734,
+    "type": "log",
+    "text": "[PC] prebaked positions {bytes: 2175600, count: 181300, sample: Array(6)}"
+  },
+  {
+    "ts": 1761149676734,
+    "type": "log",
+    "text": "[PC] prebaked AABB {min: Array(3), max: Array(3), extent: Array(3), maxExtent: 2.454334169626236, scale: 407.44247966538614}"
+  },
+  {
+    "ts": 1761149676734,
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied"
+  },
+  {
+    "ts": 1761149676734,
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon"
+  },
+  {
+    "ts": 1761149676743,
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required"
+  },
+  {
+    "ts": 1761149676744,
+    "type": "log",
+    "text": "[PC] instances: 90650"
+  },
+  {
+    "ts": 1761149676744,
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 90650, stageUvCount: 181300, simStageUvCount: 0, simKey: null}"
+  },
+  {
+    "ts": 1761149676794,
+    "type": "warning",
+    "text": "[.WebGL-0x10c001dc700]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "ts": 1761149676845,
+    "type": "warning",
+    "text": "[.WebGL-0x10c001dc700]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "ts": 1761149676845,
+    "type": "warning",
+    "text": "[.WebGL-0x10c001dc700]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "ts": 1761149676845,
+    "type": "warning",
+    "text": "[.WebGL-0x10c001dc700]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  },
+  {
+    "ts": 1761149676851,
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }"
+  },
+  {
+    "ts": 1761149676852,
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+  },
+  {
+    "ts": 1761149676852,
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+  },
+  {
+    "ts": 1761149676853,
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 1: {expected: Object, actual: Object}"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {width: 256, height: 256, needsUpdate: false}"
+  },
+  {
+    "ts": 1761149676855,
+    "type": "info",
+    "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 0}"
+  },
+  {
+    "ts": 1761149676857,
+    "type": "log",
+    "text": "[PC] attach controls to JSHandle@node"
+  },
+  {
+    "ts": 1761149676858,
+    "type": "log",
+    "text": "[DEBUG] Camera position check:"
+  },
+  {
+    "ts": 1761149676858,
+    "type": "log",
+    "text": "  Expected: [-65.737, 103.054, -681.379]"
+  },
+  {
+    "ts": 1761149676858,
+    "type": "log",
+    "text": "  Actual: [-65.737, 103.054, -681.379]"
+  },
+  {
+    "ts": 1761149676858,
+    "type": "log",
+    "text": "  Match: true"
+  },
+  {
+    "ts": 1761149676858,
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {position: Array(3), target: Array(3), actualPosition: Array(3), actualTarget: null}"
+  },
+  {
+    "ts": 1761149676864,
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}"
+  },
+  {
+    "ts": 1761149676864,
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}"
+  },
+  {
+    "ts": 1761149676864,
+    "type": "log",
+    "text": "[Dreamdust] reveal start {duration: 2}"
+  },
+  {
+    "ts": 1761149676865,
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}"
+  },
+  {
+    "ts": 1761149676865,
+    "type": "info",
+    "text": "[PC] scene-traversal {pointsFound: true, nodeCount: 8, nodes: Array(8)}"
+  },
+  {
+    "ts": 1761149676865,
+    "type": "info",
+    "text": "[PC] render-scene-captured {uuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, childCount: 1}"
+  },
+  {
+    "ts": 1761149676866,
+    "type": "info",
+    "text": "[PC] render-list {pointsPresent: false, opaqueCount: 0, transparentCount: 0, opaqueSample: Array(0), transparentSample: Array(0)}"
+  },
+  {
+    "ts": 1761149676870,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 0, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 1, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676872,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 1, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 1, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676875,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 2, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 1, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676875,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 3, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 1, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676876,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 4, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 1, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676876,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 5, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 1, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676882,
+    "type": "info",
+    "text": "[PC] fluid init {size: 256, iters: 10}"
+  },
+  {
+    "ts": 1761149676884,
+    "type": "info",
+    "text": "[PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, parentType: Group}"
+  },
+  {
+    "ts": 1761149676884,
+    "type": "info",
+    "text": "[PC] render-info {calls: 1, points: 0, triangles: 2, mat: Object, uniforms: Object}"
+  },
+  {
+    "ts": 1761149676885,
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }"
+  },
+  {
+    "ts": 1761149676900,
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 4: {expected: Object, actual: Object}"
+  },
+  {
+    "ts": 1761149676900,
+    "type": "info",
+    "text": "[PC] render-list {pointsPresent: false, opaqueCount: 1, transparentCount: 0, opaqueSample: Array(1), transparentSample: Array(0)}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "error",
+    "text": "THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: ShaderMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\u0000\n\nFRAGMENT\n\nERROR: 0:382: 'gl_FragColor' : undeclared identifier\nERROR: 0:382: 'assign' : l-value required (can't modify a const)\nERROR: 0:382: '=' : dimension mismatch\nERROR: 0:382: 'assign' : cannot convert from 'highp 4-component vector of float' to 'const highp float'\n\u0000\n\n  377:   color = dreamdustACESFilmic(color);\n  378: \n  379:   color = dreamdustApplyGamma(color, uGamma);\n  380: \n  381:   // Premultiplied alpha output\n> 382:   gl_FragColor = vec4(color * alpha, alpha);\n  383: }\n  384: "
+  },
+  {
+    "ts": 1761149676912,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] points-after-render {calls: 2, points: 90650, triangles: 2, material: Object}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 0, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 2, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676912,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 1, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 2, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 2, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 2, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 3, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 2, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 4, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 2, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 5, sceneUuid: 0e4cc8bc-ca3c-4391-807f-24cd81aa8a1c, sceneChildCount: 2, matchesRenderScene: true, cameraType: OrthographicCamera}"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676913,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676914,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676914,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676914,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676924,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676945,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676946,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676946,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676946,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676950,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676966,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676966,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676966,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676966,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676966,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676966,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676966,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676967,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676967,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676967,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676967,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676967,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676967,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149676984,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677000,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677001,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677001,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677001,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677001,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677001,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677017,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677033,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677033,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677033,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677033,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677033,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677034,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677050,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677066,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677066,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677066,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677067,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677083,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677100,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677116,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677116,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677116,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677116,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677117,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677133,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677150,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677150,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677150,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677150,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677150,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677151,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677151,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677151,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677151,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677151,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677151,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677152,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677152,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677167,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677184,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  },
+  {
+    "ts": 1761149677204,
+    "type": "warning",
+    "text": "WebGL: INVALID_OPERATION: useProgram: program not valid"
+  }
+]

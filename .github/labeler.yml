@@ -1,0 +1,4 @@
+docs:
+  - "docs/**"
+templates:
+  - "docs/**/_template.*.md"
