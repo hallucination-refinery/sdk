@@ -34,3 +34,31 @@ trusted-evidence-root: cursor-ooda-ink-prototype/context-pack-2025-10-15
 2. **Capability telemetry** – Extend the existing render-info logger to report `renderer.capabilities.maxVertexTextures` and WebGL version so future smokes capture whether the environment can sustain the fluid path.【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L904-L974】【F:docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md†L12-L48】
 3. **Baseline verification** – Run the smoke harness on 15ce295c (archiving console + screenshot under the trusted pack) to confirm visibility before implementing fixes; this anchors the rollback decision.
 4. **If fluid must remain optional** – Defer solver initialization when the disable flag is active to avoid WebGL2-only code paths in fallback scenarios.【F:apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx†L55-L65】【F:apps/cryptiq-mindmap-demo/app/components/dreamdust/fluid/FluidSim.ts†L82-L149】
+
+## Audit Findings — 2025-10-23
+
+### Methodology
+- Reviewed this report for explicit claims, then cross-referenced supporting artifacts inside `context-pack-2025-10-15/`.
+- Inspected MCP console captures for commit `b675fa50` to verify run-time telemetry (`cursor-ooda-ink-prototype/console/b675fa50/docs/ink-falloff-flag-latch-2025-10-12/20251023-160648/console-mcp.json`).
+- Consulted in-pack technical notes and audits (`context-pack-2025-10-15/05-state-and-uniforms-audit.md`, `context-pack-2025-10-15/02-architecture-overview.md`, `context-pack-2025-10-15/10-latest-smoke-evidence.md`) to confirm shader and stage behaviors.
+- Searched the context pack for baseline commit evidence (`rg 15ce295c`) to validate reported gaps.
+
+### Findings
+- **PASS**: MCP smoke for `b675fa50` logs `[PC] render-info {calls: 0, points: 0}` and `[PC] points-mesh {visible: true...}`, confirming the documented zero-draw failure despite the mesh being mounted (`cursor-ooda-ink-prototype/console/b675fa50/docs/ink-falloff-flag-latch-2025-10-12/20251023-160648/console-mcp.json:174` and `:179`; summarised in `context-pack-2025-10-15/10-latest-smoke-evidence.md:12`).
+- **PASS**: The diagnostic guard skipping the fluid driver is evidenced by `[PC] fluid-step skipped {reason: diagnostic-disable}`, matching the narrative that the solver is disabled while uniforms continue to bind (`cursor-ooda-ink-prototype/console/b675fa50/docs/ink-falloff-flag-latch-2025-10-12/20251023-160648/console-mcp.json:159`).
+- **PASS**: In-pack audits document the active uniform bridge and vertex sampling of `uVelocity`, supporting the statements about the material relying on velocity textures (`context-pack-2025-10-15/05-state-and-uniforms-audit.md:345`, `:379`, and `context-pack-2025-10-15/03-rendering-pipeline-trace.md:9`).
+- **PARTIAL**: The claim that the regression introduces a WebGL2 + vertex-texture dependency is consistent with the architecture overview (`context-pack-2025-10-15/02-architecture-overview.md:19`) and shader audit, but no artifact in this pack links that requirement specifically to commits `15ce295c → 6836ff45` or demonstrates failure on a capability-limited device.
+- **PARTIAL**: Code-diff bullets cite repository paths (`apps/cryptiq-mindmap-demo/...`), yet the context pack lacks an embedded diff or snapshot for those files tied to the regression range; only secondary documentation echoes the behaviors.
+- **FAIL**: The assertion that 15ce295c is a “known good” visible baseline is unsupported here—no smoke artifacts or field notes for that commit exist inside `context-pack-2025-10-15/` (search returned no matches).
+
+### Gaps / Risks
+- Baseline commit 15ce295c lacks archived smoke output, leaving the “known good” assumption unverified.
+- Diff-specific evidence for commits `15ce295c → 6836ff45` is absent; the report leans on live source references outside the trusted context pack.
+- Root-cause reasoning cites hardware capability limits without correlating telemetry (e.g., max vertex textures) from the failing smoke runs.
+- Heavy reliance on repository paths (`apps/cryptiq-mindmap-demo/...`) may drift if the code moves; the context pack has no immutable excerpts for those sections.
+
+### Recommendations
+- Capture and archive a fresh smoke run for 15ce295c within this context pack to validate the baseline claim.
+- Attach or excerpt the relevant diffs/shader snippets inside the pack (or link to existing audit excerpts) so future readers can trace the regression without leaving the trusted scope.
+- Extend smoke logging to include capability probes (`renderer.capabilities.maxVertexTextures`, WebGL version) to substantiate the capability-failure hypothesis using in-pack evidence.
+- When referencing source files, mirror the critical snippets in the context pack (as done in `05-state-and-uniforms-audit.md`) to keep the investigation traceable even if the repository evolves.

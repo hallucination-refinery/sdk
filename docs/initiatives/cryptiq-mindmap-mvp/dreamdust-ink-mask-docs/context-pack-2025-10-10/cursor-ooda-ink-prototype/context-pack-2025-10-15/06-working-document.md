@@ -1,53 +1,53 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-23T16:06:48Z
-commit: b675fa50
+date: 2025-10-23T19:53:35Z
+commit: ed09b59e
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251023-160648`) smoke on commit `b675fa50` (enhanced camera diagnostic) **DIAGNOSTIC IMPLEMENTATION FAILURE** — the enhanced camera diagnostic is **still incomplete**! docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
-- **Enhanced camera diagnostic findings**: 
-  - `[PC] camera-diag {enabled: true, cameraPosition: Array(3), target: Array(3), radius: 500, near: 0.1}` appears — **BUT MISSING CRITICAL FIELDS!**
-  - **❌ MISSING `intersectsFrustum: true/false` field** — **THE CRITICAL FIELD IS MISSING!**
-  - **❌ MISSING numeric vectors** — Still showing `Array(3)` instead of `[x, y, z]`
-  - **❌ MISSING distance field** — No `distance: <number>` field
-  - All previous fixes remain intact (scene attachment, shader compilation, fluid simulation disabled)
-  - **❌ POINT CLOUD STILL NOT VISIBLE** — **Cannot determine frustum intersection status**
-  - `[PC] render-info {calls: 0, points: 0, triangles: 0}` — **Still 0 points rendered**
-- Acceptance gate status: FAIL (diagnostic implementation) — enhanced camera diagnostic is **still incomplete**.
+- MCP (`20251023-195335`) smoke on commit `ed09b59e` (vertex texture fix - USE_VELOCITY_DISP guard) **VERTEX TEXTURE FIX FAILED** — the `USE_VELOCITY_DISP` guard fix did **not restore particle visibility**! docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
+- **Vertex texture fix findings**: 
+  - `[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}` — **Vertex texture unavailable confirmed**
+  - `[PC] render-info {calls: 0, points: 0, triangles: 0, mat: Object, uniforms: Object}` — **Still 0 points rendered**
+  - All previous diagnostics working (scene attachment, shader compilation, fluid simulation disabled, shader output, camera diagnostic)
+  - **❌ POINT CLOUD STILL NOT VISIBLE** — **Vertex texture fix did not work**
+  - **❌ VERTEX TEXTURE FIX FAILED** — `USE_VELOCITY_DISP` guard did not restore particle visibility
+- Acceptance gate status: FAIL (still stuck) — vertex texture fix did not work.
 
 **B) Reflection**
-- The enhanced camera diagnostic is **still incomplete** - it's logging camera parameters but not performing the actual frustum intersection test or logging the result.
+- The vertex texture fix did **not work** - despite confirming vertex texture unavailability and applying the `USE_VELOCITY_DISP` guard, we still get zero render calls and no visible points.
 - We've successfully ruled out:
   - ✅ Scene attachment issues (fixed)
   - ✅ Shader compilation issues (fixed)
   - ✅ Fluid simulation interference (ruled out)
   - ✅ Shader output issues (ruled out)
-- This is **DIAGNOSTIC IMPLEMENTATION FAILURE** — we need to fix the enhanced camera diagnostic implementation before we can proceed.
+  - ✅ Vertex texture issues (ruled out - fix did not work)
+- This is **VERTEX TEXTURE FIX FAILED** — we need to investigate alternative root causes.
 
 **C) Hypotheses & unknowns**
-- P≈0.60 — The issue could be camera/viewport positioning (points are outside visible area) — **BLOCKED BY DIAGNOSTIC IMPLEMENTATION FAILURE**
-- P≈0.40 — The issue could be point size (points are too small to see)
-- P≈0.30 — The issue could be blending/depth state (rendering state prevents visibility)
-- P≈0.20 — The issue could be color/alpha (points are invisible due to color/alpha values)
+- P≈0.60 — The issue could be camera/viewport positioning (points are outside visible area) — **CAMERA DIAGNOSTIC INCOMPLETE**
+- P≈0.50 — The issue could be point size (points are too small to see)
+- P≈0.40 — The issue could be blending/depth state (rendering state prevents visibility)
+- P≈0.30 — The issue could be material issues (shader material has other problems beyond vertex textures)
+- P≈0.20 — The issue could be WebGL context issues (other WebGL limitations blocking rendering)
 
 **D) Golden Path**
-- Milestone 16 (P≈1.00): **Fix enhanced camera diagnostic implementation** — Must complete before proceeding
-- Milestone 17 (P≈0.60): Analyze camera frustum intersection status to determine if camera positioning is correct
-- Milestone 18 (P≈0.40): Add point size diagnostics to check if points are too small to see
-- Milestone 19 (P≈0.30): Add blending/depth state diagnostics to check rendering state
-- Milestone 20 (P≈0.20): Add color/alpha diagnostics to check if points are invisible due to color/alpha
+- Milestone 17 (P≈0.60): **Fix camera diagnostic implementation** — Complete the camera diagnostic to determine frustum intersection
+- Milestone 18 (P≈0.50): **Add point size diagnostics** — Check if points are too small to see
+- Milestone 19 (P≈0.40): **Add blending/depth state diagnostics** — Check rendering state
+- Milestone 20 (P≈0.30): **Add material diagnostics** — Check for other shader material problems
+- Milestone 21 (P≈0.20): **Add WebGL context diagnostics** — Check for other WebGL limitations
 
 **E) Single change to run next**
-- **Fix the enhanced camera diagnostic implementation** to properly serialize vectors, compute distance, and perform frustum intersection test.
+- **Fix the camera diagnostic implementation** to properly serialize vectors, compute distance, and perform frustum intersection test.
 
 **F) Run plan**
-- Fix the enhanced camera diagnostic to:
+- Fix the camera diagnostic to:
   1. **Serialize camera/target vectors properly** — Show `[x, y, z]` instead of `Array(3)`
   2. **Compute and log distance** — Add `distance: <number>` field
   3. **Perform frustum intersection test** — Add `intersectsFrustum: true/false` field
 - Rebuild & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`
-- MCP + Playwright smoke: same URL with `forceVisible=1`, capture enhanced camera diagnostic
+- MCP + Playwright smoke: same URL with `forceVisible=1`, capture camera diagnostic
 - Verify the diagnostic shows all required fields
 - Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`
 - Update `10-latest-smoke-evidence.md` with findings; document success or next debugging step
@@ -60,4 +60,4 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
   - **`intersectsFrustum: true/false`** ← **THE CRITICAL FIELD!**
 - ✅ No shader compilation errors in console
 - ❌ Point cloud still not visible (expected)
-- 🔍 Enhanced camera diagnostic logs reveal frustum intersection status and next debugging step
+- 🔍 Camera diagnostic logs reveal frustum intersection status and next debugging step
