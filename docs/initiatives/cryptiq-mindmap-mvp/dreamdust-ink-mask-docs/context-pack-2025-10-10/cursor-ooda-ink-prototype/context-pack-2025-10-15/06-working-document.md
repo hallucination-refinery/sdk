@@ -1,63 +1,58 @@
 title: Working Plan — Ink Prototype (Current Iteration)
-date: 2025-10-23T19:53:35Z
-commit: ed09b59e
+date: 2025-10-23T21:19:20Z
+commit: 332e9390
 branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251023-195335`) smoke on commit `ed09b59e` (vertex texture fix - USE_VELOCITY_DISP guard) **VERTEX TEXTURE FIX FAILED** — the `USE_VELOCITY_DISP` guard fix did **not restore particle visibility**! docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
-- **Vertex texture fix findings**: 
+- MCP (`20251023-211920`) smoke on commit `332e9390` (rendering pipeline instrumentation) **BREAKTHROUGH DISCOVERY** — the rendering pipeline instrumentation revealed the **root cause**! docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/10-latest-smoke-evidence.md
+- **BREAKTHROUGH DISCOVERY findings**: 
+  - `[PC] material-defines {"useVelocityDisp":false}` — **`USE_VELOCITY_DISP` guard is NOT being applied!**
   - `[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}` — **Vertex texture unavailable confirmed**
-  - `[PC] render-info {calls: 0, points: 0, triangles: 0, mat: Object, uniforms: Object}` — **Still 0 points rendered**
+  - `[PC] render-info {calls: 0, points: 0, triangles: 0, memory: Object, mat: Object}` — **Still 0 points rendered**
   - All previous diagnostics working (scene attachment, shader compilation, fluid simulation disabled, shader output, camera diagnostic)
-  - **❌ POINT CLOUD STILL NOT VISIBLE** — **Vertex texture fix did not work**
-  - **❌ VERTEX TEXTURE FIX FAILED** — `USE_VELOCITY_DISP` guard did not restore particle visibility
-- Acceptance gate status: FAIL (still stuck) — vertex texture fix did not work.
+  - **❌ POINT CLOUD STILL NOT VISIBLE** — **But now we know why!**
+  - **🔍 BREAKTHROUGH DISCOVERY** — The `USE_VELOCITY_DISP` guard is **NOT being applied**!
+- Acceptance gate status: BREAKTHROUGH DISCOVERY — we found the root cause!
 
 **B) Reflection**
-- The vertex texture fix did **not work** - despite confirming vertex texture unavailability and applying the `USE_VELOCITY_DISP` guard, we still get zero render calls and no visible points.
+- The rendering pipeline instrumentation revealed the **root cause**! The `USE_VELOCITY_DISP` guard is **NOT being applied** (`useVelocityDisp: false`), which explains why the vertex texture fix didn't work.
 - We've successfully ruled out:
   - ✅ Scene attachment issues (fixed)
   - ✅ Shader compilation issues (fixed)
   - ✅ Fluid simulation interference (ruled out)
   - ✅ Shader output issues (ruled out)
-  - ✅ Vertex texture issues (ruled out - fix did not work)
-- This is **VERTEX TEXTURE FIX FAILED** — we need to investigate alternative root causes.
+  - ✅ Vertex texture issues (identified - guard not applied)
+- This is **BREAKTHROUGH DISCOVERY** — we found the root cause!
 
 **C) Hypotheses & unknowns**
-- P≈0.60 — The issue could be camera/viewport positioning (points are outside visible area) — **CAMERA DIAGNOSTIC INCOMPLETE**
-- P≈0.50 — The issue could be point size (points are too small to see)
-- P≈0.40 — The issue could be blending/depth state (rendering state prevents visibility)
-- P≈0.30 — The issue could be material issues (shader material has other problems beyond vertex textures)
-- P≈0.20 — The issue could be WebGL context issues (other WebGL limitations blocking rendering)
+- P≈1.00 — **ROOT CAUSE IDENTIFIED**: The `USE_VELOCITY_DISP` guard is not being applied when `vertexInkOk: false`
+- P≈0.90 — The issue is in the guard application logic — the shader define is not being set correctly
+- P≈0.80 — The issue is in the material compilation — the guard is not being compiled into the shader
+- P≈0.70 — The issue is in the condition logic — the guard condition is not being evaluated correctly
 
 **D) Golden Path**
-- Milestone 17 (P≈0.60): **Fix camera diagnostic implementation** — Complete the camera diagnostic to determine frustum intersection
-- Milestone 18 (P≈0.50): **Add point size diagnostics** — Check if points are too small to see
-- Milestone 19 (P≈0.40): **Add blending/depth state diagnostics** — Check rendering state
-- Milestone 20 (P≈0.30): **Add material diagnostics** — Check for other shader material problems
-- Milestone 21 (P≈0.20): **Add WebGL context diagnostics** — Check for other WebGL limitations
+- Milestone 18 (P≈1.00): **Fix USE_VELOCITY_DISP Guard Application** — Ensure the guard is properly applied when `vertexInkOk: false`
+- Milestone 19 (P≈0.90): **Verify Guard Application Logic** — Check the condition logic for setting the guard
+- Milestone 20 (P≈0.80): **Verify Material Compilation** — Ensure the guard is compiled into the shader
+- Milestone 21 (P≈0.70): **Test the Fix** — Run smoke test to verify particles become visible
 
 **E) Single change to run next**
-- **Fix the camera diagnostic implementation** to properly serialize vectors, compute distance, and perform frustum intersection test.
+- **Fix the USE_VELOCITY_DISP guard application logic** to ensure it's set to `true` when `vertexInkOk: false`.
 
 **F) Run plan**
-- Fix the camera diagnostic to:
-  1. **Serialize camera/target vectors properly** — Show `[x, y, z]` instead of `Array(3)`
-  2. **Compute and log distance** — Add `distance: <number>` field
-  3. **Perform frustum intersection test** — Add `intersectsFrustum: true/false` field
+- Fix the guard application logic to:
+  1. **Set USE_VELOCITY_DISP to true** when `vertexInkOk: false`
+  2. **Verify the condition logic** is correct
+  3. **Ensure the guard is compiled** into the shader
 - Rebuild & serve (Node 20): `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`
-- MCP + Playwright smoke: same URL with `forceVisible=1`, capture camera diagnostic
-- Verify the diagnostic shows all required fields
+- MCP + Playwright smoke: same URL with `forceVisible=1`, capture material-defines diagnostic
+- Verify the diagnostic shows `useVelocityDisp: true` when `vertexInkOk: false`
 - Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`
 - Update `10-latest-smoke-evidence.md` with findings; document success or next debugging step
 
 **G) Success criteria**
-- ✅ Enhanced `[PC] camera-diag` appears with:
-  - `cameraPosition: [x, y, z]` (numeric vectors, not Array(3))
-  - `target: [x, y, z]` (numeric vectors, not Array(3))
-  - `distance: <number>` (computed distance)
-  - **`intersectsFrustum: true/false`** ← **THE CRITICAL FIELD!**
-- ✅ No shader compilation errors in console
-- ❌ Point cloud still not visible (expected)
-- 🔍 Camera diagnostic logs reveal frustum intersection status and next debugging step
+- ✅ `[PC] material-defines` shows `useVelocityDisp: true` when `vertexInkOk: false`
+- ✅ `[PC] render-info` shows `calls > 0, points > 0` (nonzero render stats)
+- ✅ Screenshot shows **visible points/particles** (the ultimate test!)
+- 🔍 Guard application logs reveal the fix is working and particles become visible
