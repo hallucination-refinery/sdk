@@ -391,3 +391,14 @@ That sequence keeps us honest with the OODA cadence, yet acknowledges the severi
 **Verification Plan**
 - Next smoke run must surface `[PC] camera-diag { ... }` with fov/near/far/distance/intersectsFrustum fields. Snapshot the console and screenshot as usual.
 - After capturing evidence, toggle `CAMERA_DIAGNOSTIC_ACTIVE` back to false to avoid noisy logs.
+
+# SHADER DOCS AUDIT 9
+
+**Change Executed**
+- Serialized camera vectors in `CameraDiag` and ensured `intersectsFrustum` always logs (`apps/.../PointCloudStage.tsx:1098-1128`).
+
+**Purpose**
+- Remove `Array(3)` placeholders from the MCP capture and guarantee we see a true/false verdict on frustum intersection.
+
+**Verification Plan**
+- Next smoke log should show numeric `cameraPosition`, `target`, `distance`, and `intersectsFrustum`. Once confirmed, revert the diagnostic flag after documenting the outcome.

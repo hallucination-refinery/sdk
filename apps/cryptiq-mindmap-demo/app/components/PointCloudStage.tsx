@@ -1123,16 +1123,21 @@ function CameraDiag({
     } catch {
       /* noop */
     }
-    const position = cam.position
-      ? [cam.position.x, cam.position.y, cam.position.z]
-      : ['TBD']
+    let positionArray: [number, number, number] | null = null
+    if (cam.position && typeof cam.position.toArray === 'function') {
+      positionArray = cam.position.toArray(new Array(3)) as [number, number, number]
+    } else if (cam.position) {
+      positionArray = [cam.position.x ?? 0, cam.position.y ?? 0, cam.position.z ?? 0]
+    }
     const near = typeof cam.near === 'number' ? cam.near : null
     const far = typeof cam.far === 'number' ? cam.far : null
     const fov = typeof cam.fov === 'number' ? cam.fov : null
     targetVecRef.current.set(target[0], target[1], target[2])
-    const distance = cam.position
-      ? cam.position.distanceTo(targetVecRef.current)
-      : null
+    const targetArray = [targetVecRef.current.x, targetVecRef.current.y, targetVecRef.current.z]
+    let distance: number | null = null
+    if (cam.position && typeof cam.position.distanceTo === 'function') {
+      distance = cam.position.distanceTo(targetVecRef.current)
+    }
     let intersects = false
     try {
       const projScreenMatrix = tmpMatrixRef.current
@@ -1149,8 +1154,8 @@ function CameraDiag({
     try {
       console.info('[PC] camera-diag', {
         enabled,
-        cameraPosition: position,
-        target,
+        cameraPosition: positionArray,
+        target: targetArray,
         radius,
         near,
         far,
