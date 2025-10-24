@@ -815,6 +815,9 @@ export function makeDreamdustMaterial(
     /* noop */
   }
   material.needsUpdate = true
+  if (DREAMDUST_DEBUG_FORCE_VELOCITY) {
+    material.version = (material.version ?? 0) + 1
+  }
 
   // CRITICAL FIX: Force shader recompile when USE_GAUSSIAN define changes
   // THREE.js program cache doesn't key by defines alone, so we add explicit cache key
