@@ -141,6 +141,16 @@ tags: [pipeline, uniforms, fluid, shader]
 - **Conclusion**: Points mesh exists with correct material but never enters Three.js render list. Failure occurs in render list population, not shader compilation.
 - **Next diagnostic target**: Track why `gl.renderLists.get()` excludes Points mesh
 
+### Trace – 2025-10-24 03:14 UTC (Commit 456899a0, local manual verification)
+- **Context**: Manual Playwright capture against local dev server (Node 20, `NEXT_DISABLE_LIGHTNINGCSS=1`, instrumentation fix applied). Artifact: `console/456899a0/local-manual-20251024/console-manual-dev.txt`.
+- **Observed logs**:
+  - `[PC] instrumentation render-list override active …` — Render-list override installed.
+  - `[PC] instrumentation points-hook attached …` — `onBeforeRender`/`onAfterRender` hooks wired once mesh mounts.
+  - `[PC] render-timeout {framesWaited: 60, …}` — Render loop exits without draw calls.
+  - **Missing:** `[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end`.
+- **Interpretation**: Instrumentation now attaches (no more silent failure), but render list snapshot still never fires—likely because the retrieved list is empty or not invoked. Points remain absent from draw queue despite hooks being active.
+- **Next diagnostic target**: Adjust render-list inspection (log when list is missing, empty, or retrieved post-render) to expose the precise dropout point.
+
 ## Cross-Links
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/02-architecture-overview.md`
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/01-vision-and-acceptance.md`

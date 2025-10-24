@@ -7,9 +7,18 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1
 ---
 
-Summary: MCP (`20251023-230024`) smoke on commit `b99fe68f` (extended render pipeline instrumentation) — **DIAGNOSTIC IMPLEMENTATION FAILURE**: New render pipeline diagnostics (`[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end`) did NOT appear in console output, indicating the diagnostic implementation needs fixing. However, existing diagnostics confirm the root cause: `useVelocityDisp: false` is the expected state when `vertexInkOk: false`, but the Points mesh never enters the render pipeline.
+Summary:
+- MCP (`20251023-230024`) smoke on commit `b99fe68f` (extended render pipeline instrumentation) — **DIAGNOSTIC IMPLEMENTATION FAILURE**: New render pipeline diagnostics (`[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end`) did NOT appear in console output, indicating the diagnostic implementation needs fixing. Existing diagnostics still showed `useVelocityDisp: false` (expected fallback state) while render calls remained zero.
+- **Manual verification (`20251024-0314`, commit `456899a0`, local dev build on Node 20)** — New instrumentation hooks emit `[PC] instrumentation render-list override active`, `[PC] instrumentation points-hook attached`, and `[PC] render-timeout`, but **`[PC] render-list snapshot` still never appears**, confirming the render queue remains empty even after hook attachment. Evidence: `console/456899a0/local-manual-20251024/console-manual-dev.txt`.
 
-Key console lines (MCP):
+### Manual verification console lines (local dev, 20251024-0314)
+- `[PC] instrumentation render-list override active {timestamp: …}` ← Render-list override now installs successfully
+- `[PC] instrumentation points-hook attached {timestamp: …}` ← Points hooks wired after ref becomes ready
+- `[PC] render-timeout {framesWaited: 60, timestamp: …}` ← Render loop exits without draws (expected for failing run)
+- **Missing:** `[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end` ← Points never added to render list; no render pass logs triggered
+- Console artifact: `console/456899a0/local-manual-20251024/console-manual-dev.txt`
+
+### Key console lines (MCP):
 - `[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}` ← **Vertex texture unavailable confirmed**
 - `[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}`
 - `[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}`
@@ -48,12 +57,7 @@ Decision: **DIAGNOSTIC IMPLEMENTATION FAILURE** — Evidence from console-mcp.js
 5. ❌ **DIAGNOSTIC IMPLEMENTATION FAILURE** — Missing `[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end` probes indicate the new render pipeline diagnostics are not working
 6. ✅ **Scene setup correct** — `[PC] scene-traversal {pointsFound: true}` and `[PC] points-mesh` logs confirm mesh exists and is visible
 
-**BREAKTHROUGH DISCOVERY**: The `USE_VELOCITY_DISP` guard is **NOT being applied** as indicated by `[PC] material-defines {"useVelocityDisp":false}`. This is the root cause of the vertex texture fix failure.
-
-**Next action (Fix guard application logic)**:
-The `USE_VELOCITY_DISP` guard application logic is incorrect. Next steps:
-1. **Fix guard application logic** — Ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
-2. **Fix diagnostic implementation** — Ensure new render pipeline diagnostics (`[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end`) actually fire
-3. **Verify guard application** — Confirm `[PC] material-defines` shows `"useVelocityDisp": true` after fix
-
-The issue is in the guard application logic, not the render pipeline.
+**Updated understanding (20251024 manual verification)**:
+- Shader guard is behaving as expected for fallback hardware (`useVelocityDisp: false`).
+- Render instrumentation now confirms hooks attach, yet the render list remains empty and draw calls stay at zero.
+- Next focus: adjust render-list snapshot logic (and/or capture the internal render-list contents post-render) to prove where the points fall out of the pipeline.

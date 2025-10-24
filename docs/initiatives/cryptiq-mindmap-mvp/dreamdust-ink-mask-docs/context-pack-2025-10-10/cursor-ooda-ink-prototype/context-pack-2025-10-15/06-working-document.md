@@ -5,53 +5,37 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 ---
 
 **A) Where we are**
-- MCP (`20251023-230024`) smoke on commit `b99fe68f` (extended render pipeline instrumentation) — **DIAGNOSTIC IMPLEMENTATION FAILURE**: New render pipeline diagnostics did NOT appear, but existing diagnostics confirm the root cause. See: 10-latest-smoke-evidence.md
-- **Key findings from console-mcp.json**:
-  - `[PC] material-defines {"useVelocityDisp":false}` — **BREAKTHROUGH DISCOVERY: Root cause identified**
-  - `[PC] ink debug {vertexInkOk: false}` — Vertex texture unavailable confirmed
-  - `[PC] render-info {calls: 0, points: 0, triangles: 0}` — Renderer never issues draw calls
-  - **❌ MISSING NEW DIAGNOSTICS**: `[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end` did NOT fire
-  - Points mesh exists (`[PC] scene-traversal {pointsFound: true}`) but never enters render pipeline
-- Acceptance gate status: **DIAGNOSTIC IMPLEMENTATION FAILURE** — New render pipeline diagnostics not working
+- MCP (`20251023-230024`) smoke on commit `b99fe68f` (extended render pipeline instrumentation) — **DIAGNOSTIC IMPLEMENTATION FAILURE**: New render pipeline diagnostics did not appear. Existing probes still show `useVelocityDisp: false` (fallback mode) and zero draw calls. See: `10-latest-smoke-evidence.md`.
+- Manual verification (`20251024-0314`) on commit `456899a0` (Node 20 dev server) — **Instrument hooks attached successfully**, emitting `[PC] instrumentation render-list override active`, `[PC] instrumentation points-hook attached`, and `[PC] render-timeout`, but **no `[PC] render-list snapshot` or `[PC] points-before-render`**. Points mesh still fails to reach render list. Evidence: `console/456899a0/local-manual-20251024/console-manual-dev.txt`.
+- Acceptance gate status: diagnostics partially working (hooks live) yet render queue still empty → continue render pipeline investigation.
 
 **B) Reflection**
-- **BREAKTHROUGH DISCOVERY**: The `USE_VELOCITY_DISP` guard is **NOT being applied** as indicated by `[PC] material-defines {"useVelocityDisp":false}`. This is the root cause of the vertex texture fix failure.
-- We've successfully ruled out:
-  - ✅ Scene attachment issues (mesh exists in scene graph)
-  - ✅ Shader compilation issues (material instantiates with correct defines)
-  - ✅ Fluid simulation interference (disabled via diagnostic flag)
-  - ✅ Shader output issues (solid color diagnostic working)
-  - ✅ Camera positioning issues (camera diagnostic working)
-- **New finding**: The `USE_VELOCITY_DISP` guard application logic is incorrect
+- Shader guard behaves as designed for fallback devices (`useVelocityDisp: false` when `vertexInkOk: false`); the issue lies further down the render pipeline.
+- Instrumentation now confirms the hooks install (`render-list override active`, `points-hook attached`), yet the render list snapshot never fires—indicating the list is either empty or never generated for the points.
+- Remaining suspect: render-list population/visibility logic (culling, render pass selection, renderer info). The diagnostic focus shifts from guard logic to render-stage introspection.
 
 **C) Hypotheses & unknowns**
-- P≈0.95 — **BREAKTHROUGH DISCOVERY**: `USE_VELOCITY_DISP` guard application logic is incorrect
-- P≈0.80 — Diagnostic implementation failure prevents new render pipeline diagnostics from firing
-- P≈0.60 — Guard application logic needs to be fixed to ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
+- P≈0.80 — Render list remains empty because the points mesh is filtered out before list generation (culling/state issue).
+- P≈0.65 — Render list is generated but references a different internal cache; need to tap the active list after `gl.render`.
+- P≈0.50 — Additional renderer state (layers, visibility, render order) suppresses the points even after hooks attach.
 
 **D) Golden Path**
-- Milestone 18: **Fix guard application logic** — Ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
-- Milestone 19: **Fix diagnostic implementation** — Ensure new render pipeline diagnostics (`[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end`) actually fire
-- Milestone 20: **Verify guard application** — Confirm `[PC] material-defines` shows `"useVelocityDisp": true` after fix
-- Milestone 21: **Test visible particles** — Confirm screenshot shows visible points/particles after guard fix
+- Milestone 18: **Capture render list contents post-render** — Augment instrumentation to inspect `gl.renderLists?.get(scene, camera)` immediately after `gl.render` (log when list is missing vs. empty).
+- Milestone 19: **Confirm render pass cadence** — Ensure `[PC] render-pass begin/end` logs appear for each frame and correlate with renderer info counters.
+- Milestone 20: **Analyze render timeout cause** — Determine why frames elapse without draw calls even when hooks are active.
+- Milestone 21: **Restore visible particles** — Once render queue behavior is understood, apply the necessary visibility fix and verify via smoke + screenshot.
 
 **E) Single change to run next**
-- Fix the `USE_VELOCITY_DISP` guard application logic to ensure it's set to `true` when `vertexInkOk: false`
+- Extend render-list instrumentation (per updated plan) so we can observe why `[PC] render-list snapshot` never fires—log list retrieval attempts and contents directly after `gl.render`.
 
 **F) Run plan**
-- Fix the `USE_VELOCITY_DISP` guard application logic:
-  1. Ensure `USE_VELOCITY_DISP` is set to `true` when `vertexInkOk: false`
-  2. Fix diagnostic implementation to ensure new render pipeline diagnostics fire
-  3. Verify guard application in material defines
-- Rebuild & serve: `pnpm --filter cryptiq-mindmap-demo run build`, `pnpm --filter cryptiq-mindmap-demo run start`
-- MCP smoke: same URL with `forceVisible=1`, capture new diagnostics
-- Look for `[PC] material-defines` showing `"useVelocityDisp": true`
-- Archive to `cursor-ooda-ink-prototype/{assets,console}/<commit>/<branch>/<ts>/`
-- Update `03-rendering-pipeline-trace.md` with guard application fix
+- Implement the render-list follow-up instrumentation as documented (no production run until logs appear locally).
+- Rebuild & serve with Node 20; run manual Playwright capture to confirm new `[PC] render-list snapshot` / `[PC] render-pass begin/end` logs.
+- Once logs appear, archive evidence and proceed to full MCP smoke.
+- Update context-pack docs after each evidence capture.
 
 **G) Success criteria**
-- ✅ `[PC] material-defines` shows `"useVelocityDisp": true` (guard application working)
-- ✅ `[PC] render-list snapshot` probe fires (indicates Points enters render list)
-- ✅ `[PC] points-before-render` probe fires (indicates Points mesh hook execution)
-- ✅ `[PC] render-info` shows `calls > 0, points > 0` (nonzero render stats)
-- ✅ Screenshot shows visible particles (ultimate validation)
+- ✅ `[PC] render-list snapshot` and `[PC] points-before-render` logs appear with the updated instrumentation.
+- ✅ `[PC] render-pass begin/end` pair for each frame (limited by log cap) with `calls` remaining zero—proving render function executes but draws nothing.
+- ✅ Ability to inspect render list contents immediately after render to diagnose why points are absent.
+- ✅ Once draw calls reappear, screenshot must show visible particles (final gate).

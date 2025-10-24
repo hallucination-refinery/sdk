@@ -657,6 +657,14 @@ The follow-on instrumentation committed in `b99fe68f` did **not** emit any of th
 - `[PC] render-timeout` fires only if draw calls remain zero, providing a clear boundary for the failure.
 - With these probes emitting, the next smoke run will conclusively show whether the Points mesh reaches the render queue.
 
+### Follow-up (post-manual verification 2025-10-24)
+- Manual dev run confirms override + points hook logs but **still no `[PC] render-list snapshot`**. Snapshot wrapper now executes but likely returns empty lists.
+- Next adjustment ideas (for subsequent code pass):
+  - Log when `list` is falsy/empty and include the lengths of `opaque`/`transparent`; add `[PC] render-list empty` to distinguish “hook fired” vs. “list empty”.
+  - After `gl.render` completes, invoke the resolved `renderLists.get(scene, camera)` manually and log its contents even if zero length.
+  - Record the UUIDs of objects inside `scene.children` when snapshot fires to ensure the points group is still attached at that phase.
+- Document these observations in `06-working-document.md` and update once the subsequent instrumentation change lands.
+
 ---
 
 ## AUDIT REPORT – Guarantee Probe Emission Plan
