@@ -1,117 +1,305 @@
-# Dreamdust Ink — Dev Instrumentation Verification Plan (Context Pack 2025-10-15)
+# Dreamdust Ink — Pre-Smoke BULLETPROOF Plan (Context Pack 2025-10-15)
 
 <!-- DD-PLAN:BEGIN:PURPOSE -->
-## Purpose & Desired End State
-Deliver the Dreamdust ink experience defined in `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/context-pack-2025-10-15/01-vision-and-acceptance.md:9`: particles that respond within ≤2 frames, stay localized, decay smoothly, and leave camera/shader gates clean. This plan scopes the **dev-only instrumentation pass** required before the Cursor Panel Agent executes the end-to-end smoke workflow.
+## 1) Purpose & Desired End State
+Deliver the Dreamdust ink interaction defined in `01-vision-and-acceptance.md`: particles must be plainly visible, respond to touch within at most two frames, stay locally constrained, and leave camera and shader diagnostics clean so production teams can sign off with confidence.
 <!-- DD-PLAN:END:PURPOSE -->
 
-<!-- DD-PLAN:BEGIN:CURRENT_STATUS -->
-## Current Status (Verified Evidence)
-- `[PC] material-defines`, `[PC] render-info`, `[PC] render-timeout`, and `[PC] scene-traversal` fire reliably in the latest dev capture (`context-pack-2025-10-15/console/manual-dev-20251024/console-manual-dev.txt:19-58`).
-- Rendering pipeline trace for commit `332e9390` confirms hooks exist but render-list probes never emit (`03-rendering-pipeline-trace.md:130-152`).
-- Working document marks **Diagnostic Implementation Failure** because `[PC] render-list snapshot`, `[PC] points-before-render`, and render-pass logs are absent (`06-working-document.md:7-35`).
-- Production build still segfaults under Node 20 with `NEXT_DISABLE_LIGHTNINGCSS=1`, so prod verification is blocked (`console/manual-prod-20251024/console-manual-prod.txt:1`).
-- Latest smoke evidence reiterates zero draw calls and missing render-list diagnostics (`10-latest-smoke-evidence.md:10-49`).
-<!-- DD-PLAN:END:CURRENT_STATUS -->
+<!-- DD-PLAN:BEGIN:CURRENT_EVIDENCE -->
+## 2) Current Evidence (latest & verifiable)
+- `console/37fab223/docs/ink-falloff-flag-latch-2025-10-12/20251024-200740/console-mcp.json:73-215` (commit `cb90ae8f`, 2025-10-24T20:07Z) — contains `[PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,...}` at `:73-75`, `[PC] render-timeout {framesWaited: 60,...}` at `:207-210`, `[PC] render-info {calls: 0, points: 0,...}` at `:213-215`, and **no** `[PC] render-list snapshot|render-list empty`, `points-before/after-render`, or `render-pass begin/end` entries.
+- `assets/37fab223/docs/ink-falloff-flag-latch-2025-10-12/20251024-200740/2025-10-24-forceVisible-mcp-debug.png` — MCP screenshot for the same run shows UI but no Dreamdust particles, matching zero-draw metrics.
+- `assets/37fab223/docs/ink-falloff-flag-latch-2025-10-12/20251024-201106/ink-playwright-failed-{1,2}.png` — Playwright smoke timed out (60 s) without diagnostics; no Playwright console JSON was captured for run `20251024-201106`.
+- `console/manual-dev-20251024/console-manual-dev.txt:19-58` (commit `34645725`, 2025-10-24T05:10Z) reiterates `[PC] material-defines … useVelocityDisp:false`, `[PC] render-timeout`, and `[PC] render-info {calls: 0}` under manual dev server; the diagnostic set mirrors the MCP capture.
+- `console/manual-prod-20251024/console-manual-prod.txt:1-3` logs the Node 20 production build segfault with `NEXT_DISABLE_LIGHTNINGCSS=1`; no production console artifacts exist yet.
+<!-- DD-PLAN:END:CURRENT_EVIDENCE -->
 
-<!-- DD-PLAN:BEGIN:ENTRY_EXIT -->
-## Entry/Exit Criteria (Dev Verification Only)
-- **Entry**
-  - Dev server (Node 20) starts cleanly and `/quiz/archetype-v1?pc=scene-03` loads.
-  - Debug toggle available: `NEXT_PUBLIC_DREAMDUST_DEBUG=1` env or `?ddDebug=1` query.
-  - Force-visible bypass (`?forceVisible=1`) remains operative.
-- **Exit**
-  - Within ≤2 frames (≤5 s) the console logs:  
-    `[PC] render-info`, `[PC] render-list snapshot` **or** `[PC] render-list empty`, `[PC] points-before-render`, `[PC] points-after-render`, `[PC] render-pass begin`, `[PC] render-pass end`.
-  - Evidence stored under `context-pack-2025-10-15/console/dev-verify-*/` includes stream + summary.
-  - PLANS.md checklist updated; next probe noted if any tag missing.
-<!-- DD-PLAN:END:ENTRY_EXIT -->
+<!-- DD-PLAN:BEGIN:PRECONDITIONS -->
+## 3) Preconditions for Next Smoke (hard gates)
+- **Environment** — Use Node ≥18.18 (target 20.x LTS), `nvm use 20`, and `pnpm install --frozen-lockfile`; start from a clean `.next` cache.
+- **Debug gate** — Dreamdust debug behaviour must enable when either `NEXT_PUBLIC_DREAMDUST_DEBUG=1` (build-time) **or** `?ddDebug=1` (runtime) is present; plan logs must confirm both signals.
+- **Instrumentation** — When debug is active, capture `[PC] ddDebug`, `[PC] render-info`, `[PC] render-timeout`, `[PC] render-list guard-state`, `[PC] render-list snapshot|render-list empty`, `[PC] points-before-render`, `[PC] points-after-render`, `[PC] render-pass begin`, `[PC] render-pass end`, `[PC] renderer-render-pass`, and `[PC] sentinel-points` (if sentinel enabled).
+- **Evidence directories** — Pre-create `docs/.../console/${COMMIT}/${BRANCH}/${RUN_ID}/` and `docs/.../assets/${COMMIT}/${BRANCH}/${RUN_ID}/`; use `RUN_ID=$(date -u +%Y%m%d-%H%M%S)` and include build/runtime command log in the eventual commit message body.
+<!-- DD-PLAN:END:PRECONDITIONS -->
 
-<!-- DD-PLAN:BEGIN:PLAN -->
-## Plan of Work (Short Horizon)
-1. **Lock runbook** — Finalise this PLANS.md with dev-only scope, toggles, evidence destinations. Adjust immediately if repo facts differ.
-2. **Record verification inputs** — Document target route, required tags, and instrumentation anchors (PointCloudStage/DreamdustMaterial) inside PLANS.md.
-3. **Apply gated diagnostics** — Patch `PointCloudStage.tsx` to add guard-state logging, stage-points probe, runtime inspection surface, all behind `NEXT_PUBLIC_DREAMDUST_DEBUG` / `ddDebug`.
-4. **Install verification helper** — Add `scripts/dd-verify-console.js` (Playwright) and write manual fallback commands; ensure helper cleans up the dev server.
-5. **Run dev verification** — Execute helper with `NEXT_PUBLIC_DREAMDUST_DEBUG=1`, capture console+summary under `console/dev-verify-*`.
-6. **Postmortem & next probe** — Append results + remaining questions to PLANS.md, highlighting the next micro-step if tags are missing.
-<!-- DD-PLAN:END:PLAN -->
+<!-- DD-PLAN:BEGIN:HYPOTHESES -->
+## 4) Root-Cause Hypotheses & Falsifiers
+- **H1 – Debug flag never reaches browser** → falsify by logging `[PC] ddDebug { env, query, effective }` once on mount and observing it in the next console capture.
+- **H2 – Velocity override overwritten after define sync** → falsify by confirming `[PC] points-before-render` reports `useVelocityDisp: true`; if false, defines are being cleared post-sync.
+- **H3 – Render list getter never invoked** → falsify through a `[PC] render-list snapshot` within the first two frames; absence means `renderLists.get` patch still not executed.
+- **H4 – Shader program never recompiles with forced define** → falsify by inspecting `[PC] points-program-state { compiled: true, materialVersion: > previous }` after override lands.
+- **H5 – Capability mismatch blocks override** → falsify by comparing `renderer-capabilities.maxVertexTextures` (16 vs 32); if override succeeds only with ≥32, hardware gating is the blocker.
+<!-- DD-PLAN:END:HYPOTHESES -->
 
-<!-- DD-PLAN:BEGIN:INPUTS -->
-## Verification Inputs (Dev)
-- **Route & toggles**: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1` (mirrored by `NEXT_PUBLIC_DREAMDUST_DEBUG=1` env).
-- **Required console tags**  
-  `[PC] render-info` · `[PC] render-list snapshot` · `[PC] render-list empty` · `[PC] render-list guard-state` · `[PC] points-before-render` · `[PC] points-after-render` · `[PC] stage-points-missing` · `[PC] render-pass begin` · `[PC] render-pass end` · `[PC] renderer-render-pass` · `[PC] render-timeout`
-- **Code anchors**  
-  - `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`: render-list override (`logRenderListDetails`), `renderLists.get` patch, points `onBefore/AfterRender`, `RenderInfoLogger`.
-  - `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:793-818`: `[PC] material-defines` payload.
-- **Verification helper**  
-  - Primary: `scripts/dd-verify-console.js` (spawns dev, runs Playwright, prints JSON summary).  
-  - Manual fallback:  
-    ```bash
-    pnpm --filter cryptiq-mindmap-demo run dev 2>&1 | tee /tmp/dreamdust-dev.log
-    rg '\\[PC\\] render-' /tmp/dreamdust-dev.log
-    ```
-<!-- DD-PLAN:END:INPUTS -->
+<!-- DD-PLAN:BEGIN:PROPOSED_PATCHES -->
+## 5) Proposed Patches (do **not** apply now)
+Implement each patch with debug guards, then run lint/build/smoke **after** landing them. Every snippet is paired with rollback guidance and risk notes.
 
-<!-- DD-PLAN:BEGIN:PROBES -->
-## Diagnostic Probes (Dev Execution)
-- **Render-list guard health** — Expect `[PC] render-list guard-state` once per session; must precede `[PC] render-list snapshot` or `[PC] render-list empty`.
-- **Points hooks** — `[PC] points-before-render` & `[PC] points-after-render` should appear exactly once; if absent watch for `[PC] stage-points-missing`.
-- **Render-pass wrapper** — `[PC] render-pass begin`/`end` plus `[PC] renderer-render-pass` prove `gl.render` override fired.
-- **Timeout fallback** — `[PC] render-timeout` should only fire if calls remain zero after MAX_FRAMES; log frame count in summary.
-<!-- DD-PLAN:END:PROBES -->
+### 5.1 Debug Flag Proof (`PointCloudStage.tsx`)
+```diff
+diff --git a/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx b/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+@@ -1509,6 +1509,7 @@ export function PointCloudStage(props: PointCloudStageProps) {
+   const [fluidBoost, setFluidBoost] = React.useState(process.env.NEXT_PUBLIC_FLUID_DEBUG === '1')
+   const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
+   const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
++  const dreamdustDebugLogRef = React.useRef(false)
+@@ -1521,6 +1522,19 @@ export function PointCloudStage(props: PointCloudStageProps) {
+     const debugParam = params.get(DD_DEBUG_QUERY_KEY)
+     if (debugParam === '1') {
+       setDreamdustDebug(true)
+     } else if (debugParam === '0') {
+       setDreamdustDebug(false)
+     }
++    if (!dreamdustDebugLogRef.current) {
++      const queryEnabled = debugParam === '1'
++      try {
++        console.info('[PC] ddDebug', {
++          env: DREAMDUST_DEBUG_ENV,
++          query: queryEnabled,
++          effective: DREAMDUST_DEBUG_ENV || queryEnabled,
++        })
++      } catch {
++        /* noop */
++      }
++      dreamdustDebugLogRef.current = true
++    }
+   }, [])
+```
+Rollback:
+```bash
+git restore apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+```
+Risk: No side effects when debug is disabled; emits one log on first mount only.
 
-<!-- DD-PLAN:BEGIN:EVIDENCE -->
-## Evidence Capture & Filing (Dev)
-- Run IDs: `dev-verify-YYYYMMDD-HHMMSS` (UTC).
-- Console stream: `context-pack-2025-10-15/console/dev-verify-*/console.txt`.
-- Verification summary (`ok` flag + tag counts): `context-pack-2025-10-15/console/dev-verify-*/summary.json`.
-- Manual fallback notes (if Playwright unavailable): `context-pack-2025-10-15/console/dev-verify-*/manual-notes.md`.
-<!-- DD-PLAN:END:EVIDENCE -->
+### 5.2 Velocity Override — Last Write Wins (`DreamdustMaterial.ts`)
+```diff
+diff --git a/apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts b/apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
+@@ -760,6 +760,11 @@ export function createDreamdustMaterial(options: DreamdustMaterialOptions) {
+   if (DREAMDUST_SOLID_COLOR_DIAG) {
+     defines.DIAG_SOLID_COLOR = 1
+   }
+   syncLegacyVertexInkDefine(defines)
++  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
++    defines.USE_VELOCITY_DISP = 1
++    defines.VERTEX_INK_OK = 0
++  }
+@@ -786,6 +791,14 @@ export function createDreamdustMaterial(options: DreamdustMaterialOptions) {
+   syncLegacyVertexInkDefine((material as any).defines)
+   if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
+     (material as any).defines.USE_VELOCITY_DISP = 1
+     (material as any).defines.VERTEX_INK_OK = 0
++    material.needsUpdate = true
++    material.version = (material.version ?? 0) + 1
+   }
+@@ -804,6 +817,13 @@ export function createDreamdustMaterial(options: DreamdustMaterialOptions) {
+   } else {
+     material.blending = (THREE as any).NormalBlending
+     material.depthTest = true
+   }
++  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
++    (material as any).defines.USE_VELOCITY_DISP = 1
++    (material as any).defines.VERTEX_INK_OK = 0
++    material.needsUpdate = true
++    material.version = (material.version ?? 0) + 1
++  }
+```
+Rollback:
+```bash
+git restore apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
+```
+Risk: Override activates only with debug flag; production defaults remain unchanged.
 
-<!-- DD-PLAN:BEGIN:QUICK_VERIFY -->
-## Quick Verify (User Kit)
-1. Prepare environment (one shell):
+### 5.3 Draw-Time Truth (`PointCloudStage.tsx`)
+```diff
+diff --git a/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx b/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+@@ -3669,9 +3669,24 @@ const beforeProbe = function pointsBeforeRenderProbe(
+       if (!pointsBeforeRenderLoggedRef.current) {
+         const layersMask = (this as any)?.layers?.mask ?? null
+         try {
+           console.info('[PC] points-visibility-state', {
+             timestamp: Date.now(),
+             renderOrder: this.renderOrder ?? null,
+             visible: this.visible,
+             frustumCulled: this.frustumCulled,
+             layersMask,
+           })
+         } catch {
+           /* noop */
+         }
+         try {
+           console.info('[PC] points-before-render', {
+             timestamp: Date.now(),
++            useVelocityDisp: !!((material as any)?.defines?.USE_VELOCITY_DISP),
++            vertexInkOkDefine: !!((material as any)?.defines?.VERTEX_INK_OK),
++            programCompiled: rendererArg?.properties?.get?.(material)?.program != null,
+             renderOrder: this.renderOrder ?? null,
+           })
+         } catch {
+           /* noop */
+         }
+@@ -3724,6 +3739,11 @@ const afterProbe = function pointsAfterRenderProbe(
+             material: resolvedMaterial
+               ? {
+                   uuid: (resolvedMaterial as any).uuid ?? null,
+                   blending: (resolvedMaterial as any).blending ?? null,
+                   depthTest: (resolvedMaterial as any).depthTest ?? null,
+                   depthWrite: (resolvedMaterial as any).depthWrite ?? null,
++                  useVelocityDisp:
++                    !!((resolvedMaterial as any)?.defines?.USE_VELOCITY_DISP ?? false),
+                 }
+               : null,
+             attrCounts,
+           })
+```
+Rollback:
+```bash
+git restore apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+```
+Risk: Additional logs appear only once per run; negligible performance impact.
+
+### 5.4 Render-List & Pass Instrumentation Hardening (`PointCloudStage.tsx`)
+```diff
+diff --git a/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx b/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+@@ -4084,7 +4084,9 @@ const logRenderListDetails = (
+             if (!(renderLists as any).__originalGet) {
+               const originalGet = renderLists.get.bind(renderLists)
+               ;(renderLists as any).__originalGet = originalGet
+               renderLists.get = function patchedRenderListsGet(scene: THREE.Scene, camera: THREE.Camera) {
+                 const shouldLogFirst = !firstRenderListLogRef.current
+-                const shouldLogFrame = !renderListLoggedRef.current && forceVisibleRef.current
++                const shouldLogFrame =
++                  !renderListLoggedRef.current &&
++                  (forceVisibleRef.current || dreamdustDebugRef.current)
+                 if (dreamdustDebugRef.current && !renderListGuardLoggedRef.current) {
+                   try {
+                     console.info('[PC] render-list guard-state', {
+                       forceVisible: forceVisibleRef.current,
+                       shouldLogFirst,
+@@ -4230,7 +4232,11 @@ gl.render = function patchedRender(scene: THREE.Scene, camera: THREE.Camera) {
+               }
+               const renderPassIndex = renderPassLogRef.current
+-              const shouldLogRenderPass = renderPassIndex < RENDER_CALL_LOG_LIMIT
++              const shouldLogRenderPass =
++                renderPassIndex < RENDER_CALL_LOG_LIMIT ||
++                (dreamdustDebugRef.current && renderPassIndex < 2)
+               if (shouldLogRenderPass) {
+                 try {
+                   console.info('[PC] render-pass begin', {
+                     timestamp: Date.now(),
+                     renderIndex: renderPassIndex,
+```
+Rollback:
+```bash
+git restore apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+```
+Risk: Debug mode may produce up to two extra render-pass logs; production unaffected.
+
+### 5.5 Minimal Non-Visual Sentinel (`PointCloudStage.tsx`)
+```diff
+diff --git a/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx b/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+@@ -1594,6 +1594,14 @@ export function PointCloudStage(props: PointCloudStageProps) {
+   const [prebakedTransform, setPrebakedTransform] = React.useState<{
+     center: [number, number, number]
+     scale: number
+     radius: number
+     rotationQuat?: THREE.Quaternion
+   } | null>(null)
++  const sentinelPoints = React.useMemo(() => {
++    const geometry = new THREE.BufferGeometry()
++    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3))
++    const material = new THREE.PointsMaterial({ size: 0.05, color: 0xffffff })
++    const points = new THREE.Points(geometry, material)
++    return points
++  }, [])
++  const sentinelLoggedRef = React.useRef(false)
+@@ -1654,6 +1662,14 @@ export function PointCloudStage(props: PointCloudStageProps) {
+   React.useEffect(() => {
+     dreamdustDebugRef.current = dreamdustDebug
+   }, [dreamdustDebug])
++  React.useEffect(() => {
++    if (!dreamdustDebugRef.current || sentinelLoggedRef.current) {
++      return
++    }
++    try {
++      console.info('[PC] sentinel-points', { uuid: sentinelPoints.uuid })
++    } catch { /* noop */ }
++    sentinelLoggedRef.current = true
++  }, [dreamdustDebug, sentinelPoints])
+@@ -4442,6 +4458,9 @@ return (
+         {(sceneId === 'scene-03' || !controlsOverride) && (
+           <InkSurface
+             mirrorLR={!!ui.mirrorLR}
+             mirrorUD={!!ui.mirrorUD}
+             onForceSample={applyTempForce}
+             onForceSplat={(uv, radius, strength) => {
+               console.log('[PC] fluid splat', { uv, radius, strength })
+@@ -4562,6 +4581,9 @@ return (
+         )}
++        {dreamdustDebugRef.current && <primitive object={sentinelPoints} />}
+```
+Rollback:
+```bash
+git restore apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
+```
+Risk: Adds a single-vertex debug-only points mesh; must be removed once real particles render.
+<!-- DD-PLAN:END:PROPOSED_PATCHES -->
+
+<!-- DD-PLAN:BEGIN:EVIDENCE_CONVENTIONS -->
+## 6) Evidence & Artifact Conventions
+- Use UTC run IDs: `RUN_ID=$(date -u +%Y%m%d-%H%M%S)`.
+- Store console streams as `docs/.../console/${COMMIT}/${BRANCH}/${RUN_ID}/console-{mcp|manual|pw}.json` and screenshots in `docs/.../assets/${COMMIT}/${BRANCH}/${RUN_ID}/YYYY-MM-DD-${label}.png`.
+- Capture build notes and environment in `docs/.../console/.../notes.md` when manual intervention (e.g., rebuild swc) occurs.
+- Quick checks: `rg -n "\\[PC\\] render-info" console-mcp.json` for draw stats; `jq 'map(select(.text|test("\\\\[PC\\\\] ddDebug")))' console-mcp.json` to validate debug gating.
+- On failure, archive the last 200 lines as `console/.../${RUN_ID}/console-tail.txt` plus any crash stack traces.
+<!-- DD-PLAN:END:EVIDENCE_CONVENTIONS -->
+
+<!-- DD-PLAN:BEGIN:RUNBOOK -->
+## 7) Next Smoke Run — Operator/Agent Runbook
+1. **Prep environment**  
    ```bash
    nvm use 20
    pnpm install --frozen-lockfile
-   NEXT_PUBLIC_DREAMDUST_DEBUG=1 node scripts/dd-verify-console.js
+   rm -rf apps/cryptiq-mindmap-demo/.next
    ```
-   - Expected within ≤2 frames / ≤5s: `[PC] render-info`, `[PC] render-list snapshot` **or** `[PC] render-list empty`, `[PC] points-before-render` **or** `[PC] points-after-render`, `[PC] render-pass begin`, `[PC] render-pass end`.
-2. Manual fallback (if Playwright missing):
-   ```bash
-   nvm use 20
-   pnpm --filter cryptiq-mindmap-demo run dev 2>&1 | tee /tmp/dreamdust-dev.log
-   # In a browser tab:
-   #   http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1
-   rg -n "\\[PC\\] render-info|\\[PC\\] render-list (snapshot|empty)|\\[PC\\] points-(before|after)-render|\\[PC\\] render-pass (begin|end)" /tmp/dreamdust-dev.log
-   ```
-   - Stop dev server with `Ctrl+C`; archive `/tmp/dreamdust-dev.log` and the `rg` output.
-3. Debug note (2025-10-24): If Quick Verify shows `render-info` calls == 0, rerun with `NEXT_PUBLIC_DREAMDUST_DEBUG=1` to enable the velocity override (commit b8a4d829).
-<!-- DD-PLAN:END:QUICK_VERIFY -->
+2. **Build** — `NEXT_DISABLE_LIGHTNINGCSS=1 pnpm --filter cryptiq-mindmap-demo run build`; stop if crash persists and record `/tmp/build.log`.
+3. **Launch dev server** — `NEXT_PUBLIC_DREAMDUST_DEBUG=1 pnpm --filter cryptiq-mindmap-demo run dev`.
+4. **Visit route** — Browser to `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1`.
+5. **Verify console** — Within ≤2 frames expect `[PC] ddDebug`, `[PC] render-pass begin`, `[PC] render-list snapshot|render-list empty`, `[PC] points-before-render`, `[PC] points-after-render`, `[PC] renderer-render-pass`, and `[PC] render-info` with `calls >= 1`.
+6. **Archive artifacts** — Capture full console stream (MCP helper or manual `tee`), plus screenshots before/after tap; save to `${RUN_ID}` directories.
+7. **Automation (optional post-visual)** — `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1" RUN_ID=${RUN_ID} ... pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line`.
+8. **Failure stop** — If `render-info.calls` stays `0` after 60 frames or `[PC] ddDebug.effective` is `false`, halt, capture logs, and do not proceed to Playwright.
+9. **Commit evidence** — `git add docs/.../console docs/.../assets` then `git commit -m "docs(ink): smoke ${RUN_ID} debug override probe"` including the executed commands and key log excerpts in the body.
+<!-- DD-PLAN:END:RUNBOOK -->
+
+<!-- DD-PLAN:BEGIN:ACCEPTANCE -->
+## 8) Acceptance Criteria & Exit
+- **Instrumentation ready** once a debug run records `[PC] ddDebug`, `[PC] render-list snapshot|render-list empty`, `[PC] points-before-render`, `[PC] points-after-render`, `[PC] render-pass begin/end`, and `[PC] render-info` with `calls >= 1`.
+- **Smoke pass** when Playwright or MCP capture shows `render-info.calls >= 1`, `render-info.points > 0`, and the screenshot displays Dreamdust particles; cite console + screenshot paths and commit SHA here.
+- **Smoke fail** if any required tag is missing or draw stats remain zero beyond the 60-frame timeout; document failure evidence (console + image paths) before further code changes.
+<!-- DD-PLAN:END:ACCEPTANCE -->
 
 <!-- DD-PLAN:BEGIN:RISKS -->
-## Risks/Unknowns & Quick Probes
-| Risk | Quick Probe |
-| --- | --- |
-| Render-list getter never called | With `ddDebug=1`, confirm `[PC] render-list guard-state` emits; if not, temporarily hard-set `forceVisibleRef.current = true` (dev-only). |
-| `stagePointsRef` remains null | Look for `[PC] stage-points-missing`; if triggered inspect ref assignment at `PointCloudStage.tsx:4304-4342`. |
-| Playwright unavailable | Use manual flow: `pnpm --filter cryptiq-mindmap-demo run dev 2>&1 | tee /tmp/dreamdust-dev.log` then `rg` for tag strings. |
-| Dev server lingering | Helper must close child process; otherwise terminate with `Ctrl+C`. |
+## 9) Risks/Unknowns & Mitigations
+| Risk | Mitigation | Escalate When |
+| --- | --- | --- |
+| Node 20 build continues to segfault | Rebuild native deps (`pnpm rebuild @next/swc-cli lightningcss`) or temporarily pin Node 18.18 for smoke | Build fails twice after cache purge |
+| Debug flag still false in browser | Inspect `process.env.NEXT_PUBLIC_DREAMDUST_DEBUG` in bundle, fall back to query param, and log both | `[PC] ddDebug.effective` remains `false` after restart |
+| Render list logs remain absent | Force `logRenderListDetails` via new `shouldLogFrame` check; if still missing, capture stack or instrument `renderLists.get` entrypoint | No `[PC] render-list ...` after two frames |
+| Sentinel leaks into prod | Keep sentinel behind debug flag and remove before release PR; add TODO comment if merged | QA reports stray white pixel in prod build |
+| Playwright still times out | Reduce log noise (`RENDER_CALL_LOG_LIMIT`), capture only targeted tags, rerun manually first | Timeout repeats after instrumentation fix |
 <!-- DD-PLAN:END:RISKS -->
 
 <!-- DD-PLAN:BEGIN:CHECKLIST -->
-## Progress Checklist
-- [x] PLANS.md updated with dev-only verification runbook
-- [x] Route, tag strings, instrumentation anchors recorded (see Verification Inputs)
-- [ ] Debug-gated instrumentation edits landed
-- [ ] Verification helper & manual fallback committed
-- [ ] Dev verification artifacts captured under `console/dev-verify-*`
-- [ ] Postmortem + next probe documented
-<!-- DD-PLAN:END:CHECKLIST -->
+## 10) Progress Checklist & Change Log
+- [ ] `[PC] ddDebug` emitted (env vs query verified)
+- [ ] Velocity override forces `USE_VELOCITY_DISP` in material defines
+- [ ] Points before/after render logs captured with compile verdict
+- [ ] Render list & render pass instrumentation confirmed
+- [ ] Sentinel (if used) archived and removed post-diagnosis
+- [ ] Smoke evidence stored with `render-info.calls >= 1` and `points > 0`
 
-<!-- DD-PLAN:BEGIN:CHANGE_LOG -->
-## Change Log
-- 2025-10-24 — Authored dev-only instrumentation verification plan (runbook, toggles, evidence flow).
-<!-- DD-PLAN:END:CHANGE_LOG -->
+### Change Log
+- 2025-10-24 — Locked pre-smoke BULLETPROOF plan (commit pending on branch `docs/ink-falloff-flag-latch-2025-10-12`).
+- (Slot) — Next evidence capture →
+- (Slot) — Instrumentation removal / cleanup →
+<!-- DD-PLAN:END:CHECKLIST -->
