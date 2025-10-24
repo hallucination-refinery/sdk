@@ -1,0 +1,222 @@
+[
+  {
+    "type": "log",
+    "text": "[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}",
+    "timestamp": 1761336446800
+  },
+  {
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 0, stageUvCount: 0, simStageUvCount: 0, simKey: null}",
+    "timestamp": 1761336446801
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}",
+    "timestamp": 1761336446802
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: TBD, depthWrite: TBD, blending: TBD, applied: false}",
+    "timestamp": 1761336446803
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked positions {bytes: 2175600, count: 181300, sample: Array(6)}",
+    "timestamp": 1761336446804
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked AABB {min: Array(3), max: Array(3), extent: Array(3), maxExtent: 2.454334169626236, scale: 407.44247966538614}",
+    "timestamp": 1761336446805
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied",
+    "timestamp": 1761336446806
+  },
+  {
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon",
+    "timestamp": 1761336446807
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required",
+    "timestamp": 1761336446808
+  },
+  {
+    "type": "log",
+    "text": "[PC] instances: 90650",
+    "timestamp": 1761336446809
+  },
+  {
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 90650, stageUvCount: 181300, simStageUvCount: 0, simKey: null}",
+    "timestamp": 1761336446810
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-capabilities {isWebGL2: true, maxVertexTextures: 16, maxTextures: 16, precision: highp, logarithmicDepthBuffer: false}",
+    "timestamp": 1761336446811
+  },
+  {
+    "type": "info",
+    "text": "[PC] instrumentation render-list override active {timestamp: 1761336446809, hasRenderLists: true}",
+    "timestamp": 1761336446812
+  },
+  {
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }",
+    "timestamp": 1761336446813
+  },
+  {
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":false,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "timestamp": 1761336446814
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag solid color {enabled: true}",
+    "timestamp": 1761336446815
+  },
+  {
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}",
+    "timestamp": 1761336446816
+  },
+  {
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":false,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "timestamp": 1761336446817
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag solid color {enabled: true}",
+    "timestamp": 1761336446818
+  },
+  {
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}",
+    "timestamp": 1761336446819
+  },
+  {
+    "type": "info",
+    "text": "[PC] camera-diag {enabled: true, cameraPosition: Array(3), target: Array(3), radius: 500, near: 0.1}",
+    "timestamp": 1761336446820
+  },
+  {
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 1: {expected: Object, actual: Object}",
+    "timestamp": 1761336446821
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {width: 256, height: 256, needsUpdate: false}",
+    "timestamp": 1761336446822
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 0}",
+    "timestamp": 1761336446823
+  },
+  {
+    "type": "log",
+    "text": "[PC] attach controls to JSHandle@node",
+    "timestamp": 1761336446824
+  },
+  {
+    "type": "log",
+    "text": "[DEBUG] Camera position check:",
+    "timestamp": 1761336446825
+  },
+  {
+    "type": "log",
+    "text": "  Expected: [-65.737, 103.054, -681.379]",
+    "timestamp": 1761336446826
+  },
+  {
+    "type": "log",
+    "text": "  Actual: [-65.737, 103.054, -681.379]",
+    "timestamp": 1761336446827
+  },
+  {
+    "type": "log",
+    "text": "  Match: true",
+    "timestamp": 1761336446828
+  },
+  {
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {position: Array(3), target: Array(3), actualPosition: Array(3), actualTarget: null}",
+    "timestamp": 1761336446829
+  },
+  {
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}",
+    "timestamp": 1761336446830
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}",
+    "timestamp": 1761336446831
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] reveal start {duration: 2}",
+    "timestamp": 1761336446832
+  },
+  {
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}",
+    "timestamp": 1761336446833
+  },
+  {
+    "type": "info",
+    "text": "[PC] points-program-state {timestamp: 1761336446847, materialUuid: acf8b33c-2134-469d-8105-9920fb3680c3, materialNeedsUpdate: null, materialVersion: 4, compiled: false}",
+    "timestamp": 1761336446847
+  },
+  {
+    "type": "info",
+    "text": "[PC] instrumentation points-hook attached {timestamp: 1761336446847, pointsUuid: eaa83d6e-781e-4e4f-95f1-5dca298e3390}",
+    "timestamp": 1761336446847
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-traversal {pointsFound: true, nodeCount: 8, nodes: Array(8)}",
+    "timestamp": 1761336446848
+  },
+  {
+    "type": "info",
+    "text": "[PC] fluid-step skipped {reason: diagnostic-disable}",
+    "timestamp": 1761336446849
+  },
+  {
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }",
+    "timestamp": 1761336446850
+  },
+  {
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 4: {expected: Object, actual: Object}",
+    "timestamp": 1761336446851
+  },
+  {
+    "type": "info",
+    "text": "[PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, parentType: Group}",
+    "timestamp": 1761336446852
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-timeout {framesWaited: 60, timestamp: 1761336447330}",
+    "timestamp": 1761336447330
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-info {calls: 0, points: 0, triangles: 0, memory: Object, mat: Object}",
+    "timestamp": 1761336447331
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] reveal end {duration: 2}",
+    "timestamp": 1761336447332
+  }
+]
