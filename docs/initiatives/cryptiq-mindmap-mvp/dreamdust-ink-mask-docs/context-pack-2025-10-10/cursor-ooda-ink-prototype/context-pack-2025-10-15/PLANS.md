@@ -88,6 +88,7 @@ Deliver the Dreamdust ink experience defined in `docs/initiatives/cryptiq-mindma
    rg -n "\\[PC\\] render-info|\\[PC\\] render-list (snapshot|empty)|\\[PC\\] points-(before|after)-render|\\[PC\\] render-pass (begin|end)" /tmp/dreamdust-dev.log
    ```
    - Stop dev server with `Ctrl+C`; archive `/tmp/dreamdust-dev.log` and the `rg` output.
+3. Debug note (2025-10-24): If Quick Verify shows `render-info` calls == 0, rerun with `NEXT_PUBLIC_DREAMDUST_DEBUG=1` to enable the velocity override (commit b8a4d829).
 <!-- DD-PLAN:END:QUICK_VERIFY -->
 
 <!-- DD-PLAN:BEGIN:RISKS -->

@@ -50,6 +50,8 @@ NEXT_PUBLIC_SCREENSHOT_MODE=0
 NEXT_PUBLIC_ENABLE_CONTROLS=0
 ```
 
+- Debug override: set `NEXT_PUBLIC_DREAMDUST_DEBUG=1` to enable the Dreamdust velocity-displacement fallback used during instrumentation verification (requires Node ≥18.18/20).
+
 ## What not to do
 
 - Don’t run ML/inference or download large models in CI.
