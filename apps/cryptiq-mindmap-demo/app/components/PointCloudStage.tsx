@@ -51,6 +51,8 @@ const TEMP_FORCE_DECAY = 0.92
 const TEMP_FORCE_SCALE = 220
 const TEMP_FORCE_CLAMP = 12
 const _CANVAS_DEBUG_READBACK = process.env.NEXT_PUBLIC_DEBUG_CANVAS === '1'
+const DREAMDUST_DEBUG_ENV = process.env.NEXT_PUBLIC_DREAMDUST_DEBUG === '1'
+const DD_DEBUG_QUERY_KEY = 'ddDebug'
 const TARGET_TEMP_RADIUS = 0.14
 const AFTER_REVEAL_LOG_TAG = '[PC] uniforms after-reveal'
 const FLUID_GRID_SIZE = 256
@@ -978,16 +980,22 @@ function RenderInfoLogger({
   forceVisible,
   stagePointsRef,
   uniforms,
+  debugActive,
+  updateDebugState,
 }: {
   forceVisible: boolean
   stagePointsRef: React.MutableRefObject<THREE.Points | null>
   uniforms: DreamdustStageUniforms
+  debugActive: boolean
+  updateDebugState: (patch: Record<string, unknown>) => void
 }) {
   const renderer = useThree((state) => state.gl)
   const loggedRef = React.useRef(false)
   const meshLoggedRef = React.useRef(false)
   const frameCountRef = React.useRef(0)
   const MAX_FRAMES = 60
+  const stagePointsMissingFramesRef = React.useRef(0)
+  const stagePointsMissingLoggedRef = React.useRef(false)
   const buildMeshSnapshot = React.useCallback((points: THREE.Points) => {
     const rawMaterial = (points as { material?: THREE.Material | THREE.Material[] }).material
     const material = Array.isArray(rawMaterial) ? rawMaterial[0] ?? null : rawMaterial ?? null
@@ -1103,8 +1111,40 @@ function RenderInfoLogger({
       } catch {
         /* noop */
       }
+      updateDebugState({
+        lastRenderInfo: {
+          calls,
+          points: info?.points ?? null,
+          triangles: info?.triangles ?? null,
+          memory,
+          timeout: !haveDraws,
+          framesWaited: frameCountRef.current,
+        },
+      })
 
       loggedRef.current = true
+    }
+  })
+
+  useFrame(() => {
+    if (!debugActive || stagePointsMissingLoggedRef.current) {
+      return
+    }
+    if (stagePointsRef.current) {
+      stagePointsMissingLoggedRef.current = true
+      return
+    }
+    stagePointsMissingFramesRef.current += 1
+    if (stagePointsMissingFramesRef.current > 2) {
+      stagePointsMissingLoggedRef.current = true
+      try {
+        console.warn('[PC] stage-points-missing', {
+          framesElapsed: stagePointsMissingFramesRef.current,
+          forceVisible,
+        })
+      } catch {
+        /* noop */
+      }
     }
   })
 
@@ -1478,6 +1518,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [devicePixelRatioRaw, setDevicePixelRatioRaw] = React.useState<number | null>(null)
   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
   const [fluidBoost, setFluidBoost] = React.useState(process.env.NEXT_PUBLIC_FLUID_DEBUG === '1')
+  const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
+  const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
   const [forceVisible, setForceVisible] = React.useState(false)
   const forceVisibleRef = React.useRef(false)
   React.useEffect(() => {
@@ -1491,7 +1533,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       setFluidBoost(false)
     }
     setForceVisible(params.get('forceVisible') === '1')
+    const debugParam = params.get(DD_DEBUG_QUERY_KEY)
+    if (debugParam === '1') {
+      setDreamdustDebug(true)
+    } else if (debugParam === '0') {
+      setDreamdustDebug(false)
+    }
   }, [])
+  React.useEffect(() => {
+    dreamdustDebugRef.current = dreamdustDebug
+  }, [dreamdustDebug])
   const resolvedVelToNdc = fluidBoost ? FLUID_DEBUG_VEL_TO_NDC : FLUID_BASE_VEL_TO_NDC
   const resolvedInkBlend = fluidBoost ? FLUID_DEBUG_INK_BLEND : FLUID_BASE_INK_BLEND
   const [drawing, setDrawing] = React.useState(false)
@@ -3180,6 +3231,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const renderListMissingLoggedRef = React.useRef(false)
   const renderListEmptyLoggedRef = React.useRef(false)
   const renderListAccessFailedLoggedRef = React.useRef(false)
+  const renderListGuardLoggedRef = React.useRef(false)
+  const renderListEmptyFallbackLoggedRef = React.useRef(false)
   const renderCallLogCountRef = React.useRef(0)
   const renderCallSeenPointsRef = React.useRef(false)
   const renderPassLogRef = React.useRef(0)
@@ -3204,6 +3257,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         materialUuid: entry?.material?.uuid ?? null,
       }))
   }
+
+  const updateDebugState = React.useCallback((patch: Record<string, unknown>) => {
+    if (!dreamdustDebugRef.current) {
+      return
+    }
+    if (typeof globalThis === 'undefined') {
+      return
+    }
+    try {
+      const current = (globalThis as any).__dreamdustRenderState
+      const base = current && typeof current === 'object' ? current : {}
+      ;(globalThis as any).__dreamdustRenderState = {
+        ...base,
+        ...patch,
+        ts: Date.now(),
+      }
+    } catch {
+      /* noop */
+    }
+  }, [])
 
   React.useEffect(() => {
     forceVisibleRef.current = forceVisible
@@ -3665,6 +3738,16 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
             drawRange: geometry.drawRange ?? null,
           }
+          if (dreamdustDebugRef.current) {
+            updateDebugState({
+              lastPointsAttrs: {
+                ...attrCounts,
+                calls: info?.calls ?? null,
+                points: info?.points ?? null,
+                triangles: info?.triangles ?? null,
+              },
+            })
+          }
           console.info('[PC] points-after-render', {
             calls: info?.calls ?? null,
             points: info?.points ?? null,
@@ -4017,6 +4100,25 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               opaqueCount: opaque.length,
               transparentCount: transparent.length,
             }
+            if (dreamdustDebugRef.current) {
+              const pointsInOpaque = opaque.some((entry) => entry?.object?.type === 'Points')
+              const pointsInTransparent = transparent.some(
+                (entry) => entry?.object?.type === 'Points',
+              )
+              updateDebugState({
+                lastRenderList: {
+                  phase,
+                  opaqueCount: counts.opaqueCount,
+                  transparentCount: counts.transparentCount,
+                  pointsInOpaque,
+                  pointsInTransparent,
+                  sample: {
+                    opaque: summarizeRenderEntries(opaque),
+                    transparent: summarizeRenderEntries(transparent),
+                  },
+                },
+              })
+            }
             if (opaque.length === 0 && transparent.length === 0) {
               if (logEmpty && !renderListEmptyLoggedRef.current) {
                 try {
@@ -4057,6 +4159,21 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               renderLists.get = function patchedRenderListsGet(scene: THREE.Scene, camera: THREE.Camera) {
                 const shouldLogFirst = !firstRenderListLogRef.current
                 const shouldLogFrame = !renderListLoggedRef.current && forceVisibleRef.current
+                if (dreamdustDebugRef.current && !renderListGuardLoggedRef.current) {
+                  try {
+                    console.info('[PC] render-list guard-state', {
+                      forceVisible: forceVisibleRef.current,
+                      shouldLogFirst,
+                      shouldLogFrame,
+                      renderListLogged: renderListLoggedRef.current,
+                      renderPassIndex: renderPassLogRef.current,
+                      sceneId,
+                    })
+                  } catch {
+                    /* noop */
+                  }
+                  renderListGuardLoggedRef.current = true
+                }
                 if (shouldLogFirst || shouldLogFrame) {
                   logRenderListDetails('pre', scene, camera, {
                     logSnapshot: true,
@@ -4172,10 +4289,28 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 }
               }
               if (!postRenderListLoggedRef.current) {
-                logRenderListDetails('post', scene, camera, {
+                const postStatus = logRenderListDetails('post', scene, camera, {
                   logSnapshot: true,
                   logEmpty: true,
                 })
+                if (
+                  dreamdustDebugRef.current &&
+                  !renderListEmptyFallbackLoggedRef.current &&
+                  postStatus === 'empty' &&
+                  renderPassIndex <= 1
+                ) {
+                  try {
+                    console.info('[PC] render-list empty', {
+                      phase: 'post',
+                      reason: 'fallback',
+                      renderIndex: renderPassIndex,
+                    })
+                  } catch {
+                    /* noop */
+                  }
+                  renderListEmptyLoggedRef.current = true
+                  renderListEmptyFallbackLoggedRef.current = true
+                }
                 postRenderListLoggedRef.current = true
               }
               if (shouldLogRenderPass) {
@@ -4306,6 +4441,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           forceVisible={forceVisible}
           stagePointsRef={stagePointsRef}
           uniforms={uniforms}
+          debugActive={dreamdustDebug}
+          updateDebugState={updateDebugState}
         />
       <ambientLight intensity={1} />
           <directionalLight position={[2, 3, 4]} intensity={0.6} />
