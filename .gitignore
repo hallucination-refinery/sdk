@@ -103,3 +103,7 @@ vendor/**
 apps/cryptiq-mindmap-demo/public/assets/pointclouds/**/positions.f32
 apps/cryptiq-mindmap-demo/public/assets/pointclouds/**/colors.u8
 docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/assets/motion-reanalysis-60fps/
+
+# Ephemeral package-manager backups
+node_modules.backup*/
+*/node_modules.backup*/
