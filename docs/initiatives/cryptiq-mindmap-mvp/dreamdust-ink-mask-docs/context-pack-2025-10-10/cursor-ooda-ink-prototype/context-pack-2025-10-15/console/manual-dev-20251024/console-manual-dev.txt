@@ -1,0 +1,59 @@
+[console] info: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[console] log: [PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}
+[console] info: [vertex] stage data snapshot {simActive: false, stageUvDepthCount: 0, stageUvCount: 0, simStageUvCount: 0, simKey: null}
+[console] info: [PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}
+[console] info: [PC] forceVisible applied {depthTest: TBD, depthWrite: TBD, blending: TBD, applied: false}
+[console] log: [PC] prebaked positions {bytes: 2175600, count: 181300, sample: Array(6)}
+[console] log: [PC] prebaked AABB {min: Array(3), max: Array(3), extent: Array(3), maxExtent: 2.454334169626236, scale: 407.44247966538614}
+[console] log: [PC] prebaked PCA orientation applied
+[console] log: [PC] Quaternion roll neutralized for level horizon
+[console] log: [PC] Quaternion roll neutralized for level horizon
+[console] log: [PC] prebaked present; using positions/colors, fallback images not required
+[console] log: [PC] instances: 90650
+[console] info: [vertex] stage data snapshot {simActive: false, stageUvDepthCount: 90650, stageUvCount: 181300, simStageUvCount: 0, simKey: null}
+[console] warning: [.WebGL-0x114001d1f00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[console] warning: [.WebGL-0x114001d1f00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[console] warning: [.WebGL-0x114001d1f00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[console] warning: [.WebGL-0x114001d1f00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[console] log: [dreamdust] vertex-ink-ok {value: 1}
+[console] info: [PC] renderer-capabilities {isWebGL2: true, maxVertexTextures: 32, maxTextures: 32, precision: highp, logarithmicDepthBuffer: false}
+[console] info: [PC] instrumentation render-list override active {timestamp: 1761276879320, hasRenderLists: true}
+[console] info: [dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }
+[console] info: [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+[console] info: [PC] diag solid color {enabled: true}
+[console] info: [preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}
+[console] info: [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+[console] info: [PC] diag solid color {enabled: true}
+[console] info: [preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}
+[console] info: [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+[console] info: [PC] diag solid color {enabled: true}
+[console] info: [preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}
+[console] info: [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+[console] info: [PC] diag solid color {enabled: true}
+[console] info: [preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}
+[console] info: [PC] camera-diag {enabled: true, cameraPosition: Array(3), target: Array(3), radius: 500, near: 0.1}
+[console] warning: [PC] Preset drifted at frame 1: {expected: Object, actual: Object}
+[console] log: [Dreamdust] ink-tex bind {width: 256, height: 256, needsUpdate: false}
+[console] log: [dreamdust] ink-telemetry {intensity: 0.75, offsetBoost: 1, sizeBoost: 1, vertexInkOk: 0}
+[console] info: [PC] scene-candidates {candidates: Object, renderCallCount: 0}
+[console] log: [PC] attach controls to JSHandle@node
+[console] log: [DEBUG] Camera position check:
+[console] log:   Expected: [-65.737, 103.054, -681.379]
+[console] log:   Actual: [-65.737, 103.054, -681.379]
+[console] log:   Match: true
+[console] log: [PC] Preset applied (initial): {position: Array(3), target: Array(3), actualPosition: Array(3), actualTarget: null}
+[console] info: [PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}
+[console] info: [PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}
+[console] log: [Dreamdust] reveal start {duration: 2}
+[console] info: [PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}
+[console] info: [PC] points-program-state {timestamp: 1761276879347, materialUuid: fa25a815-edc1-4b3a-87d9-ceecaa9c0983, materialNeedsUpdate: null, materialVersion: 4, compiled: false}
+[console] info: [PC] instrumentation points-hook attached {timestamp: 1761276879347, pointsUuid: 76dbbee3-f10e-435a-92c2-ebf06860109e}
+[console] info: [PC] scene-traversal {pointsFound: true, nodeCount: 8, nodes: Array(8)}
+[console] info: [PC] fluid-step skipped {reason: diagnostic-disable}
+[console] info: [dreamdust] cover-fit {mode: cover, radius: 500, margin: 0.78, distance: 379.969, fov: 60}
+[console] info: [dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }
+[console] warning: [PC] Preset drifted at frame 4: {expected: Object, actual: Object}
+[console] info: [PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, parentType: Group}
+[console] info: [PC] render-timeout {framesWaited: 60, timestamp: 1761276880311}
+[console] info: [PC] render-info {calls: 0, points: 0, triangles: 0, memory: Object, mat: Object}
+[console] log: [Dreamdust] reveal end {duration: 2}

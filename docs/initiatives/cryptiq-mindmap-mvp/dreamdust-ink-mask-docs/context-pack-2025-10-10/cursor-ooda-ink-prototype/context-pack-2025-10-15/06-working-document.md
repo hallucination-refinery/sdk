@@ -6,7 +6,8 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 
 **A) Where we are**
 - MCP (`20251023-230024`) smoke on commit `b99fe68f` (extended render pipeline instrumentation) — **DIAGNOSTIC IMPLEMENTATION FAILURE**: New render pipeline diagnostics did not appear. Existing probes still show `useVelocityDisp: false` (fallback mode) and zero draw calls. See: `10-latest-smoke-evidence.md`.
-- Manual verification (`20251024-0314`) on commit `456899a0` (Node 20 dev server) — **Instrument hooks attached successfully**, emitting `[PC] instrumentation render-list override active`, `[PC] instrumentation points-hook attached`, and `[PC] render-timeout`, but **no `[PC] render-list snapshot`, `[PC] points-before-render`, or `[PC] render-pass begin/end`**. Points mesh still fails to reach render list. Evidence: `console/456899a0/local-manual-20251024/console-manual-dev.txt`.
+- Manual verification (`20251024-0510`) on Node 20 dev build — **Instrumentation hooks attached successfully**, emitting `[PC] renderer-capabilities`, `[PC] points-program-state`, `[PC] instrumentation render-list override active`, and `[PC] render-timeout`, but **no `[PC] render-list snapshot`, `[PC] render-list empty`, or `[PC] render-pass begin/end`**. Points mesh still fails to reach render list. Evidence: `console/manual-dev-20251024/console-manual-dev.txt`.
+- Production build attempt (Node 20) currently **fails with SIGSEGV** when running `pnpm --filter cryptiq-mindmap-demo run build`; native modules need reconciliation before production logging. Notes captured in `console/manual-prod-20251024/console-manual-prod.txt`.
 - Acceptance gate status: diagnostics partially working (hooks live) yet render queue still empty → continue render pipeline investigation.
 
 **B) Reflection**
@@ -18,6 +19,7 @@ branch: docs/ink-falloff-flag-latch-2025-10-12
 - P≈0.80 — Render list remains empty because the points mesh is filtered out before list generation (culling/state issue).
 - P≈0.65 — Render list is generated but references a different internal cache; need to tap the active list after `gl.render`.
 - P≈0.50 — Additional renderer state (layers, visibility, render order) suppresses the points even after hooks attach.
+- P≈0.40 — Production build may require native module rebuilds (swc/lightningcss) before instrumentation can run in prod mode.
 
 **D) Golden Path**
 - Milestone 18: **Capture render list contents post-render** — Extend instrumentation to detect `null/undefined` lists, log empty counts, and snapshot contents immediately after `gl.render`.

@@ -1,0 +1,3 @@
+Attempted production build + start using Node 20 (NEXT_DISABLE_LIGHTNINGCSS=1).
+`pnpm --filter cryptiq-mindmap-demo run build` exited with segmentation fault (see /tmp/build.log).
+No production console logs captured yet—the build needs native module reconciliation.

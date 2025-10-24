@@ -9,14 +9,16 @@ url: http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1
 
 Summary:
 - MCP (`20251023-230024`) smoke on commit `b99fe68f` (extended render pipeline instrumentation) — **DIAGNOSTIC IMPLEMENTATION FAILURE**: New render pipeline diagnostics (`[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end`) did NOT appear in console output, indicating the diagnostic implementation needs fixing. Existing diagnostics still showed `useVelocityDisp: false` (expected fallback state) while render calls remained zero.
-- **Manual verification (`20251024-0314`, commit `456899a0`, local dev build on Node 20)** — New instrumentation hooks emit `[PC] instrumentation render-list override active`, `[PC] instrumentation points-hook attached`, and `[PC] render-timeout`, but **`[PC] render-list snapshot` still never appears**, confirming the render queue remains empty even after hook attachment. Evidence: `console/456899a0/local-manual-20251024/console-manual-dev.txt`.
+- **Manual verification (`20251024-0510`, local dev build on Node 20)** — New instrumentation hooks emit `[PC] instrumentation render-list override active`, `[PC] renderer-capabilities`, `[PC] points-program-state`, and `[PC] render-timeout`, but **no `[PC] render-list snapshot` / `[PC] render-list empty`** yet, confirming the queue is still empty/missing. Evidence: `console/manual-dev-20251024/console-manual-dev.txt`.
+- **Production build attempt (Node 20)** — `pnpm --filter cryptiq-mindmap-demo run build` currently crashes with SIGSEGV (native module mismatch); production console log pending. Notes: `console/manual-prod-20251024/console-manual-prod.txt`.
 
-### Manual verification console lines (local dev, 20251024-0314)
-- `[PC] instrumentation render-list override active {timestamp: …}` ← Render-list override now installs successfully
-- `[PC] instrumentation points-hook attached {timestamp: …}` ← Points hooks wired after ref becomes ready
-- `[PC] render-timeout {framesWaited: 60, timestamp: …}` ← Render loop exits without draws (expected for failing run)
-- **Missing:** `[PC] render-list snapshot`, `[PC] points-before-render`, `[PC] render-pass begin/end` ← Points never added to render list; no render pass logs triggered
-- Console artifact: `console/456899a0/local-manual-20251024/console-manual-dev.txt`
+### Manual verification console lines (local dev, 20251024-0510)
+- `[PC] renderer-capabilities {…}` ← Logs active WebGL capabilities (max vertex textures, precision)
+- `[PC] points-program-state {…}` ← Confirms shader program not yet compiled when hooks attach
+- `[PC] instrumentation render-list override active {…}` / `[PC] instrumentation points-hook attached {…}` ← Hooks wired after ref ready
+- `[PC] render-timeout {framesWaited: 60, …}` ← Render loop exits without draws (still reproduces)
+- **Missing:** `[PC] render-list snapshot` / `[PC] render-list empty` / `[PC] render-pass begin/end` ← Queue still not populated; snapshot adjustments required
+- Console artifact: `console/manual-dev-20251024/console-manual-dev.txt`
 
 ### Key console lines (MCP):
 - `[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}` ← **Vertex texture unavailable confirmed**

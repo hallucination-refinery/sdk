@@ -60,6 +60,7 @@ const FLUID_BASE_INK_BLEND = 0.78
 const FLUID_DEBUG_VEL_TO_NDC = 0.045
 const FLUID_DEBUG_INK_BLEND = 1.0
 const RENDER_CALL_LOG_LIMIT = 6
+const SCENE_TRAVERSAL_LOG_LIMIT = 8
 const RENDER_LIST_SAMPLE_LIMIT = 12
 const FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC = true
 const CAMERA_DIAGNOSTIC_ACTIVE = true
@@ -3176,10 +3177,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
   const firstRenderListLogRef = React.useRef(false)
+  const renderListMissingLoggedRef = React.useRef(false)
+  const renderListEmptyLoggedRef = React.useRef(false)
+  const renderListAccessFailedLoggedRef = React.useRef(false)
   const renderCallLogCountRef = React.useRef(0)
   const renderCallSeenPointsRef = React.useRef(false)
   const renderPassLogRef = React.useRef(0)
   const renderListInstrumentationLoggedRef = React.useRef(false)
+  const postRenderListLoggedRef = React.useRef(false)
+  const rendererCapsLoggedRef = React.useRef(false)
+  const programStateLoggedRef = React.useRef(false)
+  const sceneTraversalRenderLoggedRef = React.useRef(false)
   const renderSceneUuidRef = React.useRef<string | null>(null)
   const dreamdustRootRef = React.useRef<THREE.Group | null>(null)
   const [dreamdustRoot, setDreamdustRoot] = React.useState<THREE.Group | null>(null)
@@ -3323,16 +3331,30 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       pointsAfterRenderLoggedRef.current = false
       sceneTraversalLoggedRef.current = false
       renderListLoggedRef.current = false
+      renderListMissingLoggedRef.current = false
+      renderListEmptyLoggedRef.current = false
+      renderListAccessFailedLoggedRef.current = false
       renderCallLogCountRef.current = 0
       renderCallSeenPointsRef.current = false
+      renderPassLogRef.current = 0
+      postRenderListLoggedRef.current = false
+      sceneTraversalRenderLoggedRef.current = false
       renderSceneUuidRef.current = null
+      programStateLoggedRef.current = false
       return
     }
     pointsAfterRenderLoggedRef.current = false
     sceneTraversalLoggedRef.current = false
     renderListLoggedRef.current = false
+    renderListMissingLoggedRef.current = false
+    renderListEmptyLoggedRef.current = false
+    renderListAccessFailedLoggedRef.current = false
     renderCallLogCountRef.current = 0
     renderCallSeenPointsRef.current = false
+    renderPassLogRef.current = 0
+    postRenderListLoggedRef.current = false
+    sceneTraversalRenderLoggedRef.current = false
+    programStateLoggedRef.current = false
 
     const geometry = points.geometry as THREE.BufferGeometry | undefined
     if (!geometry) {
@@ -3560,6 +3582,28 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     const originalAfterRender =
       typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined
 
+    const primaryMaterial = Array.isArray(points.material)
+      ? points.material[0] ?? null
+      : (points.material as THREE.Material | null)
+
+    if (!programStateLoggedRef.current && primaryMaterial) {
+      try {
+        const rendererProps = (renderer as any)?.properties?.get?.(primaryMaterial) ?? null
+        const program = rendererProps?.program ?? null
+        console.info('[PC] points-program-state', {
+          timestamp: Date.now(),
+          materialUuid: (primaryMaterial as any)?.uuid ?? null,
+          materialNeedsUpdate: (primaryMaterial as { needsUpdate?: boolean })?.needsUpdate ?? null,
+          materialVersion: (primaryMaterial as { version?: number })?.version ?? null,
+          compiled: !!program,
+          programCacheKey: program?.cacheKey ?? null,
+        })
+      } catch {
+        /* noop */
+      }
+      programStateLoggedRef.current = true
+    }
+
     const beforeProbe = function pointsBeforeRenderProbe(
       this: THREE.Points,
       rendererArg: THREE.WebGLRenderer,
@@ -3570,12 +3614,22 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       group?: THREE.Group,
     ) {
       if (!pointsBeforeRenderLoggedRef.current) {
+        const layersMask = (this as any)?.layers?.mask ?? null
         try {
-          console.info('[PC] points-before-render', {
+          console.info('[PC] points-visibility-state', {
             timestamp: Date.now(),
             renderOrder: this.renderOrder ?? null,
             visible: this.visible,
             frustumCulled: this.frustumCulled,
+            layersMask,
+          })
+        } catch {
+          /* noop */
+        }
+        try {
+          console.info('[PC] points-before-render', {
+            timestamp: Date.now(),
+            renderOrder: this.renderOrder ?? null,
           })
         } catch {
           /* noop */
@@ -3847,19 +3901,37 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           if (dreamdustCtx) {
             dreamdustCtx.setCaps(frozenCaps)
           }
-          ackDreamdustCapsFanout('stage')
-          setUniform('uVertexInkOk', frozenCaps.vertexInkOk ? 1 : 0)
-          if (dreamdustCtx) {
-            dreamdustCtx.setVertexInkOk(frozenCaps.vertexInkOk)
+        ackDreamdustCapsFanout('stage')
+        setUniform('uVertexInkOk', frozenCaps.vertexInkOk ? 1 : 0)
+        if (dreamdustCtx) {
+          dreamdustCtx.setVertexInkOk(frozenCaps.vertexInkOk)
+        }
+        logOnce('caps', {
+          vertexInkOk: frozenCaps.vertexInkOk,
+          floatOk: frozenCaps.floatOk,
+          aliasedPointSizeRange: Array.from(frozenCaps.aliasedPointSizeRange),
+          dpr: frozenCaps.dpr,
+          dprClamp,
+          dprLimit,
+        })
+        if (!rendererCapsLoggedRef.current) {
+          try {
+            const rendererInstance = rendererRef.current ?? gl
+            const glCaps = (rendererInstance as any)?.capabilities ?? {}
+            const ctxAttrs = gl.getContextAttributes?.() ?? null
+            console.info('[PC] renderer-capabilities', {
+              isWebGL2: !!glCaps.isWebGL2,
+              maxVertexTextures: glCaps.maxVertexTextures ?? null,
+              maxTextures: glCaps.maxTextures ?? null,
+              precision: glCaps.precision ?? null,
+              logarithmicDepthBuffer: glCaps.logarithmicDepthBuffer ?? null,
+              contextAttributes: ctxAttrs ?? undefined,
+            })
+          } catch {
+            /* noop */
           }
-          logOnce('caps', {
-            vertexInkOk: frozenCaps.vertexInkOk,
-            floatOk: frozenCaps.floatOk,
-            aliasedPointSizeRange: Array.from(frozenCaps.aliasedPointSizeRange),
-            dpr: frozenCaps.dpr,
-            dprClamp,
-            dprLimit,
-          })
+          rendererCapsLoggedRef.current = true
+        }
           // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -3875,49 +3947,125 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           } catch {
             /* noop */
           }
-          const resolveRenderLists = (
-            rendererInstance: THREE.WebGLRenderer,
-            glInstance: THREE.WebGLRenderer
-          ) => {
+          const resolveRenderLists = () => {
+            const rendererInstance = rendererRef.current ?? gl
             return (
-              (glInstance as any).renderLists ??
-              (glInstance as any).__webglRenderLists ??
-              (rendererInstance as any).renderLists ??
+              (rendererInstance as any)?.renderLists ??
+              (rendererInstance as any)?.__webglRenderLists ??
+              (gl as any)?.renderLists ??
               null
             )
           }
-          const renderLists = resolveRenderLists(gl, gl)
+
+          const logRenderListDetails = (
+            phase: 'pre' | 'post',
+            scene: THREE.Scene,
+            camera: THREE.Camera,
+            { logSnapshot, logEmpty }: { logSnapshot: boolean; logEmpty: boolean }
+          ) => {
+            let lists: any
+            try {
+              lists = resolveRenderLists()
+            } catch (error) {
+              if (!renderListAccessFailedLoggedRef.current) {
+                try {
+                  console.info('[PC] render-list access failed', {
+                    error: (error as Error)?.message ?? 'unknown',
+                  })
+                } catch {
+                  /* noop */
+                }
+                renderListAccessFailedLoggedRef.current = true
+              }
+              return 'error'
+            }
+
+            if (!lists || typeof lists.get !== 'function') {
+              if (!renderListMissingLoggedRef.current) {
+                try {
+                  console.info('[PC] render-list missing', {
+                    timestamp: Date.now(),
+                  })
+                } catch {
+                  /* noop */
+                }
+                renderListMissingLoggedRef.current = true
+              }
+              return 'missing'
+            }
+
+            let snapshot: any
+            try {
+              snapshot = lists.get(scene, camera)
+            } catch (error) {
+              if (!renderListAccessFailedLoggedRef.current) {
+                try {
+                  console.info('[PC] render-list access failed', {
+                    error: (error as Error)?.message ?? 'unknown',
+                  })
+                } catch {
+                  /* noop */
+                }
+                renderListAccessFailedLoggedRef.current = true
+              }
+              return 'error'
+            }
+
+            const opaque = (snapshot?.opaque ?? []) as any[]
+            const transparent = (snapshot?.transparent ?? []) as any[]
+            const counts = {
+              opaqueCount: opaque.length,
+              transparentCount: transparent.length,
+            }
+            if (opaque.length === 0 && transparent.length === 0) {
+              if (logEmpty && !renderListEmptyLoggedRef.current) {
+                try {
+                  console.info('[PC] render-list empty', {
+                    phase,
+                    ...counts,
+                  })
+                } catch {
+                  /* noop */
+                }
+                renderListEmptyLoggedRef.current = true
+              }
+              return 'empty'
+            }
+
+            if (logSnapshot) {
+              try {
+                console.info('[PC] render-list snapshot', {
+                  phase,
+                  pointsInOpaque: opaque.some((entry) => entry?.object?.type === 'Points'),
+                  pointsInTransparent: transparent.some((entry) => entry?.object?.type === 'Points'),
+                  opaqueSample: summarizeRenderEntries(opaque),
+                  transparentSample: summarizeRenderEntries(transparent),
+                  ...counts,
+                })
+              } catch {
+                /* noop */
+              }
+            }
+            return 'hasItems'
+          }
+
+          const renderLists = resolveRenderLists()
           if (renderLists && typeof renderLists.get === 'function') {
             if (!(renderLists as any).__originalGet) {
               const originalGet = renderLists.get.bind(renderLists)
               ;(renderLists as any).__originalGet = originalGet
               renderLists.get = function patchedRenderListsGet(scene: THREE.Scene, camera: THREE.Camera) {
-                const list = originalGet(scene, camera)
                 const shouldLogFirst = !firstRenderListLogRef.current
                 const shouldLogFrame = !renderListLoggedRef.current && forceVisibleRef.current
                 if (shouldLogFirst || shouldLogFrame) {
-                  const opaque = (list?.opaque ?? []) as any[]
-                  const transparent = (list?.transparent ?? []) as any[]
-                  const pointsPresent =
-                    opaque.some((entry) => entry?.object?.type === 'Points') ||
-                    transparent.some((entry) => entry?.object?.type === 'Points')
-                  try {
-                    console.info('[PC] render-list snapshot', {
-                      pointsPresent,
-                      opaqueCount: opaque.length,
-                      transparentCount: transparent.length,
-                      pointsInOpaque: opaque.some((entry) => entry?.object?.type === 'Points'),
-                      pointsInTransparent: transparent.some((entry) => entry?.object?.type === 'Points'),
-                      opaqueSample: summarizeRenderEntries(opaque),
-                      transparentSample: summarizeRenderEntries(transparent),
-                    })
-                  } catch {
-                    /* noop */
-                  }
+                  logRenderListDetails('pre', scene, camera, {
+                    logSnapshot: true,
+                    logEmpty: true,
+                  })
                   firstRenderListLogRef.current = true
                   renderListLoggedRef.current = true
                 }
-                return list
+                return originalGet(scene, camera)
               }
               if (!renderListInstrumentationLoggedRef.current) {
                 try {
@@ -3939,6 +4087,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             } catch {
               /* noop */
             }
+            renderListMissingLoggedRef.current = true
             renderListInstrumentationLoggedRef.current = true
           }
           if (!(gl as any).__originalRender && typeof gl.render === 'function') {
@@ -3970,17 +4119,35 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                   /* noop */
                 }
               }
+              if (!sceneTraversalRenderLoggedRef.current) {
+                try {
+                  const traversal = collectSceneSnapshot(scene, SCENE_TRAVERSAL_LOG_LIMIT)
+                  console.info('[PC] scene-traversal@render', {
+                    pointsFound: traversal.pointsFound,
+                    nodeCount: traversal.nodes.length,
+                    nodes: traversal.nodes,
+                  })
+                } catch {
+                  /* noop */
+                }
+                sceneTraversalRenderLoggedRef.current = true
+              }
+
               const result = originalRender(scene, camera)
               if (forceVisibleRef.current && renderCallLogCountRef.current < RENDER_CALL_LOG_LIMIT) {
                 const renderIndex = renderCallLogCountRef.current
                 renderCallLogCountRef.current += 1
                 try {
-                  const lists = gl.renderLists?.get?.(scene, camera)
-                  const opaque = (lists?.opaque ?? []) as any[]
-                  const transparent = (lists?.transparent ?? []) as any[]
-                  const pointsPresent =
-                    opaque.some((entry) => entry?.object?.type === 'Points') ||
-                    transparent.some((entry) => entry?.object?.type === 'Points')
+                  const lists = resolveRenderLists()
+                  let pointsPresent = false
+                  if (lists && typeof lists.get === 'function') {
+                    const snapshot = lists.get(scene, camera)
+                    const opaque = (snapshot?.opaque ?? []) as any[]
+                    const transparent = (snapshot?.transparent ?? []) as any[]
+                    pointsPresent =
+                      opaque.some((entry) => entry?.object?.type === 'Points') ||
+                      transparent.some((entry) => entry?.object?.type === 'Points')
+                  }
                   const seenPreviously = renderCallSeenPointsRef.current
                   if (pointsPresent) {
                     renderCallSeenPointsRef.current = true
@@ -3999,14 +4166,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                     cameraLayers,
                     pointsPresent,
                     renderCallSeenPointsPreviously: seenPreviously,
-                    opaqueCount: opaque.length,
-                    transparentCount: transparent.length,
-                    opaqueSample: summarizeRenderEntries(opaque),
-                    transparentSample: summarizeRenderEntries(transparent),
                   })
                 } catch {
                   /* noop */
                 }
+              }
+              if (!postRenderListLoggedRef.current) {
+                logRenderListDetails('post', scene, camera, {
+                  logSnapshot: true,
+                  logEmpty: true,
+                })
+                postRenderListLoggedRef.current = true
               }
               if (shouldLogRenderPass) {
                 try {
