@@ -19,6 +19,8 @@ import {
 type UniformRecord = Record<string, { value: unknown }>
 
 const DREAMDUST_SOLID_COLOR_DIAG = true
+const DREAMDUST_DEBUG_FORCE_VELOCITY =
+  process.env.NEXT_PUBLIC_DREAMDUST_DEBUG === '1'
 
 type DreamdustMaterialOptions = {
   unproject: boolean
@@ -756,6 +758,10 @@ export function makeDreamdustMaterial(
     defines.DIAG_SOLID_COLOR = 1
   }
   syncLegacyVertexInkDefine(defines)
+  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
+    defines.USE_VELOCITY_DISP = 1
+    defines.VERTEX_INK_OK = 0
+  }
 
   const params: any = {
     uniforms,
@@ -773,6 +779,10 @@ export function makeDreamdustMaterial(
   ;(material as any).uniforms = uniforms
   ;(material as any).defines = (material as any).defines ?? {}
   syncLegacyVertexInkDefine((material as any).defines)
+  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
+    (material as any).defines.USE_VELOCITY_DISP = 1
+    (material as any).defines.VERTEX_INK_OK = 0
+  }
   if (useGaussian) {
     ;(material as any).defines.USE_GAUSSIAN = 1
   } else {
