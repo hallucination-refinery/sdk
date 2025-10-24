@@ -667,6 +667,43 @@ The follow-on instrumentation committed in `b99fe68f` did **not** emit any of th
 
 ---
 
+## Next Instrumentation Revision – Detailed Requirements (2025-10-24)
+
+The following documentation updates mirror the action items agreed upon after the latest audit. These steps must be reflected in future implementation work **before** another smoke run.
+
+### A. Render-List Diagnostics
+1. **Null detection**: Emit `[PC] render-list missing` when the resolved renderLists getter is absent or returns a falsy value (log timestamp and renderer info).
+2. **Empty detection**: When the getter returns arrays of length zero, log `[PC] render-list empty { opaqueCount, transparentCount }`.
+3. **Post-render snapshot**: Immediately after `gl.render(scene, camera)`, call the getter again and log the counts/sample to capture post-render state.
+4. **Error safety**: Wrap all getter usage in try/catch to prevent crashes if Three.js changes internals; log `[PC] render-list access failed { error }` on exception.
+
+### B. Mesh & Shader Verification
+1. Log `[PC] points-visibility-state { visible, frustumCulled, renderOrder, layersMask }` right before the first render attempt.
+2. Capture shader status once via `[PC] points-program-state { compiled, programId, needsUpdate, materialUuid }`; if available, include any compile errors.
+3. Note material meta (`transparent`, `depthWrite`, `blendMode`) to reconcile with renderer expectations.
+
+### C. Scene Graph & Renderer Introspection
+1. Emit a compact traversal at render time (`[PC] scene-traversal@render …`) including whether the Dreamdust group is attached to the active render scene and a small sample of node paths.
+2. Log renderer capabilities/extensions once (`[PC] renderer-capabilities { webglVersion, maxVertexTextures, extensions: [...] }`) to confirm hardware constraints.
+
+### D. Dev vs Prod Comparison Plan
+1. Document and execute a production build verification:
+   - `pnpm --filter cryptiq-mindmap-demo run build` under Node ≥ 20.
+   - Serve the production build (`pnpm --filter cryptiq-mindmap-demo exec next start -p 3000` or equivalent).
+   - Capture console logs with the same instrumentation tags, storing them under `console/<commit>/local-prod-YYYYMMDD/`.
+2. Compare dev vs prod outputs and record any differences in render-list availability or shader behavior.
+
+### E. Manual Verification Checklist (Gate Before Automation)
+1. In both dev and prod modes, confirm the appearance of:
+   - `[PC] instrumentation render-list override active`
+   - Either `[PC] render-list missing` or `[PC] render-list empty` followed by `[PC] render-list snapshot`
+   - `[PC] points-program-state` and `[PC] points-visibility-state`
+   - `[PC] render-pass begin` / `[PC] render-pass end`
+2. Archive the console output for each mode in `console/<commit>/local-<env>-YYYYMMDD/`.
+3. Update `10-latest-smoke-evidence.md`, `06-working-document.md`, and `03-rendering-pipeline-trace.md` with the new findings before initiating the next smoke workflow.
+
+---
+
 ## AUDIT REPORT – Guarantee Probe Emission Plan
 **Date**: 2025-10-24
 **Auditor**: Independent Verification Agent (SAME as previous failed audits)
