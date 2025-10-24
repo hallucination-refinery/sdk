@@ -70,6 +70,26 @@ Deliver the Dreamdust ink experience defined in `docs/initiatives/cryptiq-mindma
 - Manual fallback notes (if Playwright unavailable): `context-pack-2025-10-15/console/dev-verify-*/manual-notes.md`.
 <!-- DD-PLAN:END:EVIDENCE -->
 
+<!-- DD-PLAN:BEGIN:QUICK_VERIFY -->
+## Quick Verify (User Kit)
+1. Prepare environment (one shell):
+   ```bash
+   nvm use 20
+   pnpm install --frozen-lockfile
+   NEXT_PUBLIC_DREAMDUST_DEBUG=1 node scripts/dd-verify-console.js
+   ```
+   - Expected within ≤2 frames / ≤5s: `[PC] render-info`, `[PC] render-list snapshot` **or** `[PC] render-list empty`, `[PC] points-before-render` **or** `[PC] points-after-render`, `[PC] render-pass begin`, `[PC] render-pass end`.
+2. Manual fallback (if Playwright missing):
+   ```bash
+   nvm use 20
+   pnpm --filter cryptiq-mindmap-demo run dev 2>&1 | tee /tmp/dreamdust-dev.log
+   # In a browser tab:
+   #   http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1
+   rg -n "\\[PC\\] render-info|\\[PC\\] render-list (snapshot|empty)|\\[PC\\] points-(before|after)-render|\\[PC\\] render-pass (begin|end)" /tmp/dreamdust-dev.log
+   ```
+   - Stop dev server with `Ctrl+C`; archive `/tmp/dreamdust-dev.log` and the `rg` output.
+<!-- DD-PLAN:END:QUICK_VERIFY -->
+
 <!-- DD-PLAN:BEGIN:RISKS -->
 ## Risks/Unknowns & Quick Probes
 | Risk | Quick Probe |
