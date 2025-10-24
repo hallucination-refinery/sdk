@@ -6,7 +6,7 @@ Deliver the Dreamdust ink interaction defined in `01-vision-and-acceptance.md`: 
 <!-- DD-PLAN:END:PURPOSE -->
 
 <!-- DD-PLAN:BEGIN:CURRENT_EVIDENCE -->
--## 2) Current Evidence (latest & verifiable)
+## 2) Current Evidence (latest & verifiable)
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/console/37fab223/docs/ink-falloff-flag-latch-2025-10-12/20251024-200740/console-mcp.json:74,214` (commit `cb90ae8f`, 2025-10-24T20:07Z) — `[PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":false,...}` at line `74`; `[PC] render-timeout {framesWaited: 60,...}` and `[PC] render-info {calls: 0, points: 0,...}` at lines `209-214`; **no** `[PC] render-list snapshot|render-list empty`, `points-before/after-render`, or `render-pass begin/end`.
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/37fab223/docs/ink-falloff-flag-latch-2025-10-12/20251024-200740/2025-10-24-forceVisible-mcp-debug.png` — MCP screenshot for the same run shows UI but no Dreamdust particles, matching zero-draw metrics.
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/37fab223/docs/ink-falloff-flag-latch-2025-10-12/20251024-201106/ink-playwright-failed-{1,2}.png` — Playwright smoke timed out (60 s) without diagnostics; no Playwright console JSON was captured for run `20251024-201106`.
@@ -37,35 +37,11 @@ Implement each patch with debug guards, then run lint/build/smoke **after** land
 
 ### 5.1 Debug Flag Proof (`PointCloudStage.tsx`)
 ```diff
-diff --git a/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx b/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
-@@ -1509,6 +1509,7 @@ export function PointCloudStage(props: PointCloudStageProps) {
-   const [fluidBoost, setFluidBoost] = React.useState(process.env.NEXT_PUBLIC_FLUID_DEBUG === '1')
-   const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
-   const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
+@@
+-  const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
++  const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
 +  const dreamdustDebugLogRef = React.useRef(false)
-@@ -1520,8 +1521,20 @@ export function PointCloudStage(props: PointCloudStageProps) {
-   }, [rendererReadyTick])
-   const [bloomGuardReady, setBloomGuardReady] = React.useState(false)
-   const [instanceCount, setInstanceCount] = React.useState<number | null>(null)
-   const [dprClampValue, setDprClampValue] = React.useState<number | null>(null)
-   const [devicePixelRatioRaw, setDevicePixelRatioRaw] = React.useState<number | null>(null)
-   const [lowPowerGuard, setLowPowerGuard] = React.useState(false)
-   const [fluidBoost, setFluidBoost] = React.useState(process.env.NEXT_PUBLIC_FLUID_DEBUG === '1')
-   const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
-   const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
-@@ -1521,6 +1534,22 @@ export function PointCloudStage(props: PointCloudStageProps) {
-   React.useEffect(() => {
-     if (typeof window === 'undefined') {
-       return
-     }
-     const params = new URLSearchParams(window.location.search)
-     if (params.get('fluidBoost') === '1') {
-       setFluidBoost(true)
-     } else if (params.get('fluidBoost') === '0') {
-       setFluidBoost(false)
-     }
-     setForceVisible(params.get('forceVisible') === '1')
-     const debugParam = params.get(DD_DEBUG_QUERY_KEY)
+@@
 -    if (debugParam === '1') {
 -      setDreamdustDebug(true)
 -    } else if (debugParam === '0') {
@@ -78,62 +54,52 @@ diff --git a/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx b/apps
 +      dreamdustDebugRef.current = effectiveDebug
 +    }
 +    if (!dreamdustDebugLogRef.current) {
--+      try {
--+        console.info('[PC] ddDebug', {
--+          env: DREAMDUST_DEBUG_ENV,
--+          query: queryEnabled,
--+          effective: effectiveDebug,
--+        })
--+      } catch {
--+        /* noop */
--+      }
 +      try {
 +        console.info('[PC] ddDebug', {
 +          env: DREAMDUST_DEBUG_ENV,
 +          query: queryEnabled,
 +          effective: effectiveDebug,
-+          resolvedVertexInkOk: runtimeCaps?.vertexInkOk ?? null,
++          resolvedVertexInkOk: null, // runtimeCaps not available on first mount
 +        })
 +      } catch {
 +        /* noop */
 +      }
 +      dreamdustDebugLogRef.current = true
 +    }
-   }, [])
+  }, [])
 ```
-Rollback:
-```bash
-git restore apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
-```
-Risk: No side effects when debug is disabled; emits one log on first mount only.
-
+Decisive observation: the draw-time probe (`[PC] points-before-render`) already logs the resolved material defines so future runs can confirm when `vertexInkOk` transitions.
 ### 5.2 Velocity Override — Last Write Wins (`DreamdustMaterial.ts`)
 ```diff
-diff --git a/apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts b/apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
-@@ -760,6 +760,11 @@ export function createDreamdustMaterial(options: DreamdustMaterialOptions) {
-   if (DREAMDUST_SOLID_COLOR_DIAG) {
-     defines.DIAG_SOLID_COLOR = 1
-   }
-   syncLegacyVertexInkDefine(defines)
+@@
+-  syncLegacyVertexInkDefine(defines)
+-  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
+-    defines.USE_VELOCITY_DISP = 1
+-    defines.VERTEX_INK_OK = 0
+-  }
++  syncLegacyVertexInkDefine(defines)
 +  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
 +    defines.USE_VELOCITY_DISP = 1
 +    defines.VERTEX_INK_OK = 0
-+  }
-@@ -786,6 +791,14 @@ export function createDreamdustMaterial(options: DreamdustMaterialOptions) {
-   syncLegacyVertexInkDefine((material as any).defines)
-   if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
-     (material as any).defines.USE_VELOCITY_DISP = 1
-     (material as any).defines.VERTEX_INK_OK = 0
 +    material.needsUpdate = true
 +    material.version = (material.version ?? 0) + 1
-   }
++  }
+@@
+-  syncLegacyVertexInkDefine((material as any).defines)
+-  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
+-    (material as any).defines.USE_VELOCITY_DISP = 1
+-    (material as any).defines.VERTEX_INK_OK = 0
+-    material.needsUpdate = true
+-    material.version = (material.version ?? 0) + 1
+-  }
++  syncLegacyVertexInkDefine((material as any).defines)
++  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
++    (material as any).defines.USE_VELOCITY_DISP = 1
++    (material as any).defines.VERTEX_INK_OK = 0
++    material.needsUpdate = true
++    material.version = (material.version ?? 0) + 1
++  }
 ```
-Rollback:
-```bash
-git restore apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts
-```
-Risk: Override activates only with debug flag; production defaults remain unchanged.
-
 ### 5.3 Draw-Time Truth (`PointCloudStage.tsx`)
 ```diff
 diff --git a/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx b/apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx
