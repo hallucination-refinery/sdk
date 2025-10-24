@@ -32,7 +32,7 @@ Deliver the Dreamdust ink experience defined in `docs/initiatives/cryptiq-mindma
 1. **Lock runbook** — Finalise this PLANS.md with dev-only scope, toggles, evidence destinations. Adjust immediately if repo facts differ.
 2. **Record verification inputs** — Document target route, required tags, and instrumentation anchors (PointCloudStage/DreamdustMaterial) inside PLANS.md.
 3. **Apply gated diagnostics** — Patch `PointCloudStage.tsx` to add guard-state logging, stage-points probe, runtime inspection surface, all behind `NEXT_PUBLIC_DREAMDUST_DEBUG` / `ddDebug`.
-4. **Install verification helper** — Add `scripts/dd-verify-console.js` (Playwright) and manual fallback instructions; ensure helper cleans up the dev server.
+4. **Install verification helper** — Add `scripts/dd-verify-console.js` (Playwright) and write manual fallback commands; ensure helper cleans up the dev server.
 5. **Run dev verification** — Execute helper with `NEXT_PUBLIC_DREAMDUST_DEBUG=1`, capture console+summary under `console/dev-verify-*`.
 6. **Postmortem & next probe** — Append results + remaining questions to PLANS.md, highlighting the next micro-step if tags are missing.
 <!-- DD-PLAN:END:PLAN -->
@@ -45,6 +45,13 @@ Deliver the Dreamdust ink experience defined in `docs/initiatives/cryptiq-mindma
 - **Code anchors**  
   - `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`: render-list override (`logRenderListDetails`), `renderLists.get` patch, points `onBefore/AfterRender`, `RenderInfoLogger`.
   - `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:793-818`: `[PC] material-defines` payload.
+- **Verification helper**  
+  - Primary: `scripts/dd-verify-console.js` (spawns dev, runs Playwright, prints JSON summary).  
+  - Manual fallback:  
+    ```bash
+    pnpm --filter cryptiq-mindmap-demo run dev 2>&1 | tee /tmp/dreamdust-dev.log
+    rg '\\[PC\\] render-' /tmp/dreamdust-dev.log
+    ```
 <!-- DD-PLAN:END:INPUTS -->
 
 <!-- DD-PLAN:BEGIN:PROBES -->
