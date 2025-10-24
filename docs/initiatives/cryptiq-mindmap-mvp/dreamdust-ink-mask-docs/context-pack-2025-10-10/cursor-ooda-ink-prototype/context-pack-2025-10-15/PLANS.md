@@ -37,6 +37,16 @@ Deliver the Dreamdust ink experience defined in `docs/initiatives/cryptiq-mindma
 6. **Postmortem & next probe** — Append results + remaining questions to PLANS.md, highlighting the next micro-step if tags are missing.
 <!-- DD-PLAN:END:PLAN -->
 
+<!-- DD-PLAN:BEGIN:INPUTS -->
+## Verification Inputs (Dev)
+- **Route & toggles**: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1` (mirrored by `NEXT_PUBLIC_DREAMDUST_DEBUG=1` env).
+- **Required console tags**  
+  `[PC] render-info` · `[PC] render-list snapshot` · `[PC] render-list empty` · `[PC] render-list guard-state` · `[PC] points-before-render` · `[PC] points-after-render` · `[PC] stage-points-missing` · `[PC] render-pass begin` · `[PC] render-pass end` · `[PC] renderer-render-pass` · `[PC] render-timeout`
+- **Code anchors**  
+  - `apps/cryptiq-mindmap-demo/app/components/PointCloudStage.tsx`: render-list override (`logRenderListDetails`), `renderLists.get` patch, points `onBefore/AfterRender`, `RenderInfoLogger`.
+  - `apps/cryptiq-mindmap-demo/app/components/dreamdust/DreamdustMaterial.ts:793-818`: `[PC] material-defines` payload.
+<!-- DD-PLAN:END:INPUTS -->
+
 <!-- DD-PLAN:BEGIN:PROBES -->
 ## Diagnostic Probes (Dev Execution)
 - **Render-list guard health** — Expect `[PC] render-list guard-state` once per session; must precede `[PC] render-list snapshot` or `[PC] render-list empty`.
@@ -65,8 +75,8 @@ Deliver the Dreamdust ink experience defined in `docs/initiatives/cryptiq-mindma
 
 <!-- DD-PLAN:BEGIN:CHECKLIST -->
 ## Progress Checklist
-- [ ] PLANS.md updated with dev-only verification runbook
-- [ ] Route, tag strings, instrumentation anchors recorded
+- [x] PLANS.md updated with dev-only verification runbook
+- [x] Route, tag strings, instrumentation anchors recorded (see Verification Inputs)
 - [ ] Debug-gated instrumentation edits landed
 - [ ] Verification helper & manual fallback committed
 - [ ] Dev verification artifacts captured under `console/dev-verify-*`
