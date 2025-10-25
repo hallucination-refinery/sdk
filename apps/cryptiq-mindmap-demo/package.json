@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": ". \\\"$HOME/.nvm/nvm.sh\\\" >/dev/null 2>&1 || { echo 'Run: nvm use 20'; exit 1; }; nvm use 20 >/dev/null && next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

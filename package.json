@@ -5,10 +5,11 @@
   "type": "module",
   "packageManager": "pnpm@9.15.1",
   "engines": {
-    "node": ">=20.0.0",
+    "node": "^20",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
+    "env:check": "node -e \"const [major]=process.versions.node.split('.'); if (Number(major) < 20) process.exit(1);\"",
     "build": "tsc -b --clean tsconfig.build.json && tsc -b tsconfig.build.json",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
@@ -16,7 +17,7 @@
     "prepare": "husky install",
     "type-check": "tsc -b --clean tsconfig.build.json && tsc -b tsconfig.build.json",
     "clean": "turbo run clean",
-    "dev": "turbo run dev",
+    "dev": ". \\\"$HOME/.nvm/nvm.sh\\\" >/dev/null 2>&1 || { echo 'Run: nvm use 20'; exit 1; }; nvm use 20 >/dev/null && turbo run dev",
     "docs": "typedoc --plugin typedoc-plugin-markdown --entryPointStrategy Packages --entryPoints packages/* --skipErrorChecking --githubPages false --tsconfig tsconfig.build.json",
     "docs:watch": "typedoc --watch",
     "watch-smoke": "node scripts/watch-smoke.cjs",
@@ -28,7 +29,8 @@
     "validate:formations": "node --import=tsx apps/cryptiq-mindmap-demo/scripts/formations/validate.ts",
     "build:demo": "pnpm --filter cryptiq-mindmap-demo run build",
     "start:demo": "pnpm --filter cryptiq-mindmap-demo run start",
-    "smoke:diag": "node scripts/smoke-test.js"
+    "smoke:diag": "node scripts/smoke-test.js",
+    "verify:console": ". \\\"$HOME/.nvm/nvm.sh\\\" >/dev/null 2>&1 || { echo 'Run: nvm use 20'; exit 1; }; nvm use 20 >/dev/null && node scripts/dd-verify-console.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.2",
