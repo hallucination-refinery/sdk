@@ -1524,8 +1524,17 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const sentinelPoints = React.useMemo(() => {
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3))
-    const material = new THREE.PointsMaterial({ size: 0.05, color: 0xffffff })
-    return new THREE.Points(geometry, material)
+    const material = new THREE.PointsMaterial({
+      size: 15,
+      sizeAttenuation: false,
+      color: 0xffffff,
+      depthTest: false,
+    })
+    const points = new THREE.Points(geometry, material)
+    points.name = 'debug-sentinel'
+    points.frustumCulled = false
+    points.renderOrder = -1000
+    return points
   }, [])
   const sentinelLoggedRef = React.useRef(false)
   const [forceVisible, setForceVisible] = React.useState(false)
@@ -1560,7 +1569,26 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       }
       dreamdustDebugLogRef.current = true
     }
+    if (effectiveDebug) {
+      let frame = 0
+      let cancelled = false
+      const pump = () => {
+        if (cancelled) return
+        invalidate()
+        frame += 1
+        if (frame < 2) {
+          requestAnimationFrame(pump)
+        }
+      }
+      pump()
+      return () => {
+        cancelled = true
+      }
+    }
+    return undefined
   }, [dreamdustDebug])
+
+  const debugCamera = useThree((state) => state.camera)
   React.useEffect(() => {
     dreamdustDebugRef.current = dreamdustDebug
   }, [dreamdustDebug])
@@ -1575,6 +1603,29 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     }
     sentinelLoggedRef.current = true
   }, [dreamdustDebug, sentinelPoints])
+
+  React.useEffect(() => {
+    if (!dreamdustDebugRef.current) {
+      return
+    }
+    const cam = debugCamera as THREE.PerspectiveCamera | undefined
+    if (!cam) {
+      return
+    }
+    const dir = new THREE.Vector3()
+    if (typeof cam.getWorldDirection === 'function') {
+      cam.getWorldDirection(dir)
+    }
+    if (dir.lengthSq() === 0) {
+      dir.set(0, 0, -1)
+    } else {
+      dir.normalize()
+    }
+    const distance = Math.max(2, cam.position.length() * 0.05 || 5)
+    sentinelPoints.position.copy(cam.position).addScaledVector(dir, -distance)
+    sentinelPoints.visible = true
+    sentinelPoints.frustumCulled = false
+  }, [debugCamera, dreamdustDebug, sentinelPoints])
   const resolvedVelToNdc = fluidBoost ? FLUID_DEBUG_VEL_TO_NDC : FLUID_BASE_VEL_TO_NDC
   const resolvedInkBlend = fluidBoost ? FLUID_DEBUG_INK_BLEND : FLUID_BASE_INK_BLEND
   const [drawing, setDrawing] = React.useState(false)
@@ -3667,7 +3718,10 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       return
     }
 
-    const points = stagePointsRef.current
+    let points: THREE.Points | null = stagePointsRef.current
+    if (!points && dreamdustDebugRef.current) {
+      points = sentinelPoints
+    }
     if (!points) {
       cancelPendingRaf()
       retryRafRef.current = requestAnimationFrame(() => {
@@ -3841,6 +3895,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     simUvVersion,
     debugVertexLog,
     stagePointsReadyTick,
+    sentinelPoints,
+    dreamdustDebug,
   ])
 
   function collectSceneSnapshot(root: THREE.Object3D, maxNodes = 64) {
