@@ -1,0 +1,184 @@
+
+> cryptiq-mindmap-demo@0.1.0 dev /workspace/sdk/apps/cryptiq-mindmap-demo
+> next dev --turbopack
+
+   ▲ Next.js 15.3.5 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://172.30.1.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 1451ms
+ ○ Compiling /quiz/[slug] ...
+Failed to download `IBM Plex Mono` from Google Fonts. Using fallback font instead.
+Failed to download `Anton` from Google Fonts. Using fallback font instead.
+ ✓ Compiled /quiz/[slug] in 8.2s
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1 200 in 9607ms
+ ⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 3.4s
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/positions.f32 404 in 3615ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/positions.f32 404 in 101ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/depth_rg.png 404 in 143ms
+ GET /assets/pointclouds/scene-03/color.png 404 in 144ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/depth16.png 404 in 72ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1 200 in 180ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/positions.f32 404 in 202ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/positions.f32 404 in 68ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/depth_rg.png 404 in 128ms
+ GET /assets/pointclouds/scene-03/color.png 404 in 131ms
+ ⚠ [next]/internal/font/google/anton_d0dedbcc.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Anton:wght@400&display=swap.
+
+
+ ⚠ [next]/internal/font/google/ibm_plex_mono_c728b84.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap.
+
+
+ GET /assets/pointclouds/scene-03/depth16.png 404 in 73ms
+/workspace/sdk/apps/cryptiq-mindmap-demo:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  cryptiq-mindmap-demo@0.1.0 dev: `next dev --turbopack`
+Command failed with signal "SIGTERM"
+[?25h
