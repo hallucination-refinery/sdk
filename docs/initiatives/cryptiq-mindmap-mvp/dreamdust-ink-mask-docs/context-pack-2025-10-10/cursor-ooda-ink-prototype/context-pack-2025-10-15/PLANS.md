@@ -12,7 +12,16 @@ Deliver the Dreamdust ink interaction defined in `01-vision-and-acceptance.md`: 
 - `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/37fab223/docs/ink-falloff-flag-latch-2025-10-12/20251024-201106/ink-playwright-failed-{1,2}.png` — Playwright smoke timed out (60 s) without diagnostics; no Playwright console JSON was captured for run `20251024-201106`.
 - `console/manual-dev-20251024/console-manual-dev.txt:19-58` (commit `34645725`, 2025-10-24T05:10Z) reiterates `[PC] material-defines … useVelocityDisp:false`, `[PC] render-timeout`, and `[PC] render-info {calls: 0}` under manual dev server; the diagnostic set mirrors the MCP capture.
 - `console/manual-prod-20251024/console-manual-prod.txt:1-3` logs the Node 20 production build segfault with `NEXT_DISABLE_LIGHTNINGCSS=1`; no production console artifacts exist yet.
+- `docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/console/72ebe3a2/docs/ink-falloff-flag-latch-2025-10-12/20251024-220825/console-playwright.json:1-40` (commit `760c7d6d`, 2025-10-24T22:08Z) — summary shows `[PC] ddDebug:1`, `[PC] sentinel-points:1`, and `render-info:0`; logs include `[PC] ddDebug {env: true, query: true, effective: true, resolvedVertexInkOk: null}` and `[PC] sentinel-points {uuid: …}` but **no** `[PC] points-before-render`, render-list, or render-pass tags; Playwright run still reports `ok: false`.
 <!-- DD-PLAN:END:CURRENT_EVIDENCE -->
+
+<!-- DD-PLAN:BEGIN:PR_CONTEXT -->
+## PR Context – #248 (`pr-248`, HEAD `760c7d6d`)
+- 760c7d6d docs(ink): dev verification 20251024-220825 (debug override + instrumentation) — base:2f54f0e4
+- 2f54f0e4 plan(dreamdust): apply Claude audit fixes (heading hygiene; dedupe 5.1; add first-site needsUpdate+version++; guard runtimeCaps)
+- 7aed98c1 plan(dreamdust): address Claude audit (fix evidence paths/lines; harden patches: needsUpdate+version++; ddDebug effective gate; risks+checklist)
+- 2025-10-24 capture artifacts added: `console/72ebe3a2/.../console-manual.txt`, `console/72ebe3a2/.../console-playwright.json`, and PNG screenshots under `assets/37fab223/...` (binary images; unchanged in this task).
+<!-- DD-PLAN:END:PR_CONTEXT -->
 
 <!-- DD-PLAN:BEGIN:PRECONDITIONS -->
 ## 3) Preconditions for Next Smoke (hard gates)
@@ -256,6 +265,7 @@ Risk: Adds a single-vertex debug-only points mesh; must be removed once real par
 3. **Launch dev server** — `NEXT_PUBLIC_DREAMDUST_DEBUG=1 pnpm --filter cryptiq-mindmap-demo run dev`.
 4. **Visit route** — Browser to `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1`.
 5. **Verify console** — Within ≤2 frames expect `[PC] ddDebug`, `[PC] render-pass begin`, `[PC] render-list snapshot|render-list empty`, `[PC] points-before-render`, `[PC] points-after-render`, `[PC] renderer-render-pass`, and `[PC] render-info` with `calls >= 1`.
+   - If `/assets/pointclouds/scene-03/*` requests continue to return 404 (see `console/72ebe3a2/.../console-manual.txt`), mount the prebaked scene bundle or point the stage at an available dataset before rerunning; without geometry the render list will remain empty even with the sentinel.
 6. **Archive artifacts** — Capture full console stream (MCP helper or manual `tee`), plus screenshots before/after tap; save to `${RUN_ID}` directories.
 7. **Automation (optional post-visual)** — `BASE_URL=http://127.0.0.1:3000 SMOKE_ROUTE="/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1" RUN_ID=${RUN_ID} ... pnpm exec playwright test tests/ink.smoke.spec.ts --reporter=line`.
 8. **Failure stop** — If `render-info.calls` stays `0` after 60 frames or `[PC] ddDebug.effective` is `false`, halt, capture logs, and do not proceed to Playwright.
@@ -296,6 +306,7 @@ Risk: Adds a single-vertex debug-only points mesh; must be removed once real par
 
 ### Change Log
 - 2025-10-24 — Locked pre-smoke BULLETPROOF plan (commit pending on branch `docs/ink-falloff-flag-latch-2025-10-12`).
+- 2025-10-24 — PR #248 (`pr-248`, `760c7d6d`) audit: documented latest dev verification artifacts, added PR context, and updated next steps.
 - (Slot) — Next evidence capture →
 - (Slot) — Instrumentation removal / cleanup →
 <!-- DD-PLAN:END:CHECKLIST -->
