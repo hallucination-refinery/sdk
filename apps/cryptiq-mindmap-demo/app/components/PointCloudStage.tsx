@@ -1520,29 +1520,61 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [fluidBoost, setFluidBoost] = React.useState(process.env.NEXT_PUBLIC_FLUID_DEBUG === '1')
   const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
   const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
+  const dreamdustDebugLogRef = React.useRef(false)
+  const sentinelPoints = React.useMemo(() => {
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3))
+    const material = new THREE.PointsMaterial({ size: 0.05, color: 0xffffff })
+    return new THREE.Points(geometry, material)
+  }, [])
+  const sentinelLoggedRef = React.useRef(false)
   const [forceVisible, setForceVisible] = React.useState(false)
   const forceVisibleRef = React.useRef(false)
   React.useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
+    let queryEnabled = false
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('fluidBoost') === '1') {
+        setFluidBoost(true)
+      } else if (params.get('fluidBoost') === '0') {
+        setFluidBoost(false)
+      }
+      setForceVisible(params.get('forceVisible') === '1')
+      queryEnabled = params.get(DD_DEBUG_QUERY_KEY) === '1'
     }
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('fluidBoost') === '1') {
-      setFluidBoost(true)
-    } else if (params.get('fluidBoost') === '0') {
-      setFluidBoost(false)
+    const effectiveDebug = DREAMDUST_DEBUG_ENV || queryEnabled
+    if (dreamdustDebug !== effectiveDebug) {
+      setDreamdustDebug(effectiveDebug)
     }
-    setForceVisible(params.get('forceVisible') === '1')
-    const debugParam = params.get(DD_DEBUG_QUERY_KEY)
-    if (debugParam === '1') {
-      setDreamdustDebug(true)
-    } else if (debugParam === '0') {
-      setDreamdustDebug(false)
+    dreamdustDebugRef.current = effectiveDebug
+    if (!dreamdustDebugLogRef.current) {
+      try {
+        console.info('[PC] ddDebug', {
+          env: DREAMDUST_DEBUG_ENV,
+          query: queryEnabled,
+          effective: effectiveDebug,
+          resolvedVertexInkOk: null,
+        })
+      } catch {
+        /* noop */
+      }
+      dreamdustDebugLogRef.current = true
     }
-  }, [])
+  }, [dreamdustDebug])
   React.useEffect(() => {
     dreamdustDebugRef.current = dreamdustDebug
   }, [dreamdustDebug])
+  React.useEffect(() => {
+    if (!dreamdustDebugRef.current || sentinelLoggedRef.current) {
+      return
+    }
+    try {
+      console.info('[PC] sentinel-points', { uuid: sentinelPoints.uuid })
+    } catch {
+      /* noop */
+    }
+    sentinelLoggedRef.current = true
+  }, [dreamdustDebug, sentinelPoints])
   const resolvedVelToNdc = fluidBoost ? FLUID_DEBUG_VEL_TO_NDC : FLUID_BASE_VEL_TO_NDC
   const resolvedInkBlend = fluidBoost ? FLUID_DEBUG_INK_BLEND : FLUID_BASE_INK_BLEND
   const [drawing, setDrawing] = React.useState(false)
@@ -3687,6 +3719,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       group?: THREE.Group,
     ) {
       if (!pointsBeforeRenderLoggedRef.current) {
+        const rendererProps = (rendererArg as any)?.properties?.get?.(material) ?? null
+        const defines = (material as any)?.defines ?? null
         const layersMask = (this as any)?.layers?.mask ?? null
         try {
           console.info('[PC] points-visibility-state', {
@@ -3702,6 +3736,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         try {
           console.info('[PC] points-before-render', {
             timestamp: Date.now(),
+            useVelocityDisp: !!(defines?.USE_VELOCITY_DISP ?? false),
+            vertexInkOkDefine: !!(defines?.VERTEX_INK_OK ?? false),
+            programCompiled: !!(rendererProps?.program ?? null),
             renderOrder: this.renderOrder ?? null,
           })
         } catch {
@@ -4158,7 +4195,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               ;(renderLists as any).__originalGet = originalGet
               renderLists.get = function patchedRenderListsGet(scene: THREE.Scene, camera: THREE.Camera) {
                 const shouldLogFirst = !firstRenderListLogRef.current
-                const shouldLogFrame = !renderListLoggedRef.current && forceVisibleRef.current
+                const shouldLogFrame =
+                  !renderListLoggedRef.current &&
+                  (forceVisibleRef.current || dreamdustDebugRef.current)
                 if (dreamdustDebugRef.current && !renderListGuardLoggedRef.current) {
                   try {
                     console.info('[PC] render-list guard-state', {
@@ -4224,7 +4263,9 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 }
               }
               const renderPassIndex = renderPassLogRef.current
-              const shouldLogRenderPass = renderPassIndex < RENDER_CALL_LOG_LIMIT
+              const shouldLogRenderPass =
+                renderPassIndex < RENDER_CALL_LOG_LIMIT ||
+                (dreamdustDebugRef.current && renderPassIndex < 2)
               if (shouldLogRenderPass) {
                 try {
                   console.info('[PC] render-pass begin', {
@@ -4404,6 +4445,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             }}
           />
         )}
+        {dreamdustDebugRef.current && <primitive object={sentinelPoints} />}
         <TempForceDriver
           tempForceRef={tempForceRef}
           tempIntensityRef={tempIntensityRef}

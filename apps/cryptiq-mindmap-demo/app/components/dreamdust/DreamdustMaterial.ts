@@ -758,7 +758,8 @@ export function makeDreamdustMaterial(
     defines.DIAG_SOLID_COLOR = 1
   }
   syncLegacyVertexInkDefine(defines)
-  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
+  const velocityOverrideActive = !resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY
+  if (velocityOverrideActive) {
     defines.USE_VELOCITY_DISP = 1
     defines.VERTEX_INK_OK = 0
   }
@@ -779,9 +780,11 @@ export function makeDreamdustMaterial(
   ;(material as any).uniforms = uniforms
   ;(material as any).defines = (material as any).defines ?? {}
   syncLegacyVertexInkDefine((material as any).defines)
-  if (!resolved.vertexInkOk && DREAMDUST_DEBUG_FORCE_VELOCITY) {
-    (material as any).defines.USE_VELOCITY_DISP = 1
-    (material as any).defines.VERTEX_INK_OK = 0
+  if (velocityOverrideActive) {
+    ;(material as any).defines.USE_VELOCITY_DISP = 1
+    ;(material as any).defines.VERTEX_INK_OK = 0
+    material.needsUpdate = true
+    material.version = (material.version ?? 0) + 1
   }
   if (useGaussian) {
     ;(material as any).defines.USE_GAUSSIAN = 1
@@ -815,9 +818,6 @@ export function makeDreamdustMaterial(
     /* noop */
   }
   material.needsUpdate = true
-  if (DREAMDUST_DEBUG_FORCE_VELOCITY) {
-    material.version = (material.version ?? 0) + 1
-  }
 
   // CRITICAL FIX: Force shader recompile when USE_GAUSSIAN define changes
   // THREE.js program cache doesn't key by defines alone, so we add explicit cache key

@@ -1,0 +1,436 @@
+{
+  "ok": false,
+  "summary": {
+    "[PC] ddDebug": 1,
+    "[PC] sentinel-points": 1,
+    "[PC] render-list guard-state": 0,
+    "[PC] render-list snapshot|empty": 0,
+    "[PC] points-before-render": 0,
+    "[PC] points-after-render": 0,
+    "[PC] render-pass begin": 0,
+    "[PC] render-pass end": 0,
+    "[PC] renderer-render-pass": 0,
+    "[PC] render-info": 0
+  },
+  "renderInfo": [],
+  "errorMessage": null,
+  "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+  "logs": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "info",
+      "text": "[PC] ddDebug {env: true, query: true, effective: true, resolvedVertexInkOk: null}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] sentinel-points {uuid: 8c06f7d4-b673-40a0-873c-8317ec1acac1}"
+    },
+    {
+      "type": "log",
+      "text": "[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}"
+    },
+    {
+      "type": "info",
+      "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 0, stageUvCount: 0, simStageUvCount: 0, simKey: null}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] forceVisible applied {depthTest: TBD, depthWrite: TBD, blending: TBD, applied: false}"
+    },
+    {
+      "type": "warning",
+      "text": "[GroupMarkerNotSet(crbug.com/242999)!:A07020002C230000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content."
+    },
+    {
+      "type": "log",
+      "text": "[dreamdust] vertex-ink-ok {value: 1}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] renderer-capabilities {isWebGL2: true, maxVertexTextures: 32, maxTextures: 32, precision: highp, logarithmicDepthBuffer: false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] instrumentation render-list override active {timestamp: 1761344394708, hasRenderLists: true}"
+    },
+    {
+      "type": "info",
+      "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }"
+    },
+    {
+      "type": "info",
+      "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] diag solid color {enabled: true}"
+    },
+    {
+      "type": "info",
+      "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] diag solid color {enabled: true}"
+    },
+    {
+      "type": "info",
+      "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] diag solid color {enabled: true}"
+    },
+    {
+      "type": "info",
+      "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] diag solid color {enabled: true}"
+    },
+    {
+      "type": "info",
+      "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x349c000ee900]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "info",
+      "text": "[PC] camera-diag {enabled: true, cameraPosition: Array(3), target: Array(3), radius: 600, near: 0.1}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 1: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "log",
+      "text": "[Dreamdust] ink-tex bind {width: 256, height: 256, needsUpdate: false}"
+    },
+    {
+      "type": "log",
+      "text": "[dreamdust] ink-telemetry {intensity: 0.75, offsetBoost: 1, sizeBoost: 1, vertexInkOk: 0}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 0}"
+    },
+    {
+      "type": "log",
+      "text": "[PC] attach controls to JSHandle@node"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Camera position check:"
+    },
+    {
+      "type": "log",
+      "text": "  Expected: [-65.737, 103.054, -681.379]"
+    },
+    {
+      "type": "log",
+      "text": "  Actual: [-65.737, 103.054, -681.379]"
+    },
+    {
+      "type": "log",
+      "text": "  Match: true"
+    },
+    {
+      "type": "log",
+      "text": "[PC] Preset applied (initial): {position: Array(3), target: Array(3), actualPosition: Array(3), actualTarget: null}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 2: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "info",
+      "text": "[PC] fluid-step skipped {reason: diagnostic-disable}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] stage-points-missing {framesElapsed: 3, forceVisible: true}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 3: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 4: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 5: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 6: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 7: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 8: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 9: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 10: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 11: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 12: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 13: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 14: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 15: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 16: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 17: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 18: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 19: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 20: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 21: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 22: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 23: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 24: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 25: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 26: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 27: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 28: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 29: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 30: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 31: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 32: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 33: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 34: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 35: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 36: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 37: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 38: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 39: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 40: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 41: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 42: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 43: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 44: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 45: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 46: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 47: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 48: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 49: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 50: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 51: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 52: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 53: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 54: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 55: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 56: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 57: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 58: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 59: {expected: Object, actual: Object}"
+    },
+    {
+      "type": "warning",
+      "text": "[PC] Preset drifted at frame 60: {expected: Object, actual: Object}"
+    }
+  ]
+}
