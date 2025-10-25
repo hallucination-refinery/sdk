@@ -9,7 +9,9 @@ if (commandArgs.length === 0) {
   process.exit(2)
 }
 
-const nvmDir = process.env.NVM_DIR
+const nvmDir =
+  process.env.NVM_DIR ||
+  (process.env.HOME ? path.join(process.env.HOME, '.nvm') : undefined)
 if (!nvmDir) {
   console.error('Run: nvm use 20')
   process.exit(1)
@@ -23,16 +25,27 @@ if (!fs.existsSync(nvmScript)) {
 
 const appCwd = path.resolve(__dirname, '..', 'apps', 'cryptiq-mindmap-demo')
 const timeoutMs = Number(process.env.DD_DEV_TIMEOUT_MS || 120000)
+const localBin = path.join(appCwd, 'node_modules', '.bin')
+const envPath = process.env.PATH || ''
+const childEnv = {
+  ...process.env,
+  NVM_DIR: nvmDir,
+  PATH: `${localBin}${path.delimiter}${envPath}`,
+}
 
 const escapedArgs = commandArgs
   .map((arg) => `'${arg.replace(/'/g, "'\\''")}'`)
   .join(' ')
 
-const shellCommand = `. "${nvmScript}" >/dev/null 2>&1 || { echo 'Run: nvm use 20'; exit 1; }; nvm use 20 >/dev/null || { echo 'Run: nvm use 20'; exit 1; }; ${escapedArgs}`
+const escapedNvmDir = `'${nvmDir.replace(/'/g, "'\\''")}'`
+const sourceNvm = `. "${nvmScript}"; command -v nvm > /dev/null || { echo 'Run: nvm use 20'; exit 1; }`
+const useNode = `nvm use 20 > /dev/null || { echo 'Run: nvm use 20'; exit 1; }`
+const shellCommand = `export NVM_DIR=${escapedNvmDir}; ${sourceNvm}; ${useNode}; ${escapedArgs}`
 
 const child = spawn('bash', ['-lc', shellCommand], {
   cwd: appCwd,
   stdio: 'inherit',
+  env: childEnv,
 })
 
 const timer = setTimeout(() => {
