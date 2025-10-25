@@ -246,6 +246,108 @@ Risk: Adds a single-vertex debug-only points mesh; must be removed once real par
 
 <!-- DD-PLAN:BEGIN:EVIDENCE_CONVENTIONS -->
 ## 6) Evidence & Artifact Conventions
+
+
+<!-- DD-PLAN:BEGIN:TEST_AUDIT -->
+## 6b) Testing Infra Audit — Determinism & Coverage
+### A) Overview
+- Verification route: `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1`; debug gate accepts `NEXT_PUBLIC_DREAMDUST_DEBUG=1` (env) or `ddDebug=1` (query).
+- Codex (local) documents and designs verification; only the Cursor Panel Agent (Browser Use MCP on host Mac) executes full smoke/Playwright runs.
+- Current PR (#248, branch `pr-248`) adds sentinel, render-list, render-pass, and draw probes but still records `render-info.calls = 0` because pointcloud assets 404.
+- Console artifacts live under `docs/.../cursor-ooda-ink-prototype/console|assets/${COMMIT}/${BRANCH}/${RUN_ID}/`.
+
+### B) Binary First-Draw Gate — Non-Negotiable
+We are "close" only when a debug run (within ≤2 frames) shows all:
+- `[PC] render-pass begin` and `[PC] render-pass end`
+- `[PC] points-before-render`
+- `[PC] render-info` with `calls ≥ 1` (ideally `points > 0`)
+If any missing → status **Not close**; remediation required before claiming readiness.
+
+### C) Test Audit Matrix
+| Layer | Inputs (env/query/route) | Trigger (when/how) | Expected [PC] Tags (≤2 frames) | Evidence Files (path:line) | Pass/Fail Gate | Determinism (Y/N) | Notes/Anchors (file:line) | Determinism Contract |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Readiness | Node ≥20, `pnpm dev`; HTTP GET `/` | Dev helper polls `http://127.0.0.1:3000` | N/A (pre-console) | console/72ebe3a2/.../console-manual.txt:1-40 | PASS once 200 OK | Y | scripts/dd-verify-console.js (proposed readiness loop) | Use HTTP poll (≤60s) instead of waiting for log strings |
+| Debug Gate | Env `NEXT_PUBLIC_DREAMDUST_DEBUG=1` or query `ddDebug=1` | On first browser hit | `[PC] ddDebug {env, query, effective, resolvedVertexInkOk}` | console-playwright.json:12-18 | PASS if effective=true | Y | PointCloudStage.tsx:1524-1556 | Logs immediately on mount, independent of assets |
+| Frameloop | debug run uses Three `frameloop` (demand) | After mount, fallback to requestAnimationFrame via invalidate | `[PC] render-pass begin` (frame 0/1) | console-playwright.json (missing) | PASS if begin/end appear ≤2 frames | N | PointCloudStage.tsx:904-969 | Need explicit `invalidate()` or frameloop="always" during debug |
+| Sentinel | Debug-only `<Points>` mount | On mount when debug true | `[PC] sentinel-points {uuid}` | console-playwright.json:19-23 | PASS if logs once | Y | PointCloudStage.tsx:1524-1566 | Always mounts in debug; ensures some geometry |
+| Render-List | forceVisible=true or sentinel ensures logging | First two frames via patched `renderLists.get` | `[PC] render-list guard-state`, `[PC] render-list snapshot|empty` | console-playwright.json (missing) | PASS if snapshot or empty logged | N | PointCloudStage.tsx:4040-4183 | Guard requires geometry; currently fails due to asset 404s |
+| Render-Pass | Patched `gl.render` | Frame index 0/1 | `[PC] render-pass begin/end`, `[PC] renderer-render-pass` | console-playwright.json (missing) | PASS if begin+end seen | N | PointCloudStage.tsx:4184-4350 | Needs deterministic trigger even without scene geometry |
+| Points Before/After | Points `onBefore/AfterRender` hooks | First draw attempt | `[PC] points-before-render`, `[PC] points-after-render` | console-playwright.json (missing) | PASS if both appear | N | PointCloudStage.tsx:3669-3785 | Blocked by missing pointcloud geometry (404 assets) |
+| Render-Info | Renderer info logger | After draw attempt | `[PC] render-info {calls, points}` | console-playwright.json:12 (summary) | PASS if calls≥1 & points>0 | N | PointCloudStage.tsx:4308-4350 | Calls remain 0; need geometry and first-draw guarantee |
+| Archiving | `${COMMIT}/${BRANCH}/${RUN_ID}` directories | After run completes | console JSON, manual txt, screenshots | console/72ebe3a2/... | PASS if files archived | Y | PLANS.md §6 | Deterministic via run ID pattern |
+
+### D) Quick Dev Verifier (console-first) — Design Spec (Docs Only)
+- Purpose: Codex (local) can assert instrumentation without browsers or MCP.
+- Flow (do not run):
+  1. Launch `pnpm --filter cryptiq-mindmap-demo run dev` with `NEXT_PUBLIC_DREAMDUST_DEBUG=1`.
+  2. HTTP readiness probe: poll `http://127.0.0.1:3000/health` or `/` until 200 OK (≤60s).
+  3. Stream stdout/stderr for 60s or until binary gate satisfied.
+  4. Parse required tags (`ddDebug`, `render-pass begin/end`, `points-before`, `render-info`).
+  5. Exit PASS if all found; else FAIL and capture tail (last 200 lines).
+- JSON output schema:
+```json
+{
+  "ok": false,
+  "nodeVersion": "v20.18.1",
+  "route": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+  "tags": {
+    "ddDebug": true,
+    "renderList": false,
+    "pointsBefore": false,
+    "renderPass": false,
+    "renderInfo": {"calls": 0, "points": 0}
+  },
+  "notFound": ["render-pass begin", "points-before-render"],
+  "tail": ["... last 200 lines ..."]
+}
+```
+- Archive outputs in `docs/.../cursor-ooda-ink-prototype/console/${COMMIT}/${BRANCH}/${RUN_ID}/`.
+
+### E) Determinism Gaps
+- Render/list & render-pass logs depend on geometry populating the render queue; 404 pointcloud assets block first-draw evidence.
+- Frameloop remains demand-driven; without explicit `invalidate()` on frame 0 the first render may delay beyond 2 frames.
+- Points-before/after logs only trigger when real pointcloud renders; sentinel currently bypasses render pipeline.
+- Render-info calls stay zero; without guaranteed draw invocation the PASS gate cannot be met.
+
+### F) Proposed Refactor Diffs (Docs-Only Illustrations)
+```diff
+# HTTP readiness probe (dev helper)
+@@
+-waitForLog("Starting...")
++await waitForHttp('http://127.0.0.1:3000', { timeoutMs: 60000 })
+```
+```diff
+# Immediate sentinel mount & invalidate
+@@
++useEffect(() => {
++  if (dreamdustDebugRef.current) invalidate()
++}, [])
+```
+```diff
+# Force first two frames logging
+@@
+-if (shouldLogFirst || shouldLogFrame) {
++if (dreamdustDebugRef.current && renderPassLogRef.current < 2) {
+```
+```diff
+# Render-pass determinism
+@@
+-const shouldLogRenderPass = renderPassIndex < RENDER_CALL_LOG_LIMIT || ...
++const shouldLogRenderPass = dreamdustDebugRef.current ? renderPassIndex < 2 : renderPassIndex < RENDER_CALL_LOG_LIMIT
+```
+```diff
+# Standardized console archive naming in helper
+@@
+-const outPath = `console/${runId}/console.txt`
++const outPath = `docs/.../console/${commit}/${branch}/${runId}/console.txt`
+```
+
+### G) Handoff Contract (Cursor Panel Agent)
+- Inputs: `NEXT_PUBLIC_DREAMDUST_DEBUG=1`, URL `http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1`.
+- Expected tags: `[PC] ddDebug`, `[PC] render-pass begin/end`, `[PC] render-list snapshot|empty`, `[PC] points-before/after-render`, `[PC] render-info` (`calls >= 1`).
+- Archive: `docs/.../cursor-ooda-ink-prototype/console|assets/${COMMIT}/${BRANCH}/${RUN_ID}/` (console JSON, manual txt, screenshots).
+- Only the Cursor Panel Agent (Browser Use MCP) executes full smoke/Playwright runs; Codex (local) supplies verification design and console-first checks.
+<!-- DD-PLAN:END:TEST_AUDIT -->
 - Use UTC run IDs: `RUN_ID=$(date -u +%Y%m%d-%H%M%S)`.
 - Store console streams as `docs/.../console/${COMMIT}/${BRANCH}/${RUN_ID}/console-{mcp|manual|pw}.json` and screenshots in `docs/.../assets/${COMMIT}/${BRANCH}/${RUN_ID}/YYYY-MM-DD-${label}.png`.
 - Capture build notes and environment in `docs/.../console/.../notes.md` when manual intervention (e.g., rebuild swc) occurs.
