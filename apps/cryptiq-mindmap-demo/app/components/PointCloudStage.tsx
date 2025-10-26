@@ -1521,6 +1521,42 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
   const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
   const dreamdustDebugLogRef = React.useRef(false)
+
+  React.useEffect(() => {
+    if (!dreamdustDebugRef.current) return
+    const proto = (THREE.WebGLRenderer as any)?.prototype as {
+      render: typeof THREE.WebGLRenderer.prototype.render
+      __ddRenderHook?: boolean
+    }
+    if (!proto || proto.__ddRenderHook) return
+    const originalRender = proto.render
+    let passIndex = 0
+    proto.render = function patchedRender(this: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
+      try {
+        console.info('[PC] render-pass begin', { passIndex, ts: Date.now() })
+      } catch {
+        /* noop */
+      }
+      const result = originalRender.apply(this, [scene, camera])
+      try {
+        const info = this?.info?.render
+          ? {
+              calls: this.info.render.calls,
+              triangles: this.info.render.triangles,
+              points: this.info.render.points,
+              lines: this.info.render.lines,
+            }
+          : null
+        console.info('[PC] render-pass end', { passIndex, ts: Date.now(), info })
+      } catch {
+        /* noop */
+      }
+      passIndex += 1
+      return result
+    }
+    proto.__ddRenderHook = true
+  }, [dreamdustDebug])
+
   const sentinelPoints = React.useMemo(() => {
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3))
@@ -4117,6 +4153,45 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           }
           rendererCapsLoggedRef.current = true
         }
+
+        if (dreamdustDebugRef.current) {
+          try {
+            const protoRender = (THREE.WebGLRenderer as any)?.prototype?.render
+            const usesProto = gl?.render === protoRender
+            console.info('[PC] diag.gl', {
+              uuid: (gl as any)?.uuid ?? null,
+              ctor: (gl as any)?.constructor?.name ?? null,
+              usesProto,
+              instanceofRenderer: gl instanceof THREE.WebGLRenderer,
+            })
+            const memory = gl?.info?.memory ?? null
+            console.info('[PC] diag.mem', {
+              geometries: memory?.geometries ?? null,
+              textures: memory?.textures ?? null,
+            })
+            let polls = 0
+            const pollInterval = window.setInterval(() => {
+              const mem = gl?.info?.memory ?? null
+              console.info('[PC] diag.mem.poll', {
+                poll: polls,
+                ts: Date.now(),
+                geometries: mem?.geometries ?? null,
+                textures: mem?.textures ?? null,
+              })
+              polls += 1
+              if (polls >= 6) {
+                window.clearInterval(pollInterval)
+              }
+            }, 10000)
+            state.gl.domElement.addEventListener(
+              'webglcontextlost',
+              () => window.clearInterval(pollInterval),
+              { once: true },
+            )
+          } catch {
+            /* noop */
+          }
+        }
           // ACES tone mapping for nicer highlights
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -4454,44 +4529,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 console.error('[PC] fluid splat failed', error)
           }
 
-          if (dreamdustDebugRef.current) {
-            const renderer = gl as THREE.WebGLRenderer & { __ddPatched?: boolean }
-            if (!renderer.__ddPatched) {
-              const originalRender = renderer.render.bind(renderer)
-              let passIndex = 0
-              renderer.render = (scene: THREE.Scene, camera: THREE.Camera) => {
-                try {
-                  console.info('[PC] render-pass begin', {
-                    passIndex,
-                    timestamp: Date.now(),
-                  })
-                } catch {
-                  /* noop */
-                }
-                const result = originalRender(scene, camera)
-                try {
-                  const info = renderer.info?.render
-                    ? {
-                        calls: renderer.info.render.calls,
-                        triangles: renderer.info.render.triangles,
-                        points: renderer.info.render.points,
-                        lines: renderer.info.render.lines,
-                      }
-                    : null
-                  console.info('[PC] render-pass end', {
-                    passIndex,
-                    timestamp: Date.now(),
-                    info,
-                  })
-                } catch {
-                  /* noop */
-                }
-                passIndex += 1
-                return result
-              }
-              renderer.__ddPatched = true
-            }
-          }
         }}
             onStart={() => {
               // Initialize motion probe frame indices when a stroke begins
@@ -5106,33 +5143,53 @@ function DebugHeartbeat() {
 }
 
 function DebugProbePoints() {
-  const positions = React.useMemo(() => new Float32Array([0, 0, 0]), [])
-  const material = React.useMemo(
-    () =>
-      new THREE.PointsMaterial({
-        size: 20,
-        sizeAttenuation: false,
-        color: 0xffffff,
-        depthTest: false,
-      }),
-    [],
+  const assets = React.useMemo(() => {
+    const geometry = new THREE.BufferGeometry()
+    const positions = new Float32Array([0, 0, 0])
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geometry.setDrawRange(0, 1)
+    const material = new THREE.PointsMaterial({
+      size: 0.08,
+      sizeAttenuation: false,
+      color: 0xffffff,
+      depthTest: false,
+    })
+    const point = new THREE.Points(geometry, material)
+    point.position.set(0, 0, -2)
+    point.frustumCulled = false
+    point.renderOrder = -500
+    return { geometry, material, point }
+  }, [])
+
+  React.useEffect(
+    () => () => {
+      assets.geometry.dispose()
+      assets.material.dispose()
+    },
+    [assets],
   )
-  const loggedRef = React.useRef(false)
-  useFrame(() => {
-    if (loggedRef.current) return
-    loggedRef.current = true
-    try {
-      console.info('[PC] points-before-render', { timestamp: Date.now() })
-    } catch {
-      /* noop */
+
+  React.useEffect(() => {
+    const target = assets.point as any
+    const original = target.onBeforeRender
+    let logged = false
+    target.onBeforeRender = function patchedBeforeRender(...args: unknown[]) {
+      if (!logged) {
+        logged = true
+        try {
+          console.info('[PC] points-before-render', { timestamp: Date.now() })
+        } catch {
+          /* noop */
+        }
+      }
+      if (typeof original === 'function') {
+        original.apply(this, args)
+      }
     }
-  })
-  return (
-    <points position={[0, 0, -200]} frustumCulled={false} renderOrder={-500}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <primitive attach="material" object={material} />
-    </points>
-  )
+    return () => {
+      target.onBeforeRender = original
+    }
+  }, [assets])
+
+  return <primitive object={assets.point} />
 }
