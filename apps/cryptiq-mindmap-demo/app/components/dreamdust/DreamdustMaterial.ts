@@ -844,6 +844,13 @@ export function makeDreamdustMaterial(
     cacheKey: material.customProgramCacheKey(),
   })
 
+  if (DREAMDUST_DEBUG_FORCE_VELOCITY) {
+    ;(material as any).defines = (material as any).defines ?? {}
+    ;(material as any).defines.USE_VELOCITY_DISP = 1
+    material.needsUpdate = true
+    material.version = (material.version ?? 0) + 1
+  }
+
   const inkTelemetry = createInkTelemetryCollector()
   const vertexTelemetry = resolved.debugVertexLog ? createVertexTelemetryCollector() : null
   const originalOnAfterRender = material.onAfterRender?.bind(material)

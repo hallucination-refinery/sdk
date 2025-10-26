@@ -4035,7 +4035,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        <Canvas
+      <Canvas
+        frameloop={dreamdustDebug ? 'always' : 'demand'}
         orthographic={false}
         camera={{
           position: sceneId === 'scene-03'
@@ -4915,14 +4916,41 @@ function SentinelCameraTracker({
   debugEnabled: boolean
 }) {
   const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera | undefined
+  const pointsBeforeLoggedRef = React.useRef(false)
 
   React.useEffect(() => {
     sentinelPoints.visible = debugEnabled
     if (!debugEnabled) {
       sentinelPoints.frustumCulled = true
+      pointsBeforeLoggedRef.current = false
     }
     return () => {
       sentinelPoints.visible = false
+      pointsBeforeLoggedRef.current = false
+    }
+  }, [debugEnabled, sentinelPoints])
+
+  React.useEffect(() => {
+    const handler = function onBeforeRender(
+      _renderer: any,
+      _scene: any,
+      _camera: THREE.Camera,
+    ) {
+      if (!debugEnabled || pointsBeforeLoggedRef.current) {
+        return
+      }
+      pointsBeforeLoggedRef.current = true
+      try {
+        console.info('[PC] points-before-render', { timestamp: Date.now() })
+      } catch {
+        /* noop */
+      }
+    }
+    ;(sentinelPoints as any).onBeforeRender = handler
+    return () => {
+      if ((sentinelPoints as any).onBeforeRender === handler) {
+        (sentinelPoints as any).onBeforeRender = undefined
+      }
     }
   }, [debugEnabled, sentinelPoints])
 
