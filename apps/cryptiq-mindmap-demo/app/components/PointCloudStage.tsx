@@ -4056,7 +4056,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
           console.log('[PC] pointer down', e.clientX, e.clientY)
         }}
-        onCreated={({ gl }) => {
+        onCreated={(state) => {
+          const { gl } = state
           rendererRef.current = gl
           setRendererReadyTick((v) => v + 1)
           const mobile = detectMobile()
@@ -4451,8 +4452,47 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 fluidRef.current?.addForce(uv, radius, strength)
               } catch (error) {
                 console.error('[PC] fluid splat failed', error)
+          }
+
+          if (dreamdustDebugRef.current) {
+            const renderer = gl as THREE.WebGLRenderer & { __ddPatched?: boolean }
+            if (!renderer.__ddPatched) {
+              const originalRender = renderer.render.bind(renderer)
+              let passIndex = 0
+              renderer.render = (scene: THREE.Scene, camera: THREE.Camera) => {
+                try {
+                  console.info('[PC] render-pass begin', {
+                    passIndex,
+                    timestamp: Date.now(),
+                  })
+                } catch {
+                  /* noop */
+                }
+                const result = originalRender(scene, camera)
+                try {
+                  const info = renderer.info?.render
+                    ? {
+                        calls: renderer.info.render.calls,
+                        triangles: renderer.info.render.triangles,
+                        points: renderer.info.render.points,
+                        lines: renderer.info.render.lines,
+                      }
+                    : null
+                  console.info('[PC] render-pass end', {
+                    passIndex,
+                    timestamp: Date.now(),
+                    info,
+                  })
+                } catch {
+                  /* noop */
+                }
+                passIndex += 1
+                return result
               }
-            }}
+              renderer.__ddPatched = true
+            }
+          }
+        }}
             onStart={() => {
               // Initialize motion probe frame indices when a stroke begins
               try {
