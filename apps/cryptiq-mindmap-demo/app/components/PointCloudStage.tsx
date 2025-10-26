@@ -4156,6 +4156,103 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }
 
         if (dreamdustDebugRef.current) {
+          const getRenderName = (fn: unknown) => {
+            if (typeof fn !== 'function') {
+              return null
+            }
+            const base = (fn as any).__ddOriginal ?? fn
+            return typeof base === 'function' && base.name ? base.name : null
+          }
+
+          const instrumentInstanceRender = (
+            renderer: THREE.WebGLRenderer,
+            target: typeof renderer.render,
+          ) => {
+            if (typeof target !== 'function') {
+              return target
+            }
+            if ((target as any).__ddInstInstrumented) {
+              return target
+            }
+
+            const original = (target as any).__ddOriginal ?? target
+            let passIndex = 0
+            const instrumented = function patchedInstanceRender(
+              this: THREE.WebGLRenderer,
+              scene: THREE.Scene,
+              camera: THREE.Camera,
+            ) {
+              try {
+                console.info('[PC] inst.render-begin', { passIndex, ts: Date.now() })
+              } catch {
+                /* noop */
+              }
+              const result = Reflect.apply(original, this, [scene, camera])
+              try {
+                const info = this?.info?.render ? { ...this.info.render } : null
+                console.info('[PC] inst.render-end', { passIndex, ts: Date.now(), info })
+              } catch {
+                /* noop */
+              }
+              passIndex += 1
+              return result
+            }
+            ;(instrumented as any).__ddInstInstrumented = true
+            ;(instrumented as any).__ddOriginal = original
+            return instrumented
+          }
+
+          if (!(gl as any).__ddRenderSetterInstalled) {
+            try {
+              let internalRender = gl.render
+              Object.defineProperty(gl, 'render', {
+                configurable: true,
+                enumerable: false,
+                get() {
+                  return internalRender
+                },
+                set(nextRender) {
+                  const prevName = getRenderName(internalRender)
+                  const nextName = getRenderName(nextRender)
+                  if (typeof nextRender === 'function') {
+                    try {
+                      console.info('[PC] render-reassigned', {
+                        ts: Date.now(),
+                        prevName,
+                        nextName,
+                      })
+                    } catch {
+                      /* noop */
+                    }
+                    internalRender = instrumentInstanceRender(gl, nextRender)
+                    ;(gl as any).__ddInstPatched = true
+                  } else {
+                    internalRender = nextRender
+                  }
+                },
+              })
+              if (typeof internalRender === 'function') {
+                gl.render = internalRender
+              }
+              ;(gl as any).__ddRenderSetterInstalled = true
+            } catch (error) {
+              void error
+            }
+          }
+
+          if (!(gl as any).__ddInstPatched) {
+            try {
+              const currentRender = gl.render
+              if (typeof currentRender === 'function') {
+                const instrumented = instrumentInstanceRender(gl, currentRender)
+                gl.render = instrumented
+                ;(gl as any).__ddInstPatched = true
+              }
+            } catch (error) {
+              void error
+            }
+          }
+
           try {
             const protoRender = (THREE.WebGLRenderer as any)?.prototype?.render
             console.info('[PC] diag.gl', {
@@ -4176,28 +4273,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             void error
           }
 
-          if (!(gl as any).__ddInstPatched) {
-            try {
-              const originalRender = gl.render.bind(gl)
-              let passIndex = 0
-              gl.render = (scene: THREE.Scene, camera: THREE.Camera) => {
-                try { console.info('[PC] inst.render-begin', { passIndex, ts: Date.now() }) } catch (error) { void error }
-                const result = originalRender(scene, camera)
-                try {
-                  const info = gl?.info?.render ? { ...gl.info.render } : null
-                  console.info('[PC] inst.render-end', { passIndex, ts: Date.now(), info })
-                } catch (error) {
-                  void error
-                }
-                passIndex += 1
-                return result
-              }
-              ;(gl as any).__ddInstPatched = true
-            } catch (error) {
-              void error
-            }
-          }
-
           const ctor = gl?.constructor as { prototype?: { render?: typeof gl.render; __ddCtorPatched?: boolean } }
           if (ctor?.prototype && !ctor.prototype.__ddCtorPatched) {
             try {
@@ -4205,7 +4280,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               let passIndex = 0
               ctor.prototype.render = function patchedCtorRender(this: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
                 try { console.info('[PC] ctor.render-begin', { passIndex, ts: Date.now() }) } catch (error) { void error }
-                const result = originalCtorRender.apply(this, [scene, camera])
+                const result = Reflect.apply(originalCtorRender, this, [scene, camera])
                 try {
                   const info = this?.info?.render ? { ...this.info.render } : null
                   console.info('[PC] ctor.render-end', { passIndex, ts: Date.now(), info })
