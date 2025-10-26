@@ -1,0 +1,32 @@
+# Meta
+2025-10-26T02:53:23.878Z [meta] ready=true (timeout=60000ms)
+2025-10-26T02:53:28.722Z [meta] hasCanvas=false
+2025-10-26T02:53:28.794Z [meta] captured pre screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/3c04e867/pr-248/20251026-025319/pre.png
+2025-10-26T02:53:28.794Z [meta] tap failed: canvas not found
+2025-10-26T02:53:32.822Z [meta] captured post screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/3c04e867/pr-248/20251026-025319/post.png
+
+# Page Console
+2025-10-26T02:53:25.784Z [page:info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+2025-10-26T02:53:26.179Z [page:error] [PC] mount-error {"message":"R3F: Hooks can only be used within the Canvas component!","stack":"Error: R3F: Hooks can only be used within the Canvas component!\n    at useStore (http://127.0.0.1:3000/_next/static/chunks/a58a6_%40react-three_fiber_dist_2eca2a84._.js:1115:23)\n    at useThree (http://127.0.0.1:3000/_next/static/chunks/a58a6_%40react-three_fiber_dist_2eca2a84._.js:1122:12)\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:7712:479)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:14911:24)\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:6201:24)\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:7543:21)\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:8121:645)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:3073:74)\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10243:97)\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10135:40)\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10118:13)\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:9877:56)\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10826:9)\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:1982:64)","digest":null}
+2025-10-26T02:53:26.180Z [page:error] [PC] mount-error {"message":"R3F: Hooks can only be used within the Canvas component!","stack":"Error: R3F: Hooks can only be used within the Canvas component!\n    at useStore (http://127.0.0.1:3000/_next/static/chunks/a58a6_%40react-three_fiber_dist_2eca2a84._.js:1115:23)\n    at useThree (http://127.0.0.1:3000/_next/static/chunks/a58a6_%40react-three_fiber_dist_2eca2a84._.js:1122:12)\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:7712:479)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:14911:24)\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:6201:24)\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:7543:21)\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:8121:645)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:3073:74)\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10243:97)\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10135:40)\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10118:13)\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:9877:56)\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:10826:9)\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js:1982:64)","digest":null}
+2025-10-26T02:53:26.180Z [page:error] %o
+
+%s {"name":"Error"} The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary.
+
+# Dev Server
+2025-10-26T02:53:21.268Z [dev:stdout]    ▲ Next.js 15.3.5 (Turbopack)
+2025-10-26T02:53:21.268Z [dev:stdout]    - Local:        http://localhost:3000
+   - Network:      http://10.248.63.139:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+2025-10-26T02:53:21.981Z [dev:stdout]  ✓ Ready in 919ms
+2025-10-26T02:53:22.490Z [dev:stdout]  ○ Compiling / ...
+2025-10-26T02:53:23.700Z [dev:stdout]  ✓ Compiled / in 1711ms
+2025-10-26T02:53:23.883Z [dev:stdout]  GET / 200 in 1897ms
+2025-10-26T02:53:24.874Z [dev:stdout]  ○ Compiling /quiz/[slug] ...
+2025-10-26T02:53:25.291Z [dev:stdout]  ✓ Compiled /quiz/[slug] in 919ms
+2025-10-26T02:53:25.709Z [dev:stdout]  GET /quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1 200 in 1361ms
+2025-10-26T02:53:25.841Z [dev:stderr]  ⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+2025-10-26T02:54:19.983Z [dev:stdout] [?25h
