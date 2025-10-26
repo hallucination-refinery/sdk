@@ -2029,79 +2029,109 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   const fallbackMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
-    const material = createDreamdustMaterial(uniforms, {
-      unproject: true,
-      vertexInkOk: vertexInkEnabled,
-      debugInkProbe,
-      debugSimProbe,
-      debugForceAlpha,
-      debugVertexLog,
-      aestheticPreset,
-    })
-    const defines = material.defines ?? {}
-    const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
-    defines.VERTEX_INK_OK = vertexInkDefine
-    if (vertexInkDefine) {
-      defines.USE_VERTEX_INK = 1
-    } else {
-      delete defines.USE_VERTEX_INK
+    try {
+      const material = createDreamdustMaterial(uniforms, {
+        unproject: true,
+        vertexInkOk: vertexInkEnabled,
+        debugInkProbe,
+        debugSimProbe,
+        debugForceAlpha,
+        debugVertexLog,
+        aestheticPreset,
+      })
+      const defines = material.defines ?? {}
+      const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
+      defines.VERTEX_INK_OK = vertexInkDefine
+      if (vertexInkDefine) {
+        defines.USE_VERTEX_INK = 1
+      } else {
+        delete defines.USE_VERTEX_INK
+      }
+      const velocityDispDefine = vertexInkEnabled || dreamdustDebug ? 1 : 0
+      if (velocityDispDefine) {
+        defines.USE_VELOCITY_DISP = 1
+      } else {
+        delete defines.USE_VELOCITY_DISP
+      }
+      material.defines = defines
+      material.needsUpdate = true
+      return material
+    } catch (error) {
+      if (dreamdustDebugRef.current) {
+        console.error('[PC] mount-error', {
+          phase: 'fallback-material',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          vertexInkEnabled,
+          runtimeCaps: !!runtimeCaps,
+        })
+      }
+      return null
     }
-    const velocityDispDefine = vertexInkEnabled || dreamdustDebug ? 1 : 0
-    if (velocityDispDefine) {
-      defines.USE_VELOCITY_DISP = 1
-    } else {
-      delete defines.USE_VELOCITY_DISP
-    }
-    material.defines = defines
-    material.needsUpdate = true
-    return material
   }, [
     aestheticPreset,
     debugForceAlpha,
     debugInkProbe,
     debugSimProbe,
     debugVertexLog,
+    dreamdustDebug,
     runtimeCaps,
     uniforms,
+    vertexInkEnabled,
   ])
 
   // (moved after-reveal initialization into the reveal-start effect below)
   const prebakedMaterial = React.useMemo(() => {
     if (!runtimeCaps) return null
-    const material = createDreamdustMaterial(uniforms, {
-      unproject: false,
-      vertexInkOk: vertexInkEnabled,
-      debugInkProbe,
-      debugSimProbe,
-      debugForceAlpha,
-      debugVertexLog,
-      aestheticPreset,
-    })
-    const defines = material.defines ?? {}
-    const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
-    defines.VERTEX_INK_OK = vertexInkDefine
-    if (vertexInkDefine) {
-      defines.USE_VERTEX_INK = 1
-    } else {
-      delete defines.USE_VERTEX_INK
+    try {
+      const material = createDreamdustMaterial(uniforms, {
+        unproject: false,
+        vertexInkOk: vertexInkEnabled,
+        debugInkProbe,
+        debugSimProbe,
+        debugForceAlpha,
+        debugVertexLog,
+        aestheticPreset,
+      })
+      const defines = material.defines ?? {}
+      const vertexInkDefine = runtimeCaps.vertexInkOk ? 1 : 0
+      defines.VERTEX_INK_OK = vertexInkDefine
+      if (vertexInkDefine) {
+        defines.USE_VERTEX_INK = 1
+      } else {
+        delete defines.USE_VERTEX_INK
+      }
+      const velocityDispDefine = vertexInkEnabled || dreamdustDebug ? 1 : 0
+      if (velocityDispDefine) {
+        defines.USE_VELOCITY_DISP = 1
+      } else {
+        delete defines.USE_VELOCITY_DISP
+      }
+      material.defines = defines
+      material.needsUpdate = true
+      return material
+    } catch (error) {
+      if (dreamdustDebugRef.current) {
+        console.error('[PC] mount-error', {
+          phase: 'prebaked-material',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          vertexInkEnabled,
+          runtimeCaps: !!runtimeCaps,
+        })
+      }
+      return null
     }
-    const velocityDispDefine = vertexInkEnabled || dreamdustDebug ? 1 : 0
-  if (velocityDispDefine) {
-    defines.USE_VELOCITY_DISP = 1
-  } else {
-    delete defines.USE_VELOCITY_DISP
-  }
-    material.defines = defines
-    material.needsUpdate = true
-    return material
   }, [
     aestheticPreset,
     debugForceAlpha,
     debugInkProbe,
     debugSimProbe,
     debugVertexLog,
+    dreamdustDebug,
     runtimeCaps,
     uniforms,
+    vertexInkEnabled,
   ])
 
   React.useEffect(() => {
