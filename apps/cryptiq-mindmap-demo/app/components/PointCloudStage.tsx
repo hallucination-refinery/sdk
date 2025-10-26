@@ -1588,7 +1588,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     return undefined
   }, [dreamdustDebug])
 
-  const debugCamera = useThree((state) => state.camera)
   React.useEffect(() => {
     dreamdustDebugRef.current = dreamdustDebug
   }, [dreamdustDebug])
@@ -1604,28 +1603,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
     sentinelLoggedRef.current = true
   }, [dreamdustDebug, sentinelPoints])
 
-  React.useEffect(() => {
-    if (!dreamdustDebugRef.current) {
-      return
-    }
-    const cam = debugCamera as THREE.PerspectiveCamera | undefined
-    if (!cam) {
-      return
-    }
-    const dir = new THREE.Vector3()
-    if (typeof cam.getWorldDirection === 'function') {
-      cam.getWorldDirection(dir)
-    }
-    if (dir.lengthSq() === 0) {
-      dir.set(0, 0, -1)
-    } else {
-      dir.normalize()
-    }
-    const distance = Math.max(2, cam.position.length() * 0.05 || 5)
-    sentinelPoints.position.copy(cam.position).addScaledVector(dir, -distance)
-    sentinelPoints.visible = true
-    sentinelPoints.frustumCulled = false
-  }, [debugCamera, dreamdustDebug, sentinelPoints])
   const resolvedVelToNdc = fluidBoost ? FLUID_DEBUG_VEL_TO_NDC : FLUID_BASE_VEL_TO_NDC
   const resolvedInkBlend = fluidBoost ? FLUID_DEBUG_INK_BLEND : FLUID_BASE_INK_BLEND
   const [drawing, setDrawing] = React.useState(false)
@@ -4058,7 +4035,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <Canvas
+        <Canvas
         orthographic={false}
         camera={{
           position: sceneId === 'scene-03'
@@ -4663,7 +4640,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
               )
             ) : null}
           </group>
-        <SceneControls
+          <SentinelCameraTracker sentinelPoints={sentinelPoints} debugEnabled={dreamdustDebug} />
+          <SceneControls
           radius={prebakedTransform ? prebakedTransform.radius : undefined}
           // For scene-03, disable controls by default; allow opt-in via ?controls=1
           drawing={sceneId === 'scene-03' && !controlsOverride ? true : drawing}
@@ -4927,6 +4905,37 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       )}
     </div>
   )
+}
+
+function SentinelCameraTracker({
+  sentinelPoints,
+  debugEnabled,
+}: {
+  sentinelPoints: THREE.Points
+  debugEnabled: boolean
+}) {
+  const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera | undefined
+
+  React.useEffect(() => {
+    if (!debugEnabled || !camera) {
+      return
+    }
+    const dir = new THREE.Vector3()
+    if (typeof camera.getWorldDirection === 'function') {
+      camera.getWorldDirection(dir)
+    }
+    if (dir.lengthSq() === 0) {
+      dir.set(0, 0, -1)
+    } else {
+      dir.normalize()
+    }
+    const distance = Math.max(2, camera.position.length() * 0.05 || 5)
+    sentinelPoints.position.copy(camera.position).addScaledVector(dir, -distance)
+    sentinelPoints.visible = true
+    sentinelPoints.frustumCulled = false
+  }, [camera, debugEnabled, sentinelPoints])
+
+  return null
 }
 
 function CameraSync({
