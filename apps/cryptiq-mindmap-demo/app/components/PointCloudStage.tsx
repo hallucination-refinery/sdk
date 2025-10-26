@@ -4917,6 +4917,16 @@ function SentinelCameraTracker({
   const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera | undefined
 
   React.useEffect(() => {
+    sentinelPoints.visible = debugEnabled
+    if (!debugEnabled) {
+      sentinelPoints.frustumCulled = true
+    }
+    return () => {
+      sentinelPoints.visible = false
+    }
+  }, [debugEnabled, sentinelPoints])
+
+  useFrame(() => {
     if (!debugEnabled || !camera) {
       return
     }
@@ -4931,9 +4941,8 @@ function SentinelCameraTracker({
     }
     const distance = Math.max(2, camera.position.length() * 0.05 || 5)
     sentinelPoints.position.copy(camera.position).addScaledVector(dir, -distance)
-    sentinelPoints.visible = true
     sentinelPoints.frustumCulled = false
-  }, [camera, debugEnabled, sentinelPoints])
+  })
 
   return null
 }

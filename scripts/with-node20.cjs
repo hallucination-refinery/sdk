@@ -46,16 +46,33 @@ const child = spawn('bash', ['-lc', shellCommand], {
   cwd: appCwd,
   stdio: 'inherit',
   env: childEnv,
+  detached: true,
+})
+
+function terminate(signal = 'SIGINT') {
+  if (!child || child.killed) return
+  try {
+    process.kill(-child.pid, signal)
+  } catch {
+    child.kill(signal)
+  }
+}
+
+const forwardSignals = ['SIGINT', 'SIGTERM', 'SIGQUIT']
+forwardSignals.forEach((signal) => {
+  process.on(signal, () => {
+    terminate(signal)
+  })
 })
 
 const timer = setTimeout(() => {
   try {
     process.stderr.write('[with-node20] timeout reached — sending SIGINT\n')
-    child.kill('SIGINT')
+    terminate('SIGINT')
     setTimeout(() => {
       if (!child.killed) {
         process.stderr.write('[with-node20] forcing SIGKILL\n')
-        child.kill('SIGKILL')
+        terminate('SIGKILL')
       }
     }, 2500)
   } catch (error) {
@@ -65,6 +82,7 @@ const timer = setTimeout(() => {
 
 child.on('exit', (code, signal) => {
   clearTimeout(timer)
+  forwardSignals.forEach((sig) => process.removeAllListeners(sig))
   if (signal) {
     process.exit(code ?? 128)
   }
