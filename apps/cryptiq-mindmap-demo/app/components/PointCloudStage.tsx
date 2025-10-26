@@ -4669,6 +4669,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             threshold={bloomSettings.threshold}
           />
         )}
+        {dreamdustDebug && <DebugHeartbeat />}
+        {dreamdustDebug && <DebugProbePoints />}
       </Canvas>
       {debugVisible && !cinematicMode && (
         <div
@@ -5051,4 +5053,46 @@ function CameraSync({
     }
   }, [camera, fitRequest, fitRadius, fitMargin, fitTarget, fitMode])
   return null
+}
+
+function DebugHeartbeat() {
+  React.useEffect(() => {
+    invalidate()
+    const raf = requestAnimationFrame(() => invalidate())
+    return () => cancelAnimationFrame(raf)
+  }, [])
+  useFrame(() => {})
+  return null
+}
+
+function DebugProbePoints() {
+  const positions = React.useMemo(() => new Float32Array([0, 0, 0]), [])
+  const material = React.useMemo(
+    () =>
+      new THREE.PointsMaterial({
+        size: 20,
+        sizeAttenuation: false,
+        color: 0xffffff,
+        depthTest: false,
+      }),
+    [],
+  )
+  const loggedRef = React.useRef(false)
+  useFrame(() => {
+    if (loggedRef.current) return
+    loggedRef.current = true
+    try {
+      console.info('[PC] points-before-render', { timestamp: Date.now() })
+    } catch {
+      /* noop */
+    }
+  })
+  return (
+    <points position={[0, 0, -200]} frustumCulled={false} renderOrder={-500}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <primitive attach="material" object={material} />
+    </points>
+  )
 }
