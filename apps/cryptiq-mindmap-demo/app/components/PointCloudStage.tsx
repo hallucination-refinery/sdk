@@ -1521,6 +1521,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
   const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
   const dreamdustDebugLogRef = React.useRef(false)
+  const debugForwardRef = React.useRef<THREE.Vector3 | null>(null)
 
   React.useEffect(() => {
     if (!dreamdustDebugRef.current) return
@@ -4157,37 +4158,98 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         if (dreamdustDebugRef.current) {
           try {
             const protoRender = (THREE.WebGLRenderer as any)?.prototype?.render
-            const usesProto = gl?.render === protoRender
             console.info('[PC] diag.gl', {
               uuid: (gl as any)?.uuid ?? null,
               ctor: (gl as any)?.constructor?.name ?? null,
-              usesProto,
+              usesProto: gl?.render === protoRender,
+              sameCtor: gl?.constructor === (THREE as any).WebGLRenderer,
               instanceofRenderer: gl instanceof THREE.WebGLRenderer,
+              revision: (THREE as any).REVISION ?? null,
+              instEqualsCtor: gl?.constructor?.prototype?.render === gl?.render,
             })
             const memory = gl?.info?.memory ?? null
             console.info('[PC] diag.mem', {
               geometries: memory?.geometries ?? null,
               textures: memory?.textures ?? null,
             })
-            let polls = 0
-            const pollInterval = window.setInterval(() => {
-              const mem = gl?.info?.memory ?? null
+          } catch (error) {
+            void error
+          }
+
+          if (!(gl as any).__ddInstPatched) {
+            try {
+              const originalRender = gl.render.bind(gl)
+              let passIndex = 0
+              gl.render = (scene: THREE.Scene, camera: THREE.Camera) => {
+                try { console.info('[PC] inst.render-begin', { passIndex, ts: Date.now() }) } catch (error) { void error }
+                const result = originalRender(scene, camera)
+                try {
+                  const info = gl?.info?.render ? { ...gl.info.render } : null
+                  console.info('[PC] inst.render-end', { passIndex, ts: Date.now(), info })
+                } catch (error) {
+                  void error
+                }
+                passIndex += 1
+                return result
+              }
+              ;(gl as any).__ddInstPatched = true
+            } catch (error) {
+              void error
+            }
+          }
+
+          const ctor = gl?.constructor as { prototype?: { render?: typeof gl.render; __ddCtorPatched?: boolean } }
+          if (ctor?.prototype && !ctor.prototype.__ddCtorPatched) {
+            try {
+              const originalCtorRender = ctor.prototype.render
+              let passIndex = 0
+              ctor.prototype.render = function patchedCtorRender(this: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
+                try { console.info('[PC] ctor.render-begin', { passIndex, ts: Date.now() }) } catch (error) { void error }
+                const result = originalCtorRender.apply(this, [scene, camera])
+                try {
+                  const info = this?.info?.render ? { ...this.info.render } : null
+                  console.info('[PC] ctor.render-end', { passIndex, ts: Date.now(), info })
+                } catch (error) {
+                  void error
+                }
+                passIndex += 1
+                return result
+              }
+              ctor.prototype.__ddCtorPatched = true
+            } catch (error) {
+              void error
+            }
+          }
+
+          let polls = 0
+          const pollInterval = window.setInterval(() => {
+            const mem = gl?.info?.memory ?? null
+            try {
               console.info('[PC] diag.mem.poll', {
                 poll: polls,
                 ts: Date.now(),
                 geometries: mem?.geometries ?? null,
                 textures: mem?.textures ?? null,
               })
-              polls += 1
-              if (polls >= 6) {
-                window.clearInterval(pollInterval)
-              }
-            }, 10000)
-            state.gl.domElement.addEventListener(
-              'webglcontextlost',
-              () => window.clearInterval(pollInterval),
-              { once: true },
-            )
+            } catch {
+              /* noop */
+            }
+            polls += 1
+            if (polls >= 6) {
+              window.clearInterval(pollInterval)
+            }
+          }, 10000)
+          state.gl.domElement.addEventListener(
+            'webglcontextlost',
+            () => window.clearInterval(pollInterval),
+            { once: true },
+          )
+
+          try {
+            const forward = new THREE.Vector3()
+            state.camera?.getWorldDirection?.(forward)
+            forward.negate().setLength(1)
+            debugForwardRef.current = forward
           } catch {
             /* noop */
           }
@@ -4514,6 +4576,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
           gl.domElement.style.pointerEvents = 'auto'
         }}
       >
+        {dreamdustDebugRef.current && <DebugHeartbeat />}
+        {dreamdustDebugRef.current && <DebugProbePoints forwardRef={debugForwardRef} />}
         {/* no FitOrtho in perspective baseline */}
         {/* InkSurface always enabled for scene-03, disabled only when controls override is active on other scenes */}
         {(sceneId === 'scene-03' || !controlsOverride) && (
@@ -4746,8 +4810,6 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             threshold={bloomSettings.threshold}
           />
         )}
-        {dreamdustDebug && <DebugHeartbeat />}
-        {dreamdustDebug && <DebugProbePoints />}
       </Canvas>
       {debugVisible && !cinematicMode && (
         <div
@@ -5133,19 +5195,29 @@ function CameraSync({
 }
 
 function DebugHeartbeat() {
+  const ticksRef = React.useRef(0)
   React.useEffect(() => {
     invalidate()
     const raf = requestAnimationFrame(() => invalidate())
     return () => cancelAnimationFrame(raf)
   }, [])
-  useFrame(() => {})
+  useFrame(() => {
+    if (ticksRef.current < 5) {
+      try {
+        console.info('[PC] tick', { i: ticksRef.current, ts: Date.now() })
+      } catch {
+        /* noop */
+      }
+      ticksRef.current += 1
+    }
+  })
   return null
 }
 
-function DebugProbePoints() {
+function DebugProbePoints({ forwardRef }: { forwardRef: React.MutableRefObject<THREE.Vector3 | null> }) {
   const assets = React.useMemo(() => {
     const geometry = new THREE.BufferGeometry()
-    const positions = new Float32Array([0, 0, 0])
+    const positions = new Float32Array([0, 0, -1])
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.setDrawRange(0, 1)
     const material = new THREE.PointsMaterial({
@@ -5155,7 +5227,6 @@ function DebugProbePoints() {
       depthTest: false,
     })
     const point = new THREE.Points(geometry, material)
-    point.position.set(0, 0, -2)
     point.frustumCulled = false
     point.renderOrder = -500
     return { geometry, material, point }
@@ -5170,6 +5241,15 @@ function DebugProbePoints() {
   )
 
   React.useEffect(() => {
+    const forward = forwardRef.current
+    if (forward) {
+      assets.point.position.copy(forward)
+    } else {
+      assets.point.position.set(0, 0, -1)
+    }
+  }, [assets.point, forwardRef])
+
+  React.useEffect(() => {
     const target = assets.point as any
     const original = target.onBeforeRender
     let logged = false
@@ -5177,7 +5257,7 @@ function DebugProbePoints() {
       if (!logged) {
         logged = true
         try {
-          console.info('[PC] points-before-render', { timestamp: Date.now() })
+          console.info('[PC] points-before-render', { ts: Date.now() })
         } catch {
           /* noop */
         }
@@ -5191,5 +5271,5 @@ function DebugProbePoints() {
     }
   }, [assets])
 
-  return <primitive object={assets.point} />
+  return <primitive object={assets.point} frustumCulled={false} />
 }
