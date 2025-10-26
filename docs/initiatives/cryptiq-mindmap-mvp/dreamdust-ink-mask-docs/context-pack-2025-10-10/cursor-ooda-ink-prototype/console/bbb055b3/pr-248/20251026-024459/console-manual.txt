@@ -1,0 +1,32 @@
+# Meta
+2025-10-26T02:45:03.806Z [meta] ready=true (timeout=60000ms)
+2025-10-26T02:45:08.928Z [meta] hasCanvas=false
+2025-10-26T02:45:08.996Z [meta] captured pre screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/bbb055b3/pr-248/20251026-024459/pre.png
+2025-10-26T02:45:08.997Z [meta] tap failed: canvas not found
+2025-10-26T02:45:13.046Z [meta] captured post screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/bbb055b3/pr-248/20251026-024459/post.png
+
+# Page Console
+2025-10-26T02:45:05.951Z [page:info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+2025-10-26T02:45:06.169Z [page:log] [Fast Refresh] rebuilding
+2025-10-26T02:45:06.313Z [page:log] [Fast Refresh] done in 250ms
+2025-10-26T02:45:06.369Z [page:error] %o
+
+%s {"name":"Error"} The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary.
+
+# Dev Server
+2025-10-26T02:45:01.212Z [dev:stdout]    ▲ Next.js 15.3.5 (Turbopack)
+2025-10-26T02:45:01.213Z [dev:stdout]    - Local:        http://localhost:3000
+   - Network:      http://10.248.63.139:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+2025-10-26T02:45:01.959Z [dev:stdout]  ✓ Ready in 962ms
+2025-10-26T02:45:02.475Z [dev:stdout]  ○ Compiling / ...
+2025-10-26T02:45:03.635Z [dev:stdout]  ✓ Compiled / in 1666ms
+2025-10-26T02:45:03.811Z [dev:stdout]  GET / 200 in 1847ms
+2025-10-26T02:45:04.811Z [dev:stdout]  ○ Compiling /quiz/[slug] ...
+2025-10-26T02:45:05.171Z [dev:stdout]  ✓ Compiled /quiz/[slug] in 860ms
+2025-10-26T02:45:05.822Z [dev:stdout]  GET /quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1 200 in 1515ms
+2025-10-26T02:45:06.028Z [dev:stderr]  ⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+2025-10-26T02:45:59.804Z [dev:stdout] [?25h

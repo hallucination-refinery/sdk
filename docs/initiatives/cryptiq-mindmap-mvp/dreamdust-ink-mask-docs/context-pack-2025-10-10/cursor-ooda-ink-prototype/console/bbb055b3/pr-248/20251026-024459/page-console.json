@@ -1,0 +1,59 @@
+[
+  {
+    "timestamp": "2025-10-26T02:45:05.951Z",
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "args": [
+      "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools",
+      "font-weight:bold"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_compiled_f847b200._.js",
+      "lineNumber": 16383,
+      "columnNumber": 53
+    }
+  },
+  {
+    "timestamp": "2025-10-26T02:45:06.169Z",
+    "type": "log",
+    "text": "[Fast Refresh] rebuilding",
+    "args": [
+      "[Fast Refresh] rebuilding"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_client_d4f5837d._.js",
+      "lineNumber": 15027,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-26T02:45:06.313Z",
+    "type": "log",
+    "text": "[Fast Refresh] done in 250ms",
+    "args": [
+      "[Fast Refresh] done in 250ms"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_client_d4f5837d._.js",
+      "lineNumber": 14891,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-26T02:45:06.369Z",
+    "type": "error",
+    "text": "%o\n\n%s {\"name\":\"Error\"} The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary.",
+    "args": [
+      "%o\n\n%s",
+      {
+        "name": "Error"
+      },
+      "The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary."
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/5d513_next_dist_client_d4f5837d._.js",
+      "lineNumber": 1863,
+      "columnNumber": 54
+    }
+  }
+]
