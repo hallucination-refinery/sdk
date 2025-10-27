@@ -4655,6 +4655,11 @@ export default function PointCloudStage(props: PointCloudStageProps) {
             const originalRender = gl.render.bind(gl)
             ;(gl as any).__originalRender = originalRender
             gl.render = function patchedRender(scene: THREE.Scene, camera: THREE.Camera) {
+              let wrapped = originalRender
+              const ctorWrapped = (this as any).__ddCtorRender
+              if (typeof ctorWrapped === 'function') {
+                wrapped = ctorWrapped
+              }
               if (!renderSceneRef.current) {
                 renderSceneRef.current = scene
                 renderSceneUuidRef.current = (scene as any)?.uuid ?? null
@@ -4696,7 +4701,29 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 sceneTraversalRenderLoggedRef.current = true
               }
 
-              const result = originalRender(scene, camera)
+              const renderResult: unknown = (() => {
+                try {
+                  console.info('[PC] inst.render-begin', {
+                    passIndex: renderPassIndex,
+                    ts: Date.now(),
+                  })
+                } catch {
+                  /* noop */
+                }
+                const result = wrapped.call(this, scene, camera)
+                try {
+                  const info = this?.info?.render ? { ...this.info.render } : null
+                  console.info('[PC] inst.render-end', {
+                    passIndex: renderPassIndex,
+                    ts: Date.now(),
+                    info,
+                  })
+                } catch {
+                  /* noop */
+                }
+                return result
+              })()
+
               if (forceVisibleRef.current && renderCallLogCountRef.current < RENDER_CALL_LOG_LIMIT) {
                 const renderIndex = renderCallLogCountRef.current
                 renderCallLogCountRef.current += 1
@@ -4771,7 +4798,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
                 }
               }
               renderPassLogRef.current = renderPassIndex + 1
-              return result
+              return renderResult
             }
           }
           // ensure browser gesture handling doesn't block wheel/touch
