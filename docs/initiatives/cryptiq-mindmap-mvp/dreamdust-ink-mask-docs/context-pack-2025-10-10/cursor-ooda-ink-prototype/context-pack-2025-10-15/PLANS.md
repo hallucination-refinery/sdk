@@ -412,3 +412,49 @@ If any missing → status **Not close**; remediation required before claiming re
 - (Slot) — Next evidence capture →
 - (Slot) — Instrumentation removal / cleanup →
 <!-- DD-PLAN:END:CHECKLIST -->
+
+<!-- DD-PLAN:BEGIN:NEXT_ACTION_PLAN -->
+## 11) Next Action Plan — Constructor Interception Capture (Pending)
+
+### 11.1 Assumptions → Evidence → Tests
+- **A1 — Post-mount renderer swap/caching occurs.** Evidence: `docs/initiatives/.../console/c31341b0/pr-248/20251026-225929/page-console.json:470` (`[PC] diag.gl {"usesProto":false,"instEqualsCtor":false}`) plus `render-reassigned` entries at lines `452` & `526`; note: `three/build/three.module.js:16138` assigns `this.render = function…`, so prototype hooks miss instance overrides; **Test:** constructor hook logs `[PC] ctor.install` and `[PC] inst.render-*` or `[PC] ctor.render-*` ≥ 1 from the first frame.  
+- **A2 — Frames tick under debug.** Evidence: same console file lines `670-1252` show `[PC] tick {i:0..4}`; **Test:** heartbeat continues emitting ≤5 `[PC] tick`.  
+- **A3 — Probe currently not counted.** Evidence: `page-console.json:488,1368-1446` report `diag.mem(.poll).geometries:0`; **Test:** probe positioned along camera forward (`drawRange(0,1)`, `frustumCulled=false`) yields `geometries ≥ 1` and a `[PC] points-before-render`.  
+- **A4 — Single Three build.** Evidence: `dd-three-path.txt:1` (`three@0.176.0`); **Test:** archive again and re-emit `[PC] diag.gl { revision, instanceofRenderer, sameCtor }`.
+
+### 11.2 Anchors & Logging Contract
+- **Anchors:**  
+  - Constructor interception patch: `PointCloudStage.tsx:5-10` (immediately after `import * as THREE from 'three'`, before the component definition).  
+  - Canvas JSX block: `PointCloudStage.tsx:4075-4888`.  
+  - `onCreated` logic: setter and instance wrap `PointCloudStage.tsx:4205-4250`; ctor prototype patch `PointCloudStage.tsx:4277-4296`; legacy wrapper `PointCloudStage.tsx:4526-4647`.  
+  - Canvas children (debug heartbeat/probe usage): `PointCloudStage.tsx:4653-4655`; component definitions `PointCloudStage.tsx:5272-5349`.  
+- **Guards:** `__ddCtorInterceptionInstalled`, `__ddRenderSetterInstalled`, `__ddInstPatched`, `__ddCtorPatched`.  
+- **Logs (debug-gated unless noted):** `[PC] ctor.install`, `[PC] ctor.render-begin/end`, `[PC] render-reassigned`, `[PC] inst.render-begin/end`, `[PC] diag.gl`, `[PC] diag.mem`, `[PC] diag.mem.poll`, `[PC] tick`, `[PC] points-before-render`.
+
+### 11.3 Execution Steps (intent-level; execute after approval)
+1. Preflight: free `:3000`; verify Node via `scripts/with-node20.cjs`; export `COMMIT_SHORT/BRANCH_NAME/RUN_ID`; capture `dd-three-path.txt` into `docs/.../console/${COMMIT}/${BRANCH}/${RUN_ID}/`.  
+2. Constructor interception: insert a proxy at `PointCloudStage.tsx:5-10` that extends the original `THREE.WebGLRenderer`, wraps `this.render` immediately after `super()`, assigns `__ddCtorInterceptionInstalled`, and emits `[PC] ctor.install`; logging may be debug-gated later, but the proxy must always install.  
+3. Preserve onCreated protections: keep setter/instance/prototype wraps (`PointCloudStage.tsx:4205-4296`) active with existing guards/logs so late swaps still trigger `[PC] render-reassigned` and `[PC] inst/ctor.render-*`.  
+4. Force first draw: maintain debug `frameloop="always"`, ensure `<DebugHeartbeat/>` (≤5 ticks) and `<DebugProbePoints/>` (camera-forward point, `drawRange(0,1)`, `frustumCulled=false`) remain inside the Canvas tree.  
+5. Run a single 60 s console-first capture (`scripts/dd-verify-console.cjs`); no retries.  
+6. Archive & commit artifacts under `${COMMIT_SHORT}/${BRANCH_NAME}/${RUN_ID}` in `console/` and `assets/`; commit with descriptive message.  
+7. Report results using Evidence • Gate • Verdict • Next (three lights Y/N, PASS/FAIL, next action).
+
+### 11.4 Queued Commands (do not run yet)
+```bash
+lsof -ti TCP:3000 | xargs kill -9 2>/dev/null || true
+node scripts/with-node20.cjs node -e "console.log('Dev child Node:', process.version)"
+COMMIT_SHORT=$(git rev-parse --short HEAD); BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD); RUN_ID=$(date -u +%Y%m%d-%H%M%S)
+node -e "console.log(require.resolve('three'))" \
+  | tee docs/initiatives/.../cursor-ooda-ink-prototype/console/${COMMIT_SHORT}/${BRANCH_NAME}/${RUN_ID}/dd-three-path.txt
+node -e "const THREE=require('three'); console.log('[PREFLIGHT] ctor patched:', !!(THREE.WebGLRenderer && (THREE.WebGLRenderer as any).__ddCtorInterceptionInstalled))" || echo "WARN: ctor check failed"
+PORT=3000 COMMIT_SHORT=$COMMIT_SHORT BRANCH_NAME=$BRANCH_NAME RUN_ID=$RUN_ID node scripts/dd-verify-console.cjs
+git add docs/initiatives/*/cursor-ooda-ink-prototype/{console,assets}/$COMMIT_SHORT/$BRANCH_NAME/$RUN_ID || true
+git commit -m "docs(ink): console-first ${RUN_ID} — ctor interception + setter/guards plan" || true
+git push || true
+```
+
+### 11.5 Success Criteria & Stop Rule
+- **PASS:** constructor or instance render logs captured, `[PC] points-before-render` emitted once, and `render-info.calls ≥ 1` within 60 s.  
+- **STOP:** if no render logs appear, add a fallback `Object.defineProperty(gl,'render',…)` swap catcher at the end of `onCreated` (≈`PointCloudStage.tsx:4650`) to rewrap any late assignments, rerun once, then reassess before further code changes.
+<!-- DD-PLAN:END:NEXT_ACTION_PLAN -->
