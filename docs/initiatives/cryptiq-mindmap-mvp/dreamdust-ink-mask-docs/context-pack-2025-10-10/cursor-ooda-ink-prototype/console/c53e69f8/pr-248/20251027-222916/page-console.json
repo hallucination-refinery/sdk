@@ -1,0 +1,1898 @@
+[
+  {
+    "timestamp": "2025-10-27T22:29:28.365Z",
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "args": [
+      "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools",
+      "font-weight:bold"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js",
+      "lineNumber": 16383,
+      "columnNumber": 53
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.767Z",
+    "type": "info",
+    "text": "[PC] ctor.install {\"ts\":1761604168748,\"uuid\":null}",
+    "args": [
+      "[PC] ctor.install",
+      {
+        "ts": 1761604168748,
+        "uuid": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 6090,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.768Z",
+    "type": "info",
+    "text": "[PC] ddDebug {\"env\":true,\"query\":true,\"effective\":true,\"resolvedVertexInkOk\":null}",
+    "args": [
+      "[PC] ddDebug",
+      {
+        "env": true,
+        "query": true,
+        "effective": true,
+        "resolvedVertexInkOk": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7830,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.768Z",
+    "type": "info",
+    "text": "[PC] sentinel-points {\"uuid\":\"7939f8c7-3522-410f-986b-64c6b956f095\"}",
+    "args": [
+      "[PC] sentinel-points",
+      {
+        "uuid": "7939f8c7-3522-410f-986b-64c6b956f095"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7878,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.768Z",
+    "type": "log",
+    "text": "[PC] ink debug {\"vertexInkOk\":false,\"uViewport\":[1280,720],\"inkIntensity\":1}",
+    "args": [
+      "[PC] ink debug",
+      {
+        "vertexInkOk": false,
+        "uViewport": [
+          1280,
+          720
+        ],
+        "inkIntensity": 1
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8164,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.768Z",
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":0,\"stageUvCount\":0,\"simStageUvCount\":0,\"simKey\":null}",
+    "args": [
+      "[vertex] stage data snapshot",
+      {
+        "simActive": false,
+        "stageUvDepthCount": 0,
+        "stageUvCount": 0,
+        "simStageUvCount": 0,
+        "simKey": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10057,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.774Z",
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {\"uReveal\":1,\"uAlphaFloor\":1,\"uPointBaseSize\":8,\"uMinSize\":4,\"uMaxSize\":14}",
+    "args": [
+      "[PC] forceVisible uniforms",
+      {
+        "uReveal": 1,
+        "uAlphaFloor": 1,
+        "uPointBaseSize": 8,
+        "uMinSize": 4,
+        "uMaxSize": 14
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8540,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.774Z",
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":\"TBD\",\"depthWrite\":\"TBD\",\"blending\":\"TBD\",\"applied\":false}",
+    "args": [
+      "[PC] forceVisible applied",
+      {
+        "depthTest": "TBD",
+        "depthWrite": "TBD",
+        "blending": "TBD",
+        "applied": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8575,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.801Z",
+    "type": "log",
+    "text": "[PC] prebaked positions {\"bytes\":2175600,\"count\":181300,\"sample\":[-0.5670044422149658,-0.3836313486099243,0.853047251701355,-0.5648150444030762,-0.38363149762153625,0.8530470728874207]}",
+    "args": [
+      "[PC] prebaked positions",
+      {
+        "bytes": 2175600,
+        "count": 181300,
+        "sample": [
+          -0.5670044422149658,
+          -0.3836313486099243,
+          0.853047251701355,
+          -0.5648150444030762,
+          -0.38363149762153625,
+          0.8530470728874207
+        ]
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8744,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.801Z",
+    "type": "log",
+    "text": "[PC] prebaked AABB {\"min\":[-1.067277193069458,-0.7974746823310852,0.29305800795555115],\"max\":[1.2338374853134155,0.19435033202171326,2.747392177581787],\"extent\":[2.3011146783828735,0.9918250143527985,2.454334169626236],\"maxExtent\":2.454334169626236,\"scale\":407.44247966538614,\"radius\":500}",
+    "args": [
+      "[PC] prebaked AABB",
+      {
+        "min": [
+          -1.067277193069458,
+          -0.7974746823310852,
+          0.29305800795555115
+        ],
+        "max": [
+          1.2338374853134155,
+          0.19435033202171326,
+          2.747392177581787
+        ],
+        "extent": [
+          2.3011146783828735,
+          0.9918250143527985,
+          2.454334169626236
+        ],
+        "maxExtent": 2.454334169626236,
+        "scale": 407.44247966538614,
+        "radius": 500
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8779,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.801Z",
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied",
+    "args": [
+      "[PC] prebaked PCA orientation applied"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8918,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.806Z",
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon",
+    "args": [
+      "[PC] Quaternion roll neutralized for level horizon"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9382,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.806Z",
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon",
+    "args": [
+      "[PC] Quaternion roll neutralized for level horizon"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9382,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.816Z",
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required",
+    "args": [
+      "[PC] prebaked present; using positions/colors, fallback images not required"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8949,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.817Z",
+    "type": "log",
+    "text": "[PC] instances: 90650",
+    "args": [
+      "[PC] instances:",
+      90650
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9240,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.936Z",
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":90650,\"stageUvCount\":181300,\"simStageUvCount\":0,\"simKey\":null}",
+    "args": [
+      "[vertex] stage data snapshot",
+      {
+        "simActive": false,
+        "stageUvDepthCount": 90650,
+        "stageUvCount": 181300,
+        "simStageUvCount": 0,
+        "simKey": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10057,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.937Z",
+    "type": "warning",
+    "text": "[.WebGL-0x10400502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.937Z",
+    "type": "warning",
+    "text": "[.WebGL-0x10400502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.937Z",
+    "type": "warning",
+    "text": "[.WebGL-0x10400502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.937Z",
+    "type": "warning",
+    "text": "[.WebGL-0x10400502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.951Z",
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }",
+    "args": [
+      "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_app_02841348._.js",
+      "lineNumber": 542,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.952Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.953Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.954Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:28.954Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.089Z",
+    "type": "info",
+    "text": "[PC] r3f-loop {\"priority\":1,\"frameloop\":\"always\",\"internalActive\":false,\"subscriberCount\":14,\"glRenderName\":\"dreamdustCtorRender\"}",
+    "args": [
+      "[PC] r3f-loop",
+      {
+        "priority": 1,
+        "frameloop": "always",
+        "internalActive": false,
+        "subscriberCount": 14,
+        "glRenderName": "dreamdustCtorRender"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10677,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.089Z",
+    "type": "info",
+    "text": "[PC] r3f-loop-override {\"priority\":0,\"frameloop\":\"always\",\"subscriberCount\":14}",
+    "args": [
+      "[PC] r3f-loop-override",
+      {
+        "priority": 0,
+        "frameloop": "always",
+        "subscriberCount": 14
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10705,
+      "columnNumber": 40
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.097Z",
+    "type": "log",
+    "text": "[DEBUG] Camera position check:",
+    "args": [
+      "[DEBUG] Camera position check:"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7436,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.098Z",
+    "type": "log",
+    "text": "[dreamdust] vertex-ink-ok {\"value\":1}",
+    "args": [
+      "[dreamdust] vertex-ink-ok",
+      {
+        "value": 1
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] renderer-capabilities {\"isWebGL2\":true,\"maxVertexTextures\":32,\"maxTextures\":32,\"precision\":\"highp\",\"logarithmicDepthBuffer\":false,\"contextAttributes\":{\"alpha\":true,\"antialias\":true,\"depth\":true,\"desynchronized\":false,\"failIfMajorPerformanceCaveat\":false,\"powerPreference\":\"high-performance\",\"premultipliedAlpha\":true,\"preserveDrawingBuffer\":false,\"stencil\":false,\"xrCompatible\":false}}",
+    "args": [
+      "[PC] renderer-capabilities",
+      {
+        "isWebGL2": true,
+        "maxVertexTextures": 32,
+        "maxTextures": 32,
+        "precision": "highp",
+        "logarithmicDepthBuffer": false,
+        "contextAttributes": {
+          "alpha": true,
+          "antialias": true,
+          "depth": true,
+          "desynchronized": false,
+          "failIfMajorPerformanceCaveat": false,
+          "powerPreference": "high-performance",
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "stencil": false,
+          "xrCompatible": false
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10756,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] render-reassigned {\"ts\":1761604168948,\"prevName\":\"dreamdustCtorRender\",\"nextName\":\"dreamdustCtorRender\"}",
+    "args": [
+      "[PC] render-reassigned",
+      {
+        "ts": 1761604168948,
+        "prevName": "dreamdustCtorRender",
+        "nextName": "dreamdustCtorRender"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10829,
+      "columnNumber": 56
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] diag.gl {\"uuid\":null,\"ctor\":\"WebGLRenderer\",\"usesProto\":false,\"sameCtor\":true,\"instanceofRenderer\":true,\"revision\":\"176\",\"instEqualsCtor\":false}",
+    "args": [
+      "[PC] diag.gl",
+      {
+        "uuid": null,
+        "ctor": "WebGLRenderer",
+        "usesProto": false,
+        "sameCtor": true,
+        "instanceofRenderer": true,
+        "revision": "176",
+        "instEqualsCtor": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10866,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] diag.mem {\"geometries\":0,\"textures\":0}",
+    "args": [
+      "[PC] diag.mem",
+      {
+        "geometries": 0,
+        "textures": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10876,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] instrumentation render-list override active {\"timestamp\":1761604168948,\"hasRenderLists\":true}",
+    "args": [
+      "[PC] instrumentation render-list override active",
+      {
+        "timestamp": 1761604168948,
+        "hasRenderLists": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11095,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] render-reassigned {\"ts\":1761604168948,\"prevName\":\"dreamdustCtorRender\",\"nextName\":\"patchedRender\"}",
+    "args": [
+      "[PC] render-reassigned",
+      {
+        "ts": 1761604168948,
+        "prevName": "dreamdustCtorRender",
+        "nextName": "patchedRender"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10829,
+      "columnNumber": 56
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.099Z",
+    "type": "log",
+    "text": "  Match: true",
+    "args": [
+      "  Match:",
+      true
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7439,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.108Z",
+    "type": "info",
+    "text": "[PC] tick {\"i\":0,\"ts\":1761604168954}",
+    "args": [
+      "[PC] tick",
+      {
+        "i": 0,
+        "ts": 1761604168954
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12345,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.108Z",
+    "type": "info",
+    "text": "[PC] callsite.render-begin {\"ts\":1761604168955}",
+    "args": [
+      "[PC] callsite.render-begin",
+      {
+        "ts": 1761604168955
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12469,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.108Z",
+    "type": "info",
+    "text": "[PC] inst.render-begin {\"passIndex\":0,\"ts\":1761604168955}",
+    "args": [
+      "[PC] inst.render-begin",
+      {
+        "passIndex": 0,
+        "ts": 1761604168955
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10787,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] render-scene-captured {\"uuid\":\"0a75c9c3-8eba-4372-8e81-3856d61acd4f\",\"childCount\":5}",
+    "args": [
+      "[PC] render-scene-captured",
+      {
+        "uuid": "0a75c9c3-8eba-4372-8e81-3856d61acd4f",
+        "childCount": 5
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11127,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] render-pass begin {\"timestamp\":1761604168955,\"renderIndex\":0,\"cameraUuid\":\"a17e0426-7cc3-4669-be6d-aab05de201f6\"}",
+    "args": [
+      "[PC] render-pass begin",
+      {
+        "timestamp": 1761604168955,
+        "renderIndex": 0,
+        "cameraUuid": "a17e0426-7cc3-4669-be6d-aab05de201f6"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11138,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] scene-traversal@render {\"pointsFound\":true,\"nodeCount\":6,\"nodes\":[{\"type\":\"Scene\",\"visible\":true,\"layers\":1,\"children\":5,\"path\":\"Scene\"},{\"type\":\"Points\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Points\",\"isPoints\":true,\"materialUuid\":\"7526af7c-c60a-4d68-8201-e3ea6ca8f1b4\",\"geometryPositionCount\":1},{\"type\":\"Points\",\"name\":\"debug-sentinel\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Points\",\"isPoints\":true,\"materialUuid\":\"2be26396-17f1-4179-8497-d54d06b61837\",\"geometryPositionCount\":1},{\"type\":\"AmbientLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/AmbientLight\"},{\"type\":\"DirectionalLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/DirectionalLight\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Group\"}]}",
+    "args": [
+      "[PC] scene-traversal@render",
+      {
+        "pointsFound": true,
+        "nodeCount": 6,
+        "nodes": [
+          {
+            "type": "Scene",
+            "visible": true,
+            "layers": 1,
+            "children": 5,
+            "path": "Scene"
+          },
+          {
+            "type": "Points",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Points",
+            "isPoints": true,
+            "materialUuid": "7526af7c-c60a-4d68-8201-e3ea6ca8f1b4",
+            "geometryPositionCount": 1
+          },
+          {
+            "type": "Points",
+            "name": "debug-sentinel",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Points",
+            "isPoints": true,
+            "materialUuid": "2be26396-17f1-4179-8497-d54d06b61837",
+            "geometryPositionCount": 1
+          },
+          {
+            "type": "AmbientLight",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/AmbientLight"
+          },
+          {
+            "type": "DirectionalLight",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/DirectionalLight"
+          },
+          {
+            "type": "Group",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Group"
+          }
+        ]
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11149,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] inst.render-begin {\"passIndex\":0,\"ts\":1761604168955}",
+    "args": [
+      "[PC] inst.render-begin",
+      {
+        "passIndex": 0,
+        "ts": 1761604168955
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11160,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] ctor.render-begin {\"passIndex\":0,\"ts\":1761604168955,\"uuid\":null}",
+    "args": [
+      "[PC] ctor.render-begin",
+      {
+        "passIndex": 0,
+        "ts": 1761604168955,
+        "uuid": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 6109,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] render-list guard-state {\"forceVisible\":true,\"shouldLogFirst\":true,\"shouldLogFrame\":true,\"renderListLogged\":false,\"renderPassIndex\":0,\"sceneId\":\"scene-03\"}",
+    "args": [
+      "[PC] render-list guard-state",
+      {
+        "forceVisible": true,
+        "shouldLogFirst": true,
+        "shouldLogFrame": true,
+        "renderListLogged": false,
+        "renderPassIndex": 0,
+        "sceneId": "scene-03"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11071,
+      "columnNumber": 48
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] render-list empty {\"phase\":\"pre\",\"opaqueCount\":0,\"transparentCount\":0}",
+    "args": [
+      "[PC] render-list empty",
+      {
+        "phase": "pre",
+        "opaqueCount": 0,
+        "transparentCount": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11036,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] ctor.render-end {\"passIndex\":0,\"ts\":1761604169025,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] ctor.render-end",
+      {
+        "passIndex": 0,
+        "ts": 1761604169025,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 6126,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] inst.render-end {\"passIndex\":0,\"ts\":1761604169025,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] inst.render-end",
+      {
+        "passIndex": 0,
+        "ts": 1761604169025,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11171,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":0,\"sceneUuid\":\"0a75c9c3-8eba-4372-8e81-3856d61acd4f\",\"sceneChildCount\":5,\"matchesRenderScene\":true,\"cameraType\":\"PerspectiveCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false}",
+    "args": [
+      "[PC] renderer-render-pass",
+      {
+        "renderIndex": 0,
+        "sceneUuid": "0a75c9c3-8eba-4372-8e81-3856d61acd4f",
+        "sceneChildCount": 5,
+        "matchesRenderScene": true,
+        "cameraType": "PerspectiveCamera",
+        "cameraLayers": 1,
+        "pointsPresent": false,
+        "renderCallSeenPointsPreviously": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11198,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] render-list empty {\"phase\":\"post\",\"reason\":\"fallback\",\"renderIndex\":0}",
+    "args": [
+      "[PC] render-list empty",
+      {
+        "phase": "post",
+        "reason": "fallback",
+        "renderIndex": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11218,
+      "columnNumber": 48
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] render-pass end {\"timestamp\":1761604169025,\"renderIndex\":0,\"calls\":2}",
+    "args": [
+      "[PC] render-pass end",
+      {
+        "timestamp": 1761604169025,
+        "renderIndex": 0,
+        "calls": 2
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11232,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] inst.render-end {\"passIndex\":0,\"ts\":1761604169025,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] inst.render-end",
+      {
+        "passIndex": 0,
+        "ts": 1761604169025,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10801,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] callsite.render-end {\"ts\":1761604169025,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] callsite.render-end",
+      {
+        "ts": 1761604169025,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12488,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "info",
+    "text": "[PC] camera-diag {\"enabled\":true,\"cameraPosition\":[-65.7370000000001,103.05399999999997,-681.379],\"target\":[0,0,0],\"radius\":500,\"near\":0.1,\"far\":5000,\"fov\":60,\"distance\":692.2563266059763,\"intersectsFrustum\":true}",
+    "args": [
+      "[PC] camera-diag",
+      {
+        "enabled": true,
+        "cameraPosition": [
+          -65.7370000000001,
+          103.05399999999997,
+          -681.379
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "radius": 500,
+        "near": 0.1,
+        "far": 5000,
+        "fov": 60,
+        "distance": 692.2563266059763,
+        "intersectsFrustum": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7398,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.109Z",
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 1: {\"expected\":{\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168]},\"actual\":{\"position\":[-65.7370000000001,103.05399999999997,-681.379],\"target\":null}}",
+    "args": [
+      "[PC] Preset drifted at frame 1:",
+      {
+        "expected": {
+          "position": [
+            -65.737,
+            103.054,
+            -681.379
+          ],
+          "target": [
+            -62.924,
+            103.948,
+            -656.168
+          ]
+        },
+        "actual": {
+          "position": [
+            -65.7370000000001,
+            103.05399999999997,
+            -681.379
+          ],
+          "target": null
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7538,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.110Z",
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {\"width\":256,\"height\":256,\"needsUpdate\":false}",
+    "args": [
+      "[Dreamdust] ink-tex bind",
+      {
+        "width": 256,
+        "height": 256,
+        "needsUpdate": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.110Z",
+    "type": "log",
+    "text": "[dreamdust] ink-telemetry {\"intensity\":0.75,\"offsetBoost\":1,\"sizeBoost\":1,\"vertexInkOk\":0}",
+    "args": [
+      "[dreamdust] ink-telemetry",
+      {
+        "intensity": 0.75,
+        "offsetBoost": 1,
+        "sizeBoost": 1,
+        "vertexInkOk": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "info",
+    "text": "[PC] scene-candidates {\"candidates\":{\"useThreeScene\":\"0a75c9c3-8eba-4372-8e81-3856d61acd4f\",\"internalScene\":null,\"internalActiveScene\":null,\"rendererScene\":null,\"capturedRenderScene\":\"0a75c9c3-8eba-4372-8e81-3856d61acd4f\"},\"renderCallCount\":1}",
+    "args": [
+      "[PC] scene-candidates",
+      {
+        "candidates": {
+          "useThreeScene": "0a75c9c3-8eba-4372-8e81-3856d61acd4f",
+          "internalScene": null,
+          "internalActiveScene": null,
+          "rendererScene": null,
+          "capturedRenderScene": "0a75c9c3-8eba-4372-8e81-3856d61acd4f"
+        },
+        "renderCallCount": 1
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10582,
+      "columnNumber": 32
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "log",
+    "text": "[PC] attach controls to ref: <Node>",
+    "args": [
+      "[PC] attach controls to",
+      "ref: <Node>"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7656,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "log",
+    "text": "  Expected: [-65.737,103.054,-681.379]",
+    "args": [
+      "  Expected:",
+      [
+        -65.737,
+        103.054,
+        -681.379
+      ]
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7437,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "log",
+    "text": "  Actual: [-65.737,103.054,-681.379]",
+    "args": [
+      "  Actual:",
+      [
+        -65.737,
+        103.054,
+        -681.379
+      ]
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7438,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168],\"actualPosition\":[-65.737,103.054,-681.379],\"actualTarget\":null}",
+    "args": [
+      "[PC] Preset applied (initial):",
+      {
+        "position": [
+          -65.737,
+          103.054,
+          -681.379
+        ],
+        "target": [
+          -62.924,
+          103.948,
+          -656.168
+        ],
+        "actualPosition": [
+          -65.737,
+          103.054,
+          -681.379
+        ],
+        "actualTarget": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7496,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {\"invSize\":[0.00390625,0.00390625],\"velToNdc\":0.028,\"inkBlend\":0.78}",
+    "args": [
+      "[PC] fluid uniforms prime",
+      {
+        "invSize": [
+          0.00390625,
+          0.00390625
+        ],
+        "velToNdc": 0.028,
+        "inkBlend": 0.78
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8080,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":false,\"depthWrite\":false,\"blending\":2,\"applied\":true}",
+    "args": [
+      "[PC] forceVisible applied",
+      {
+        "depthTest": false,
+        "depthWrite": false,
+        "blending": 2,
+        "applied": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8575,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.114Z",
+    "type": "log",
+    "text": "[Dreamdust] reveal start {\"duration\":2}",
+    "args": [
+      "[Dreamdust] reveal start",
+      {
+        "duration": 2
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.117Z",
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {\"uTempRadius\":0.14,\"uTempFalloffOn\":1,\"forceScale\":220,\"velToNdc\":0.028,\"inkBlend\":0.78,\"fluidSize\":256,\"fluidIters\":10}",
+    "args": [
+      "[PC] uniforms after-reveal",
+      {
+        "uTempRadius": 0.14,
+        "uTempFalloffOn": 1,
+        "forceScale": 220,
+        "velToNdc": 0.028,
+        "inkBlend": 0.78,
+        "fluidSize": 256,
+        "fluidIters": 10
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9333,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.117Z",
+    "type": "info",
+    "text": "[PC] points-program-state {\"timestamp\":1761604169106,\"materialUuid\":\"9c61044b-4f3c-4b60-a9bd-0edea643586d\",\"materialNeedsUpdate\":null,\"materialVersion\":8,\"compiled\":false,\"programCacheKey\":null}",
+    "args": [
+      "[PC] points-program-state",
+      {
+        "timestamp": 1761604169106,
+        "materialUuid": "9c61044b-4f3c-4b60-a9bd-0edea643586d",
+        "materialNeedsUpdate": null,
+        "materialVersion": 8,
+        "compiled": false,
+        "programCacheKey": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10370,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.118Z",
+    "type": "info",
+    "text": "[PC] instrumentation points-hook attached {\"timestamp\":1761604169107,\"pointsUuid\":\"b4982219-888d-459b-86cc-fa81f1424762\"}",
+    "args": [
+      "[PC] instrumentation points-hook attached",
+      {
+        "timestamp": 1761604169107,
+        "pointsUuid": "b4982219-888d-459b-86cc-fa81f1424762"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10459,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.118Z",
+    "type": "info",
+    "text": "[PC] tick {\"i\":1,\"ts\":1761604169108}",
+    "args": [
+      "[PC] tick",
+      {
+        "i": 1,
+        "ts": 1761604169108
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12345,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.118Z",
+    "type": "info",
+    "text": "[PC] points-mesh {\"type\":\"Points\",\"visible\":true,\"frustumCulled\":false,\"renderOrder\":1,\"parentType\":\"Group\",\"matrixWorldDet\":1,\"positionCount\":90650,\"colorCount\":90650,\"uvCount\":0,\"depthCount\":0,\"materialUuid\":\"9c61044b-4f3c-4b60-a9bd-0edea643586d\"}",
+    "args": [
+      "[PC] points-mesh",
+      {
+        "type": "Points",
+        "visible": true,
+        "frustumCulled": false,
+        "renderOrder": 1,
+        "parentType": "Group",
+        "matrixWorldDet": 1,
+        "positionCount": 90650,
+        "colorCount": 90650,
+        "uvCount": 0,
+        "depthCount": 0,
+        "materialUuid": "9c61044b-4f3c-4b60-a9bd-0edea643586d"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7263,
+      "columnNumber": 32
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.118Z",
+    "type": "info",
+    "text": "[PC] render-info {\"calls\":2,\"points\":2,\"triangles\":0,\"memory\":{\"geometries\":2,\"textures\":5},\"mat\":{\"uuid\":\"9c61044b-4f3c-4b60-a9bd-0edea643586d\",\"blending\":2,\"depthTest\":false,\"depthWrite\":false,\"programCacheKey\":\"dreamdust-gauss-0-vel-1\"},\"uniforms\":{\"uPointBaseSize\":8,\"uMinSize\":4,\"uMaxSize\":14,\"uAlphaFloor\":1,\"uVelToNdc\":0.028,\"uInkBlend\":0.78,\"uDepthNormScale\":0.00076,\"uDepthBias\":1.8},\"timeout\":false,\"framesWaited\":1,\"timestamp\":1761604169108}",
+    "args": [
+      "[PC] render-info",
+      {
+        "calls": 2,
+        "points": 2,
+        "triangles": 0,
+        "memory": {
+          "geometries": 2,
+          "textures": 5
+        },
+        "mat": {
+          "uuid": "9c61044b-4f3c-4b60-a9bd-0edea643586d",
+          "blending": 2,
+          "depthTest": false,
+          "depthWrite": false,
+          "programCacheKey": "dreamdust-gauss-0-vel-1"
+        },
+        "uniforms": {
+          "uPointBaseSize": 8,
+          "uMinSize": 4,
+          "uMaxSize": 14,
+          "uAlphaFloor": 1,
+          "uVelToNdc": 0.028,
+          "uInkBlend": 0.78,
+          "uDepthNormScale": 0.00076,
+          "uDepthBias": 1.8
+        },
+        "timeout": false,
+        "framesWaited": 1,
+        "timestamp": 1761604169108
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7278,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.118Z",
+    "type": "info",
+    "text": "[PC] scene-traversal {\"pointsFound\":true,\"nodeCount\":10,\"nodes\":[{\"type\":\"Scene\",\"visible\":true,\"layers\":1,\"children\":5,\"path\":\"Scene\"},{\"type\":\"Points\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Points\",\"isPoints\":true,\"materialUuid\":\"7526af7c-c60a-4d68-8201-e3ea6ca8f1b4\",\"geometryPositionCount\":1},{\"type\":\"Points\",\"name\":\"debug-sentinel\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Points\",\"isPoints\":true,\"materialUuid\":\"2be26396-17f1-4179-8497-d54d06b61837\",\"geometryPositionCount\":1},{\"type\":\"AmbientLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/AmbientLight\"},{\"type\":\"DirectionalLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/DirectionalLight\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group/Group\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group/Group/Group\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":1,\"path\":\"Scene/Group/Group/Group/Group\"},{\"type\":\"Points\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Group/Group/Group/Group/Points\",\"isPoints\":true,\"materialUuid\":\"9c61044b-4f3c-4b60-a9bd-0edea643586d\",\"geometryPositionCount\":90650}]}",
+    "args": [
+      "[PC] scene-traversal",
+      {
+        "pointsFound": true,
+        "nodeCount": 10,
+        "nodes": [
+          {
+            "type": "Scene",
+            "visible": true,
+            "layers": 1,
+            "children": 5,
+            "path": "Scene"
+          },
+          {
+            "type": "Points",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Points",
+            "isPoints": true,
+            "materialUuid": "7526af7c-c60a-4d68-8201-e3ea6ca8f1b4",
+            "geometryPositionCount": 1
+          },
+          {
+            "type": "Points",
+            "name": "debug-sentinel",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Points",
+            "isPoints": true,
+            "materialUuid": "2be26396-17f1-4179-8497-d54d06b61837",
+            "geometryPositionCount": 1
+          },
+          {
+            "type": "AmbientLight",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/AmbientLight"
+          },
+          {
+            "type": "DirectionalLight",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/DirectionalLight"
+          },
+          {
+            "type": "Group",
+            "visible": true,
+            "layers": 1,
+            "children": 1,
+            "path": "Scene/Group"
+          },
+          {
+            "type": "Group",
+            "visible": true,
+            "layers": 1,
+            "children": 1,
+            "path": "Scene/Group/Group"
+          },
+          {
+            "type": "Group",
+            "visible": true,
+            "layers": 1,
+            "children": 1,
+            "path": "Scene/Group/Group/Group"
+          },
+          {
+            "type": "Group",
+            "visible": true,
+            "layers": 1,
+            "children": 1,
+            "path": "Scene/Group/Group/Group/Group"
+          },
+          {
+            "type": "Points",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Group/Group/Group/Group/Points",
+            "isPoints": true,
+            "materialUuid": "9c61044b-4f3c-4b60-a9bd-0edea643586d",
+            "geometryPositionCount": 90650
+          }
+        ]
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10548,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.118Z",
+    "type": "info",
+    "text": "[PC] fluid-step skipped {\"reason\":\"diagnostic-disable\"}",
+    "args": [
+      "[PC] fluid-step skipped",
+      {
+        "reason": "diagnostic-disable"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7136,
+      "columnNumber": 32
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.120Z",
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }",
+    "args": [
+      "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9128,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.124Z",
+    "type": "info",
+    "text": "[PC] tick {\"i\":2,\"ts\":1761604169117}",
+    "args": [
+      "[PC] tick",
+      {
+        "i": 2,
+        "ts": 1761604169117
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12345,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.124Z",
+    "type": "info",
+    "text": "[dreamdust] cover-fit {\"mode\":\"cover\",\"radius\":500,\"margin\":0.78,\"distance\":379.969,\"fov\":60,\"aspect\":1.778}",
+    "args": [
+      "[dreamdust] cover-fit",
+      {
+        "mode": "cover",
+        "radius": 500,
+        "margin": 0.78,
+        "distance": 379.969,
+        "fov": 60,
+        "aspect": 1.778
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12299,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.128Z",
+    "type": "info",
+    "text": "[PC] tick {\"i\":3,\"ts\":1761604169123}",
+    "args": [
+      "[PC] tick",
+      {
+        "i": 3,
+        "ts": 1761604169123
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12345,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.128Z",
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 4: {\"expected\":{\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168]},\"actual\":{\"position\":[36.082008811211075,-56.5647251324299,373.9982518486423],\"target\":[-62.924,103.948,-656.168]}}",
+    "args": [
+      "[PC] Preset drifted at frame 4:",
+      {
+        "expected": {
+          "position": [
+            -65.737,
+            103.054,
+            -681.379
+          ],
+          "target": [
+            -62.924,
+            103.948,
+            -656.168
+          ]
+        },
+        "actual": {
+          "position": [
+            36.082008811211075,
+            -56.5647251324299,
+            373.9982518486423
+          ],
+          "target": [
+            -62.924,
+            103.948,
+            -656.168
+          ]
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7538,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:29.137Z",
+    "type": "info",
+    "text": "[PC] tick {\"i\":4,\"ts\":1761604169132}",
+    "args": [
+      "[PC] tick",
+      {
+        "i": 4,
+        "ts": 1761604169132
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12345,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:30.952Z",
+    "type": "log",
+    "text": "[Dreamdust] reveal end {\"duration\":2}",
+    "args": [
+      "[Dreamdust] reveal end",
+      {
+        "duration": 2
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:38.950Z",
+    "type": "info",
+    "text": "[PC] diag.mem.poll {\"poll\":0,\"ts\":1761604178949,\"geometries\":2,\"textures\":5}",
+    "args": [
+      "[PC] diag.mem.poll",
+      {
+        "poll": 0,
+        "ts": 1761604178949,
+        "geometries": 2,
+        "textures": 5
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10925,
+      "columnNumber": 40
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:48.950Z",
+    "type": "info",
+    "text": "[PC] diag.mem.poll {\"poll\":1,\"ts\":1761604188948,\"geometries\":2,\"textures\":5}",
+    "args": [
+      "[PC] diag.mem.poll",
+      {
+        "poll": 1,
+        "ts": 1761604188948,
+        "geometries": 2,
+        "textures": 5
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10925,
+      "columnNumber": 40
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:29:58.950Z",
+    "type": "info",
+    "text": "[PC] diag.mem.poll {\"poll\":2,\"ts\":1761604198949,\"geometries\":2,\"textures\":5}",
+    "args": [
+      "[PC] diag.mem.poll",
+      {
+        "poll": 2,
+        "ts": 1761604198949,
+        "geometries": 2,
+        "textures": 5
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10925,
+      "columnNumber": 40
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:30:08.944Z",
+    "type": "info",
+    "text": "[PC] diag.mem.poll {\"poll\":3,\"ts\":1761604208942,\"geometries\":2,\"textures\":5}",
+    "args": [
+      "[PC] diag.mem.poll",
+      {
+        "poll": 3,
+        "ts": 1761604208942,
+        "geometries": 2,
+        "textures": 5
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10925,
+      "columnNumber": 40
+    }
+  },
+  {
+    "timestamp": "2025-10-27T22:30:18.940Z",
+    "type": "info",
+    "text": "[PC] diag.mem.poll {\"poll\":4,\"ts\":1761604218938,\"geometries\":2,\"textures\":5}",
+    "args": [
+      "[PC] diag.mem.poll",
+      {
+        "poll": 4,
+        "ts": 1761604218938,
+        "geometries": 2,
+        "textures": 5
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10925,
+      "columnNumber": 40
+    }
+  }
+]

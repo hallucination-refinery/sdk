@@ -1649,6 +1649,8 @@ export default function PointCloudStage(props: PointCloudStageProps) {
   const [dreamdustDebug, setDreamdustDebug] = React.useState(DREAMDUST_DEBUG_ENV)
   const dreamdustDebugRef = React.useRef(DREAMDUST_DEBUG_ENV)
   const dreamdustDebugLogRef = React.useRef(false)
+const r3fLoopLoggedRef = React.useRef(false)
+const r3fLoopOverrideAppliedRef = React.useRef(false)
   const debugForwardRef = React.useRef<THREE.Vector3 | null>(null)
 
   React.useEffect(() => {
@@ -4223,6 +4225,50 @@ export default function PointCloudStage(props: PointCloudStageProps) {
         }}
         onCreated={(state) => {
           const { gl } = state
+          const internal = (state as any)?.internal ?? null
+          const subscribers = Array.isArray(internal?.subscribers) ? internal.subscribers.length : null
+          const glRenderName = typeof gl.render === 'function' ? ((gl.render as any).name ?? null) : null
+          if (!r3fLoopLoggedRef.current) {
+            try {
+              console.info('[PC] r3f-loop', {
+                priority: internal?.priority ?? null,
+                frameloop: state.frameloop ?? internal?.frameloop ?? null,
+                internalActive: internal?.active ?? null,
+                subscriberCount: subscribers,
+                glRenderName,
+              })
+            } catch {
+              /* noop */
+            }
+            r3fLoopLoggedRef.current = true
+          }
+          if ((dreamdustDebugRef.current || dreamdustDebug) && !r3fLoopOverrideAppliedRef.current) {
+            let overrideApplied = false
+            try {
+              if (internal && typeof internal.priority === 'number' && internal.priority !== 0) {
+                internal.priority = 0
+                overrideApplied = true
+              }
+              if (state.frameloop !== 'always') {
+                state.set?.({ frameloop: 'always' })
+                overrideApplied = true
+              }
+            } catch {
+              /* noop */
+            }
+            if (overrideApplied) {
+              try {
+                console.info('[PC] r3f-loop-override', {
+                  priority: internal?.priority ?? null,
+                  frameloop: state.frameloop ?? internal?.frameloop ?? null,
+                  subscriberCount: subscribers,
+                })
+              } catch {
+                /* noop */
+              }
+            }
+            r3fLoopOverrideAppliedRef.current = true
+          }
           rendererRef.current = gl
           setRendererReadyTick((v) => v + 1)
           const mobile = detectMobile()
@@ -4808,6 +4854,7 @@ export default function PointCloudStage(props: PointCloudStageProps) {
       >
         {dreamdustDebugRef.current && <DebugHeartbeat />}
         {dreamdustDebugRef.current && <DebugProbePoints forwardRef={debugForwardRef} />}
+        {dreamdustDebugRef.current && <DebugCallsiteRender once />}
         {/* no FitOrtho in perspective baseline */}
         {/* InkSurface always enabled for scene-03, disabled only when controls override is active on other scenes */}
         {(sceneId === 'scene-03' || !controlsOverride) && (
@@ -5502,4 +5549,46 @@ function DebugProbePoints({ forwardRef }: { forwardRef: React.MutableRefObject<T
   }, [assets])
 
   return <primitive object={assets.point} frustumCulled={false} />
+}
+
+function DebugCallsiteRender({ once = false }: { once?: boolean }) {
+  const { gl, scene, camera } = useThree((state) => ({
+    gl: state.gl,
+    scene: state.scene,
+    camera: state.camera,
+  }))
+  const firedRef = React.useRef(false)
+
+  useFrame(() => {
+    if (!gl || !scene || !camera) return
+    if (once && firedRef.current) return
+    firedRef.current = true
+    try {
+      console.info('[PC] callsite.render-begin', { ts: Date.now() })
+    } catch {
+      /* noop */
+    }
+    try {
+      gl.render(scene, camera)
+    } catch (error) {
+      try {
+        console.error('[PC] callsite.render-error', {
+          message: error instanceof Error ? error.message : String(error),
+        })
+      } catch {
+        /* noop */
+      }
+    }
+    try {
+      const info = gl?.info?.render ? { ...gl.info.render } : null
+      console.info('[PC] callsite.render-end', {
+        ts: Date.now(),
+        info,
+      })
+    } catch {
+      /* noop */
+    }
+  })
+
+  return null
 }
