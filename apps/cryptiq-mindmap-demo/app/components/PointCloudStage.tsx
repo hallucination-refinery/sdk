@@ -8,6 +8,7 @@ import * as React from 'react'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as THREE from 'three'
+
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
@@ -46,6 +47,133 @@ import { ParticleSim } from './dreamdust/sim/ParticleSim'
 import { FluidSim } from './dreamdust/fluid/FluidSim'
 import DebugHud from './dreamdust/ui/DebugHud'
 import { createVertexTelemetryCollector } from './dreamdust/telemetry'
+
+const DD_ENV_DEBUG = process.env.NEXT_PUBLIC_DREAMDUST_DEBUG === '1'
+const shouldCaptureCtorLogs = () => {
+  if (DD_ENV_DEBUG) return true
+  if (typeof window === 'undefined') return false
+  try {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('ddDebug') === '1'
+  } catch {
+    return false
+  }
+}
+
+if (
+  THREE?.WebGLRenderer &&
+  !(THREE.WebGLRenderer.prototype as any).__ddCtorInterceptionInstalled
+) {
+  const rendererPrototype = THREE.WebGLRenderer.prototype as THREE.WebGLRenderer & {
+    __ddCtorInterceptionInstalled?: boolean
+  }
+  const originalDescriptor = Object.getOwnPropertyDescriptor(rendererPrototype, 'render')
+  const originalRender =
+    (originalDescriptor?.value as THREE.WebGLRenderer['render']) ??
+    rendererPrototype.render
+  const logInstallOnce = (renderer: THREE.WebGLRenderer) => {
+    if (!shouldCaptureCtorLogs()) return
+    const tagged = renderer as THREE.WebGLRenderer & { __ddCtorInstallLogged?: boolean }
+    if (tagged.__ddCtorInstallLogged) return
+    tagged.__ddCtorInstallLogged = true
+    try {
+      console.info('[PC] ctor.install', {
+        ts: Date.now(),
+        uuid: (renderer as any)?.uuid ?? null,
+      })
+    } catch {
+      /* noop */
+    }
+  }
+  const wrapRender = (
+    renderer: THREE.WebGLRenderer,
+    fn: THREE.WebGLRenderer['render'],
+  ): THREE.WebGLRenderer['render'] => {
+    if (typeof fn !== 'function') {
+      return fn
+    }
+    if ((fn as any).__ddCtorWrapped) {
+      return fn
+    }
+    let passIndex = 0
+    const instrumented = function dreamdustCtorRender(
+      this: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera,
+    ) {
+      const debugActive = shouldCaptureCtorLogs()
+      if (debugActive) {
+        try {
+          console.info('[PC] ctor.render-begin', {
+            passIndex,
+            ts: Date.now(),
+            uuid: (this as any)?.uuid ?? null,
+          })
+        } catch {
+          /* noop */
+        }
+      }
+      const result = fn.apply(this, [scene, camera])
+      if (debugActive) {
+        try {
+          const info = this?.info?.render ? { ...this.info.render } : null
+          console.info('[PC] ctor.render-end', {
+            passIndex,
+            ts: Date.now(),
+            info,
+          })
+        } catch {
+          /* noop */
+        }
+      }
+      passIndex += 1
+      return result
+    }
+    ;(instrumented as any).__ddCtorWrapped = true
+    ;(instrumented as any).__ddCtorOriginal = fn
+    logInstallOnce(renderer)
+    return instrumented
+  }
+  const storeRender = (
+    renderer: THREE.WebGLRenderer,
+    fn: THREE.WebGLRenderer['render'],
+  ) => {
+    const instrumented = wrapRender(renderer, fn)
+    Object.defineProperty(renderer, '__ddCtorRender', {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: instrumented,
+    })
+    return instrumented
+  }
+  Object.defineProperty(rendererPrototype, 'render', {
+    configurable: true,
+    enumerable: false,
+    get(this: THREE.WebGLRenderer) {
+      const existing = (this as any).__ddCtorRender
+      if (typeof existing === 'function') {
+        return existing
+      }
+      return storeRender(this, originalRender)
+    },
+    set(this: THREE.WebGLRenderer, value: THREE.WebGLRenderer['render']) {
+      if (typeof value !== 'function') {
+        Object.defineProperty(this, '__ddCtorRender', {
+          configurable: true,
+          enumerable: false,
+          writable: true,
+          value,
+        })
+        return
+      }
+      storeRender(this, value)
+    },
+  })
+  rendererPrototype.__ddCtorInterceptionInstalled = true
+  ;(THREE.WebGLRenderer as any).__ddCtorInterceptionInstalled = true
+}
+
 
 const TEMP_FORCE_DECAY = 0.92
 const TEMP_FORCE_SCALE = 220
