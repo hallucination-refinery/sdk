@@ -2199,6 +2199,12 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       }
       material.defines = defines
       material.needsUpdate = true
+      if (dreamdustDebug) {
+        material.defines = material.defines ?? {}
+        material.defines.USE_VELOCITY_DISP = 1
+        material.needsUpdate = true
+        material.version = (material.version ?? 0) + 1
+      }
       return material
     } catch (error) {
       if (dreamdustDebugRef.current) {
@@ -2253,6 +2259,12 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       }
       material.defines = defines
       material.needsUpdate = true
+      if (dreamdustDebug) {
+        material.defines = material.defines ?? {}
+        material.defines.USE_VELOCITY_DISP = 1
+        material.needsUpdate = true
+        material.version = (material.version ?? 0) + 1
+      }
       return material
     } catch (error) {
       if (dreamdustDebugRef.current) {
