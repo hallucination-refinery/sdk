@@ -1,0 +1,387 @@
+[
+  {
+    "type": "info",
+    "text": "[PC] ddDebug {env: false, query: true, effective: true, resolvedVertexInkOk: null}",
+    "timestamp": 1761672599000
+  },
+  {
+    "type": "log",
+    "text": "[PC] ink debug {vertexInkOk: false, uViewport: Array(2), inkIntensity: 1}",
+    "timestamp": 1761672599001
+  },
+  {
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 0, stageUvCount: 0, simStageUvCount: 0, simKey: null}",
+    "timestamp": 1761672599002
+  },
+  {
+    "type": "info",
+    "text": "[PC] sentinel-points {uuid: 0f96146d-812a-4fa5-aa22-01bd8130c659}",
+    "timestamp": 1761672599003
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {uReveal: 1, uAlphaFloor: 1, uPointBaseSize: 8, uMinSize: 4, uMaxSize: 14}",
+    "timestamp": 1761672599004
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: TBD, depthWrite: TBD, blending: TBD, applied: false}",
+    "timestamp": 1761672599005
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked positions {bytes: 2175600, count: 181300, sample: Array(6)}",
+    "timestamp": 1761672599006
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked AABB {min: Array(3), max: Array(3), extent: Array(3), maxExtent: 2.454334169626236, scale: 407.44247966538614}",
+    "timestamp": 1761672599007
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied",
+    "timestamp": 1761672599008
+  },
+  {
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon",
+    "timestamp": 1761672599009
+  },
+  {
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required",
+    "timestamp": 1761672599010
+  },
+  {
+    "type": "log",
+    "text": "[PC] instances: 90650",
+    "timestamp": 1761672599011
+  },
+  {
+    "type": "info",
+    "text": "[vertex] stage data snapshot {simActive: false, stageUvDepthCount: 90650, stageUvCount: 181300, simStageUvCount: 0, simKey: null}",
+    "timestamp": 1761672599012
+  },
+  {
+    "type": "info",
+    "text": "[PC] ctor.install {ts: 1761672599599, uuid: null}",
+    "timestamp": 1761672599599
+  },
+  {
+    "type": "info",
+    "text": "[PC] r3f-loop {priority: 1, frameloop: always, internalActive: false, subscriberCount: 14, glRenderName: r}",
+    "timestamp": 1761672599600
+  },
+  {
+    "type": "info",
+    "text": "[PC] r3f-loop-override {priority: 0, frameloop: always, subscriberCount: 14}",
+    "timestamp": 1761672599601
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-capabilities {isWebGL2: true, maxVertexTextures: 16, maxTextures: 16, precision: highp, logarithmicDepthBuffer: false}",
+    "timestamp": 1761672599602
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-reassigned {ts: 1761672599658, prevName: r, nextName: r}",
+    "timestamp": 1761672599658
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag.gl {uuid: null, ctor: nb, usesProto: false, sameCtor: true, instanceofRenderer: true}",
+    "timestamp": 1761672599659
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag.mem {geometries: 0, textures: 0}",
+    "timestamp": 1761672599660
+  },
+  {
+    "type": "info",
+    "text": "[PC] ctor.install {ts: 1761672599658, uuid: null}",
+    "timestamp": 1761672599658
+  },
+  {
+    "type": "info",
+    "text": "[PC] instrumentation render-list override active {timestamp: 1761672599658, hasRenderLists: true}",
+    "timestamp": 1761672599658
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-reassigned {ts: 1761672599658, prevName: r, nextName: null}",
+    "timestamp": 1761672599658
+  },
+  {
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }",
+    "timestamp": 1761672599661
+  },
+  {
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":false,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "timestamp": 1761672599662
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag solid color {enabled: true}",
+    "timestamp": 1761672599663
+  },
+  {
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}",
+    "timestamp": 1761672599664
+  },
+  {
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":false,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "timestamp": 1761672599665
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag solid color {enabled: true}",
+    "timestamp": 1761672599666
+  },
+  {
+    "type": "info",
+    "text": "[preset] {preset: current, blending: 1, blendingName: NormalBlending, depthTest: true, hasGaussian: false}",
+    "timestamp": 1761672599667
+  },
+  {
+    "type": "info",
+    "text": "[PC] tick {i: 0, ts: 1761672599661}",
+    "timestamp": 1761672599661
+  },
+  {
+    "type": "info",
+    "text": "[PC] callsite.render-begin {ts: 1761672599661}",
+    "timestamp": 1761672599661
+  },
+  {
+    "type": "info",
+    "text": "[PC] inst.render-begin {passIndex: 0, ts: 1761672599661}",
+    "timestamp": 1761672599661
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-scene-captured {uuid: 1f73891b-8c72-476f-b871-8c88c7e0c784, childCount: 5}",
+    "timestamp": 1761672599662
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-pass begin {timestamp: 1761672599661, renderIndex: 0, cameraUuid: db7a0c36-2215-4e5d-a42d-dfb9adb35632}",
+    "timestamp": 1761672599661
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-traversal@render {pointsFound: true, nodeCount: 6, nodes: Array(6)}",
+    "timestamp": 1761672599663
+  },
+  {
+    "type": "info",
+    "text": "[PC] inst.render-begin {passIndex: 0, ts: 1761672599661}",
+    "timestamp": 1761672599661
+  },
+  {
+    "type": "info",
+    "text": "[PC] ctor.render-begin {passIndex: 0, ts: 1761672599661, uuid: null}",
+    "timestamp": 1761672599661
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-list guard-state {forceVisible: true, shouldLogFirst: true, shouldLogFrame: true, renderListLogged: false, renderPassIndex: 0}",
+    "timestamp": 1761672599664
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-list access failed {}",
+    "timestamp": 1761672599665
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-list empty {phase: pre, opaqueCount: 0, transparentCount: 0}",
+    "timestamp": 1761672599666
+  },
+  {
+    "type": "info",
+    "text": "[PC] ctor.render-end {passIndex: 0, ts: 1761672599709, info: Object}",
+    "timestamp": 1761672599709
+  },
+  {
+    "type": "info",
+    "text": "[PC] inst.render-end {passIndex: 0, ts: 1761672599709, info: Object}",
+    "timestamp": 1761672599709
+  },
+  {
+    "type": "info",
+    "text": "[PC] renderer-render-pass {renderIndex: 0, sceneUuid: 1f73891b-8c72-476f-b871-8c88c7e0c784, sceneChildCount: 5, matchesRenderScene: true, cameraType: PerspectiveCamera}",
+    "timestamp": 1761672599710
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-list empty {phase: post, reason: fallback, renderIndex: 0}",
+    "timestamp": 1761672599711
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-pass end {timestamp: 1761672599709, renderIndex: 0, calls: 2}",
+    "timestamp": 1761672599709
+  },
+  {
+    "type": "info",
+    "text": "[PC] inst.render-end {passIndex: 0, ts: 1761672599709, info: Object}",
+    "timestamp": 1761672599709
+  },
+  {
+    "type": "info",
+    "text": "[PC] callsite.render-end {ts: 1761672599709, info: Object}",
+    "timestamp": 1761672599709
+  },
+  {
+    "type": "info",
+    "text": "[PC] camera-diag {enabled: true, cameraPosition: Array(3), target: Array(3), radius: 500, near: 0.1}",
+    "timestamp": 1761672599712
+  },
+  {
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 1: {expected: Object, actual: Object}",
+    "timestamp": 1761672599713
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {width: 256, height: 256, needsUpdate: false}",
+    "timestamp": 1761672599714
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-candidates {candidates: Object, renderCallCount: 1}",
+    "timestamp": 1761672599715
+  },
+  {
+    "type": "log",
+    "text": "[PC] attach controls to JSHandle@node",
+    "timestamp": 1761672599716
+  },
+  {
+    "type": "log",
+    "text": "[DEBUG] Camera position check:",
+    "timestamp": 1761672599717
+  },
+  {
+    "type": "log",
+    "text": "  Expected: [-65.737, 103.054, -681.379]",
+    "timestamp": 1761672599718
+  },
+  {
+    "type": "log",
+    "text": "  Actual: [-65.737, 103.054, -681.379]",
+    "timestamp": 1761672599719
+  },
+  {
+    "type": "log",
+    "text": "  Match: true",
+    "timestamp": 1761672599720
+  },
+  {
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {position: Array(3), target: Array(3), actualPosition: Array(3), actualTarget: null}",
+    "timestamp": 1761672599721
+  },
+  {
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {invSize: Array(2), velToNdc: 0.028, inkBlend: 0.78}",
+    "timestamp": 1761672599722
+  },
+  {
+    "type": "info",
+    "text": "[PC] forceVisible applied {depthTest: false, depthWrite: false, blending: 2, applied: true}",
+    "timestamp": 1761672599723
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] reveal start {duration: 2}",
+    "timestamp": 1761672599724
+  },
+  {
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {uTempRadius: 0.14, uTempFalloffOn: 1, forceScale: 220, velToNdc: 0.028, inkBlend: 0.78}",
+    "timestamp": 1761672599725
+  },
+  {
+    "type": "info",
+    "text": "[PC] points-program-state {timestamp: 1761672599737, materialUuid: a876af82-f7bf-4ed3-a6da-1262d787e25d, materialNeedsUpdate: null, materialVersion: 6, compiled: false}",
+    "timestamp": 1761672599737
+  },
+  {
+    "type": "info",
+    "text": "[PC] instrumentation points-hook attached {timestamp: 1761672599737, pointsUuid: b92a03a2-06f2-49b8-a626-372930ee2089}",
+    "timestamp": 1761672599737
+  },
+  {
+    "type": "info",
+    "text": "[PC] tick {i: 1, ts: 1761672599738}",
+    "timestamp": 1761672599738
+  },
+  {
+    "type": "info",
+    "text": "[PC] points-mesh {type: Points, visible: true, frustumCulled: false, renderOrder: 1, parentType: Group}",
+    "timestamp": 1761672599739
+  },
+  {
+    "type": "info",
+    "text": "[PC] render-info {calls: 2, points: 2, triangles: 0, memory: Object, mat: Object}",
+    "timestamp": 1761672599740
+  },
+  {
+    "type": "info",
+    "text": "[PC] scene-traversal {pointsFound: true, nodeCount: 10, nodes: Array(10)}",
+    "timestamp": 1761672599741
+  },
+  {
+    "type": "info",
+    "text": "[PC] fluid-step skipped {reason: diagnostic-disable}",
+    "timestamp": 1761672599742
+  },
+  {
+    "type": "info",
+    "text": "[PC] tick {i: 2, ts: 1761672599743}",
+    "timestamp": 1761672599743
+  },
+  {
+    "type": "info",
+    "text": "[dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }",
+    "timestamp": 1761672599744
+  },
+  {
+    "type": "info",
+    "text": "[PC] tick {i: 3, ts: 1761672599745}",
+    "timestamp": 1761672599745
+  },
+  {
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 4: {expected: Object, actual: Object}",
+    "timestamp": 1761672599746
+  },
+  {
+    "type": "info",
+    "text": "[PC] tick {i: 4, ts: 1761672599748}",
+    "timestamp": 1761672599748
+  },
+  {
+    "type": "log",
+    "text": "[Dreamdust] reveal end {duration: 2}",
+    "timestamp": 1761672599749
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag.mem.poll {poll: 0, ts: 1761672609658, geometries: 2, textures: 5}",
+    "timestamp": 1761672609658
+  },
+  {
+    "type": "info",
+    "text": "[PC] diag.mem.poll {poll: 1, ts: 1761672619658, geometries: 2, textures: 5}",
+    "timestamp": 1761672619658
+  }
+]
