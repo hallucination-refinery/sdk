@@ -1,0 +1,8 @@
+ddDebug: no
+sentinel: no
+renderList: no
+points-before-render: no
+points-after-render: no
+render-pass begin: no
+render-pass end: no
+render-info: calls=0 points=0

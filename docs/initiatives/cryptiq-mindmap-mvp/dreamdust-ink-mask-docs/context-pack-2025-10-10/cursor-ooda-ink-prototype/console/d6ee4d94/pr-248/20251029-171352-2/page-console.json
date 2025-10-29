@@ -1,0 +1,69 @@
+[
+  {
+    "timestamp": "2025-10-29T17:13:57.791Z",
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "args": [
+      "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools",
+      "font-weight:bold"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js",
+      "lineNumber": 16383,
+      "columnNumber": 53
+    }
+  },
+  {
+    "timestamp": "2025-10-29T17:13:58.168Z",
+    "type": "error",
+    "text": "[PC] mount-error {\"message\":\"shouldRenderPrebaked is not defined\",\"stack\":\"ReferenceError: shouldRenderPrebaked is not defined\\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:11667:35)\\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14911:24)\\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:6201:24)\\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:7543:21)\\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8121:645)\\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10243:97)\\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10135:40)\\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10118:13)\\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9877:56)\\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10826:9)\\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:1982:64)\",\"digest\":null}",
+    "args": [
+      "[PC] mount-error",
+      {
+        "message": "shouldRenderPrebaked is not defined",
+        "stack": "ReferenceError: shouldRenderPrebaked is not defined\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:11667:35)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14911:24)\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:6201:24)\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:7543:21)\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8121:645)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10243:97)\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10135:40)\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10118:13)\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9877:56)\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10826:9)\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:1982:64)",
+        "digest": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_client_a5ac5861._.js",
+      "lineNumber": 1225,
+      "columnNumber": 31
+    }
+  },
+  {
+    "timestamp": "2025-10-29T17:13:58.168Z",
+    "type": "error",
+    "text": "[PC] mount-error {\"message\":\"shouldRenderPrebaked is not defined\",\"stack\":\"ReferenceError: shouldRenderPrebaked is not defined\\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:11667:35)\\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14911:24)\\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:6201:24)\\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:7543:21)\\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8121:645)\\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10243:97)\\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10135:40)\\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10118:13)\\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9877:56)\\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10826:9)\\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:1982:64)\",\"digest\":null}",
+    "args": [
+      "[PC] mount-error",
+      {
+        "message": "shouldRenderPrebaked is not defined",
+        "stack": "ReferenceError: shouldRenderPrebaked is not defined\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:11667:35)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14911:24)\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:6201:24)\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:7543:21)\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8121:645)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10243:97)\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10135:40)\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10118:13)\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9877:56)\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10826:9)\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:1982:64)",
+        "digest": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_client_a5ac5861._.js",
+      "lineNumber": 1225,
+      "columnNumber": 31
+    }
+  },
+  {
+    "timestamp": "2025-10-29T17:13:58.168Z",
+    "type": "error",
+    "text": "%o\n\n%s {\"name\":\"ReferenceError\"} The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary.",
+    "args": [
+      "%o\n\n%s",
+      {
+        "name": "ReferenceError"
+      },
+      "The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary."
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_client_a5ac5861._.js",
+      "lineNumber": 1863,
+      "columnNumber": 54
+    }
+  }
+]

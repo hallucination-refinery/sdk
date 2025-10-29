@@ -3490,6 +3490,8 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
   const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)
   const retryRafRef = React.useRef<number | null>(null)
   const stagePointsRef = React.useRef<THREE.Points | null>(null)
+  const debugCloudFallbackRef = React.useRef<THREE.Points | null>(null)
+  const debugCloudRestoredRef = React.useRef(false)
   const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
   const pointsAfterRenderLoggedRef = React.useRef(false)
@@ -3776,6 +3778,23 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
     stageUvDepth,
     simUvVersion,
   ])
+
+  React.useEffect(() => {
+    if (!dreamdustDebugRef.current) {
+      debugCloudRestoredRef.current = false
+      return
+    }
+    if (stagePointsRef.current) {
+      debugCloudRestoredRef.current = false
+      return
+    }
+    const fallback = debugCloudFallbackRef.current
+    if (fallback && !debugCloudRestoredRef.current) {
+      stagePointsRef.current = fallback
+      debugCloudRestoredRef.current = true
+      setStagePointsReadyTick((v) => v + 1)
+    }
+  }, [dreamdustDebug, prebaked, prebakedMaterial, stagePositionVersion])
 
   React.useEffect(() => {
     return () => {
@@ -5184,6 +5203,8 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
                       ref={(node) => {
                         stagePointsRef.current = node
                         if (node) {
+                          debugCloudFallbackRef.current = node
+                          debugCloudRestoredRef.current = false
                           setStagePointsReadyTick((v) => v + 1)
                         }
                       }}
@@ -5215,6 +5236,8 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
                   </group>
                 </group>
               </group>
+            ) : dreamdustDebug && debugCloudFallbackRef.current ? (
+              <primitive key="debug-cloud-fallback" object={debugCloudFallbackRef.current!} />
             ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
               <PointsMesh
                 colorImage={{ data: color.data!, width: color.width, height: color.height }}

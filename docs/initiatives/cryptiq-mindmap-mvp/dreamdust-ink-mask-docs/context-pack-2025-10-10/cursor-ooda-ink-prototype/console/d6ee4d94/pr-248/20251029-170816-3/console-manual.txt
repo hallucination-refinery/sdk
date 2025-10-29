@@ -1,0 +1,32 @@
+# Meta
+2025-10-29T17:08:20.252Z [meta] ready=true (timeout=60000ms)
+2025-10-29T17:08:24.616Z [meta] hasCanvas=false
+2025-10-29T17:08:24.673Z [meta] captured pre screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/d6ee4d94/pr-248/20251029-170816-3/pre.png
+2025-10-29T17:08:24.674Z [meta] tap failed: canvas not found
+2025-10-29T17:08:28.712Z [meta] captured post screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/d6ee4d94/pr-248/20251029-170816-3/post.png
+
+# Page Console
+2025-10-29T17:08:21.696Z [page:info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+2025-10-29T17:08:22.067Z [page:error] [PC] mount-error {"message":"Cannot access 'stagePositionVersion' before initialization","stack":"ReferenceError: Cannot access 'stagePositionVersion' before initialization\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:10012:9)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14911:24)\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:6201:24)\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:7543:21)\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8121:645)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10243:97)\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10135:40)\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10118:13)\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9877:56)\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10826:9)\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:1982:64)","digest":null}
+2025-10-29T17:08:22.067Z [page:error] [PC] mount-error {"message":"Cannot access 'stagePositionVersion' before initialization","stack":"ReferenceError: Cannot access 'stagePositionVersion' before initialization\n    at PointCloudStage (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:10012:9)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14911:24)\n    at renderWithHooks (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:6201:24)\n    at updateFunctionComponent (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:7543:21)\n    at beginWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8121:645)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\n    at performUnitOfWork (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10243:97)\n    at workLoopSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10135:40)\n    at renderRootSync (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10118:13)\n    at performWorkOnRoot (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9877:56)\n    at performWorkOnRootViaSchedulerTask (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:10826:9)\n    at MessagePort.performWorkUntilDeadline (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:1982:64)","digest":null}
+2025-10-29T17:08:22.067Z [page:error] %o
+
+%s {"name":"ReferenceError"} The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary.
+
+# Dev Server
+2025-10-29T17:08:17.931Z [dev:stdout]    ▲ Next.js 15.3.5 (Turbopack)
+2025-10-29T17:08:17.931Z [dev:stdout]    - Local:        http://localhost:3000
+   - Network:      http://10.248.61.91:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+2025-10-29T17:08:18.550Z [dev:stdout]  ✓ Ready in 821ms
+2025-10-29T17:08:19.058Z [dev:stdout]  ○ Compiling / ...
+2025-10-29T17:08:20.077Z [dev:stdout]  ✓ Compiled / in 1519ms
+2025-10-29T17:08:20.256Z [dev:stdout]  GET / 200 in 1702ms
+2025-10-29T17:08:20.977Z [dev:stdout]  ○ Compiling /quiz/[slug] ...
+2025-10-29T17:08:21.278Z [dev:stdout]  ✓ Compiled /quiz/[slug] in 803ms
+2025-10-29T17:08:21.644Z [dev:stdout]  GET /quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1 200 in 1171ms
+2025-10-29T17:08:21.732Z [dev:stderr]  ⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+2025-10-29T17:09:16.958Z [dev:stdout] [?25h

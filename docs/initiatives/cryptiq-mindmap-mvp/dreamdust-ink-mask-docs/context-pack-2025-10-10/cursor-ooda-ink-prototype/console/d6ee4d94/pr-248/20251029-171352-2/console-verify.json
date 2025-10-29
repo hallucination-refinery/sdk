@@ -1,0 +1,23 @@
+{
+  "ok": false,
+  "nodeVersion": "v18.17.0",
+  "route": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+  "ready": true,
+  "tags": {
+    "ddDebug": false,
+    "sentinel": false,
+    "renderList": false,
+    "pointsBefore": false,
+    "pointsAfter": false,
+    "renderPassBegin": false,
+    "renderPassEnd": false,
+    "renderInfo": {
+      "calls": 0,
+      "points": 0
+    }
+  },
+  "tap": {
+    "success": false,
+    "reason": "canvas not found"
+  }
+}
