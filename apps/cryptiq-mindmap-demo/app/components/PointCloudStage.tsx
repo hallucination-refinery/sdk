@@ -3498,6 +3498,7 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
   const pointsProbeUuidRef = React.useRef<string | null>(null)
   const pointsProbeAwaitingRef = React.useRef<string | null>(null)
   const pointsProbeLatchedRef = React.useRef<string | null>(null)
+  const pointsProbeReattachedRef = React.useRef<string | null>(null)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
   const firstRenderListLogRef = React.useRef(false)
@@ -3961,6 +3962,51 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
     const pointsUuid = points.uuid ?? null
     const geometryUuid = geometry.uuid ?? null
 
+    if (dreamdustDebugRef.current) {
+      const root = dreamdustRootRef.current
+      if (root && points.parent !== root) {
+        if (points.parent) {
+          points.parent.remove(points)
+        }
+        if (!root.children.includes(points)) {
+          root.add(points)
+        }
+        points.visible = true
+        points.frustumCulled = false
+        if (positionCount > 0) {
+          geometry.setDrawRange(0, positionCount)
+        }
+        if (pointsProbeReattachedRef.current !== pointsUuid) {
+          try {
+            console.info('[PC] points-probe reattached', {
+              timestamp: Date.now(),
+              pointsUuid,
+              parentUuid: (root as any)?.uuid ?? null,
+              drawRange: geometry.drawRange ?? null,
+              visible: points.visible,
+              frustumCulled: points.frustumCulled,
+            })
+          } catch {
+            /* noop */
+          }
+          pointsProbeReattachedRef.current = pointsUuid
+        }
+      }
+      if ((geometry.drawRange?.count ?? null) == null && positionCount > 0) {
+        geometry.setDrawRange(0, positionCount)
+        try {
+          console.info('[PC] points-drawrange-applied', {
+            timestamp: Date.now(),
+            pointsUuid,
+            drawRange: geometry.drawRange ?? null,
+            positionCount,
+          })
+        } catch {
+          /* noop */
+        }
+      }
+    }
+
     const originalBeforeRender =
       (points as any).__ddCloudProbeOriginalBeforeRender ??
       (typeof points.onBeforeRender === 'function' ? points.onBeforeRender : undefined)
@@ -4192,6 +4238,9 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       delete (points as any).__ddCloudProbeOriginalAfterRender
       if (pointsProbeUuidRef.current === pointsUuid) {
         pointsProbeUuidRef.current = null
+      }
+      if (pointsProbeReattachedRef.current === pointsUuid) {
+        pointsProbeReattachedRef.current = null
       }
       pointsHookAttachedRef.current = false
     }
