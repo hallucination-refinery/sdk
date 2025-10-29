@@ -1119,6 +1119,7 @@ function RenderInfoLogger({
   updateDebugState: (patch: Record<string, unknown>) => void
 }) {
   const renderer = useThree((state) => state.gl)
+  const _r3fScene = useThree((state) => state.scene)
   const loggedRef = React.useRef(false)
   const meshLoggedRef = React.useRef(false)
   const frameCountRef = React.useRef(0)
@@ -3490,8 +3491,7 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
   const [stagePointsReadyTick, setStagePointsReadyTick] = React.useState(0)
   const retryRafRef = React.useRef<number | null>(null)
   const stagePointsRef = React.useRef<THREE.Points | null>(null)
-  const debugCloudFallbackRef = React.useRef<THREE.Points | null>(null)
-  const debugCloudRestoredRef = React.useRef(false)
+  const debugCloudRef = React.useRef<THREE.Points | null>(null)
   const colorGuardLoggedRef = React.useRef(false)
   const stageTelemetryCleanupRef = React.useRef<() => void>()
   const pointsAfterRenderLoggedRef = React.useRef(false)
@@ -3500,8 +3500,8 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
   const pointsProbeUuidRef = React.useRef<string | null>(null)
   const pointsProbeAwaitingRef = React.useRef<string | null>(null)
   const pointsProbeLatchedRef = React.useRef<string | null>(null)
-  const pointsProbeSceneAttachedRef = React.useRef<string | null>(null)
   const pointsProbeReattachedRef = React.useRef<string | null>(null)
+  const renderSceneCheckLoggedRef = React.useRef(false)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
   const firstRenderListLogRef = React.useRef(false)
@@ -3781,23 +3781,6 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
   ])
 
   React.useEffect(() => {
-    if (!dreamdustDebugRef.current) {
-      debugCloudRestoredRef.current = false
-      return
-    }
-    if (stagePointsRef.current) {
-      debugCloudRestoredRef.current = false
-      return
-    }
-    const fallback = debugCloudFallbackRef.current
-    if (fallback && !debugCloudRestoredRef.current) {
-      stagePointsRef.current = fallback
-      debugCloudRestoredRef.current = true
-      setStagePointsReadyTick((v) => v + 1)
-    }
-  }, [dreamdustDebug, prebaked, prebakedMaterial, stagePositionVersion])
-
-  React.useEffect(() => {
     return () => {
       const renderer = rendererRef.current
       if (renderer) {
@@ -3978,51 +3961,55 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
     pointsProbeAwaitingRef.current = null
     pointsBeforeRenderLoggedRef.current = false
     pointsAfterRenderLoggedRef.current = false
+    renderSceneCheckLoggedRef.current = false
 
     const pointsUuid = points.uuid ?? null
     const geometryUuid = geometry.uuid ?? null
 
+    const primaryMaterial = Array.isArray(points.material)
+      ? points.material[0] ?? null
+      : (points.material as THREE.Material | null)
+
     if (dreamdustDebugRef.current) {
-      const root = dreamdustRootRef.current
-      if (root && points.parent !== root) {
+      const scene = (renderSceneRef.current as THREE.Scene | null) ?? _r3fScene
+      if (scene && !renderSceneCheckLoggedRef.current) {
+        const renderSceneUuid = (renderSceneRef.current as any)?.uuid ?? null
+        const r3fSceneUuid = (scene as any)?.uuid ?? null
+        const containsCloudInRenderScene = !!scene.getObjectByProperty('uuid', pointsUuid)
+        const hasProbeHandlers =
+          typeof points.onBeforeRender === 'function' &&
+          String(points.onBeforeRender).includes('points-before-render')
+        try {
+          console.info('[PC] render-scene-check', {
+            renderSceneUuid,
+            r3fSceneUuid,
+            containsCloudInRenderScene,
+          })
+        } catch {
+          /* noop */
+        }
+        try {
+          console.info('[PC] instance-check', {
+            latchedUuidFound: containsCloudInRenderScene,
+            hasProbeHandlers,
+            pointsUuid,
+            materialUuid: (primaryMaterial as any)?.uuid ?? null,
+          })
+        } catch {
+          /* noop */
+        }
+        renderSceneCheckLoggedRef.current = true
+      }
+      if (scene && points.parent !== scene) {
         if (points.parent) {
           points.parent.remove(points)
         }
-        if (!root.children.includes(points)) {
-          root.add(points)
-        }
+        scene.add(points)
         points.visible = true
         points.frustumCulled = false
-        if (positionCount > 0) {
-          geometry.setDrawRange(0, positionCount)
-        }
         if (pointsProbeReattachedRef.current !== pointsUuid) {
           try {
             console.info('[PC] points-probe reattached', {
-              timestamp: Date.now(),
-              pointsUuid,
-              parentUuid: (root as any)?.uuid ?? null,
-              drawRange: geometry.drawRange ?? null,
-              visible: points.visible,
-              frustumCulled: points.frustumCulled,
-            })
-          } catch {
-            /* noop */
-          }
-          pointsProbeReattachedRef.current = pointsUuid
-        }
-      }
-      const scene = useThree.getState().scene
-      if (scene && points.parent !== scene) {
-        if (points.parent && points.parent !== root) {
-          points.parent.remove(points)
-        }
-        if (!scene.children.includes(points)) {
-          scene.add(points)
-        }
-        if (pointsProbeSceneAttachedRef.current !== pointsUuid) {
-          try {
-            console.info('[PC] points-probe reattached(scene)', {
               timestamp: Date.now(),
               pointsUuid,
               parentUuid: (scene as any)?.uuid ?? null,
@@ -4030,7 +4017,7 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
           } catch {
             /* noop */
           }
-          pointsProbeSceneAttachedRef.current = pointsUuid
+          pointsProbeReattachedRef.current = pointsUuid
         }
       }
       if ((geometry.drawRange?.count ?? null) == null && positionCount > 0) {
@@ -4054,10 +4041,6 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
     const originalAfterRender =
       (points as any).__ddCloudProbeOriginalAfterRender ??
       (typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined)
-
-    const primaryMaterial = Array.isArray(points.material)
-      ? points.material[0] ?? null
-      : (points.material as THREE.Material | null)
 
     if (!programStateLoggedRef.current && primaryMaterial) {
       try {
@@ -5225,11 +5208,11 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
                 <group scale={mirrorScale}>
                   <group scale={[1, 1, thicknessScale]}>
                     <points
+                      key="debug-cloud-points"
                       ref={(node) => {
                         stagePointsRef.current = node
                         if (node) {
-                          debugCloudFallbackRef.current = node
-                          debugCloudRestoredRef.current = false
+                          debugCloudRef.current = node
                           setStagePointsReadyTick((v) => v + 1)
                         }
                       }}
@@ -5261,8 +5244,8 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
                   </group>
                 </group>
               </group>
-            ) : dreamdustDebug && debugCloudFallbackRef.current ? (
-              <primitive key="debug-cloud-fallback" object={debugCloudFallbackRef.current!} />
+            ) : dreamdustDebug && debugCloudRef.current ? (
+              <primitive key="debug-cloud-fallback" object={debugCloudRef.current!} />
             ) : prebakedStatus === 'absent' && fallbackMaterial && readyPacked ? (
               <PointsMesh
                 colorImage={{ data: color.data!, width: color.width, height: color.height }}

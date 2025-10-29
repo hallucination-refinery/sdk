@@ -1,0 +1,1509 @@
+[
+  {
+    "timestamp": "2025-10-29T19:36:53.986Z",
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "args": [
+      "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools",
+      "font-weight:bold"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js",
+      "lineNumber": 16383,
+      "columnNumber": 53
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.388Z",
+    "type": "info",
+    "text": "[PC] ctor.install {\"ts\":1761766614367,\"uuid\":null}",
+    "args": [
+      "[PC] ctor.install",
+      {
+        "ts": 1761766614367,
+        "uuid": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 6090,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.389Z",
+    "type": "info",
+    "text": "[PC] ddDebug {\"env\":true,\"query\":true,\"effective\":true,\"resolvedVertexInkOk\":null}",
+    "args": [
+      "[PC] ddDebug",
+      {
+        "env": true,
+        "query": true,
+        "effective": true,
+        "resolvedVertexInkOk": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7835,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.389Z",
+    "type": "info",
+    "text": "[PC] sentinel-points {\"uuid\":\"8b8d44cd-a82f-4c9f-8d89-fad3efbf03b4\"}",
+    "args": [
+      "[PC] sentinel-points",
+      {
+        "uuid": "8b8d44cd-a82f-4c9f-8d89-fad3efbf03b4"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7883,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.389Z",
+    "type": "log",
+    "text": "[PC] ink debug {\"vertexInkOk\":false,\"uViewport\":[1280,720],\"inkIntensity\":1}",
+    "args": [
+      "[PC] ink debug",
+      {
+        "vertexInkOk": false,
+        "uViewport": [
+          1280,
+          720
+        ],
+        "inkIntensity": 1
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8169,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.389Z",
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":0,\"stageUvCount\":0,\"simStageUvCount\":0,\"simKey\":null}",
+    "args": [
+      "[vertex] stage data snapshot",
+      {
+        "simActive": false,
+        "stageUvDepthCount": 0,
+        "stageUvCount": 0,
+        "simStageUvCount": 0,
+        "simKey": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10080,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.395Z",
+    "type": "info",
+    "text": "[PC] forceVisible uniforms {\"uReveal\":1,\"uAlphaFloor\":1,\"uPointBaseSize\":8,\"uMinSize\":4,\"uMaxSize\":14}",
+    "args": [
+      "[PC] forceVisible uniforms",
+      {
+        "uReveal": 1,
+        "uAlphaFloor": 1,
+        "uPointBaseSize": 8,
+        "uMinSize": 4,
+        "uMaxSize": 14
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8557,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.398Z",
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":\"TBD\",\"depthWrite\":\"TBD\",\"blending\":\"TBD\",\"applied\":false}",
+    "args": [
+      "[PC] forceVisible applied",
+      {
+        "depthTest": "TBD",
+        "depthWrite": "TBD",
+        "blending": "TBD",
+        "applied": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8592,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.416Z",
+    "type": "log",
+    "text": "[PC] prebaked PCA orientation applied",
+    "args": [
+      "[PC] prebaked PCA orientation applied"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8935,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.416Z",
+    "type": "log",
+    "text": "[PC] prebaked positions {\"bytes\":2175600,\"count\":181300,\"sample\":[-0.5670044422149658,-0.3836313486099243,0.853047251701355,-0.5648150444030762,-0.38363149762153625,0.8530470728874207]}",
+    "args": [
+      "[PC] prebaked positions",
+      {
+        "bytes": 2175600,
+        "count": 181300,
+        "sample": [
+          -0.5670044422149658,
+          -0.3836313486099243,
+          0.853047251701355,
+          -0.5648150444030762,
+          -0.38363149762153625,
+          0.8530470728874207
+        ]
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8761,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.416Z",
+    "type": "log",
+    "text": "[PC] prebaked AABB {\"min\":[-1.067277193069458,-0.7974746823310852,0.29305800795555115],\"max\":[1.2338374853134155,0.19435033202171326,2.747392177581787],\"extent\":[2.3011146783828735,0.9918250143527985,2.454334169626236],\"maxExtent\":2.454334169626236,\"scale\":407.44247966538614,\"radius\":500}",
+    "args": [
+      "[PC] prebaked AABB",
+      {
+        "min": [
+          -1.067277193069458,
+          -0.7974746823310852,
+          0.29305800795555115
+        ],
+        "max": [
+          1.2338374853134155,
+          0.19435033202171326,
+          2.747392177581787
+        ],
+        "extent": [
+          2.3011146783828735,
+          0.9918250143527985,
+          2.454334169626236
+        ],
+        "maxExtent": 2.454334169626236,
+        "scale": 407.44247966538614,
+        "radius": 500
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8796,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.423Z",
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon",
+    "args": [
+      "[PC] Quaternion roll neutralized for level horizon"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9399,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.423Z",
+    "type": "log",
+    "text": "[PC] Quaternion roll neutralized for level horizon",
+    "args": [
+      "[PC] Quaternion roll neutralized for level horizon"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9399,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.430Z",
+    "type": "log",
+    "text": "[PC] prebaked present; using positions/colors, fallback images not required",
+    "args": [
+      "[PC] prebaked present; using positions/colors, fallback images not required"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8966,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.431Z",
+    "type": "log",
+    "text": "[PC] instances: 90650",
+    "args": [
+      "[PC] instances:",
+      90650
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9257,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.433Z",
+    "type": "info",
+    "text": "[vertex] stage data snapshot {\"simActive\":false,\"stageUvDepthCount\":90650,\"stageUvCount\":181300,\"simStageUvCount\":0,\"simKey\":null}",
+    "args": [
+      "[vertex] stage data snapshot",
+      {
+        "simActive": false,
+        "stageUvDepthCount": 90650,
+        "stageUvCount": 181300,
+        "simStageUvCount": 0,
+        "simKey": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10080,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.573Z",
+    "type": "warning",
+    "text": "[.WebGL-0x11c004f3200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.573Z",
+    "type": "warning",
+    "text": "[.WebGL-0x11c004f3200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.573Z",
+    "type": "warning",
+    "text": "[.WebGL-0x11c004f3200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.573Z",
+    "type": "warning",
+    "text": "[.WebGL-0x11c004f3200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+    "args": [],
+    "location": {
+      "url": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.591Z",
+    "type": "info",
+    "text": "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }",
+    "args": [
+      "[dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_app_02841348._.js",
+      "lineNumber": 542,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.592Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.593Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.594Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.594Z",
+    "type": "info",
+    "text": "[PC] material-defines {\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}",
+    "args": [
+      "[PC] material-defines",
+      "{\"vertexInkOk\":false,\"useVertexInk\":false,\"useVelocityDisp\":true,\"blending\":1,\"depthTest\":true,\"depthWrite\":false,\"toneMapped\":false}"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2138,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.728Z",
+    "type": "info",
+    "text": "[PC] r3f-loop {\"priority\":1,\"frameloop\":\"always\",\"internalActive\":false,\"subscriberCount\":14,\"glRenderName\":\"dreamdustCtorRender\"}",
+    "args": [
+      "[PC] r3f-loop",
+      {
+        "priority": 1,
+        "frameloop": "always",
+        "internalActive": false,
+        "subscriberCount": 14,
+        "glRenderName": "dreamdustCtorRender"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10882,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.728Z",
+    "type": "info",
+    "text": "[PC] r3f-loop-override {\"priority\":0,\"frameloop\":\"always\",\"subscriberCount\":14}",
+    "args": [
+      "[PC] r3f-loop-override",
+      {
+        "priority": 0,
+        "frameloop": "always",
+        "subscriberCount": 14
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10910,
+      "columnNumber": 40
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.736Z",
+    "type": "log",
+    "text": "[DEBUG] Camera position check:",
+    "args": [
+      "[DEBUG] Camera position check:"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7441,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.737Z",
+    "type": "log",
+    "text": "[dreamdust] vertex-ink-ok {\"value\":1}",
+    "args": [
+      "[dreamdust] vertex-ink-ok",
+      {
+        "value": 1
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.737Z",
+    "type": "info",
+    "text": "[PC] renderer-capabilities {\"isWebGL2\":true,\"maxVertexTextures\":32,\"maxTextures\":32,\"precision\":\"highp\",\"logarithmicDepthBuffer\":false,\"contextAttributes\":{\"alpha\":true,\"antialias\":true,\"depth\":true,\"desynchronized\":false,\"failIfMajorPerformanceCaveat\":false,\"powerPreference\":\"high-performance\",\"premultipliedAlpha\":true,\"preserveDrawingBuffer\":false,\"stencil\":false,\"xrCompatible\":false}}",
+    "args": [
+      "[PC] renderer-capabilities",
+      {
+        "isWebGL2": true,
+        "maxVertexTextures": 32,
+        "maxTextures": 32,
+        "precision": "highp",
+        "logarithmicDepthBuffer": false,
+        "contextAttributes": {
+          "alpha": true,
+          "antialias": true,
+          "depth": true,
+          "desynchronized": false,
+          "failIfMajorPerformanceCaveat": false,
+          "powerPreference": "high-performance",
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "stencil": false,
+          "xrCompatible": false
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10961,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.737Z",
+    "type": "info",
+    "text": "[PC] render-reassigned {\"ts\":1761766614588,\"prevName\":\"dreamdustCtorRender\",\"nextName\":\"dreamdustCtorRender\"}",
+    "args": [
+      "[PC] render-reassigned",
+      {
+        "ts": 1761766614588,
+        "prevName": "dreamdustCtorRender",
+        "nextName": "dreamdustCtorRender"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11034,
+      "columnNumber": 56
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[PC] diag.gl {\"uuid\":null,\"ctor\":\"WebGLRenderer\",\"usesProto\":false,\"sameCtor\":true,\"instanceofRenderer\":true,\"revision\":\"176\",\"instEqualsCtor\":false}",
+    "args": [
+      "[PC] diag.gl",
+      {
+        "uuid": null,
+        "ctor": "WebGLRenderer",
+        "usesProto": false,
+        "sameCtor": true,
+        "instanceofRenderer": true,
+        "revision": "176",
+        "instEqualsCtor": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11071,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[PC] diag.mem {\"geometries\":0,\"textures\":0}",
+    "args": [
+      "[PC] diag.mem",
+      {
+        "geometries": 0,
+        "textures": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11081,
+      "columnNumber": 36
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[PC] instrumentation render-list override active {\"timestamp\":1761766614588,\"hasRenderLists\":true}",
+    "args": [
+      "[PC] instrumentation render-list override active",
+      {
+        "timestamp": 1761766614588,
+        "hasRenderLists": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11300,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[PC] render-reassigned {\"ts\":1761766614588,\"prevName\":\"dreamdustCtorRender\",\"nextName\":\"patchedRender\"}",
+    "args": [
+      "[PC] render-reassigned",
+      {
+        "ts": 1761766614588,
+        "prevName": "dreamdustCtorRender",
+        "nextName": "patchedRender"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11034,
+      "columnNumber": 56
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.738Z",
+    "type": "log",
+    "text": "  Match: true",
+    "args": [
+      "  Match:",
+      true
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7444,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.759Z",
+    "type": "info",
+    "text": "[PC] diag solid color {\"enabled\":true}",
+    "args": [
+      "[PC] diag solid color",
+      {
+        "enabled": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2160,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[preset] {\"preset\":\"current\",\"blending\":1,\"blendingName\":\"NormalBlending\",\"depthTest\":true,\"hasGaussian\":false,\"cacheKey\":\"dreamdust-gauss-0-vel-1\"}",
+    "args": [
+      "[preset]",
+      {
+        "preset": "current",
+        "blending": 1,
+        "blendingName": "NormalBlending",
+        "depthTest": true,
+        "hasGaussian": false,
+        "cacheKey": "dreamdust-gauss-0-vel-1"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 2166,
+      "columnNumber": 12
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] tick {\"i\":0,\"ts\":1761766614595}",
+    "args": [
+      "[PC] tick",
+      {
+        "i": 0,
+        "ts": 1761766614595
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12557,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] callsite.render-begin {\"ts\":1761766614595}",
+    "args": [
+      "[PC] callsite.render-begin",
+      {
+        "ts": 1761766614595
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12681,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] inst.render-begin {\"passIndex\":0,\"ts\":1761766614595}",
+    "args": [
+      "[PC] inst.render-begin",
+      {
+        "passIndex": 0,
+        "ts": 1761766614595
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10992,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] render-scene-captured {\"uuid\":\"dbfa3913-3f10-4eea-a276-d488caada187\",\"childCount\":5}",
+    "args": [
+      "[PC] render-scene-captured",
+      {
+        "uuid": "dbfa3913-3f10-4eea-a276-d488caada187",
+        "childCount": 5
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11332,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] render-pass begin {\"timestamp\":1761766614595,\"renderIndex\":0,\"cameraUuid\":\"bcb0e3ab-394d-4138-a862-8da78ca405d9\"}",
+    "args": [
+      "[PC] render-pass begin",
+      {
+        "timestamp": 1761766614595,
+        "renderIndex": 0,
+        "cameraUuid": "bcb0e3ab-394d-4138-a862-8da78ca405d9"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11343,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] scene-traversal@render {\"pointsFound\":true,\"nodeCount\":6,\"nodes\":[{\"type\":\"Scene\",\"visible\":true,\"layers\":1,\"children\":5,\"path\":\"Scene\"},{\"type\":\"Points\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Points\",\"isPoints\":true,\"materialUuid\":\"070210e1-2533-44ce-b246-299acdb8b432\",\"geometryPositionCount\":1},{\"type\":\"Points\",\"name\":\"debug-sentinel\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Points\",\"isPoints\":true,\"materialUuid\":\"58c9bcc9-db0b-45da-ad72-0005a2b1000e\",\"geometryPositionCount\":1},{\"type\":\"AmbientLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/AmbientLight\"},{\"type\":\"DirectionalLight\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/DirectionalLight\"},{\"type\":\"Group\",\"visible\":true,\"layers\":1,\"children\":0,\"path\":\"Scene/Group\"}]}",
+    "args": [
+      "[PC] scene-traversal@render",
+      {
+        "pointsFound": true,
+        "nodeCount": 6,
+        "nodes": [
+          {
+            "type": "Scene",
+            "visible": true,
+            "layers": 1,
+            "children": 5,
+            "path": "Scene"
+          },
+          {
+            "type": "Points",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Points",
+            "isPoints": true,
+            "materialUuid": "070210e1-2533-44ce-b246-299acdb8b432",
+            "geometryPositionCount": 1
+          },
+          {
+            "type": "Points",
+            "name": "debug-sentinel",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Points",
+            "isPoints": true,
+            "materialUuid": "58c9bcc9-db0b-45da-ad72-0005a2b1000e",
+            "geometryPositionCount": 1
+          },
+          {
+            "type": "AmbientLight",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/AmbientLight"
+          },
+          {
+            "type": "DirectionalLight",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/DirectionalLight"
+          },
+          {
+            "type": "Group",
+            "visible": true,
+            "layers": 1,
+            "children": 0,
+            "path": "Scene/Group"
+          }
+        ]
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11354,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] inst.render-begin {\"passIndex\":0,\"ts\":1761766614595}",
+    "args": [
+      "[PC] inst.render-begin",
+      {
+        "passIndex": 0,
+        "ts": 1761766614595
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11365,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.760Z",
+    "type": "info",
+    "text": "[PC] ctor.render-begin {\"passIndex\":0,\"ts\":1761766614595,\"uuid\":null}",
+    "args": [
+      "[PC] ctor.render-begin",
+      {
+        "passIndex": 0,
+        "ts": 1761766614595,
+        "uuid": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 6109,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] render-list guard-state {\"forceVisible\":true,\"shouldLogFirst\":true,\"shouldLogFrame\":true,\"renderListLogged\":false,\"renderPassIndex\":0,\"sceneId\":\"scene-03\"}",
+    "args": [
+      "[PC] render-list guard-state",
+      {
+        "forceVisible": true,
+        "shouldLogFirst": true,
+        "shouldLogFrame": true,
+        "renderListLogged": false,
+        "renderPassIndex": 0,
+        "sceneId": "scene-03"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11276,
+      "columnNumber": 48
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] render-list empty {\"phase\":\"pre\",\"opaqueCount\":0,\"transparentCount\":0}",
+    "args": [
+      "[PC] render-list empty",
+      {
+        "phase": "pre",
+        "opaqueCount": 0,
+        "transparentCount": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11241,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] ctor.render-end {\"passIndex\":0,\"ts\":1761766614660,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] ctor.render-end",
+      {
+        "passIndex": 0,
+        "ts": 1761766614660,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 6126,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] inst.render-end {\"passIndex\":0,\"ts\":1761766614660,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] inst.render-end",
+      {
+        "passIndex": 0,
+        "ts": 1761766614660,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11376,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] renderer-render-pass {\"renderIndex\":0,\"sceneUuid\":\"dbfa3913-3f10-4eea-a276-d488caada187\",\"sceneChildCount\":5,\"matchesRenderScene\":true,\"cameraType\":\"PerspectiveCamera\",\"cameraLayers\":1,\"pointsPresent\":false,\"renderCallSeenPointsPreviously\":false}",
+    "args": [
+      "[PC] renderer-render-pass",
+      {
+        "renderIndex": 0,
+        "sceneUuid": "dbfa3913-3f10-4eea-a276-d488caada187",
+        "sceneChildCount": 5,
+        "matchesRenderScene": true,
+        "cameraType": "PerspectiveCamera",
+        "cameraLayers": 1,
+        "pointsPresent": false,
+        "renderCallSeenPointsPreviously": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11403,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] render-list empty {\"phase\":\"post\",\"reason\":\"fallback\",\"renderIndex\":0}",
+    "args": [
+      "[PC] render-list empty",
+      {
+        "phase": "post",
+        "reason": "fallback",
+        "renderIndex": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11423,
+      "columnNumber": 48
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] render-pass end {\"timestamp\":1761766614660,\"renderIndex\":0,\"calls\":2}",
+    "args": [
+      "[PC] render-pass end",
+      {
+        "timestamp": 1761766614660,
+        "renderIndex": 0,
+        "calls": 2
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11437,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] inst.render-end {\"passIndex\":0,\"ts\":1761766614660,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] inst.render-end",
+      {
+        "passIndex": 0,
+        "ts": 1761766614660,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11006,
+      "columnNumber": 44
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] callsite.render-end {\"ts\":1761766614660,\"info\":{\"frame\":1,\"calls\":2,\"triangles\":0,\"points\":2,\"lines\":0}}",
+    "args": [
+      "[PC] callsite.render-end",
+      {
+        "ts": 1761766614660,
+        "info": {
+          "frame": 1,
+          "calls": 2,
+          "triangles": 0,
+          "points": 2,
+          "lines": 0
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 12700,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "info",
+    "text": "[PC] camera-diag {\"enabled\":true,\"cameraPosition\":[-65.7370000000001,103.05399999999997,-681.379],\"target\":[0,0,0],\"radius\":500,\"near\":0.1,\"far\":5000,\"fov\":60,\"distance\":692.2563266059763,\"intersectsFrustum\":true}",
+    "args": [
+      "[PC] camera-diag",
+      {
+        "enabled": true,
+        "cameraPosition": [
+          -65.7370000000001,
+          103.05399999999997,
+          -681.379
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "radius": 500,
+        "near": 0.1,
+        "far": 5000,
+        "fov": 60,
+        "distance": 692.2563266059763,
+        "intersectsFrustum": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7403,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.761Z",
+    "type": "warning",
+    "text": "[PC] Preset drifted at frame 1: {\"expected\":{\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168]},\"actual\":{\"position\":[-65.7370000000001,103.05399999999997,-681.379],\"target\":null}}",
+    "args": [
+      "[PC] Preset drifted at frame 1:",
+      {
+        "expected": {
+          "position": [
+            -65.737,
+            103.054,
+            -681.379
+          ],
+          "target": [
+            -62.924,
+            103.948,
+            -656.168
+          ]
+        },
+        "actual": {
+          "position": [
+            -65.7370000000001,
+            103.05399999999997,
+            -681.379
+          ],
+          "target": null
+        }
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7543,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.762Z",
+    "type": "log",
+    "text": "[Dreamdust] ink-tex bind {\"width\":256,\"height\":256,\"needsUpdate\":false}",
+    "args": [
+      "[Dreamdust] ink-tex bind",
+      {
+        "width": 256,
+        "height": 256,
+        "needsUpdate": false
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.763Z",
+    "type": "log",
+    "text": "[dreamdust] ink-telemetry {\"intensity\":0.75,\"offsetBoost\":1,\"sizeBoost\":1,\"vertexInkOk\":0}",
+    "args": [
+      "[dreamdust] ink-telemetry",
+      {
+        "intensity": 0.75,
+        "offsetBoost": 1,
+        "sizeBoost": 1,
+        "vertexInkOk": 0
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.768Z",
+    "type": "info",
+    "text": "[PC] scene-candidates {\"candidates\":{\"useThreeScene\":\"dbfa3913-3f10-4eea-a276-d488caada187\",\"internalScene\":null,\"internalActiveScene\":null,\"rendererScene\":null,\"capturedRenderScene\":\"dbfa3913-3f10-4eea-a276-d488caada187\"},\"renderCallCount\":1}",
+    "args": [
+      "[PC] scene-candidates",
+      {
+        "candidates": {
+          "useThreeScene": "dbfa3913-3f10-4eea-a276-d488caada187",
+          "internalScene": null,
+          "internalActiveScene": null,
+          "rendererScene": null,
+          "capturedRenderScene": "dbfa3913-3f10-4eea-a276-d488caada187"
+        },
+        "renderCallCount": 1
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 10787,
+      "columnNumber": 32
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.768Z",
+    "type": "log",
+    "text": "[PC] attach controls to ref: <Node>",
+    "args": [
+      "[PC] attach controls to",
+      "ref: <Node>"
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7661,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.768Z",
+    "type": "log",
+    "text": "  Expected: [-65.737,103.054,-681.379]",
+    "args": [
+      "  Expected:",
+      [
+        -65.737,
+        103.054,
+        -681.379
+      ]
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7442,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.768Z",
+    "type": "log",
+    "text": "  Actual: [-65.737,103.054,-681.379]",
+    "args": [
+      "  Actual:",
+      [
+        -65.737,
+        103.054,
+        -681.379
+      ]
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7443,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "log",
+    "text": "[PC] Preset applied (initial): {\"position\":[-65.737,103.054,-681.379],\"target\":[-62.924,103.948,-656.168],\"actualPosition\":[-65.737,103.054,-681.379],\"actualTarget\":null}",
+    "args": [
+      "[PC] Preset applied (initial):",
+      {
+        "position": [
+          -65.737,
+          103.054,
+          -681.379
+        ],
+        "target": [
+          -62.924,
+          103.948,
+          -656.168
+        ],
+        "actualPosition": [
+          -65.737,
+          103.054,
+          -681.379
+        ],
+        "actualTarget": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 7501,
+      "columnNumber": 20
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "info",
+    "text": "[PC] fluid uniforms prime {\"invSize\":[0.00390625,0.00390625],\"velToNdc\":0.028,\"inkBlend\":0.78}",
+    "args": [
+      "[PC] fluid uniforms prime",
+      {
+        "invSize": [
+          0.00390625,
+          0.00390625
+        ],
+        "velToNdc": 0.028,
+        "inkBlend": 0.78
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8085,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "info",
+    "text": "[PC] forceVisible applied {\"depthTest\":false,\"depthWrite\":false,\"blending\":2,\"applied\":true}",
+    "args": [
+      "[PC] forceVisible applied",
+      {
+        "depthTest": false,
+        "depthWrite": false,
+        "blending": 2,
+        "applied": true
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 8592,
+      "columnNumber": 24
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "log",
+    "text": "[Dreamdust] reveal start {\"duration\":2}",
+    "args": [
+      "[Dreamdust] reveal start",
+      {
+        "duration": 2
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 3594,
+      "columnNumber": 16
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "info",
+    "text": "[PC] uniforms after-reveal {\"uTempRadius\":0.14,\"uTempFalloffOn\":1,\"forceScale\":220,\"velToNdc\":0.028,\"inkBlend\":0.78,\"fluidSize\":256,\"fluidIters\":10}",
+    "args": [
+      "[PC] uniforms after-reveal",
+      {
+        "uTempRadius": 0.14,
+        "uTempFalloffOn": 1,
+        "forceScale": 220,
+        "velToNdc": 0.028,
+        "inkBlend": 0.78,
+        "fluidSize": 256,
+        "fluidIters": 10
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 9350,
+      "columnNumber": 28
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "info",
+    "text": "[PC] render-reassigned {\"ts\":1761766614756,\"prevName\":\"patchedRender\",\"nextName\":\"bound patchedInstanceRender\"}",
+    "args": [
+      "[PC] render-reassigned",
+      {
+        "ts": 1761766614756,
+        "prevName": "patchedRender",
+        "nextName": "bound patchedInstanceRender"
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js",
+      "lineNumber": 11034,
+      "columnNumber": 56
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "error",
+    "text": "[PC] mount-error {\"message\":\"r3fScene is not defined\",\"stack\":\"ReferenceError: r3fScene is not defined\\n    at PointCloudStage.useEffect (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:10428:31)\\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14961:22)\\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\\n    at commitHookEffectListMount (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8637:628)\\n    at commitHookPassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8672:60)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9578:33)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9610:384)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9603:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\",\"digest\":null}",
+    "args": [
+      "[PC] mount-error",
+      {
+        "message": "r3fScene is not defined",
+        "stack": "ReferenceError: r3fScene is not defined\n    at PointCloudStage.useEffect (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:10428:31)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14961:22)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\n    at commitHookEffectListMount (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8637:628)\n    at commitHookPassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8672:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9578:33)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9610:384)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9603:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)",
+        "digest": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_client_a5ac5861._.js",
+      "lineNumber": 1225,
+      "columnNumber": 31
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "error",
+    "text": "[PC] mount-error {\"message\":\"r3fScene is not defined\",\"stack\":\"ReferenceError: r3fScene is not defined\\n    at PointCloudStage.useEffect (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:10428:31)\\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14961:22)\\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\\n    at commitHookEffectListMount (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8637:628)\\n    at commitHookPassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8672:60)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9578:33)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9610:384)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9603:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\",\"digest\":null}",
+    "args": [
+      "[PC] mount-error",
+      {
+        "message": "r3fScene is not defined",
+        "stack": "ReferenceError: r3fScene is not defined\n    at PointCloudStage.useEffect (http://127.0.0.1:3000/_next/static/chunks/apps_cryptiq-mindmap-demo_cdaf0c0a._.js:10428:31)\n    at react-stack-bottom-frame (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:14961:22)\n    at runWithFiberInDEV (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:3073:74)\n    at commitHookEffectListMount (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8637:628)\n    at commitHookPassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:8672:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9578:33)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9610:384)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9603:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9581:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9577:17)\n    at recursivelyTraversePassiveMountEffects (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9569:106)\n    at commitPassiveMountOnFiber (http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_compiled_0dc524d4._.js:9618:17)",
+        "digest": null
+      }
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_client_a5ac5861._.js",
+      "lineNumber": 1225,
+      "columnNumber": 31
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:54.769Z",
+    "type": "error",
+    "text": "%o\n\n%s {\"name\":\"ReferenceError\"} The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary.",
+    "args": [
+      "%o\n\n%s",
+      {
+        "name": "ReferenceError"
+      },
+      "The above error occurred in the <PointCloudStage> component. It was handled by the <ErrorBoundaryHandler> error boundary."
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/d2ef8_next_dist_client_a5ac5861._.js",
+      "lineNumber": 1863,
+      "columnNumber": 54
+    }
+  },
+  {
+    "timestamp": "2025-10-29T19:36:55.273Z",
+    "type": "log",
+    "text": "THREE.WebGLRenderer: Context Lost.",
+    "args": [
+      "THREE.WebGLRenderer: Context Lost."
+    ],
+    "location": {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/2544b_three_build_three_module_97e4d918.js",
+      "lineNumber": 9923,
+      "columnNumber": 20
+    }
+  }
+]
