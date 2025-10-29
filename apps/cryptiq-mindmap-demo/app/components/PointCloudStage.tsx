@@ -3500,6 +3500,7 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
   const pointsProbeUuidRef = React.useRef<string | null>(null)
   const pointsProbeAwaitingRef = React.useRef<string | null>(null)
   const pointsProbeLatchedRef = React.useRef<string | null>(null)
+  const pointsProbeSceneAttachedRef = React.useRef<string | null>(null)
   const pointsProbeReattachedRef = React.useRef<string | null>(null)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
@@ -4011,6 +4012,27 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
           pointsProbeReattachedRef.current = pointsUuid
         }
       }
+      const scene = useThree.getState().scene
+      if (scene && points.parent !== scene) {
+        if (points.parent && points.parent !== root) {
+          points.parent.remove(points)
+        }
+        if (!scene.children.includes(points)) {
+          scene.add(points)
+        }
+        if (pointsProbeSceneAttachedRef.current !== pointsUuid) {
+          try {
+            console.info('[PC] points-probe reattached(scene)', {
+              timestamp: Date.now(),
+              pointsUuid,
+              parentUuid: (scene as any)?.uuid ?? null,
+            })
+          } catch {
+            /* noop */
+          }
+          pointsProbeSceneAttachedRef.current = pointsUuid
+        }
+      }
       if ((geometry.drawRange?.count ?? null) == null && positionCount > 0) {
         geometry.setDrawRange(0, positionCount)
         try {
@@ -4260,6 +4282,9 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       }
       if (pointsProbeReattachedRef.current === pointsUuid) {
         pointsProbeReattachedRef.current = null
+      }
+      if (pointsProbeSceneAttachedRef.current === pointsUuid) {
+        pointsProbeSceneAttachedRef.current = null
       }
       pointsHookAttachedRef.current = false
     }
