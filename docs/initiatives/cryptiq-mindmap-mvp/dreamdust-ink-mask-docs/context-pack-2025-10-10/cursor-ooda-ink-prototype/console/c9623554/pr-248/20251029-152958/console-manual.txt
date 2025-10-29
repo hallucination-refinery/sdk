@@ -1,0 +1,123 @@
+# Meta
+2025-10-29T15:30:02.404Z [meta] ready=true (timeout=60000ms)
+2025-10-29T15:30:07.208Z [meta] hasCanvas=true
+2025-10-29T15:30:07.272Z [meta] captured pre screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/c9623554/pr-248/20251029-152958/pre.png
+2025-10-29T15:30:07.297Z [meta] tap dispatched at (640.0, 360.0)
+2025-10-29T15:30:11.344Z [meta] captured post screenshot at /Users/williambarron/hallucination-refinery/refinery-sdk/docs/initiatives/cryptiq-mindmap-mvp/dreamdust-ink-mask-docs/context-pack-2025-10-10/cursor-ooda-ink-prototype/assets/c9623554/pr-248/20251029-152958/post.png
+
+# Page Console
+2025-10-29T15:30:04.273Z [page:info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+2025-10-29T15:30:04.688Z [page:info] [PC] ctor.install {"ts":1761751804660,"uuid":null}
+2025-10-29T15:30:04.688Z [page:info] [PC] ddDebug {"env":true,"query":true,"effective":true,"resolvedVertexInkOk":null}
+2025-10-29T15:30:04.688Z [page:info] [PC] sentinel-points {"uuid":"130f222c-784d-4ad5-b20c-30a0e34f7f87"}
+2025-10-29T15:30:04.688Z [page:log] [PC] ink debug {"vertexInkOk":false,"uViewport":[1280,720],"inkIntensity":1}
+2025-10-29T15:30:04.688Z [page:info] [vertex] stage data snapshot {"simActive":false,"stageUvDepthCount":0,"stageUvCount":0,"simStageUvCount":0,"simKey":null}
+2025-10-29T15:30:04.695Z [page:info] [PC] forceVisible uniforms {"uReveal":1,"uAlphaFloor":1,"uPointBaseSize":8,"uMinSize":4,"uMaxSize":14}
+2025-10-29T15:30:04.696Z [page:info] [PC] forceVisible applied {"depthTest":"TBD","depthWrite":"TBD","blending":"TBD","applied":false}
+2025-10-29T15:30:04.719Z [page:log] [PC] prebaked positions {"bytes":2175600,"count":181300,"sample":[-0.5670044422149658,-0.3836313486099243,0.853047251701355,-0.5648150444030762,-0.38363149762153625,0.8530470728874207]}
+2025-10-29T15:30:04.719Z [page:log] [PC] prebaked PCA orientation applied
+2025-10-29T15:30:04.720Z [page:log] [PC] prebaked AABB {"min":[-1.067277193069458,-0.7974746823310852,0.29305800795555115],"max":[1.2338374853134155,0.19435033202171326,2.747392177581787],"extent":[2.3011146783828735,0.9918250143527985,2.454334169626236],"maxExtent":2.454334169626236,"scale":407.44247966538614,"radius":500}
+2025-10-29T15:30:04.725Z [page:log] [PC] Quaternion roll neutralized for level horizon
+2025-10-29T15:30:04.725Z [page:log] [PC] Quaternion roll neutralized for level horizon
+2025-10-29T15:30:04.735Z [page:log] [PC] prebaked present; using positions/colors, fallback images not required
+2025-10-29T15:30:04.735Z [page:log] [PC] instances: 90650
+2025-10-29T15:30:04.772Z [page:info] [vertex] stage data snapshot {"simActive":false,"stageUvDepthCount":90650,"stageUvCount":181300,"simStageUvCount":0,"simKey":null}
+2025-10-29T15:30:04.869Z [page:warning] [.WebGL-0x12c00502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+2025-10-29T15:30:04.869Z [page:warning] [.WebGL-0x12c00502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+2025-10-29T15:30:04.869Z [page:warning] [.WebGL-0x12c00502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+2025-10-29T15:30:04.869Z [page:warning] [.WebGL-0x12c00502c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+2025-10-29T15:30:04.887Z [page:info] [dreamdust] caps-fanout { stage: true, context: true, host: true, metrics: true }
+2025-10-29T15:30:04.888Z [page:info] [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":true,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+2025-10-29T15:30:04.889Z [page:info] [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":true,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+2025-10-29T15:30:04.890Z [page:info] [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":true,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+2025-10-29T15:30:04.890Z [page:info] [PC] material-defines {"vertexInkOk":false,"useVertexInk":false,"useVelocityDisp":true,"blending":1,"depthTest":true,"depthWrite":false,"toneMapped":false}
+2025-10-29T15:30:05.029Z [page:log] [DEBUG] Camera position check:
+2025-10-29T15:30:05.030Z [page:info] [PC] r3f-loop {"priority":1,"frameloop":"always","internalActive":false,"subscriberCount":14,"glRenderName":"dreamdustCtorRender"}
+2025-10-29T15:30:05.030Z [page:info] [PC] r3f-loop-override {"priority":0,"frameloop":"always","subscriberCount":14}
+2025-10-29T15:30:05.030Z [page:log] [dreamdust] vertex-ink-ok {"value":1}
+2025-10-29T15:30:05.030Z [page:info] [PC] renderer-capabilities {"isWebGL2":true,"maxVertexTextures":32,"maxTextures":32,"precision":"highp","logarithmicDepthBuffer":false,"contextAttributes":{"alpha":true,"antialias":true,"depth":true,"desynchronized":false,"failIfMajorPerformanceCaveat":false,"powerPreference":"high-performance","premultipliedAlpha":true,"preserveDrawingBuffer":false,"stencil":false,"xrCompatible":false}}
+2025-10-29T15:30:05.030Z [page:info] [PC] render-reassigned {"ts":1761751804884,"prevName":"dreamdustCtorRender","nextName":"dreamdustCtorRender"}
+2025-10-29T15:30:05.030Z [page:info] [PC] diag.gl {"uuid":null,"ctor":"WebGLRenderer","usesProto":false,"sameCtor":true,"instanceofRenderer":true,"revision":"176","instEqualsCtor":false}
+2025-10-29T15:30:05.031Z [page:info] [PC] diag.mem {"geometries":0,"textures":0}
+2025-10-29T15:30:05.031Z [page:info] [PC] instrumentation render-list override active {"timestamp":1761751804884,"hasRenderLists":true}
+2025-10-29T15:30:05.031Z [page:info] [PC] render-reassigned {"ts":1761751804884,"prevName":"dreamdustCtorRender","nextName":"patchedRender"}
+2025-10-29T15:30:05.031Z [page:info] [PC] diag solid color {"enabled":true}
+2025-10-29T15:30:05.031Z [page:info] [preset] {"preset":"current","blending":1,"blendingName":"NormalBlending","depthTest":true,"hasGaussian":false,"cacheKey":"dreamdust-gauss-0-vel-1"}
+2025-10-29T15:30:05.031Z [page:info] [PC] diag solid color {"enabled":true}
+2025-10-29T15:30:05.031Z [page:info] [preset] {"preset":"current","blending":1,"blendingName":"NormalBlending","depthTest":true,"hasGaussian":false,"cacheKey":"dreamdust-gauss-0-vel-1"}
+2025-10-29T15:30:05.031Z [page:info] [PC] diag solid color {"enabled":true}
+2025-10-29T15:30:05.031Z [page:info] [preset] {"preset":"current","blending":1,"blendingName":"NormalBlending","depthTest":true,"hasGaussian":false,"cacheKey":"dreamdust-gauss-0-vel-1"}
+2025-10-29T15:30:05.031Z [page:info] [PC] diag solid color {"enabled":true}
+2025-10-29T15:30:05.031Z [page:info] [preset] {"preset":"current","blending":1,"blendingName":"NormalBlending","depthTest":true,"hasGaussian":false,"cacheKey":"dreamdust-gauss-0-vel-1"}
+2025-10-29T15:30:05.031Z [page:log]   Match: true
+2025-10-29T15:30:05.038Z [page:info] [PC] tick {"i":0,"ts":1761751804890}
+2025-10-29T15:30:05.038Z [page:info] [PC] callsite.render-begin {"ts":1761751804891}
+2025-10-29T15:30:05.039Z [page:info] [PC] inst.render-begin {"passIndex":0,"ts":1761751804891}
+2025-10-29T15:30:05.039Z [page:info] [PC] render-scene-captured {"uuid":"a545be1e-b545-4407-9a00-d93421966e23","childCount":5}
+2025-10-29T15:30:05.039Z [page:info] [PC] render-pass begin {"timestamp":1761751804891,"renderIndex":0,"cameraUuid":"2154805d-0830-4375-8fb8-340f710913c3"}
+2025-10-29T15:30:05.039Z [page:info] [PC] scene-traversal@render {"pointsFound":true,"nodeCount":6,"nodes":[{"type":"Scene","visible":true,"layers":1,"children":5,"path":"Scene"},{"type":"Points","visible":true,"layers":1,"children":0,"path":"Scene/Points","isPoints":true,"materialUuid":"db92a02e-4e30-4ef5-bc8d-5b25ac28cb86","geometryPositionCount":1},{"type":"Points","name":"debug-sentinel","visible":true,"layers":1,"children":0,"path":"Scene/Points","isPoints":true,"materialUuid":"00265054-511a-488d-b16a-6ee051e6b145","geometryPositionCount":1},{"type":"AmbientLight","visible":true,"layers":1,"children":0,"path":"Scene/AmbientLight"},{"type":"DirectionalLight","visible":true,"layers":1,"children":0,"path":"Scene/DirectionalLight"},{"type":"Group","visible":true,"layers":1,"children":0,"path":"Scene/Group"}]}
+2025-10-29T15:30:05.039Z [page:info] [PC] inst.render-begin {"passIndex":0,"ts":1761751804891}
+2025-10-29T15:30:05.039Z [page:info] [PC] ctor.render-begin {"passIndex":0,"ts":1761751804891,"uuid":null}
+2025-10-29T15:30:05.039Z [page:info] [PC] render-list guard-state {"forceVisible":true,"shouldLogFirst":true,"shouldLogFrame":true,"renderListLogged":false,"renderPassIndex":0,"sceneId":"scene-03"}
+2025-10-29T15:30:05.039Z [page:info] [PC] render-list empty {"phase":"pre","opaqueCount":0,"transparentCount":0}
+2025-10-29T15:30:05.039Z [page:info] [PC] ctor.render-end {"passIndex":0,"ts":1761751804956,"info":{"frame":1,"calls":2,"triangles":0,"points":2,"lines":0}}
+2025-10-29T15:30:05.039Z [page:info] [PC] inst.render-end {"passIndex":0,"ts":1761751804956,"info":{"frame":1,"calls":2,"triangles":0,"points":2,"lines":0}}
+2025-10-29T15:30:05.039Z [page:info] [PC] renderer-render-pass {"renderIndex":0,"sceneUuid":"a545be1e-b545-4407-9a00-d93421966e23","sceneChildCount":5,"matchesRenderScene":true,"cameraType":"PerspectiveCamera","cameraLayers":1,"pointsPresent":false,"renderCallSeenPointsPreviously":false}
+2025-10-29T15:30:05.039Z [page:info] [PC] render-list empty {"phase":"post","reason":"fallback","renderIndex":0}
+2025-10-29T15:30:05.039Z [page:info] [PC] render-pass end {"timestamp":1761751804956,"renderIndex":0,"calls":2}
+2025-10-29T15:30:05.039Z [page:info] [PC] inst.render-end {"passIndex":0,"ts":1761751804956,"info":{"frame":1,"calls":2,"triangles":0,"points":2,"lines":0}}
+2025-10-29T15:30:05.039Z [page:info] [PC] callsite.render-end {"ts":1761751804956,"info":{"frame":1,"calls":2,"triangles":0,"points":2,"lines":0}}
+2025-10-29T15:30:05.040Z [page:info] [PC] camera-diag {"enabled":true,"cameraPosition":[-65.7370000000001,103.05399999999997,-681.379],"target":[0,0,0],"radius":500,"near":0.1,"far":5000,"fov":60,"distance":692.2563266059763,"intersectsFrustum":true}
+2025-10-29T15:30:05.040Z [page:warning] [PC] Preset drifted at frame 1: {"expected":{"position":[-65.737,103.054,-681.379],"target":[-62.924,103.948,-656.168]},"actual":{"position":[-65.7370000000001,103.05399999999997,-681.379],"target":null}}
+2025-10-29T15:30:05.040Z [page:log] [Dreamdust] ink-tex bind {"width":256,"height":256,"needsUpdate":false}
+2025-10-29T15:30:05.040Z [page:log] [dreamdust] ink-telemetry {"intensity":0.75,"offsetBoost":1,"sizeBoost":1,"vertexInkOk":0}
+2025-10-29T15:30:05.044Z [page:info] [PC] scene-candidates {"candidates":{"useThreeScene":"a545be1e-b545-4407-9a00-d93421966e23","internalScene":null,"internalActiveScene":null,"rendererScene":null,"capturedRenderScene":"a545be1e-b545-4407-9a00-d93421966e23"},"renderCallCount":1}
+2025-10-29T15:30:05.044Z [page:log] [PC] attach controls to ref: <Node>
+2025-10-29T15:30:05.044Z [page:log]   Expected: [-65.737,103.054,-681.379]
+2025-10-29T15:30:05.044Z [page:log]   Actual: [-65.737,103.054,-681.379]
+2025-10-29T15:30:05.044Z [page:log] [PC] Preset applied (initial): {"position":[-65.737,103.054,-681.379],"target":[-62.924,103.948,-656.168],"actualPosition":[-65.737,103.054,-681.379],"actualTarget":null}
+2025-10-29T15:30:05.047Z [page:info] [PC] fluid uniforms prime {"invSize":[0.00390625,0.00390625],"velToNdc":0.028,"inkBlend":0.78}
+2025-10-29T15:30:05.047Z [page:info] [PC] forceVisible applied {"depthTest":false,"depthWrite":false,"blending":2,"applied":true}
+2025-10-29T15:30:05.048Z [page:log] [Dreamdust] reveal start {"duration":2}
+2025-10-29T15:30:05.048Z [page:info] [PC] uniforms after-reveal {"uTempRadius":0.14,"uTempFalloffOn":1,"forceScale":220,"velToNdc":0.028,"inkBlend":0.78,"fluidSize":256,"fluidIters":10}
+2025-10-29T15:30:05.049Z [page:info] [PC] points-probe waiting {"timestamp":1761751805037,"pointsUuid":"0588d86c-e4b0-4cb7-9fb5-874ba132f1ad","positionCount":90650,"isSentinel":true}
+2025-10-29T15:30:05.049Z [page:info] [PC] tick {"i":1,"ts":1761751805038}
+2025-10-29T15:30:05.049Z [page:info] [PC] points-mesh {"type":"Points","visible":true,"frustumCulled":false,"renderOrder":1,"parentType":"Group","matrixWorldDet":1,"positionCount":90650,"colorCount":90650,"uvCount":0,"depthCount":0,"materialUuid":"60cc0b87-9cf9-4b3b-a105-064ccf835490"}
+2025-10-29T15:30:05.049Z [page:info] [PC] render-info {"calls":2,"points":2,"triangles":0,"memory":{"geometries":2,"textures":5},"mat":{"uuid":"60cc0b87-9cf9-4b3b-a105-064ccf835490","blending":2,"depthTest":false,"depthWrite":false,"programCacheKey":"dreamdust-gauss-0-vel-1"},"uniforms":{"uPointBaseSize":8,"uMinSize":4,"uMaxSize":14,"uAlphaFloor":1,"uVelToNdc":0.028,"uInkBlend":0.78,"uDepthNormScale":0.00076,"uDepthBias":1.8},"timeout":false,"framesWaited":1,"timestamp":1761751805038}
+2025-10-29T15:30:05.049Z [page:info] [PC] scene-traversal {"pointsFound":true,"nodeCount":10,"nodes":[{"type":"Scene","visible":true,"layers":1,"children":5,"path":"Scene"},{"type":"Points","visible":true,"layers":1,"children":0,"path":"Scene/Points","isPoints":true,"materialUuid":"db92a02e-4e30-4ef5-bc8d-5b25ac28cb86","geometryPositionCount":1},{"type":"Points","name":"debug-sentinel","visible":true,"layers":1,"children":0,"path":"Scene/Points","isPoints":true,"materialUuid":"00265054-511a-488d-b16a-6ee051e6b145","geometryPositionCount":1},{"type":"AmbientLight","visible":true,"layers":1,"children":0,"path":"Scene/AmbientLight"},{"type":"DirectionalLight","visible":true,"layers":1,"children":0,"path":"Scene/DirectionalLight"},{"type":"Group","visible":true,"layers":1,"children":1,"path":"Scene/Group"},{"type":"Group","visible":true,"layers":1,"children":1,"path":"Scene/Group/Group"},{"type":"Group","visible":true,"layers":1,"children":1,"path":"Scene/Group/Group/Group"},{"type":"Group","visible":true,"layers":1,"children":1,"path":"Scene/Group/Group/Group/Group"},{"type":"Points","visible":true,"layers":1,"children":0,"path":"Scene/Group/Group/Group/Group/Points","isPoints":true,"materialUuid":"60cc0b87-9cf9-4b3b-a105-064ccf835490","geometryPositionCount":90650}]}
+2025-10-29T15:30:05.049Z [page:info] [PC] fluid-step skipped {"reason":"diagnostic-disable"}
+2025-10-29T15:30:05.050Z [page:info] [dreamdust] bloom { enabled: false, strength: 0.2, radius: 0.4, threshold: 0.8, preset: 'current' }
+2025-10-29T15:30:05.054Z [page:info] [PC] tick {"i":2,"ts":1761751805047}
+2025-10-29T15:30:05.054Z [page:info] [dreamdust] cover-fit {"mode":"cover","radius":500,"margin":0.78,"distance":379.969,"fov":60,"aspect":1.778}
+2025-10-29T15:30:05.058Z [page:info] [PC] tick {"i":3,"ts":1761751805053}
+2025-10-29T15:30:05.058Z [page:warning] [PC] Preset drifted at frame 4: {"expected":{"position":[-65.737,103.054,-681.379],"target":[-62.924,103.948,-656.168]},"actual":{"position":[36.082008811211075,-56.5647251324299,373.9982518486423],"target":[-62.924,103.948,-656.168]}}
+2025-10-29T15:30:05.063Z [page:info] [PC] tick {"i":4,"ts":1761751805058}
+2025-10-29T15:30:06.876Z [page:log] [Dreamdust] reveal end {"duration":2}
+2025-10-29T15:30:14.886Z [page:info] [PC] diag.mem.poll {"poll":0,"ts":1761751814885,"geometries":2,"textures":5}
+2025-10-29T15:30:24.886Z [page:info] [PC] diag.mem.poll {"poll":1,"ts":1761751824885,"geometries":2,"textures":5}
+2025-10-29T15:30:34.887Z [page:info] [PC] diag.mem.poll {"poll":2,"ts":1761751834885,"geometries":2,"textures":5}
+2025-10-29T15:30:44.887Z [page:info] [PC] diag.mem.poll {"poll":3,"ts":1761751844885,"geometries":2,"textures":5}
+2025-10-29T15:30:54.892Z [page:info] [PC] diag.mem.poll {"poll":4,"ts":1761751854885,"geometries":2,"textures":5}
+
+# Dev Server
+2025-10-29T15:29:59.795Z [dev:stdout]    ▲ Next.js 15.3.5 (Turbopack)
+2025-10-29T15:29:59.795Z [dev:stdout]    - Local:        http://localhost:3000
+   - Network:      http://10.248.61.91:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+2025-10-29T15:29:59.840Z [dev:stdout] Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-29T15:29:59.840Z [dev:stdout] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+2025-10-29T15:30:00.570Z [dev:stdout]  ✓ Ready in 989ms
+2025-10-29T15:30:01.094Z [dev:stdout]  ○ Compiling / ...
+2025-10-29T15:30:02.238Z [dev:stdout]  ✓ Compiled / in 1660ms
+2025-10-29T15:30:02.409Z [dev:stdout]  GET / 200 in 1835ms
+2025-10-29T15:30:03.509Z [dev:stdout]  ○ Compiling /quiz/[slug] ...
+2025-10-29T15:30:03.805Z [dev:stdout]  ✓ Compiled /quiz/[slug] in 798ms
+2025-10-29T15:30:04.181Z [dev:stdout]  GET /quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1 200 in 1175ms
+2025-10-29T15:30:04.339Z [dev:stderr]  ⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+2025-10-29T15:30:58.543Z [dev:stdout] [?25h
+2025-10-29T15:30:58.543Z [dev:stdout]

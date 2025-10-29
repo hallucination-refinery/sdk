@@ -1,0 +1,24 @@
+{
+  "ok": false,
+  "nodeVersion": "v18.17.0",
+  "route": "http://127.0.0.1:3000/quiz/archetype-v1?pc=scene-03&forceVisible=1&ddDebug=1",
+  "ready": true,
+  "tags": {
+    "ddDebug": true,
+    "sentinel": true,
+    "renderList": true,
+    "pointsBefore": false,
+    "pointsAfter": false,
+    "renderPassBegin": true,
+    "renderPassEnd": true,
+    "renderInfo": {
+      "calls": 2,
+      "points": 2
+    }
+  },
+  "tap": {
+    "success": true,
+    "x": 640,
+    "y": 360
+  }
+}

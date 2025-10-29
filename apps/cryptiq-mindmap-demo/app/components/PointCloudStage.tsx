@@ -192,6 +192,7 @@ const FLUID_DEBUG_INK_BLEND = 1.0
 const RENDER_CALL_LOG_LIMIT = 6
 const SCENE_TRAVERSAL_LOG_LIMIT = 8
 const RENDER_LIST_SAMPLE_LIMIT = 12
+const CLOUD_PROBE_MIN_POSITIONS = 80_000
 const FLUID_DRIVER_DISABLED_FOR_DIAGNOSTIC = true
 const CAMERA_DIAGNOSTIC_ACTIVE = true
 
@@ -3494,6 +3495,9 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
   const pointsAfterRenderLoggedRef = React.useRef(false)
   const pointsBeforeRenderLoggedRef = React.useRef(false)
   const pointsHookAttachedRef = React.useRef(false)
+  const pointsProbeUuidRef = React.useRef<string | null>(null)
+  const pointsProbeAwaitingRef = React.useRef<string | null>(null)
+  const pointsProbeLatchedRef = React.useRef<string | null>(null)
   const sceneTraversalLoggedRef = React.useRef(false)
   const renderListLoggedRef = React.useRef(false)
   const firstRenderListLogRef = React.useRef(false)
@@ -3899,15 +3903,19 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       }
     }
 
+    if (!dreamdustDebugRef.current) {
+      cancelPendingRaf()
+      return () => {
+        cancelPendingRaf()
+      }
+    }
+
     if (!renderer) {
       cancelPendingRaf()
       return
     }
 
-    let points: THREE.Points | null = stagePointsRef.current
-    if (!points && dreamdustDebugRef.current) {
-      points = sentinelPoints
-    }
+    const points = stagePointsRef.current
     if (!points) {
       cancelPendingRaf()
       retryRafRef.current = requestAnimationFrame(() => {
@@ -3919,13 +3927,46 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
     }
 
     cancelPendingRaf()
+    const geometry = (points.geometry as THREE.BufferGeometry | undefined) ?? null
+    const positionCount = geometry?.getAttribute('position')?.count ?? 0
+    const isSentinelCandidate = positionCount < CLOUD_PROBE_MIN_POSITIONS
+
+    if (isSentinelCandidate || !geometry) {
+      const waitKey = `${points.uuid ?? 'unknown'}:${positionCount}`
+      if (dreamdustDebugRef.current && pointsProbeAwaitingRef.current !== waitKey) {
+        try {
+          console.info('[PC] points-probe waiting', {
+            timestamp: Date.now(),
+            pointsUuid: points.uuid ?? null,
+            positionCount,
+            isSentinel: true,
+          })
+        } catch {
+          /* noop */
+        }
+        pointsProbeAwaitingRef.current = waitKey
+      }
+      retryRafRef.current = requestAnimationFrame(() => {
+        setStagePointsReadyTick((v) => v + 1)
+      })
+      return () => {
+        cancelPendingRaf()
+      }
+    }
+
+    pointsProbeAwaitingRef.current = null
     pointsBeforeRenderLoggedRef.current = false
     pointsAfterRenderLoggedRef.current = false
 
+    const pointsUuid = points.uuid ?? null
+    const geometryUuid = geometry.uuid ?? null
+
     const originalBeforeRender =
-      typeof points.onBeforeRender === 'function' ? points.onBeforeRender : undefined
+      (points as any).__ddCloudProbeOriginalBeforeRender ??
+      (typeof points.onBeforeRender === 'function' ? points.onBeforeRender : undefined)
     const originalAfterRender =
-      typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined
+      (points as any).__ddCloudProbeOriginalAfterRender ??
+      (typeof points.onAfterRender === 'function' ? points.onAfterRender : undefined)
 
     const primaryMaterial = Array.isArray(points.material)
       ? points.material[0] ?? null
@@ -3949,6 +3990,30 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       programStateLoggedRef.current = true
     }
 
+    const logProbeLatched = () => {
+      if (!dreamdustDebugRef.current) return
+      const attrCounts = {
+        position: positionCount,
+        color: geometry.getAttribute('color')?.count ?? 0,
+        aSimUv: geometry.getAttribute('aSimUv')?.count ?? 0,
+        aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
+        drawRange: geometry.drawRange ?? null,
+      }
+      if (pointsProbeLatchedRef.current === pointsUuid) return
+      try {
+        console.info('[PC] points-probe latched', {
+          timestamp: Date.now(),
+          pointsUuid,
+          geometryUuid,
+          materialUuid: (primaryMaterial as any)?.uuid ?? null,
+          attrCounts,
+        })
+      } catch {
+        /* noop */
+      }
+      pointsProbeLatchedRef.current = pointsUuid
+    }
+
     const beforeProbe = function pointsBeforeRenderProbe(
       this: THREE.Points,
       rendererArg: THREE.WebGLRenderer,
@@ -3958,10 +4023,24 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       material: THREE.Material,
       group?: THREE.Group,
     ) {
+      if (!dreamdustDebugRef.current) {
+        if (originalBeforeRender) {
+          originalBeforeRender.call(this, rendererArg, scene, camera, geometry, material, group)
+        }
+        return
+      }
+      const rendererProps = (rendererArg as any)?.properties?.get?.(material) ?? null
+      const defines = (material as any)?.defines ?? null
+      const layersMask = (this as any)?.layers?.mask ?? null
+      const attrCounts = {
+        position: geometry.getAttribute('position')?.count ?? 0,
+        color: geometry.getAttribute('color')?.count ?? 0,
+        aSimUv: geometry.getAttribute('aSimUv')?.count ?? 0,
+        aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
+        drawRange: geometry.drawRange ?? null,
+      }
+      const isSentinel = attrCounts.position < CLOUD_PROBE_MIN_POSITIONS
       if (!pointsBeforeRenderLoggedRef.current) {
-        const rendererProps = (rendererArg as any)?.properties?.get?.(material) ?? null
-        const defines = (material as any)?.defines ?? null
-        const layersMask = (this as any)?.layers?.mask ?? null
         try {
           console.info('[PC] points-visibility-state', {
             timestamp: Date.now(),
@@ -3969,6 +4048,7 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
             visible: this.visible,
             frustumCulled: this.frustumCulled,
             layersMask,
+            pointsUuid: this.uuid ?? null,
           })
         } catch {
           /* noop */
@@ -3976,9 +4056,15 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
         try {
           console.info('[PC] points-before-render', {
             timestamp: Date.now(),
+            pointsUuid: this.uuid ?? null,
+            geometryUuid: geometry.uuid ?? null,
+            materialUuid: (material as any)?.uuid ?? null,
             useVelocityDisp: !!(defines?.USE_VELOCITY_DISP ?? false),
-            vertexInkOkDefine: !!(defines?.VERTEX_INK_OK ?? false),
             programCompiled: !!(rendererProps?.program ?? null),
+            attrCounts,
+            isSentinel,
+            visible: this.visible,
+            frustumCulled: this.frustumCulled,
             renderOrder: this.renderOrder ?? null,
           })
         } catch {
@@ -4000,35 +4086,43 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       material: THREE.Material,
       group?: THREE.Group,
     ) {
+      if (!dreamdustDebugRef.current) {
+        if (originalAfterRender) {
+          originalAfterRender.call(this, rendererArg, scene, camera, geometry, material, group)
+        }
+        return
+      }
+      const renderInfo = rendererArg?.info?.render ?? null
+      const resolvedMaterial =
+        material ??
+        (Array.isArray((this as { material?: THREE.Material | THREE.Material[] }).material)
+          ? ((this as { material?: THREE.Material | THREE.Material[] }).material as THREE.Material[])[0] ?? null
+          : ((this as { material?: THREE.Material }).material ?? null))
+      const attrCounts = {
+        position: geometry.getAttribute('position')?.count ?? 0,
+        color: geometry.getAttribute('color')?.count ?? 0,
+        aSimUv: geometry.getAttribute('aSimUv')?.count ?? 0,
+        aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
+        drawRange: geometry.drawRange ?? null,
+      }
       if (!pointsAfterRenderLoggedRef.current) {
-        const info = rendererArg?.info?.render ?? null
-        const resolvedMaterial =
-          material ??
-          (Array.isArray((this as { material?: THREE.Material | THREE.Material[] }).material)
-            ? ((this as { material?: THREE.Material | THREE.Material[] }).material as THREE.Material[])[0] ?? null
-            : ((this as { material?: THREE.Material }).material ?? null))
         try {
-          const attrCounts = {
-            position: geometry.getAttribute('position')?.count ?? 0,
-            color: geometry.getAttribute('color')?.count ?? 0,
-            aSimUv: geometry.getAttribute('aSimUv')?.count ?? 0,
-            aDepth: geometry.getAttribute('aDepth')?.count ?? 0,
-            drawRange: geometry.drawRange ?? null,
-          }
           if (dreamdustDebugRef.current) {
             updateDebugState({
               lastPointsAttrs: {
                 ...attrCounts,
-                calls: info?.calls ?? null,
-                points: info?.points ?? null,
-                triangles: info?.triangles ?? null,
+                calls: renderInfo?.calls ?? null,
+                points: renderInfo?.points ?? null,
+                triangles: renderInfo?.triangles ?? null,
               },
             })
           }
           console.info('[PC] points-after-render', {
-            calls: info?.calls ?? null,
-            points: info?.points ?? null,
-            triangles: info?.triangles ?? null,
+            calls: renderInfo?.calls ?? null,
+            points: renderInfo?.points ?? null,
+            triangles: renderInfo?.triangles ?? null,
+            pointsUuid: this.uuid ?? null,
+            geometryUuid: geometry.uuid ?? null,
             material: resolvedMaterial
               ? {
                   uuid: (resolvedMaterial as any).uuid ?? null,
@@ -4049,8 +4143,24 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
       }
     }
 
-    points.onBeforeRender = beforeProbe
-    points.onAfterRender = afterProbe
+    const previousBefore = (points as any).__ddCloudProbeBeforeHandler
+    const previousAfter = (points as any).__ddCloudProbeAfterHandler
+
+    if (previousBefore && points.onBeforeRender === previousBefore && previousAfter && points.onAfterRender === previousAfter) {
+      pointsBeforeRenderLoggedRef.current = false
+      pointsAfterRenderLoggedRef.current = false
+    } else {
+      ;(points as any).__ddCloudProbeOriginalBeforeRender = originalBeforeRender
+      ;(points as any).__ddCloudProbeOriginalAfterRender = originalAfterRender
+      points.onBeforeRender = beforeProbe
+      points.onAfterRender = afterProbe
+      ;(points as any).__ddCloudProbeBeforeHandler = beforeProbe
+      ;(points as any).__ddCloudProbeAfterHandler = afterProbe
+      pointsHookAttachedRef.current = false
+    }
+
+    pointsProbeUuidRef.current = pointsUuid
+    logProbeLatched()
 
     if (!pointsHookAttachedRef.current) {
       try {
@@ -4066,12 +4176,24 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
 
     return () => {
       cancelPendingRaf()
-      if (points.onBeforeRender === beforeProbe) {
-        points.onBeforeRender = originalBeforeRender ?? undefined
+      const storedBefore = (points as any).__ddCloudProbeBeforeHandler
+      const storedAfter = (points as any).__ddCloudProbeAfterHandler
+      const storedOriginalBefore = (points as any).__ddCloudProbeOriginalBeforeRender
+      const storedOriginalAfter = (points as any).__ddCloudProbeOriginalAfterRender
+      if (storedBefore && points.onBeforeRender === storedBefore) {
+        points.onBeforeRender = storedOriginalBefore ?? undefined
       }
-      if (points.onAfterRender === afterProbe) {
-        points.onAfterRender = originalAfterRender ?? undefined
+      if (storedAfter && points.onAfterRender === storedAfter) {
+        points.onAfterRender = storedOriginalAfter ?? undefined
       }
+      delete (points as any).__ddCloudProbeBeforeHandler
+      delete (points as any).__ddCloudProbeAfterHandler
+      delete (points as any).__ddCloudProbeOriginalBeforeRender
+      delete (points as any).__ddCloudProbeOriginalAfterRender
+      if (pointsProbeUuidRef.current === pointsUuid) {
+        pointsProbeUuidRef.current = null
+      }
+      pointsHookAttachedRef.current = false
     }
   }, [
     rendererReadyTick,
@@ -4081,7 +4203,6 @@ const r3fLoopOverrideAppliedRef = React.useRef(false)
     simUvVersion,
     debugVertexLog,
     stagePointsReadyTick,
-    sentinelPoints,
     dreamdustDebug,
   ])
 
